@@ -2,7 +2,7 @@
 from ctypes import *
 from settings import Settings
 from platform import system
-
+import os
 
 class ToxOptions(Structure):
     _fields_ = [
@@ -31,9 +31,12 @@ class Tox(object):
             size = len(data)
             print size
         if system() == 'Linux':
-            self.libtoxcore = CDLL('libs/libtoxcore.so')
+            temp = os.path.dirname(os.path.abspath(__file__)) + '/libs/'
+            os.chdir(temp)
+            print temp
+            self.libtoxcore = CDLL(temp + 'libtoxcore.so')
         elif system() == 'Windows':
-            self.libtoxcore = CDLL('libs/libtox.dll')
+            self.libtoxcore = CDLL('/libs/libtox.dll')
         print self.libtoxcore.__dict__
         self.libtoxcore.tox_options_new.restype = POINTER(ToxOptions)
         # TODO: load from settings
