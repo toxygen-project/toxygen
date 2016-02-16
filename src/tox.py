@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from ctypes import *
 from settings import Settings
-import os
+from platform import system
 
 
 class ToxOptions(Structure):
@@ -30,12 +30,10 @@ class Tox(object):
             data = fl.read()
             size = len(data)
             print size
-        # TODO: different names for different OS
-        temp = os.path.abspath(__file__)
-        temp = os.path.realpath(temp)
-        temp = os.path.dirname(temp) + '/libs/'
-        os.chdir(temp)
-        self.libtoxcore = CDLL(temp + 'libtoxcore.so')
+        if system() == 'Linux':
+            self.libtoxcore = CDLL('libs/libtoxcore.so')
+        elif system() == 'Windows':
+            self.libtoxcore = CDLL('libs/libtox.dll')
         print self.libtoxcore.__dict__
         self.libtoxcore.tox_options_new.restype = POINTER(ToxOptions)
         # TODO: load from settings
@@ -49,5 +47,3 @@ class Tox(object):
 
 if __name__ == "__main__":
     t = Tox('tox_save')
-
-
