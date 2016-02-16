@@ -1,4 +1,4 @@
-import platform
+from platform import system
 import json
 import os
 
@@ -21,9 +21,8 @@ class Settings(object):
 
     @staticmethod
     def get_default_path():
-        name = platform.system()
-        if name == 'Linux':
+        if system() == 'Linux':
             return os.getenv('HOME') + '/.config/tox/'
-        elif name == 'Windows':
+        elif system() == 'Windows':
             return os.getenv('APPDATA') + '/Tox/'
 
