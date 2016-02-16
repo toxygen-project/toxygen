@@ -33,9 +33,9 @@ class Tox(object):
         # TODO: different names for different OS
         temp = os.path.abspath(__file__)
         temp = os.path.realpath(temp)
-        temp = os.path.dirname(temp)
-        os.chdir(temp + '/libs/')
-        self.libtoxcore = CDLL('libtoxcore.so')
+        temp = os.path.dirname(temp) + '/libs/'
+        os.chdir(temp)
+        self.libtoxcore = CDLL(temp + 'libtoxcore.so')
         print self.libtoxcore.__dict__
         self.libtoxcore.tox_options_new.restype = POINTER(ToxOptions)
         # TODO: load from settings
