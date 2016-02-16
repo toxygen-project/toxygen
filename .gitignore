@@ -3,3 +3,5 @@
 *.ui
 src/toxcore
 src/libs
+.idea
+*~
