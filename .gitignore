@@ -5,4 +5,5 @@ src/toxcore
 src/libs
 .idea
 *~
+*.iml
 *.so
