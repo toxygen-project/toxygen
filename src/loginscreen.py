@@ -48,7 +48,6 @@ class LoginScreen(object):
         font.setFamily("Impact")
         font.setPointSize(16)
         self.toxygen.setFont(font)
-        QtGui.QApplication.setStyle(QtGui.QStyleFactory.create('Plastique'))
         self.toxygen.setObjectName("toxygen")
 
         self.retranslateUi(Form)
