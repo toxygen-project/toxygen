@@ -36,7 +36,7 @@ class Tox(object):
             print temp
             self.libtoxcore = CDLL(temp + 'libtoxcore.so')
         elif system() == 'Windows':
-            self.libtoxcore = CDLL('/libs/libtox.dll')
+            self.libtoxcore = CDLL('libs/libtox.dll')
         print self.libtoxcore.__dict__
         self.libtoxcore.tox_options_new.restype = POINTER(ToxOptions)
         # TODO: load from settings
