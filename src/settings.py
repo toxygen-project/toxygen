@@ -7,13 +7,13 @@ class Settings(object):
 
     def __init__(self):
         self.path = Settings.get_default_path() + 'toxygen.json'
-        # TODO: create new if old not found
         if os.path.exists(self.path):
             with open(self.path) as fl:
                 data = fl.read()
             self.data = json.loads(data)
         else:
             self.create_default_settings()
+            self.save()
 
     def create_default_settings(self):
         self.data = {
@@ -39,6 +39,9 @@ class Settings(object):
 
     def __get__(self, attr):
         return self.data[attr]
+
+    def __set__(self, attr, value):
+        self.data[attr] = value
 
     def save(self):
         text = json.dumps(self.data)
