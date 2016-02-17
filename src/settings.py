@@ -3,20 +3,21 @@ import json
 import os
 
 
-class Settings(object):
+class Settings(dict):
 
     def __init__(self):
         self.path = Settings.get_default_path() + 'toxygen.json'
         if os.path.exists(self.path):
             with open(self.path) as fl:
                 data = fl.read()
-            self.data = json.loads(data)
+            super(self.__class__, self).__init__(json.loads(data))
         else:
-            self.create_default_settings()
+            super(self.__class__, self).__init__(Settings.get_default_settings())
             self.save()
 
-    def create_default_settings(self):
-        self.data = {
+    @staticmethod
+    def get_default_settings():
+        return {
             "theme": "default",
             "ipv6_enabled": True,
             "udp_enabled": True,
@@ -37,14 +38,8 @@ class Settings(object):
             "typing_notifications": True
         }
 
-    def __get__(self, attr):
-        return self.data[attr]
-
-    def __set__(self, attr, value):
-        self.data[attr] = value
-
     def save(self):
-        text = json.dumps(self.data)
+        text = json.dumps(self)
         with open(self.path, 'w') as fl:
             fl.write(text)
 
