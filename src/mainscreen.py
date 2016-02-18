@@ -111,6 +111,7 @@ class MainWindow(QtGui.QWidget):
     def initUI(self):
         grid = QtGui.QGridLayout()
         search = QtGui.QWidget()
+        grid.setColumnStretch(1, 1)
         self.setup_left_center(search)
         grid.addWidget(search, 1, 0)
         name = QtGui.QWidget()

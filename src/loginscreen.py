@@ -4,7 +4,8 @@ from PySide import QtCore, QtGui
 import sys
 import os
 
-class LoginScreen(object):
+
+class LoginScreen(QtGui.QWidget):
     def setupUi(self, Form):
         Form.setObjectName("Form")
         Form.resize(400, 200)
@@ -63,15 +64,17 @@ class LoginScreen(object):
         self.groupBox_2.setTitle(QtGui.QApplication.translate("Form", "Create new profile", None, QtGui.QApplication.UnicodeUTF8))
         self.toxygen.setText(QtGui.QApplication.translate("Form", "toxygen", None, QtGui.QApplication.UnicodeUTF8))
 
+    def update_select(self, data):
+        list_of_profiles = []
+        for elem in data:
+            list_of_profiles.append(self.tr(elem))
+        self.comboBox.addItems(list_of_profiles)
 
 if __name__ == '__main__':
-
     app = QtGui.QApplication(sys.argv)
-
     ls = LoginScreen()
     win = QtGui.QMainWindow()
     ls.setupUi(win)
     win.show()
-
     app.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app, QtCore.SLOT("quit()"))
     app.exec_()

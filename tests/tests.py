@@ -1,6 +1,7 @@
 from src.settings import Settings
 from src.tox import Tox
 import sys
+from src.profile import Profile
 import os
 
 
@@ -34,3 +35,10 @@ class TestTox():
             assert tox.get_savedata_size()
         except:
             assert 0
+
+
+class TestProfile():
+
+    def test_search(self):
+        arr = Profile.find_profiles()
+        assert arr
