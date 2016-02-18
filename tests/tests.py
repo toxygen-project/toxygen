@@ -21,18 +21,15 @@ class TestSettings():
 
 class TestTox():
 
-    def test_creation(self):
+    def test_public_key(self):
+        settings = Settings()
+        data = Profile.open_profile(Settings.get_default_path(), 'tox_save')
         try:
-            tox = Tox('tox_save')
-            assert tox.tox_options is not None
+            tox = Tox(data, settings)
+            key = tox.self_get_public_key()
+            assert key
+            assert len(key.raw) == 32
             del tox
-        except:
-            assert 0
-
-    def test_init(self):
-        try:
-            tox = Tox('tox_save')
-            assert tox.get_savedata_size()
         except:
             assert 0
 
