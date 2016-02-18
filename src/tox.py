@@ -63,7 +63,7 @@ class Tox(object):
         # creating tox object
         tox_err = c_int()
         self.libtoxcore.tox_new.restype = POINTER(c_void_p)
-        self.tox_pointer = self.libtoxcore.tox_new(self.tox_options, tox_err)
+        self._tox_pointer = self.libtoxcore.tox_new(self.tox_options, tox_err)
         if tox_err == TOX_ERR_NEW['TOX_ERR_NEW_NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
         elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_MALLOC']:
@@ -89,9 +89,19 @@ class Tox(object):
                                 ' formatted data, some data may have been loaded, and the rest is discarded. Passing'
                                 ' an invalid length parameter also causes this error.')
 
+    def get_savedata_size(self):
+        return self.libtoxcore.tox_get_savedata_size(self._tox_pointer)
+
+    def get_savedata(self, savedata=None):
+        if savedata is None:
+            savedata_size = self.get_savedata_size()
+            savedata = create_string_buffer(savedata_size)
+        self.libtoxcore.tox_get_savedata(self._tox_pointer, savedata)
+        return savedata
+
     def __del__(self):
+        self.libtoxcore.tox_kill(self._tox_pointer)
         self.libtoxcore.tox_options_free(self.tox_options)
-        self.libtoxcore.tox_kill(self.tox_pointer)
 
 
 if __name__ == '__main__':
