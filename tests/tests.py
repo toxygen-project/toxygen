@@ -42,3 +42,13 @@ class TestProfile():
     def test_search(self):
         arr = Profile.find_profiles()
         assert arr
+
+    def test_open(self):
+        data = Profile.open_profile(Settings.get_default_path(), 'tox_save')
+        assert data
+
+    def test_open_save(self):
+        data = Profile.open_profile(Settings.get_default_path(), 'tox_save')
+        Profile.save_profile(data)
+        new_data = Profile.open_profile(Settings.get_default_path(), 'tox_save')
+        assert new_data == data
