@@ -19,11 +19,10 @@ class ToxOptions(Structure):
         ('savedata_type', c_int),
         ('savedata_data', c_char_p),
         ('savedata_length', c_size_t)
-        ]
+    ]
 
 
 class Tox(object):
-
     def __init__(self, name, path=None):
         # load toxcore
         if system() == 'Linux':
@@ -32,7 +31,6 @@ class Tox(object):
             self.libtoxcore = CDLL(temp + 'libtoxcore.so')
         elif system() == 'Windows':
             self.libtoxcore = CDLL('libs/libtox.dll')
-        self.libtoxcore.tox_options_new.restype = POINTER(ToxOptions)
 
         # load saved data
         if path is None:
@@ -43,9 +41,10 @@ class Tox(object):
         settings = Settings()
 
         # creating tox options struct
-        tox_err = c_int()
-        self.tox_options = self.libtoxcore.tox_options_new(addressof(tox_err))
-        if tox_err == TOX_ERR_OPTIONS_NEW['TOX_ERR_OPTIONS_NEW_MALLOC']:
+        tox_err_options = c_int()
+        self.libtoxcore.tox_options_new.restype = POINTER(ToxOptions)
+        self.tox_options = self.libtoxcore.tox_options_new(addressof(tox_err_options))
+        if tox_err_options == TOX_ERR_OPTIONS_NEW['TOX_ERR_OPTIONS_NEW_MALLOC']:
             raise MemoryError('The function failed to allocate enough memory for the options struct.')
 
         # filling tox options struct
@@ -62,8 +61,37 @@ class Tox(object):
         self.tox_options.contents.savedata_length = len(savedata)
 
         # creating tox object
+        tox_err = c_int()
         self.libtoxcore.tox_new.restype = POINTER(c_void_p)
-        self.tox_pointer = self.libtoxcore.tox_new(self.tox_options, None)
+        self.tox_pointer = self.libtoxcore.tox_new(self.tox_options, tox_err)
+        if tox_err == TOX_ERR_NEW['TOX_ERR_NEW_NULL']:
+            raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
+        elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_MALLOC']:
+            raise MemoryError('The function was unable to allocate enough '
+                              'memory to store the internal structures for the Tox object.')
+        elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_PORT_ALLOC']:
+            raise MemoryError('The function was unable to bind to a port. This may mean that all ports have already'
+                              ' been bound, e.g. by other Tox instances, or it may mean a permission error. You may'
+                              ' be able to gather more information from errno.')
+        elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_BAD_TYPE']:
+            raise ArgumentError('proxy_type was invalid.')
+        elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_BAD_HOST']:
+            raise ArgumentError('proxy_type was valid but the proxy_host passed had an invalid format or was NULL.')
+        elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_BAD_PORT']:
+            raise ArgumentError('proxy_type was valid, but the proxy_port was invalid.')
+        elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_NOT_FOUND']:
+            raise ArgumentError('The proxy address passed could not be resolved.')
+        elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_LOAD_ENCRYPTED']:
+            raise ArgumentError('The byte array to be loaded contained an encrypted save.')
+        elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_LOAD_BAD_FORMAT']:
+            raise ArgumentError('The data format was invalid. This can happen when loading data that was saved by an'
+                                ' older version of Tox, or when the data has been corrupted. When loading from badly'
+                                ' formatted data, some data may have been loaded, and the rest is discarded. Passing'
+                                ' an invalid length parameter also causes this error.')
+
+    def __del__(self):
+        self.libtoxcore.tox_options_free(self.tox_options)
+        self.libtoxcore.tox_kill(self.tox_pointer)
 
 
 if __name__ == '__main__':
