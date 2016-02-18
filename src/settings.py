@@ -36,7 +36,7 @@ class Settings(dict):
             'auto_accept_from_friends': [],
             'friends_aliases': [],
             'typing_notifications': True,
-            'auto_profile': ''
+            'auto_profile': None
         }
 
     def save(self):

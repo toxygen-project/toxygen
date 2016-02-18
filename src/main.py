@@ -1,5 +1,6 @@
 from loginscreen import LoginScreen
 from settings import Settings
+from profile import Profile
 import sys
 from PySide import QtCore, QtGui
 
@@ -12,9 +13,15 @@ if __name__ == '__main__':
         ls = LoginScreen()
         win = QtGui.QMainWindow()
         ls.setupUi(win)
-
-        ls.update_select(['tox_save'])
+        profiles = Profile.find_profiles()
+        ls.update_select(map(lambda x: x[1], profiles))
         win.show()
         app.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app, QtCore.SLOT("quit()"))
         app.exec_()
-    # TODO: get result from loginscreen and open mainscreen
+        # TODO: get result from loginscreen
+        # add new default profile (if needed)
+        # save selected profile to open
+        # create new profile?
+    else:
+        path, name = settings['auto_profile']
+    # TODO: open mainscreen
