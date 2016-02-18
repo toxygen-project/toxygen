@@ -147,6 +147,24 @@ class Tox(object):
         self.libtoxcore.tox_self_get_address(self._tox_pointer, address)
         return address
 
+    def self_set_nospam(self, nospam):
+        self.libtoxcore.tox_self_set_nospam(self._tox_pointer, c_uint32(nospam))
+
+    def self_get_nospam(self):
+        return int(self.libtoxcore.tox_self_get_nospam(self._tox_pointer).value)
+
+    def self_get_public_key(self, public_key=None):
+        if public_key is None:
+            public_key = create_string_buffer(TOX_PUBLIC_KEY_SIZE)
+        self.libtoxcore.tox_self_get_address(self._tox_pointer, public_key)
+        return public_key
+
+    def self_get_secret_key(self, secret_key=None):
+        if secret_key is None:
+            secret_key = create_string_buffer(TOX_PUBLIC_KEY_SIZE)
+        self.libtoxcore.tox_self_get_secret_key(self._tox_pointer, secret_key)
+        return secret_key
+
     def __del__(self):
         if hasattr(self, 'tox_options'):
             self.libtoxcore.tox_kill(self._tox_pointer)
