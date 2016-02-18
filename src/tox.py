@@ -115,6 +115,28 @@ class Tox(object):
         elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_BAD_PORT']:
             raise ArgumentError('The port passed was invalid. The valid port range is (1, 65535).')
 
+    def add_tcp_relay(self, address, port, public_key):
+        tox_err_bootstrap = c_int()
+        result = self.libtoxcore.tox_add_tcp_relay(self._tox_pointer, c_char_p(address), c_uint16(port),
+                                                   c_char_p(public_key), addressof(tox_err_bootstrap))
+        if tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_OK']:
+            return bool(result)
+        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_NULL']:
+            raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
+        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_BAD_HOST']:
+            raise ArgumentError('The address could not be resolved to an IP '
+                                'address, or the IP address passed was invalid.')
+        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_BAD_PORT']:
+            raise ArgumentError('The port passed was invalid. The valid port range is (1, 65535).')
+
+    def self_get_connection_status(self):
+        return self.libtoxcore.tox_self_get_connection_status(self._tox_pointer)
+
+    def callback_self_connection_status(self, callback, user_data):
+        tox_self_connection_status_cb = CFUNCTYPE(None, c_void_p, c_int, c_void_p)
+        c_callback = tox_self_connection_status_cb(callback)
+        self.libtoxcore.tox_callback_self_connection_status(self._tox_pointer, c_callback, c_void_p(user_data))
+
     def __del__(self):
         self.libtoxcore.tox_kill(self._tox_pointer)
         self.libtoxcore.tox_options_free(self.tox_options)
