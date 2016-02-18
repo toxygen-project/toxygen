@@ -3,6 +3,7 @@
 *.ui
 src/toxcore
 tests/tests
+tests/libs
 tests/.cache
 tests/__pycache__
 src/libs
