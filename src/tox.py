@@ -65,7 +65,7 @@ class Tox(object):
         # creating tox object
         tox_err = c_int()
         self.libtoxcore.tox_new.restype = POINTER(c_void_p)
-        self._tox_pointer = self.libtoxcore.tox_new(self.tox_options, tox_err)
+        self._tox_pointer = self.libtoxcore.tox_new(self.tox_options, addressof(tox_err))
         if tox_err == TOX_ERR_NEW['TOX_ERR_NEW_NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
         elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_MALLOC']:
@@ -100,6 +100,20 @@ class Tox(object):
             savedata = create_string_buffer(savedata_size)
         self.libtoxcore.tox_get_savedata(self._tox_pointer, savedata)
         return savedata
+
+    def bootstrap(self, address, port, public_key):
+        tox_err_bootstrap = c_int()
+        result = self.libtoxcore.tox_bootstrap(self._tox_pointer, c_char_p(address), c_uint16(port),
+                                               c_char_p(public_key), addressof(tox_err_bootstrap))
+        if tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_OK']:
+            return bool(result)
+        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_NULL']:
+            raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
+        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_BAD_HOST']:
+            raise ArgumentError('The address could not be resolved to an IP '
+                                'address, or the IP address passed was invalid.')
+        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_BAD_PORT']:
+            raise ArgumentError('The port passed was invalid. The valid port range is (1, 65535).')
 
     def __del__(self):
         self.libtoxcore.tox_kill(self._tox_pointer)
