@@ -26,12 +26,19 @@ class TestTox():
         data = Profile.open_profile(Settings.get_default_path(), 'tox_save')
         try:
             tox = Tox(data, settings)
+        except:
+            raise
+            assert 0
+        try:
             key = tox.self_get_public_key()
-            assert key
-            assert len(key.raw) == 32
+        except:
+            raise
+            assert 0
+        assert len(key.raw) == 32
+        try:
             del tox
         except:
-            assert 0
+            raise
 
 
 class TestProfile():
