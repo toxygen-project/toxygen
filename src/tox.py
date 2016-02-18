@@ -31,6 +31,8 @@ class Tox(object):
             self.libtoxcore = CDLL(temp + 'libtoxcore.so')
         elif system() == 'Windows':
             self.libtoxcore = CDLL('libs/libtox.dll')
+        else:
+            raise OSError('Unknown system.')
 
         # load saved data
         if path is None:
