@@ -2,9 +2,9 @@
 *.pyo
 *.ui
 src/toxcore
-src/tests/tests
-src/tests/.cache
-src/tests/__pycache__
+tests/tests
+tests/.cache
+tests/__pycache__
 src/libs
 .idea
 *~
