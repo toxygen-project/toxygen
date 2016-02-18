@@ -165,6 +165,46 @@ class Tox(object):
         self.libtoxcore.tox_self_get_secret_key(self._tox_pointer, secret_key)
         return secret_key
 
+    def self_set_name(self, name, length):
+        tox_err_set_info = c_int()
+        result = self.libtoxcore.tox_self_set_name(self._tox_pointer, c_char_p(name),
+                                                   c_size_t(length), addressof(tox_err_set_info))
+        if tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_OK']:
+            return bool(result)
+        elif tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_NULL']:
+            raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
+        elif tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_TOO_LONG']:
+            raise ArgumentError('Information length exceeded maximum permissible size.')
+
+    def self_get_name_size(self):
+        return int(self.libtoxcore.tox_self_get_name_size(self._tox_pointer).value)
+
+    def self_get_name(self, name=None):
+        if name is None:
+            name = create_string_buffer(self.self_get_name_size())
+        self.libtoxcore.tox_self_get_name(self._tox_pointer, name)
+        return name
+
+    def self_set_status_message(self, status_message, length):
+        tox_err_set_info = c_int()
+        result = self.libtoxcore.tox_self_set_status_message(self._tox_pointer, c_char_p(status_message),
+                                                             c_size_t(length), addressof(tox_err_set_info))
+        if tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_OK']:
+            return bool(result)
+        elif tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_NULL']:
+            raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
+        elif tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_TOO_LONG']:
+            raise ArgumentError('Information length exceeded maximum permissible size.')
+
+    def self_get_status_message_size(self):
+        return int(self.libtoxcore.tox_self_get_status_message_size(self._tox_pointer).value)
+
+    def self_get_status_message(self, status_message=None):
+        if status_message is None:
+            status_message = create_string_buffer(self.self_get_status_message_size())
+        self.libtoxcore.tox_self_get_status_message(self._tox_pointer, status_message)
+        return status_message
+
     def __del__(self):
         if hasattr(self, 'tox_options'):
             self.libtoxcore.tox_kill(self._tox_pointer)
