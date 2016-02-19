@@ -236,10 +236,106 @@ class Tox(object):
         elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_MALLOC']:
             raise MemoryError('A memory allocation failed when trying to increase the friend list size.')
 
+    def friend_add_norequest(self, public_key):
+        tox_err_friend_add = c_int()
+        result = self.libtoxcore.tox_friend_add(self._tox_pointer, c_char_p(public_key), addressof(tox_err_friend_add))
+        if tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_OK']:
+            return int(result.value)
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_NULL']:
+            raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_TOO_LONG']:
+            raise ArgumentError('The length of the friend request message exceeded TOX_MAX_FRIEND_REQUEST_LENGTH.')
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_NO_MESSAGE']:
+            raise ArgumentError('The friend request message was empty. This, and the TOO_LONG code will never be'
+                                ' returned from tox_friend_add_norequest.')
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_OWN_KEY']:
+            raise ArgumentError('The friend address belongs to the sending client.')
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_ALREADY_SENT']:
+            raise ArgumentError('A friend request has already been sent, or the address belongs to a friend that is'
+                                ' already on the friend list.')
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_BAD_CHECKSUM']:
+            raise ArgumentError('The friend address checksum failed.')
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_SET_NEW_NOSPAM']:
+            raise ArgumentError('The friend was already there, but the nospam value was different.')
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_MALLOC']:
+            raise MemoryError('A memory allocation failed when trying to increase the friend list size.')
+
+    def friend_delete(self, friend_number):
+        tox_err_friend_delete = c_int()
+        result = self.libtoxcore.tox_friend_delete(self._tox_pointer, c_uint32(friend_number),
+                                                   addressof(tox_err_friend_delete))
+        if tox_err_friend_delete == TOX_ERR_FRIEND_DELETE['TOX_ERR_FRIEND_DELETE_OK']:
+            return bool(result)
+        elif tox_err_friend_delete == TOX_ERR_FRIEND_DELETE['TOX_ERR_FRIEND_DELETE_FRIEND_NOT_FOUND']:
+            raise ArgumentError('There was no friend with the given friend number. No friends were deleted.')
+
+    # TODO Friend list queries
+
+    # TODO Friend-specific state queries
+
+    def self_set_typing(self, friend_number, typing):
+        tox_err_set_typing = c_int()
+        result = self.libtoxcore.tox_friend_delete(self._tox_pointer, c_uint32(friend_number),
+                                                   c_bool(typing), addressof(tox_err_set_typing))
+        if tox_err_set_typing == TOX_ERR_SET_TYPING['TOX_ERR_SET_TYPING_OK']:
+            return bool(result)
+        elif tox_err_set_typing == TOX_ERR_SET_TYPING['TOX_ERR_SET_TYPING_FRIEND_NOT_FOUND']:
+            raise ArgumentError('The friend number did not designate a valid friend.')
+
+    def friend_send_message(self, friend_number, message_type, message, length):
+        tox_err_friend_send_message = c_int()
+        result = self.libtoxcore.tox_friend_send_message(self._tox_pointer, c_uint32(friend_number),
+                                                         c_int(message_type), c_char_p(message), c_size_t(length),
+                                                         addressof(tox_err_friend_send_message))
+        if tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_OK']:
+            return int(result.value)
+        elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_NULL']:
+            raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
+        elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_FRIEND_NOT_FOUND']:
+            raise ArgumentError('The friend number did not designate a valid friend.')
+        elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_FRIEND_NOT_CONNECTED']:
+            raise ArgumentError('This client is currently not connected to the friend.')
+        elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_SENDQ']:
+            raise ArgumentError('An allocation error occurred while increasing the send queue size.')
+        elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_TOO_LONG']:
+            raise ArgumentError('Message length exceeded TOX_MAX_MESSAGE_LENGTH.')
+        elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_EMPTY']:
+            raise ArgumentError('Attempted to send a zero-length message.')
+
+    def callback_friend_read_receipt(self, callback, user_data):
+        tox_friend_read_receipt_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_void_p)
+        c_callback = tox_friend_read_receipt_cb(callback)
+        self.libtoxcore.tox_callback_friend_read_receipt(self._tox_pointer, c_callback, c_void_p(user_data))
+
+    def callback_friend_request(self, callback, user_data):
+        tox_friend_request_cb = CFUNCTYPE(None, c_void_p, c_char_p, c_char_p, c_size_t, c_void_p)
+        c_callback = tox_friend_request_cb(callback)
+        self.libtoxcore.tox_callback_friend_request(self._tox_pointer, c_callback, c_void_p(user_data))
+
+    def callback_friend_message(self, callback, user_data):
+        tox_friend_message_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_char_p, c_size_t, c_void_p)
+        c_callback = tox_friend_message_cb(callback)
+        self.libtoxcore.tox_callback_friend_message(self._tox_pointer, c_callback, c_void_p(user_data))
+
+    # TODO File transmission: common between sending and receiving
+
+    # TODO File transmission: sending
+
+    # TODO File transmission: receiving
+
+    # TODO Group chat management
+
+    # TODO Group chat message sending and receiving
+
+    # TODO Low-level custom packet sending and receiving
+
+    # TODO Low-level network information
+
     def __del__(self):
         if hasattr(self, 'tox_options'):
             self.libtoxcore.tox_kill(self._tox_pointer)
             self.libtoxcore.tox_options_free(self.tox_options)
+
 
 if __name__ == '__main__':
     pass
