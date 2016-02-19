@@ -242,7 +242,7 @@ class Tox(object):
 
         :return: nospam part of the address
         """
-        return int(self.libtoxcore.tox_self_get_nospam(self._tox_pointer).value)
+        return self.libtoxcore.tox_self_get_nospam(self._tox_pointer)
 
     def self_get_public_key(self, public_key=None):
         """
@@ -301,7 +301,7 @@ class Tox(object):
 
         :return: length of the current nickname
         """
-        return int(self.libtoxcore.tox_self_get_name_size(self._tox_pointer).value)
+        return self.libtoxcore.tox_self_get_name_size(self._tox_pointer)
 
     def self_get_name(self, name=None):
         """
@@ -348,7 +348,7 @@ class Tox(object):
 
         :return: length of the current status message
         """
-        return int(self.libtoxcore.tox_self_get_status_message_size(self._tox_pointer).value)
+        return self.libtoxcore.tox_self_get_status_message_size(self._tox_pointer)
 
     def self_get_status_message(self, status_message=None):
         """
@@ -409,7 +409,7 @@ class Tox(object):
         result = self.libtoxcore.tox_friend_add(self._tox_pointer, c_char_p(address), c_char_p(message),
                                                 c_size_t(len(message)), addressof(tox_err_friend_add))
         if tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_OK']:
-            return int(result.value)
+            return result
         elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
         elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_TOO_LONG']:
@@ -447,7 +447,7 @@ class Tox(object):
         tox_err_friend_add = c_int()
         result = self.libtoxcore.tox_friend_add(self._tox_pointer, c_char_p(public_key), addressof(tox_err_friend_add))
         if tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_OK']:
-            return int(result.value)
+            return result
         elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
         elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_TOO_LONG']:
@@ -500,7 +500,7 @@ class Tox(object):
         result = self.libtoxcore.tox_friend_by_public_key(self._tox_pointer, c_char_p(public_key),
                                                           addressof(tox_err_friend_by_public_key))
         if tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['TOX_ERR_FRIEND_BY_PUBLIC_KEY_OK']:
-            return int(result.value)
+            return result
         elif tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['TOX_ERR_FRIEND_BY_PUBLIC_KEY_NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
         elif tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['TOX_ERR_FRIEND_BY_PUBLIC_KEY_NOT_FOUND']:
@@ -520,7 +520,7 @@ class Tox(object):
 
         :return: number of friends
         """
-        return int(self.libtoxcore.tox_self_get_friend_list_size(self._tox_pointer).value)
+        return self.libtoxcore.tox_self_get_friend_list_size(self._tox_pointer)
 
     def self_get_friend_list(self, friend_list=None):
         """
@@ -568,7 +568,7 @@ class Tox(object):
         result = self.libtoxcore.tox_friend_get_last_online(self._tox_pointer, c_uint32(friend_number),
                                                             addressof(tox_err_last_online))
         if tox_err_last_online == TOX_ERR_FRIEND_GET_LAST_ONLINE['TOX_ERR_FRIEND_GET_LAST_ONLINE_OK']:
-            return int(result.value)
+            return result
         elif tox_err_last_online == TOX_ERR_FRIEND_GET_LAST_ONLINE['TOX_ERR_FRIEND_GET_LAST_ONLINE_FRIEND_NOT_FOUND']:
             raise ArgumentError('No friend with the given number exists on the friend list.')
 
@@ -586,7 +586,7 @@ class Tox(object):
         result = self.libtoxcore.tox_friend_get_name_size(self._tox_pointer, c_uint32(friend_number),
                                                           addressof(tox_err_friend_query))
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
-            return int(result.value)
+            return result
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
             raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
                                 ' the `_self_` variants of these functions, which have no effect when a parameter is'
@@ -644,7 +644,7 @@ class Tox(object):
         result = self.libtoxcore.tox_friend_get_status_message_size(self._tox_pointer, c_uint32(friend_number),
                                                                     addressof(tox_err_friend_query))
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
-            return int(result.value)
+            return result
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
             raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
                                 ' the `_self_` variants of these functions, which have no effect when a parameter is'
@@ -855,7 +855,7 @@ class Tox(object):
                                                          c_int(message_type), c_char_p(message), c_size_t(len(message)),
                                                          addressof(tox_err_friend_send_message))
         if tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_OK']:
-            return int(result.value)
+            return result
         elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
         elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_FRIEND_NOT_FOUND']:
