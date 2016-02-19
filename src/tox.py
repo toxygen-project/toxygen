@@ -214,24 +214,56 @@ class Tox(object):
     # -----------------------------------------------------------------------------------------------------------------
 
     def self_get_address(self, address=None):
+        """
+        Writes the Tox friend address of the client to a byte array. The address is not in human-readable format. If a
+         client wants to display the address, formatting is required.
+
+        :param address: pointer (c_char_p) to a memory region of at least TOX_ADDRESS_SIZE bytes. If this parameter is
+        None, this function allocates memory for address.
+        :return: pointer (c_char_p) to a memory region with the Tox friend address
+        """
         if address is None:
             address = create_string_buffer(TOX_ADDRESS_SIZE)
         self.libtoxcore.tox_self_get_address(self._tox_pointer, address)
         return address
 
     def self_set_nospam(self, nospam):
+        """
+        Set the 4-byte nospam part of the address.
+
+        :param nospam: Any 32 bit unsigned integer.
+        """
         self.libtoxcore.tox_self_set_nospam(self._tox_pointer, c_uint32(nospam))
 
     def self_get_nospam(self):
+        """
+        Get the 4-byte nospam part of the address.
+
+        :return: nospam part of the address
+        """
         return int(self.libtoxcore.tox_self_get_nospam(self._tox_pointer).value)
 
     def self_get_public_key(self, public_key=None):
+        """
+        Copy the Tox Public Key (long term) from the Tox object.
+
+        :param public_key: A memory region of at least TOX_PUBLIC_KEY_SIZE bytes. If this parameter is NULL, this
+        function allocates memory for Tox Public Key.
+        :return: pointer (c_char_p) to a memory region with the Tox Public Key
+        """
         if public_key is None:
             public_key = create_string_buffer(TOX_PUBLIC_KEY_SIZE)
         self.libtoxcore.tox_self_get_address(self._tox_pointer, public_key)
         return public_key
 
     def self_get_secret_key(self, secret_key=None):
+        """
+        Copy the Tox Secret Key from the Tox object.
+
+        :param secret_key: A memory region of at least TOX_SECRET_KEY_SIZE bytes. If this parameter is NULL, this
+        function allocates memory for Tox Secret Key.
+        :return: pointer (c_char_p) to a memory region with the Tox Secret Key
+        """
         if secret_key is None:
             secret_key = create_string_buffer(TOX_PUBLIC_KEY_SIZE)
         self.libtoxcore.tox_self_get_secret_key(self._tox_pointer, secret_key)
