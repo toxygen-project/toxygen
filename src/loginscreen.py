@@ -109,10 +109,4 @@ class LoginScreen(QtGui.QWidget):
 
 
 if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
-    ls = LoginScreen()
-    win = QtGui.QMainWindow()
-    ls.setupUi(win)
-    win.show()
-    app.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app, QtCore.SLOT("quit()"))
-    app.exec_()
+    pass
