@@ -382,15 +382,31 @@ class Tox(object):
         """
         return self.libtoxcore.tox_self_get_status(self._tox_pointer)
 
-    # TODO create docs
     # -----------------------------------------------------------------------------------------------------------------
     # Friend list management
     # -----------------------------------------------------------------------------------------------------------------
 
-    def friend_add(self, address, message, length):
+    def friend_add(self, address, message):
+        """
+        Add a friend to the friend list and send a friend request.
+
+        A friend request message must be at least 1 byte long and at most TOX_MAX_FRIEND_REQUEST_LENGTH.
+
+        Friend numbers are unique identifiers used in all functions that operate on friends. Once added, a friend number
+        is stable for the lifetime of the Tox object. After saving the state and reloading it, the friend numbers may
+        not be the same as before. Deleting a friend creates a gap in the friend number set, which is filled by the next
+        adding of a friend. Any pattern in friend numbers should not be relied on.
+
+        If more than INT32_MAX friends are added, this function causes undefined behaviour.
+
+        :param address: The address of the friend (returned by tox_self_get_address of the friend you wish to add) it
+        must be TOX_ADDRESS_SIZE bytes.
+        :param message: The message that will be sent along with the friend request.
+        :return: the friend number on success, UINT32_MAX on failure.
+        """
         tox_err_friend_add = c_int()
         result = self.libtoxcore.tox_friend_add(self._tox_pointer, c_char_p(address), c_char_p(message),
-                                                c_size_t(length), addressof(tox_err_friend_add))
+                                                c_size_t(len(message)), addressof(tox_err_friend_add))
         if tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_OK']:
             return int(result.value)
         elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_NULL']:
@@ -413,6 +429,20 @@ class Tox(object):
             raise MemoryError('A memory allocation failed when trying to increase the friend list size.')
 
     def friend_add_norequest(self, public_key):
+        """
+        Add a friend without sending a friend request.
+
+        This function is used to add a friend in response to a friend request. If the client receives a friend request,
+        it can be reasonably sure that the other client added this client as a friend, eliminating the need for a friend
+        request.
+
+        This function is also useful in a situation where both instances are controlled by the same entity, so that this
+        entity can perform the mutual friend adding. In this case, there is no need for a friend request, either.
+
+        :param public_key: A byte array of length TOX_PUBLIC_KEY_SIZE containing the Public Key (not the Address) of the
+        friend to add.
+        :return: the friend number on success, UINT32_MAX on failure.
+        """
         tox_err_friend_add = c_int()
         result = self.libtoxcore.tox_friend_add(self._tox_pointer, c_char_p(public_key), addressof(tox_err_friend_add))
         if tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_OK']:
@@ -437,6 +467,15 @@ class Tox(object):
             raise MemoryError('A memory allocation failed when trying to increase the friend list size.')
 
     def friend_delete(self, friend_number):
+        """
+        Remove a friend from the friend list.
+
+        This does not notify the friend of their deletion. After calling this function, this client will appear offline
+        to the friend and no communication can occur between the two.
+
+        :param friend_number: Friend number for the friend to be deleted.
+        :return: True on success.
+        """
         tox_err_friend_delete = c_int()
         result = self.libtoxcore.tox_friend_delete(self._tox_pointer, c_uint32(friend_number),
                                                    addressof(tox_err_friend_delete))
