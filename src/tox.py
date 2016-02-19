@@ -202,7 +202,7 @@ class Tox(object):
         Return the time in milliseconds before tox_iterate() should be called again for optimal performance.
         :return: time in milliseconds
         """
-        return int(self.libtoxcore.tox_iteration_interval(self._tox_pointer).value)
+        return self.libtoxcore.tox_iteration_interval(self._tox_pointer)
 
     def iterate(self):
         """
