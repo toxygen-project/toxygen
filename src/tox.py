@@ -484,12 +484,17 @@ class Tox(object):
         elif tox_err_friend_delete == TOX_ERR_FRIEND_DELETE['TOX_ERR_FRIEND_DELETE_FRIEND_NOT_FOUND']:
             raise ArgumentError('There was no friend with the given friend number. No friends were deleted.')
 
-    # TODO create docs
     # -----------------------------------------------------------------------------------------------------------------
     # Friend list queries
     # -----------------------------------------------------------------------------------------------------------------
 
     def friend_by_public_key(self, public_key):
+        """
+        Return the friend number associated with that Public Key.
+
+        :param public_key: A byte array containing the Public Key.
+        :return: friend number
+        """
         tox_err_friend_by_public_key = c_int()
         result = self.libtoxcore.tox_friend_by_public_key(self._tox_pointer, c_char_p(public_key),
                                                           addressof(tox_err_friend_by_public_key))
@@ -501,12 +506,31 @@ class Tox(object):
             raise ArgumentError('No friend with the given Public Key exists on the friend list.')
 
     def friend_exists(self, friend_number):
+        """
+        Checks if a friend with the given friend number exists and returns true if it does.
+        """
         return bool(self.libtoxcore.tox_friend_by_public_key(self._tox_pointer, c_uint32(friend_number)))
 
     def self_get_friend_list_size(self):
+        """
+        Return the number of friends on the friend list.
+
+        This function can be used to determine how much memory to allocate for tox_self_get_friend_list.
+
+        :return: number of friends
+        """
         return int(self.libtoxcore.tox_self_get_friend_list_size(self._tox_pointer).value)
 
     def self_get_friend_list(self, friend_list=None):
+        """
+        Copy a list of valid friend numbers into an array.
+
+        Call tox_self_get_friend_list_size to determine the number of elements to allocate.
+
+        :param friend_list: pointer (c_char_p) to a memory region with enough space to hold the friend list. If this
+        parameter is None, this function allocates memory for the friend list.
+        :return: pointer (c_char_p) to a memory region with the friend list
+        """
         if friend_list is None:
             friend_list = create_string_buffer(sizeof(c_uint32) * self.self_get_friend_list_size())
             friend_list = POINTER(c_uint32)(friend_list)
@@ -514,6 +538,14 @@ class Tox(object):
         return friend_list
 
     def friend_get_public_key(self, friend_number, public_key):
+        """
+        Copies the Public Key associated with a given friend number to a byte array.
+
+        :param friend_number: The friend number you want the Public Key of.
+        :param public_key: pointer (c_char_p) to a memory region of at least TOX_PUBLIC_KEY_SIZE bytes. If this
+        parameter is None, this function has no effect.
+        :return: True on success.
+        """
         tox_err_friend_get_public_key = c_int()
         result = self.libtoxcore.tox_friend_get_public_key(self._tox_pointer, c_uint32(friend_number),
                                                            c_char_p(public_key),
@@ -524,6 +556,13 @@ class Tox(object):
             raise ArgumentError('No friend with the given number exists on the friend list.')
 
     def friend_get_last_online(self, friend_number):
+        """
+        Return a unix-time timestamp of the last time the friend associated with a given friend number was seen online.
+        This function will return UINT64_MAX on error.
+
+        :param friend_number: The friend number you want to query.
+        :return: unix-time timestamp
+        """
         tox_err_last_online = c_int()
         result = self.libtoxcore.tox_friend_get_last_online(self._tox_pointer, c_uint32(friend_number),
                                                             addressof(tox_err_last_online))
