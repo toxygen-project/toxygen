@@ -188,8 +188,9 @@ class Tox(object):
         choose to call tox_bootstrap again, to reconnect to the DHT. Note that this state may frequently change for
         short amounts of time. Clients should therefore not immediately bootstrap on receiving a disconnect.
 
-        :param callback: Python function. Should take pointer (c_void_p) to Tox object, TOX_CONNECTION (c_int), pointer
-        (c_void_p) to user_data
+        :param callback: Python function. Should take pointer (c_void_p) to Tox object,
+        TOX_CONNECTION (c_int),
+        pointer (c_void_p) to user_data
         :param user_data: pointer (c_void_p) to user data
         """
         tox_self_connection_status_cb = CFUNCTYPE(None, c_void_p, c_int, c_void_p)
@@ -571,12 +572,16 @@ class Tox(object):
         elif tox_err_last_online == TOX_ERR_FRIEND_GET_LAST_ONLINE['TOX_ERR_FRIEND_GET_LAST_ONLINE_FRIEND_NOT_FOUND']:
             raise ArgumentError('No friend with the given number exists on the friend list.')
 
-    # TODO create docs
     # -----------------------------------------------------------------------------------------------------------------
     # Friend-specific state queries (can also be received through callbacks)
     # -----------------------------------------------------------------------------------------------------------------
 
     def friend_get_name_size(self, friend_number):
+        """
+        Return the length of the friend's name. If the friend number is invalid, the return value is unspecified.
+
+        The return value is equal to the `length` argument received by the last `friend_name` callback.
+        """
         tox_err_friend_query = c_int()
         result = self.libtoxcore.tox_friend_get_name_size(self._tox_pointer, c_uint32(friend_number),
                                                           addressof(tox_err_friend_query))
@@ -590,6 +595,16 @@ class Tox(object):
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
     def friend_get_name(self, friend_number, name):
+        """
+        Write the name of the friend designated by the given friend number to a byte array.
+
+        Call tox_friend_get_name_size to determine the allocation size for the `name` parameter.
+
+        The data written to `name` is equal to the data received by the last `friend_name` callback.
+
+        :param name: pointer (c_char_p) to a valid memory region large enough to store the friend's name.
+        :return: True on success.
+        """
         tox_err_friend_query = c_int()
         result = self.libtoxcore.tox_friend_get_name(self._tox_pointer, c_uint32(friend_number), name,
                                                      addressof(tox_err_friend_query))
@@ -603,11 +618,28 @@ class Tox(object):
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
     def callback_friend_name(self, callback, user_data):
+        """
+        Set the callback for the `friend_name` event. Pass None to unset.
+
+        This event is triggered when a friend changes their name.
+
+        :param callback: Python function. Should take pointer (c_void_p) to Tox object,
+        The friend number (c_uint32) of the friend whose name changed,
+        A byte array (c_char_p) containing the same data as tox_friend_get_name would write to its `name` parameter,
+        A value (c_size_t) equal to the return value of tox_friend_get_name_size,
+        pointer (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
         tox_friend_name_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_char_p, c_size_t, c_void_p)
         c_callback = tox_friend_name_cb(callback)
-        self.libtoxcore.tox_callback_friend_name(self._tox_pointer, c_callback, c_void_p(user_data))
+        self.libtoxcore.tox_callback_friend_name(self._tox_pointer, c_callback, user_data)
 
     def friend_get_status_message_size(self, friend_number):
+        """
+        Return the length of the friend's status message. If the friend number is invalid, the return value is SIZE_MAX.
+
+        :return: length of the friend's status message
+        """
         tox_err_friend_query = c_int()
         result = self.libtoxcore.tox_friend_get_status_message_size(self._tox_pointer, c_uint32(friend_number),
                                                                     addressof(tox_err_friend_query))
@@ -621,6 +653,18 @@ class Tox(object):
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
     def friend_get_status_message(self, friend_number, status_message):
+        """
+        Write the status message of the friend designated by the given friend number to a byte array.
+
+        Call tox_friend_get_status_message_size to determine the allocation size for the `status_name` parameter.
+
+        The data written to `status_message` is equal to the data received by the last `friend_status_message` callback.
+
+        :param friend_number:
+        :param status_message: pointer (c_char_p) to a valid memory region large enough to store the friend's status
+        message.
+        :return: True on success.
+        """
         tox_err_friend_query = c_int()
         result = self.libtoxcore.tox_friend_get_status_message(self._tox_pointer, c_uint32(friend_number),
                                                                status_message, addressof(tox_err_friend_query))
@@ -634,11 +678,32 @@ class Tox(object):
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
     def callback_friend_status_message(self, callback, user_data):
+        """
+        Set the callback for the `friend_status_message` event. Pass NULL to unset.
+
+        This event is triggered when a friend changes their status message.
+
+        :param callback: Python function. Should take pointer (c_void_p) to Tox object,
+        The friend number (c_uint32) of the friend whose status message changed,
+        A byte array (c_char_p) containing the same data as tox_friend_get_status_message would write to its
+        `status_message` parameter,
+        A value (c_size_t) equal to the return value of tox_friend_get_status_message_size,
+        pointer (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
         friend_status_message_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_char_p, c_size_t, c_void_p)
         c_callback = friend_status_message_cb(callback)
         self.libtoxcore.tox_callback_friend_status_message(self._tox_pointer, c_callback, c_void_p(user_data))
 
     def friend_get_status(self, friend_number):
+        """
+        Return the friend's user status (away/busy/...). If the friend number is invalid, the return value is
+        unspecified.
+
+        The status returned is equal to the last status received through the `friend_status` callback.
+
+        :return: TOX_USER_STATUS
+        """
         tox_err_friend_query = c_int()
         result = self.libtoxcore.tox_friend_get_status(self._tox_pointer, c_uint32(friend_number),
                                                        addressof(tox_err_friend_query))
@@ -652,11 +717,31 @@ class Tox(object):
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
     def callback_friend_status(self, callback, user_data):
+        """
+        Set the callback for the `friend_status` event. Pass None to unset.
+
+        This event is triggered when a friend changes their user status.
+
+        :param callback: Python function. Should take pointer (c_void_p) to Tox object,
+        The friend number (c_uint32) of the friend whose user status changed,
+        The new user status (TOX_USER_STATUS),
+        pointer (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
         tox_friend_status_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_void_p)
         c_callback = tox_friend_status_cb(callback)
         self.libtoxcore.tox_callback_friend_status(self._tox_pointer, c_callback, c_void_p(user_data))
 
     def friend_get_connection_status(self, friend_number):
+        """
+        Check whether a friend is currently connected to this client.
+
+        The result of this function is equal to the last value received by the `friend_connection_status` callback.
+
+        :param friend_number: The friend number for which to query the connection status.
+        :return: the friend's connection status (TOX_CONNECTION) as it was received through the
+        `friend_connection_status` event.
+        """
         tox_err_friend_query = c_int()
         result = self.libtoxcore.tox_friend_get_connection_status(self._tox_pointer, c_uint32(friend_number),
                                                                   addressof(tox_err_friend_query))
@@ -670,11 +755,31 @@ class Tox(object):
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
     def callback_friend_connection_status(self, callback, user_data):
+        """
+        Set the callback for the `friend_connection_status` event. Pass NULL to unset.
+
+        This event is triggered when a friend goes offline after having been online, or when a friend goes online.
+
+        This callback is not called when adding friends. It is assumed that when adding friends, their connection status
+        is initially offline.
+
+        :param callback: Python function. Should take pointer (c_void_p) to Tox object,
+        The friend number (c_uint32) of the friend whose connection status changed,
+        The result of calling tox_friend_get_connection_status (TOX_CONNECTION) on the passed friend_number,
+        pointer (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
         tox_friend_connection_status_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_void_p)
         c_callback = tox_friend_connection_status_cb(callback)
         self.libtoxcore.tox_callback_friend_connection_status(self._tox_pointer, c_callback, c_void_p(user_data))
 
     def friend_get_typing(self, friend_number):
+        """
+        Check whether a friend is currently typing a message.
+
+        :param friend_number: The friend number for which to query the typing status.
+        :return: true if the friend is typing.
+        """
         tox_err_friend_query = c_int()
         result = self.libtoxcore.tox_friend_get_typing(self._tox_pointer, c_uint32(friend_number),
                                                        addressof(tox_err_friend_query))
@@ -688,6 +793,17 @@ class Tox(object):
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
     def callback_friend_typing(self, callback, user_data):
+        """
+        Set the callback for the `friend_typing` event. Pass NULL to unset.
+
+        This event is triggered when a friend starts or stops typing.
+
+        :param callback: Python function. Should take pointer (c_void_p) to Tox object,
+        The friend number (c_uint32) of the friend who started or stopped typing,
+        The result of calling tox_friend_get_typing (c_bool) on the passed friend_number,
+        pointer (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
         tox_friend_typing_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_bool, c_void_p)
         c_callback = tox_friend_typing_cb(callback)
         self.libtoxcore.tox_callback_friend_typing(self._tox_pointer, c_callback, c_void_p(user_data))
