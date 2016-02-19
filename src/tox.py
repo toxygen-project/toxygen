@@ -94,9 +94,23 @@ class Tox(object):
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_savedata_size(self):
+        """
+        Calculates the number of bytes required to store the tox instance with tox_get_savedata.
+        This function cannot fail. The result is always greater than 0.
+
+        :return: number of bytes
+        """
         return self.libtoxcore.tox_get_savedata_size(self._tox_pointer)
 
     def get_savedata(self, savedata=None):
+        """
+        Store all information associated with the tox instance to a byte array.
+
+        :param savedata: pointer (c_char_p) to a memory region large enough to store the tox instance data.
+        Call tox_get_savedata_size to find the number of bytes required. If this parameter is None, this function
+        allocates memory for the tox instance data.
+        :return: pointer (c_char_p) to a memory region with the tox instance data
+        """
         if savedata is None:
             savedata_size = self.get_savedata_size()
             savedata = create_string_buffer(savedata_size)
@@ -108,6 +122,17 @@ class Tox(object):
     # -----------------------------------------------------------------------------------------------------------------
 
     def bootstrap(self, address, port, public_key):
+        """
+        Sends a "get nodes" request to the given bootstrap node with IP, port, and public key to setup connections.
+
+        This function will attempt to connect to the node using UDP. You must use this function even if
+        Tox_Options.udp_enabled was set to false.
+
+        :param address: The hostname or IP address (IPv4 or IPv6) of the node.
+        :param port: The port on the host on which the bootstrap Tox instance is listening.
+        :param public_key: The long term public key of the bootstrap node (TOX_PUBLIC_KEY_SIZE bytes).
+        :return: True on success.
+        """
         tox_err_bootstrap = c_int()
         result = self.libtoxcore.tox_bootstrap(self._tox_pointer, c_char_p(address), c_uint16(port),
                                                c_char_p(public_key), addressof(tox_err_bootstrap))
@@ -122,6 +147,17 @@ class Tox(object):
             raise ArgumentError('The port passed was invalid. The valid port range is (1, 65535).')
 
     def add_tcp_relay(self, address, port, public_key):
+        """
+        Adds additional host:port pair as TCP relay.
+
+        This function can be used to initiate TCP connections to different ports on the same bootstrap node, or to add
+         TCP relays without using them as bootstrap nodes.
+
+        :param address: The hostname or IP address (IPv4 or IPv6) of the TCP relay.
+        :param port: The port on the host on which the TCP relay is listening.
+        :param public_key: The long term public key of the TCP relay (TOX_PUBLIC_KEY_SIZE bytes).
+        :return: True on success.
+        """
         tox_err_bootstrap = c_int()
         result = self.libtoxcore.tox_add_tcp_relay(self._tox_pointer, c_char_p(address), c_uint16(port),
                                                    c_char_p(public_key), addressof(tox_err_bootstrap))
@@ -136,17 +172,41 @@ class Tox(object):
             raise ArgumentError('The port passed was invalid. The valid port range is (1, 65535).')
 
     def self_get_connection_status(self):
+        """
+        Return whether we are connected to the DHT. The return value is equal to the last value received through the
+        `self_connection_status` callback.
+
+        :return: TOX_CONNECTION
+        """
         return self.libtoxcore.tox_self_get_connection_status(self._tox_pointer)
 
     def callback_self_connection_status(self, callback, user_data):
+        """
+        Set the callback for the `self_connection_status` event. Pass None to unset.
+
+        This event is triggered whenever there is a change in the DHT connection state. When disconnected, a client may
+        choose to call tox_bootstrap again, to reconnect to the DHT. Note that this state may frequently change for
+        short amounts of time. Clients should therefore not immediately bootstrap on receiving a disconnect.
+
+        :param callback: Python function. Should take pointer (c_void_p) to Tox object, TOX_CONNECTION (c_int), pointer
+        (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
         tox_self_connection_status_cb = CFUNCTYPE(None, c_void_p, c_int, c_void_p)
         c_callback = tox_self_connection_status_cb(callback)
-        self.libtoxcore.tox_callback_self_connection_status(self._tox_pointer, c_callback, c_void_p(user_data))
+        self.libtoxcore.tox_callback_self_connection_status(self._tox_pointer, c_callback, user_data)
 
     def iteration_interval(self):
+        """
+        Return the time in milliseconds before tox_iterate() should be called again for optimal performance.
+        :return: time in milliseconds
+        """
         return int(self.libtoxcore.tox_iteration_interval(self._tox_pointer).value)
 
     def iterate(self):
+        """
+        The main loop that needs to be run in intervals of tox_iteration_interval() milliseconds.
+        """
         self.libtoxcore.tox_iterate(self._tox_pointer)
 
     # -----------------------------------------------------------------------------------------------------------------
