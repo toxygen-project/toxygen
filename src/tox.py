@@ -269,7 +269,9 @@ class Tox(object):
         elif tox_err_friend_delete == TOX_ERR_FRIEND_DELETE['TOX_ERR_FRIEND_DELETE_FRIEND_NOT_FOUND']:
             raise ArgumentError('There was no friend with the given friend number. No friends were deleted.')
 
-    # TODO Friend list queries, Friend-specific state queries
+    # TODO Friend list queries
+
+    # TODO Friend-specific state queries
 
     def self_set_typing(self, friend_number, typing):
         tox_err_set_typing = c_int()
@@ -299,6 +301,35 @@ class Tox(object):
             raise ArgumentError('Message length exceeded TOX_MAX_MESSAGE_LENGTH.')
         elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_EMPTY']:
             raise ArgumentError('Attempted to send a zero-length message.')
+
+    def callback_friend_read_receipt(self, callback, user_data):
+        tox_friend_read_receipt_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_void_p)
+        c_callback = tox_friend_read_receipt_cb(callback)
+        self.libtoxcore.tox_callback_friend_read_receipt(self._tox_pointer, c_callback, c_void_p(user_data))
+
+    def callback_friend_request(self, callback, user_data):
+        tox_friend_request_cb = CFUNCTYPE(None, c_void_p, c_char_p, c_char_p, c_size_t, c_void_p)
+        c_callback = tox_friend_request_cb(callback)
+        self.libtoxcore.tox_callback_friend_request(self._tox_pointer, c_callback, c_void_p(user_data))
+
+    def callback_friend_message(self, callback, user_data):
+        tox_friend_message_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_char_p, c_size_t, c_void_p)
+        c_callback = tox_friend_message_cb(callback)
+        self.libtoxcore.tox_callback_friend_message(self._tox_pointer, c_callback, c_void_p(user_data))
+
+    # TODO File transmission: common between sending and receiving
+
+    # TODO File transmission: sending
+
+    # TODO File transmission: receiving
+
+    # TODO Group chat management
+
+    # TODO Group chat message sending and receiving
+
+    # TODO Low-level custom packet sending and receiving
+
+    # TODO Low-level network information
 
     def __del__(self):
         if hasattr(self, 'tox_options'):
