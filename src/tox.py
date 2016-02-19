@@ -280,10 +280,31 @@ class Tox(object):
         elif tox_err_set_typing == TOX_ERR_SET_TYPING['TOX_ERR_SET_TYPING_FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend number did not designate a valid friend.')
 
+    def friend_send_message(self, friend_number, message_type, message, length):
+        tox_err_friend_send_message = c_int()
+        result = self.libtoxcore.tox_friend_send_message(self._tox_pointer, c_uint32(friend_number),
+                                                         c_int(message_type), c_char_p(message), c_size_t(length),
+                                                         addressof(tox_err_friend_send_message))
+        if tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_OK']:
+            return int(result.value)
+        elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_NULL']:
+            raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
+        elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_FRIEND_NOT_FOUND']:
+            raise ArgumentError('The friend number did not designate a valid friend.')
+        elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_FRIEND_NOT_CONNECTED']:
+            raise ArgumentError('This client is currently not connected to the friend.')
+        elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_SENDQ']:
+            raise ArgumentError('An allocation error occurred while increasing the send queue size.')
+        elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_TOO_LONG']:
+            raise ArgumentError('Message length exceeded TOX_MAX_MESSAGE_LENGTH.')
+        elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_EMPTY']:
+            raise ArgumentError('Attempted to send a zero-length message.')
+
     def __del__(self):
         if hasattr(self, 'tox_options'):
             self.libtoxcore.tox_kill(self._tox_pointer)
             self.libtoxcore.tox_options_free(self.tox_options)
+
 
 if __name__ == '__main__':
     pass
