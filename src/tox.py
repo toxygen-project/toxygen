@@ -260,7 +260,7 @@ class Tox(object):
         """
         Copy the Tox Secret Key from the Tox object.
 
-        :param secret_key: A memory region of at least TOX_SECRET_KEY_SIZE bytes. If this parameter is NULL, this
+        :param secret_key: pointer (c_char_p) to a memory region of at least TOX_SECRET_KEY_SIZE bytes. If this parameter is NULL, this
         function allocates memory for Tox Secret Key.
         :return: pointer (c_char_p) to a memory region with the Tox Secret Key
         """
@@ -273,10 +273,18 @@ class Tox(object):
     # User-visible client information (nickname/status)
     # -----------------------------------------------------------------------------------------------------------------
 
-    def self_set_name(self, name, length):
+    def self_set_name(self, name):
+        """
+        Set the nickname for the Tox client.
+
+        Nickname length cannot exceed TOX_MAX_NAME_LENGTH. If length is 0, the name parameter is ignored
+        (it can be None), and the nickname is set back to empty.
+        :param name: New nickname.
+        :return: True on success.
+        """
         tox_err_set_info = c_int()
         result = self.libtoxcore.tox_self_set_name(self._tox_pointer, c_char_p(name),
-                                                   c_size_t(length), addressof(tox_err_set_info))
+                                                   c_size_t(len(name)), addressof(tox_err_set_info))
         if tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_OK']:
             return bool(result)
         elif tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_NULL']:
@@ -285,18 +293,45 @@ class Tox(object):
             raise ArgumentError('Information length exceeded maximum permissible size.')
 
     def self_get_name_size(self):
+        """
+        Return the length of the current nickname as passed to tox_self_set_name.
+
+        If no nickname was set before calling this function, the name is empty, and this function returns 0.
+
+        :return: length of the current nickname
+        """
         return int(self.libtoxcore.tox_self_get_name_size(self._tox_pointer).value)
 
     def self_get_name(self, name=None):
+        """
+        Write the nickname set by tox_self_set_name to a byte array.
+
+        If no nickname was set before calling this function, the name is empty, and this function has no effect.
+
+        Call tox_self_get_name_size to find out how much memory to allocate for the result.
+
+        :param name: pointer (c_char_p) to a memory region location large enough to hold the nickname. If this parameter
+        is NULL, the function allocates memory for the nickname.
+        :return: pointer (c_char_p) to a memory region with the nickname
+        """
         if name is None:
             name = create_string_buffer(self.self_get_name_size())
         self.libtoxcore.tox_self_get_name(self._tox_pointer, name)
         return name
 
-    def self_set_status_message(self, status_message, length):
+    def self_set_status_message(self, status_message):
+        """
+        Set the client's status message.
+
+        Status message length cannot exceed TOX_MAX_STATUS_MESSAGE_LENGTH. If length is 0, the status parameter is
+        ignored, and the user status is set back to empty.
+
+        :param status_message: new status message
+        :return: True on success.
+        """
         tox_err_set_info = c_int()
         result = self.libtoxcore.tox_self_set_status_message(self._tox_pointer, c_char_p(status_message),
-                                                             c_size_t(length), addressof(tox_err_set_info))
+                                                             c_size_t(len(status_message)), addressof(tox_err_set_info))
         if tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_OK']:
             return bool(result)
         elif tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_NULL']:
@@ -305,20 +340,49 @@ class Tox(object):
             raise ArgumentError('Information length exceeded maximum permissible size.')
 
     def self_get_status_message_size(self):
+        """
+        Return the length of the current status message as passed to tox_self_set_status_message.
+
+        If no status message was set before calling this function, the status is empty, and this function returns 0.
+
+        :return: length of the current status message
+        """
         return int(self.libtoxcore.tox_self_get_status_message_size(self._tox_pointer).value)
 
     def self_get_status_message(self, status_message=None):
+        """
+        Write the status message set by tox_self_set_status_message to a byte array.
+
+        If no status message was set before calling this function, the status is empty, and this function has no effect.
+
+        Call tox_self_get_status_message_size to find out how much memory to allocate for the result.
+
+        :param status_message: pointer (c_char_p) to a valid memory location large enough to hold the status message.
+        If this parameter is None, the function allocates memory for the status message.
+        :return: pointer (c_char_p) to a memory region with the status message
+        """
         if status_message is None:
             status_message = create_string_buffer(self.self_get_status_message_size())
         self.libtoxcore.tox_self_get_status_message(self._tox_pointer, status_message)
         return status_message
 
     def self_set_status(self, status):
+        """
+        Set the client's user status.
+
+        :param status: One of the user statuses listed in the enumeration TOX_USER_STATUS.
+        """
         self.libtoxcore.tox_self_set_status(self._tox_pointer, c_int(status))
 
     def self_get_status(self):
+        """
+        Returns the client's user status.
+
+        :return: client's user status
+        """
         return self.libtoxcore.tox_self_get_status(self._tox_pointer)
 
+    # TODO create docs
     # -----------------------------------------------------------------------------------------------------------------
     # Friend list management
     # -----------------------------------------------------------------------------------------------------------------
@@ -381,6 +445,7 @@ class Tox(object):
         elif tox_err_friend_delete == TOX_ERR_FRIEND_DELETE['TOX_ERR_FRIEND_DELETE_FRIEND_NOT_FOUND']:
             raise ArgumentError('There was no friend with the given friend number. No friends were deleted.')
 
+    # TODO create docs
     # -----------------------------------------------------------------------------------------------------------------
     # Friend list queries
     # -----------------------------------------------------------------------------------------------------------------
@@ -428,6 +493,7 @@ class Tox(object):
         elif tox_err_last_online == TOX_ERR_FRIEND_GET_LAST_ONLINE['TOX_ERR_FRIEND_GET_LAST_ONLINE_FRIEND_NOT_FOUND']:
             raise ArgumentError('No friend with the given number exists on the friend list.')
 
+    # TODO create docs
     # -----------------------------------------------------------------------------------------------------------------
     # Friend-specific state queries (can also be received through callbacks)
     # -----------------------------------------------------------------------------------------------------------------
@@ -548,6 +614,7 @@ class Tox(object):
         c_callback = tox_friend_typing_cb(callback)
         self.libtoxcore.tox_callback_friend_typing(self._tox_pointer, c_callback, c_void_p(user_data))
 
+    # TODO create docs
     # -----------------------------------------------------------------------------------------------------------------
     # Sending private messages
     # -----------------------------------------------------------------------------------------------------------------
