@@ -202,7 +202,7 @@ class Tox(object):
         Return the time in milliseconds before tox_iterate() should be called again for optimal performance.
         :return: time in milliseconds
         """
-        return int(self.libtoxcore.tox_iteration_interval(self._tox_pointer))
+        return int(self.libtoxcore.tox_iteration_interval(self._tox_pointer).value)
 
     def iterate(self):
         """
@@ -808,12 +808,20 @@ class Tox(object):
         c_callback = tox_friend_typing_cb(callback)
         self.libtoxcore.tox_callback_friend_typing(self._tox_pointer, c_callback, c_void_p(user_data))
 
-    # TODO create docs
     # -----------------------------------------------------------------------------------------------------------------
     # Sending private messages
     # -----------------------------------------------------------------------------------------------------------------
 
     def self_set_typing(self, friend_number, typing):
+        """
+        Set the client's typing status for a friend.
+
+        The client is responsible for turning it on or off.
+
+        :param friend_number: The friend to which the client is typing a message.
+        :param typing: The typing status. True means the client is typing.
+        :return: True on success.
+        """
         tox_err_set_typing = c_int()
         result = self.libtoxcore.tox_friend_delete(self._tox_pointer, c_uint32(friend_number),
                                                    c_bool(typing), addressof(tox_err_set_typing))
@@ -822,10 +830,29 @@ class Tox(object):
         elif tox_err_set_typing == TOX_ERR_SET_TYPING['TOX_ERR_SET_TYPING_FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend number did not designate a valid friend.')
 
-    def friend_send_message(self, friend_number, message_type, message, length):
+    def friend_send_message(self, friend_number, message_type, message):
+        """
+        Send a text chat message to an online friend.
+
+        This function creates a chat message packet and pushes it into the send queue.
+
+        The message length may not exceed TOX_MAX_MESSAGE_LENGTH. Larger messages must be split by the client and sent
+        as separate messages. Other clients can then reassemble the fragments. Messages may not be empty.
+
+        The return value of this function is the message ID. If a read receipt is received, the triggered
+        `friend_read_receipt` event will be passed this message ID.
+
+        Message IDs are unique per friend. The first message ID is 0. Message IDs are incremented by 1 each time a
+        message is sent. If UINT32_MAX messages were sent, the next message ID is 0.
+
+        :param friend_number: The friend number of the friend to send the message to.
+        :param message_type: Message type (TOX_MESSAGE_TYPE).
+        :param message: A non-None message text.
+        :return: message ID
+        """
         tox_err_friend_send_message = c_int()
         result = self.libtoxcore.tox_friend_send_message(self._tox_pointer, c_uint32(friend_number),
-                                                         c_int(message_type), c_char_p(message), c_size_t(length),
+                                                         c_int(message_type), c_char_p(message), c_size_t(len(message)),
                                                          addressof(tox_err_friend_send_message))
         if tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_OK']:
             return int(result.value)
@@ -843,16 +870,57 @@ class Tox(object):
             raise ArgumentError('Attempted to send a zero-length message.')
 
     def callback_friend_read_receipt(self, callback, user_data):
+        """
+        Set the callback for the `friend_read_receipt` event. Pass None to unset.
+
+        This event is triggered when the friend receives the message sent with tox_friend_send_message with the
+        corresponding message ID.
+
+        :param callback: Python function. Should take pointer (c_void_p) to Tox object,
+        The friend number (c_uint32) of the friend who received the message,
+        The message ID (c_uint32) as returned from tox_friend_send_message corresponding to the message sent,
+        pointer (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
         tox_friend_read_receipt_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_void_p)
         c_callback = tox_friend_read_receipt_cb(callback)
         self.libtoxcore.tox_callback_friend_read_receipt(self._tox_pointer, c_callback, c_void_p(user_data))
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # Receiving private messages and friend requests
+    # -----------------------------------------------------------------------------------------------------------------
+
     def callback_friend_request(self, callback, user_data):
+        """
+        Set the callback for the `friend_request` event. Pass None to unset.
+
+        This event is triggered when a friend request is received.
+
+        :param callback: Python function. Should take pointer (c_void_p) to Tox object,
+        The Public Key (c_char_p) of the user who sent the friend request,
+        The message (c_char_p) they sent along with the request,
+        The size (c_size_t) of the message byte array,
+        pointer (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
         tox_friend_request_cb = CFUNCTYPE(None, c_void_p, c_char_p, c_char_p, c_size_t, c_void_p)
         c_callback = tox_friend_request_cb(callback)
         self.libtoxcore.tox_callback_friend_request(self._tox_pointer, c_callback, c_void_p(user_data))
 
     def callback_friend_message(self, callback, user_data):
+        """
+        Set the callback for the `friend_message` event. Pass None to unset.
+
+        This event is triggered when a message from a friend is received.
+
+        :param callback: Python function. Should take pointer (c_void_p) to Tox object,
+        The friend number (c_uint32) of the friend who sent the message,
+        Message type (TOX_MESSAGE_TYPE),
+        The message data (c_char_p) they sent,
+        The size (c_size_t) of the message byte array.
+        pointer (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
         tox_friend_message_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_char_p, c_size_t, c_void_p)
         c_callback = tox_friend_message_cb(callback)
         self.libtoxcore.tox_callback_friend_message(self._tox_pointer, c_callback, c_void_p(user_data))
