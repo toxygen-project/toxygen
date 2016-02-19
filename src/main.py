@@ -29,6 +29,11 @@ class login(object):
         return self.arr[self.num]
 
 
+def status(a, b, c):
+    print 'WOW, it works!'
+    print str(b)
+
+
 def main():
     """
     main function of app. loads loginscreen if needed and starts mainscreen
@@ -64,22 +69,34 @@ def main():
     # loading profile
     print str(path), str(name)
     data = Profile.open_profile(path, name)
-    # TODO: start tox iterate and set callbacks
-    tox = Tox(data, settings)
     ms = MainWindow()
+    # creating tox instance
+    tox = Tox(data, settings)
+    # TODO: set callbacks
+    #tox.callback_self_connection_status(status, 0)
+    # starting thread for tox iterate
+    mainloop = ToxIterateThread(tox)
+    mainloop.start()
+
     ms.show()
     app.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app, QtCore.SLOT("quit()"))
     app.exec_()
+    mainloop.stop = True
+    mainloop.wait()
     del tox
 
 
 class ToxIterateThread(QtCore.QThread):
 
-    def __init__(self):
+    def __init__(self, tox):
         QtCore.QThread.__init__(self)
+        self.tox = tox
+        self.stop = False
 
     def run(self):
-        pass
+        while not self.stop:
+            self.tox.iterate()
+            self.msleep(self.tox.iteration_interval())
 
 
 if __name__ == '__main__':

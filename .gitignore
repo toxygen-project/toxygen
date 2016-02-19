@@ -11,3 +11,4 @@ src/libs
 *~
 *.iml
 *.so
+*.log
