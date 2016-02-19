@@ -420,7 +420,41 @@ class Tox(object):
         c_callback = tox_friend_status_cb(callback)
         self.libtoxcore.tox_callback_friend_status(self._tox_pointer, c_callback, c_void_p(user_data))
 
+    def friend_get_connection_status(self, friend_number):
+        tox_err_friend_query = c_int()
+        result = self.libtoxcore.tox_friend_get_connection_status(self._tox_pointer, c_uint32(friend_number),
+                                                                  addressof(tox_err_friend_query))
+        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
+            return result
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
+            raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
+                                ' the `_self_` variants of these functions, which have no effect when a parameter is'
+                                ' NULL, these functions return an error in that case.')
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND']:
+            raise ArgumentError('The friend_number did not designate a valid friend.')
 
+    def callback_friend_connection_status(self, callback, user_data):
+        tox_friend_connection_status_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_void_p)
+        c_callback = tox_friend_connection_status_cb(callback)
+        self.libtoxcore.tox_callback_friend_connection_status(self._tox_pointer, c_callback, c_void_p(user_data))
+
+    def friend_get_typing(self, friend_number):
+        tox_err_friend_query = c_int()
+        result = self.libtoxcore.tox_friend_get_typing(self._tox_pointer, c_uint32(friend_number),
+                                                       addressof(tox_err_friend_query))
+        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
+            return bool(result)
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
+            raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
+                                ' the `_self_` variants of these functions, which have no effect when a parameter is'
+                                ' NULL, these functions return an error in that case.')
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND']:
+            raise ArgumentError('The friend_number did not designate a valid friend.')
+
+    def callback_friend_typing(self, callback, user_data):
+        tox_friend_typing_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_bool, c_void_p)
+        c_callback = tox_friend_typing_cb(callback)
+        self.libtoxcore.tox_callback_friend_typing(self._tox_pointer, c_callback, c_void_p(user_data))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Sending private messages
