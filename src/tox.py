@@ -269,7 +269,48 @@ class Tox(object):
         elif tox_err_friend_delete == TOX_ERR_FRIEND_DELETE['TOX_ERR_FRIEND_DELETE_FRIEND_NOT_FOUND']:
             raise ArgumentError('There was no friend with the given friend number. No friends were deleted.')
 
-    # TODO Friend list queries
+    def friend_by_public_key(self, public_key):
+        tox_err_friend_by_public_key = c_int()
+        result = self.libtoxcore.tox_friend_by_public_key(self._tox_pointer, c_char_p(public_key),
+                                                          addressof(tox_err_friend_by_public_key))
+        if tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['TOX_ERR_FRIEND_BY_PUBLIC_KEY_OK']:
+            return int(result.value)
+        elif tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['TOX_ERR_FRIEND_BY_PUBLIC_KEY_NULL']:
+            raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
+        elif tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['TOX_ERR_FRIEND_BY_PUBLIC_KEY_NOT_FOUND']:
+            raise ArgumentError('No friend with the given Public Key exists on the friend list.')
+
+    def friend_exists(self, friend_number):
+        return bool(self.libtoxcore.tox_friend_by_public_key(self._tox_pointer, c_uint32(friend_number)))
+
+    def self_get_friend_list_size(self):
+        return int(self.libtoxcore.tox_self_get_friend_list_size(self._tox_pointer).value)
+
+    def self_get_friend_list(self, friend_list=None):
+        if friend_list is None:
+            friend_list = create_string_buffer(sizeof(c_uint32) * self.self_get_friend_list_size())
+            friend_list = POINTER(c_uint32)(friend_list)
+        self.libtoxcore.tox_self_get_friend_list(self._tox_pointer, friend_list)
+        return friend_list
+
+    def friend_get_public_key(self, friend_number, public_key):
+        tox_err_friend_get_public_key = c_int()
+        result = self.libtoxcore.tox_friend_get_public_key(self._tox_pointer, c_uint32(friend_number),
+                                                           c_char_p(public_key),
+                                                           addressof(tox_err_friend_get_public_key))
+        if tox_err_friend_get_public_key == TOX_ERR_FRIEND_GET_PUBLIC_KEY['TOX_ERR_FRIEND_GET_PUBLIC_KEY_OK']:
+            return bool(result)
+        elif tox_err_friend_get_public_key == TOX_ERR_FRIEND_GET_PUBLIC_KEY['TOX_ERR_FRIEND_GET_PUBLIC_KEY_FRIEND_NOT_FOUND']:
+            raise ArgumentError('No friend with the given number exists on the friend list.')
+
+    def friend_get_last_online(self, friend_number):
+        tox_err_last_online = c_int()
+        result = self.libtoxcore.tox_friend_get_last_online(self._tox_pointer, c_uint32(friend_number),
+                                                            addressof(tox_err_last_online))
+        if tox_err_last_online == TOX_ERR_FRIEND_GET_LAST_ONLINE['TOX_ERR_FRIEND_GET_LAST_ONLINE_OK']:
+            return int(result.value)
+        elif tox_err_last_online == TOX_ERR_FRIEND_GET_LAST_ONLINE['TOX_ERR_FRIEND_GET_LAST_ONLINE_FRIEND_NOT_FOUND']:
+            raise ArgumentError('No friend with the given number exists on the friend list.')
 
     # TODO Friend-specific state queries
 
@@ -338,4 +379,7 @@ class Tox(object):
 
 
 if __name__ == '__main__':
-    pass
+    c = c_uint64(24)
+    c = int(c.value)
+    print type(c)
+    print(c)
