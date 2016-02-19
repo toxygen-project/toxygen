@@ -6,37 +6,44 @@ import os
 
 
 class LoginScreen(QtGui.QWidget):
-    def setupUi(self, Form):
-        Form.setObjectName("Form")
-        Form.resize(400, 200)
-        Form.setMinimumSize(QtCore.QSize(400, 200))
-        Form.setMaximumSize(QtCore.QSize(400, 200))
-        Form.setBaseSize(QtCore.QSize(400, 200))
-        self.new_profile = QtGui.QPushButton(Form)
+
+    def __init__(self):
+        super(LoginScreen, self).__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setObjectName("login")
+        self.resize(400, 200)
+        self.setMinimumSize(QtCore.QSize(400, 200))
+        self.setMaximumSize(QtCore.QSize(400, 200))
+        self.setBaseSize(QtCore.QSize(400, 200))
+        self.new_profile = QtGui.QPushButton(self)
         self.new_profile.setGeometry(QtCore.QRect(20, 150, 171, 27))
         self.new_profile.setObjectName("new_profile")
-        self.label = QtGui.QLabel(Form)
+        self.new_profile.clicked.connect(self.create_profile)
+        self.label = QtGui.QLabel(self)
         self.label.setGeometry(QtCore.QRect(20, 70, 101, 17))
         self.label.setObjectName("label")
-        self.new_name = QtGui.QPlainTextEdit(Form)
+        self.new_name = QtGui.QPlainTextEdit(self)
         self.new_name.setGeometry(QtCore.QRect(20, 100, 171, 31))
         self.new_name.setObjectName("new_name")
-        self.load_profile = QtGui.QPushButton(Form)
+        self.load_profile = QtGui.QPushButton(self)
         self.load_profile.setGeometry(QtCore.QRect(220, 150, 161, 27))
         self.load_profile.setObjectName("load_profile")
-        self.default = QtGui.QCheckBox(Form)
+        self.load_profile.clicked.connect(self.load_ex_profile)
+        self.default = QtGui.QCheckBox(self)
         self.default.setGeometry(QtCore.QRect(220, 110, 131, 22))
         self.default.setObjectName("default")
-        self.groupBox = QtGui.QGroupBox(Form)
+        self.groupBox = QtGui.QGroupBox(self)
         self.groupBox.setGeometry(QtCore.QRect(210, 40, 181, 151))
         self.groupBox.setObjectName("groupBox")
         self.comboBox = QtGui.QComboBox(self.groupBox)
         self.comboBox.setGeometry(QtCore.QRect(10, 30, 161, 27))
         self.comboBox.setObjectName("comboBox")
-        self.groupBox_2 = QtGui.QGroupBox(Form)
+        self.groupBox_2 = QtGui.QGroupBox(self)
         self.groupBox_2.setGeometry(QtCore.QRect(10, 40, 191, 151))
         self.groupBox_2.setObjectName("groupBox_2")
-        self.toxygen = QtGui.QLabel(Form)
+        self.toxygen = QtGui.QLabel(self)
         self.groupBox.raise_()
         self.groupBox_2.raise_()
         self.comboBox.raise_()
@@ -50,25 +57,56 @@ class LoginScreen(QtGui.QWidget):
         font.setPointSize(16)
         self.toxygen.setFont(font)
         self.toxygen.setObjectName("toxygen")
+        self.type = 0
+        self.number = -1
+        self.load_as_default = False
+        self.name = None
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
+        self.center()
 
-        self.retranslateUi(Form)
-        QtCore.QMetaObject.connectSlotsByName(Form)
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
-    def retranslateUi(self, Form):
-        Form.setWindowTitle(QtGui.QApplication.translate("Form", "Log in", None, QtGui.QApplication.UnicodeUTF8))
-        self.new_profile.setText(QtGui.QApplication.translate("Form", "Create", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("Form", "Profile name:", None, QtGui.QApplication.UnicodeUTF8))
-        self.load_profile.setText(QtGui.QApplication.translate("Form", "Load profile", None, QtGui.QApplication.UnicodeUTF8))
-        self.default.setText(QtGui.QApplication.translate("Form", "Use as default", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox.setTitle(QtGui.QApplication.translate("Form", "Load existing profile", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_2.setTitle(QtGui.QApplication.translate("Form", "Create new profile", None, QtGui.QApplication.UnicodeUTF8))
-        self.toxygen.setText(QtGui.QApplication.translate("Form", "toxygen", None, QtGui.QApplication.UnicodeUTF8))
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("login", "Log in", None, QtGui.QApplication.UnicodeUTF8))
+        self.new_profile.setText(QtGui.QApplication.translate("login", "Create", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("login", "Profile name:", None, QtGui.QApplication.UnicodeUTF8))
+        self.load_profile.setText(QtGui.QApplication.translate("login", "Load profile", None, QtGui.QApplication.UnicodeUTF8))
+        self.default.setText(QtGui.QApplication.translate("login", "Use as default", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox.setTitle(QtGui.QApplication.translate("login", "Load existing profile", None, QtGui.QApplication.UnicodeUTF8))
+        self.groupBox_2.setTitle(QtGui.QApplication.translate("login", "Create new profile", None, QtGui.QApplication.UnicodeUTF8))
+        self.toxygen.setText(QtGui.QApplication.translate("login", "toxygen", None, QtGui.QApplication.UnicodeUTF8))
+
+    def create_profile(self):
+        self.type = 1
+        self.name = self.new_name.toPlainText()
+        self.close()
+
+    def load_ex_profile(self):
+        if not self.create_only:
+            self.type = 2
+            self.number = self.comboBox.currentIndex()
+            self.load_as_default = self.default.isChecked()
+            self.close()
 
     def update_select(self, data):
         list_of_profiles = []
         for elem in data:
             list_of_profiles.append(self.tr(elem))
         self.comboBox.addItems(list_of_profiles)
+        self.create_only = not list_of_profiles
+
+    def update_on_close(self, func):
+        self.onclose = func
+
+    def closeEvent(self, event):
+        self.onclose(self.type, self.number, self.load_as_default, self.name)
+        event.accept()
+
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
