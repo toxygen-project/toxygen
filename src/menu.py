@@ -172,6 +172,109 @@ class NetworkSettings(QtGui.QWidget):
         self.label_2.setText(QtGui.QApplication.translate("Form", "Port:", None, QtGui.QApplication.UnicodeUTF8))
 
 
+class PrivacySettings(QtGui.QWidget):
+    """Privacy settings form: history, typing notifications"""
+
+    def __init__(self):
+        super(PrivacySettings, self).__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setObjectName("privacySettings")
+        self.resize(350, 200)
+        self.setMinimumSize(QtCore.QSize(350, 200))
+        self.setMaximumSize(QtCore.QSize(350, 200))
+        self.setBaseSize(QtCore.QSize(350, 200))
+        self.saveHistory = QtGui.QCheckBox(self)
+        self.saveHistory.setGeometry(QtCore.QRect(40, 20, 291, 22))
+        self.saveHistory.setObjectName("saveHistory")
+        self.fileautoaccept = QtGui.QCheckBox(self)
+        self.fileautoaccept.setGeometry(QtCore.QRect(40, 60, 271, 22))
+        self.fileautoaccept.setObjectName("fileautoaccept")
+        self.typingNotifications = QtGui.QCheckBox(self)
+        self.typingNotifications.setGeometry(QtCore.QRect(40, 90, 350, 31))
+        self.typingNotifications.setBaseSize(QtCore.QSize(350, 200))
+        self.typingNotifications.setObjectName("typingNotifications")
+
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("privacySettings", "Privacy settings", None, QtGui.QApplication.UnicodeUTF8))
+        self.saveHistory.setText(QtGui.QApplication.translate("privacySettings", "Save chat history", None, QtGui.QApplication.UnicodeUTF8))
+        self.fileautoaccept.setText(QtGui.QApplication.translate("privacySettings", "Allow file autoaccept", None, QtGui.QApplication.UnicodeUTF8))
+        self.typingNotifications.setText(QtGui.QApplication.translate("privacySettings", "Send typing notifications", None, QtGui.QApplication.UnicodeUTF8))
+
+
+class NotificationsSettings(QtGui.QWidget):
+    """Notifications settings form"""
+
+    def __init__(self):
+        super(NotificationsSettings, self).__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setObjectName("notificationsForm")
+        self.resize(300, 200)
+        self.setMinimumSize(QtCore.QSize(300, 200))
+        self.setMaximumSize(QtCore.QSize(300, 200))
+        self.setBaseSize(QtCore.QSize(300, 200))
+        self.enableNotifications = QtGui.QCheckBox(self)
+        self.enableNotifications.setGeometry(QtCore.QRect(30, 20, 241, 22))
+        self.enableNotifications.setObjectName("enableNotifications")
+        self.checkBox_2 = QtGui.QCheckBox(self)
+        self.checkBox_2.setGeometry(QtCore.QRect(30, 100, 231, 22))
+        self.checkBox_2.setObjectName("checkBox_2")
+        self.checkBox_3 = QtGui.QCheckBox(self)
+        self.checkBox_3.setGeometry(QtCore.QRect(30, 60, 231, 22))
+        self.checkBox_3.setObjectName("checkBox_3")
+
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("notificationsForm", "Notification settings", None, QtGui.QApplication.UnicodeUTF8))
+        self.enableNotifications.setText(QtGui.QApplication.translate("notificationsForm", "Enable notifications", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_2.setText(QtGui.QApplication.translate("notificationsForm", "Enable call\'s sound", None, QtGui.QApplication.UnicodeUTF8))
+        self.checkBox_3.setText(QtGui.QApplication.translate("notificationsForm", "Enable sound notifications", None, QtGui.QApplication.UnicodeUTF8))
+
+
+class InterfaceSettings(QtGui.QWidget):
+    """Interface settings form"""
+
+    def __init__(self):
+        super(InterfaceSettings, self).__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setObjectName("interfaceForm")
+        self.resize(300, 300)
+        self.setMinimumSize(QtCore.QSize(300, 300))
+        self.setMaximumSize(QtCore.QSize(300, 300))
+        self.setBaseSize(QtCore.QSize(300, 300))
+        self.label = QtGui.QLabel(self)
+        self.label.setGeometry(QtCore.QRect(30, 20, 91, 21))
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        font.setWeight(75)
+        font.setBold(True)
+        self.label.setFont(font)
+        self.label.setObjectName("label")
+        self.themeSelect = QtGui.QComboBox(self)
+        self.themeSelect.setGeometry(QtCore.QRect(30, 60, 161, 31))
+        font = QtGui.QFont()
+        font.setPointSize(17)
+        self.themeSelect.setFont(font)
+        self.themeSelect.setObjectName("themeSelect")
+
+        self.retranslateUi()
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("interfaceForm", "Interface settings", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate("interfaceForm", "Theme:", None, QtGui.QApplication.UnicodeUTF8))
+
+
 if __name__ == "__main__":
     import sys
     app = QtGui.QApplication(sys.argv)

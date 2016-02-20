@@ -35,13 +35,17 @@ def status(a, b, c):
     print str(b)
 
 
-def friend_status(*args):
-    print 'Friend connected! Friend number: ' + str(args[1])
+def friend_status(a, b, c, d, e):
+    print 'Friend connected! Friend number: ' + str(c)
+
+
+def message(a, b, c, d, e, f):
+    print 'Message: ', str(d)
 
 
 def main():
     """
-    main function of app. loads loginscreen if needed and starts mainscreen
+        main function of app. loads loginscreen if needed and starts mainscreen
     """
     app = QtGui.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon('images/icon.png'))
@@ -80,9 +84,11 @@ def main():
     # bootstrap
     for data in node_generator():
         tox.bootstrap(*data)
-    # TODO: set callbacks
+    # TODO: set all callbacks
+    tox.callback_friend_message(message, 0)
     tox.callback_self_connection_status(status, 0)
-    tox.callback_friend_connection_status(friend_status, 0)
+    #tox.callback_friend_connection_status(friend_status, 0)
+
     # starting thread for tox iterate
     mainloop = ToxIterateThread(tox)
     mainloop.start()
