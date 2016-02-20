@@ -34,7 +34,7 @@ class LibToxCore(object):
         
     def __getattr__(self, item):
         return self._libtoxcore.__getattr__(item)
-        
+
 
 class Tox(object):
     libtoxcore = LibToxCore()
@@ -108,7 +108,7 @@ class Tox(object):
 
         Objects returned from this function must be freed using the tox_options_free function.
 
-        :return: A pointer to new ToxOptions object with default options or NULL on failure.
+        :return: A pointer to new ToxOptions object with default options or raise MemoryError.
         """
         tox_err_options_new = c_int()
         Tox.libtoxcore.tox_options_new.restype = POINTER(ToxOptions)
@@ -1001,6 +1001,21 @@ class Tox(object):
 
     def __del__(self):
         Tox.libtoxcore.tox_kill(self._tox_pointer)
+
+
+def tox_factory(data, settings):
+    tox_options = Tox.options_new()
+    tox_options.contents.udp_enabled = settings['udp_enabled']
+    tox_options.contents.proxy_type = settings['proxy_type']
+    tox_options.contents.proxy_host = settings['proxy_host']
+    tox_options.contents.proxy_port = settings['proxy_port']
+    tox_options.contents.start_port = settings['start_port']
+    tox_options.contents.end_port = settings['end_port']
+    tox_options.contents.tcp_port = settings['tcp_port']
+    tox_options.contents.savedata_type = TOX_SAVEDATA_TYPE['TOX_SAVEDATA_TYPE_TOX_SAVE']
+    tox_options.contents.savedata_data = c_char_p(data)
+    tox_options.contents.savedata_length = len(data)
+    return Tox(tox_options)
 
 
 if __name__ == '__main__':

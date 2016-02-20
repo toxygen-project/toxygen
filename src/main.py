@@ -4,7 +4,7 @@ from mainscreen import MainWindow
 from profile import Profile
 import sys
 from PySide import QtCore, QtGui
-from tox import Tox
+from tox import Tox, tox_factory
 from bootstrap import node_generator
 
 
@@ -76,7 +76,7 @@ def main():
     data = Profile.open_profile(path, name)
     ms = MainWindow()
     # creating tox instance
-    tox = Tox(data, settings)
+    tox = tox_factory(data, settings)
     # bootstrap
     for data in node_generator():
         tox.bootstrap(*data)
