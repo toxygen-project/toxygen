@@ -21,73 +21,114 @@ class ToxOptions(Structure):
     ]
 
 
-class Tox(object):
-    def __init__(self, *args):
-        # load toxcore
+class LibToxCore(object):
+    def __init__(self):
         if system() == 'Linux':
             temp = os.path.dirname(os.path.abspath(__file__)) + '/libs/'
             os.chdir(temp)
-            self.libtoxcore = CDLL(temp + 'libtoxcore.so')
+            self._libtoxcore = CDLL(temp + 'libtoxcore.so')
         elif system() == 'Windows':
-            self.libtoxcore = CDLL('libs/libtox.dll')
+            self._libtoxcore = CDLL('libs/libtox.dll')
         else:
             raise OSError('Unknown system.')
+        
+    def __getattr__(self, item):
+        return self._libtoxcore.__getattr__(item)
+        
 
-        if len(args) == 2:
-            # creating tox options struct
-            tox_err_options = c_int()
-            self.libtoxcore.tox_options_new.restype = POINTER(ToxOptions)
-            self.tox_options = self.libtoxcore.tox_options_new(addressof(tox_err_options))
-            if tox_err_options == TOX_ERR_OPTIONS_NEW['TOX_ERR_OPTIONS_NEW_MALLOC']:
-                raise MemoryError('The function failed to allocate enough memory for the options struct.')
+class Tox(object):
+    libtoxcore = LibToxCore()
+    
+    def __init__(self, tox_options=None, tox_pointer=None):
+        """
+        Creates and initialises a new Tox instance with the options passed.
 
-            # filling tox options struct
-            savedata = args[0]
-            settings = args[1]
-            self.tox_options.contents.ipv6_enabled = settings['ipv6_enabled']
-            self.tox_options.contents.udp_enabled = settings['udp_enabled']
-            self.tox_options.contents.proxy_type = settings['proxy_type']
-            self.tox_options.contents.proxy_host = settings['proxy_host']
-            self.tox_options.contents.proxy_port = settings['proxy_port']
-            self.tox_options.contents.start_port = settings['start_port']
-            self.tox_options.contents.end_port = settings['end_port']
-            self.tox_options.contents.tcp_port = settings['tcp_port']
-            self.tox_options.contents.savedata_type = TOX_SAVEDATA_TYPE['TOX_SAVEDATA_TYPE_TOX_SAVE']
-            self.tox_options.contents.savedata_data = c_char_p(savedata)
-            self.tox_options.contents.savedata_length = len(savedata)
+        This function will bring the instance into a valid state. Running the event loop with a new instance will
+        operate correctly.
 
-            # creating tox object
-            tox_err = c_int()
-            self.libtoxcore.tox_new.restype = POINTER(c_void_p)
-            self._tox_pointer = self.libtoxcore.tox_new(self.tox_options, addressof(tox_err))
-            if tox_err == TOX_ERR_NEW['TOX_ERR_NEW_NULL']:
+        :param tox_options: An options object. If this parameter is None, the default options are used.
+        :param tox_pointer: Tox instance pointer (c_void_p). If this parameter is not None, tox_options will be ignored.
+        """
+        if tox_pointer is not None:
+            self._tox_pointer = tox_pointer
+        else:
+            tox_err_new = c_int()
+            Tox.libtoxcore.tox_new.restype = POINTER(c_void_p)
+            self._tox_pointer = Tox.libtoxcore.tox_new(tox_options, addressof(tox_err_new))
+            tox_err_new = tox_err_new.value
+            if tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_NULL']:
                 raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
-            elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_MALLOC']:
+            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_MALLOC']:
                 raise MemoryError('The function was unable to allocate enough '
                                   'memory to store the internal structures for the Tox object.')
-            elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_PORT_ALLOC']:
+            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_PORT_ALLOC']:
                 raise MemoryError('The function was unable to bind to a port. This may mean that all ports have already'
                                   ' been bound, e.g. by other Tox instances, or it may mean a permission error. You may'
                                   ' be able to gather more information from errno.')
-            elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_BAD_TYPE']:
+            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_BAD_TYPE']:
                 raise ArgumentError('proxy_type was invalid.')
-            elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_BAD_HOST']:
+            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_BAD_HOST']:
                 raise ArgumentError('proxy_type was valid but the proxy_host passed had an invalid format or was NULL.')
-            elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_BAD_PORT']:
+            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_BAD_PORT']:
                 raise ArgumentError('proxy_type was valid, but the proxy_port was invalid.')
-            elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_NOT_FOUND']:
+            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_NOT_FOUND']:
                 raise ArgumentError('The proxy address passed could not be resolved.')
-            elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_LOAD_ENCRYPTED']:
+            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_LOAD_ENCRYPTED']:
                 raise ArgumentError('The byte array to be loaded contained an encrypted save.')
-            elif tox_err == TOX_ERR_NEW['TOX_ERR_NEW_LOAD_BAD_FORMAT']:
+            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_LOAD_BAD_FORMAT']:
                 raise ArgumentError('The data format was invalid. This can happen when loading data that was saved by'
                                     ' an older version of Tox, or when the data has been corrupted. When loading from'
                                     ' badly formatted data, some data may have been loaded, and the rest is discarded.'
                                     ' Passing an invalid length parameter also causes this error.')
-        elif len(args) == 1:
-            self._tox_pointer = args[0]
-        else:
-            raise ArgumentError('1 or 2 arguments expected')
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Startup options
+    # -----------------------------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def options_default(tox_options):
+        """
+        Initialises a Tox_Options object with the default options.
+
+        The result of this function is independent of the original options. All values will be overwritten, no values
+        will be read (so it is permissible to pass an uninitialised object).
+
+        If options is NULL, this function has no effect.
+
+        :param tox_options: A POINTER(ToxOptions) to options object to be filled with default options.
+        """
+        Tox.libtoxcore.tox_options_default(tox_options)
+
+    @staticmethod
+    def options_new():
+        """
+        Allocates a new Tox_Options object and initialises it with the default options. This function can be used to
+        preserve long term ABI compatibility by giving the responsibility of allocation and deallocation to the Tox
+        library.
+
+        Objects returned from this function must be freed using the tox_options_free function.
+
+        :return: A POINTER(ToxOptions) to new ToxOptions object with default options or NULL on failure.
+        """
+        tox_err_options_new = c_int()
+        Tox.libtoxcore.tox_options_new.restype = POINTER(ToxOptions)
+        result = Tox.libtoxcore.tox_options_new(addressof(tox_err_options_new))
+        tox_err_options_new = tox_err_options_new.value
+        if tox_err_options_new == TOX_ERR_OPTIONS_NEW['TOX_ERR_OPTIONS_NEW_OK']:
+            return result
+        elif tox_err_options_new == TOX_ERR_OPTIONS_NEW['TOX_ERR_OPTIONS_NEW_MALLOC']:
+            raise MemoryError('The function failed to allocate enough memory for the options struct.')
+
+    @staticmethod
+    def options_free(tox_options):
+        """
+        Releases all resources associated with an options objects.
+
+        Passing a pointer that was not returned by tox_options_new results in undefined behaviour.
+
+        :param tox_options: A POINTER(ToxOptions) to new ToxOptions object
+        """
+        Tox.libtoxcore.tox_options_free(tox_options)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Creation and destruction
@@ -100,7 +141,7 @@ class Tox(object):
 
         :return: number of bytes
         """
-        return self.libtoxcore.tox_get_savedata_size(self._tox_pointer)
+        return Tox.libtoxcore.tox_get_savedata_size(self._tox_pointer)
 
     def get_savedata(self, savedata=None):
         """
@@ -114,7 +155,7 @@ class Tox(object):
         if savedata is None:
             savedata_size = self.get_savedata_size()
             savedata = create_string_buffer(savedata_size)
-        self.libtoxcore.tox_get_savedata(self._tox_pointer, savedata)
+        Tox.libtoxcore.tox_get_savedata(self._tox_pointer, savedata)
         return savedata
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -134,8 +175,9 @@ class Tox(object):
         :return: True on success.
         """
         tox_err_bootstrap = c_int()
-        result = self.libtoxcore.tox_bootstrap(self._tox_pointer, c_char_p(address), c_uint16(port),
-                                               c_char_p(public_key), addressof(tox_err_bootstrap))
+        result = Tox.libtoxcore.tox_bootstrap(self._tox_pointer, c_char_p(address), c_uint16(port),
+                                              c_char_p(public_key), addressof(tox_err_bootstrap))
+        tox_err_bootstrap = tox_err_bootstrap.value
         if tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_OK']:
             return bool(result)
         elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_NULL']:
@@ -159,8 +201,9 @@ class Tox(object):
         :return: True on success.
         """
         tox_err_bootstrap = c_int()
-        result = self.libtoxcore.tox_add_tcp_relay(self._tox_pointer, c_char_p(address), c_uint16(port),
-                                                   c_char_p(public_key), addressof(tox_err_bootstrap))
+        result = Tox.libtoxcore.tox_add_tcp_relay(self._tox_pointer, c_char_p(address), c_uint16(port),
+                                                  c_char_p(public_key), addressof(tox_err_bootstrap))
+        tox_err_bootstrap = tox_err_bootstrap.value
         if tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_OK']:
             return bool(result)
         elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_NULL']:
@@ -178,7 +221,7 @@ class Tox(object):
 
         :return: TOX_CONNECTION
         """
-        return self.libtoxcore.tox_self_get_connection_status(self._tox_pointer)
+        return Tox.libtoxcore.tox_self_get_connection_status(self._tox_pointer)
 
     def callback_self_connection_status(self, callback, user_data):
         """
@@ -195,20 +238,20 @@ class Tox(object):
         """
         tox_self_connection_status_cb = CFUNCTYPE(None, c_void_p, c_int, c_void_p)
         c_callback = tox_self_connection_status_cb(callback)
-        self.libtoxcore.tox_callback_self_connection_status(self._tox_pointer, c_callback, user_data)
+        Tox.libtoxcore.tox_callback_self_connection_status(self._tox_pointer, c_callback, user_data)
 
     def iteration_interval(self):
         """
         Return the time in milliseconds before tox_iterate() should be called again for optimal performance.
         :return: time in milliseconds
         """
-        return self.libtoxcore.tox_iteration_interval(self._tox_pointer)
+        return Tox.libtoxcore.tox_iteration_interval(self._tox_pointer)
 
     def iterate(self):
         """
         The main loop that needs to be run in intervals of tox_iteration_interval() milliseconds.
         """
-        self.libtoxcore.tox_iterate(self._tox_pointer)
+        Tox.libtoxcore.tox_iterate(self._tox_pointer)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Internal client information (Tox address/id)
@@ -225,7 +268,7 @@ class Tox(object):
         """
         if address is None:
             address = create_string_buffer(TOX_ADDRESS_SIZE)
-        self.libtoxcore.tox_self_get_address(self._tox_pointer, address)
+        Tox.libtoxcore.tox_self_get_address(self._tox_pointer, address)
         return address
 
     def self_set_nospam(self, nospam):
@@ -234,7 +277,7 @@ class Tox(object):
 
         :param nospam: Any 32 bit unsigned integer.
         """
-        self.libtoxcore.tox_self_set_nospam(self._tox_pointer, c_uint32(nospam))
+        Tox.libtoxcore.tox_self_set_nospam(self._tox_pointer, c_uint32(nospam))
 
     def self_get_nospam(self):
         """
@@ -242,7 +285,7 @@ class Tox(object):
 
         :return: nospam part of the address
         """
-        return self.libtoxcore.tox_self_get_nospam(self._tox_pointer)
+        return Tox.libtoxcore.tox_self_get_nospam(self._tox_pointer)
 
     def self_get_public_key(self, public_key=None):
         """
@@ -254,7 +297,7 @@ class Tox(object):
         """
         if public_key is None:
             public_key = create_string_buffer(TOX_PUBLIC_KEY_SIZE)
-        self.libtoxcore.tox_self_get_address(self._tox_pointer, public_key)
+        Tox.libtoxcore.tox_self_get_address(self._tox_pointer, public_key)
         return public_key
 
     def self_get_secret_key(self, secret_key=None):
@@ -267,7 +310,7 @@ class Tox(object):
         """
         if secret_key is None:
             secret_key = create_string_buffer(TOX_PUBLIC_KEY_SIZE)
-        self.libtoxcore.tox_self_get_secret_key(self._tox_pointer, secret_key)
+        Tox.libtoxcore.tox_self_get_secret_key(self._tox_pointer, secret_key)
         return secret_key
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -284,8 +327,9 @@ class Tox(object):
         :return: True on success.
         """
         tox_err_set_info = c_int()
-        result = self.libtoxcore.tox_self_set_name(self._tox_pointer, c_char_p(name),
-                                                   c_size_t(len(name)), addressof(tox_err_set_info))
+        result = Tox.libtoxcore.tox_self_set_name(self._tox_pointer, c_char_p(name),
+                                                  c_size_t(len(name)), addressof(tox_err_set_info))
+        tox_err_set_info = tox_err_set_info.value
         if tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_OK']:
             return bool(result)
         elif tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_NULL']:
@@ -301,7 +345,7 @@ class Tox(object):
 
         :return: length of the current nickname
         """
-        return self.libtoxcore.tox_self_get_name_size(self._tox_pointer)
+        return Tox.libtoxcore.tox_self_get_name_size(self._tox_pointer)
 
     def self_get_name(self, name=None):
         """
@@ -317,7 +361,7 @@ class Tox(object):
         """
         if name is None:
             name = create_string_buffer(self.self_get_name_size())
-        self.libtoxcore.tox_self_get_name(self._tox_pointer, name)
+        Tox.libtoxcore.tox_self_get_name(self._tox_pointer, name)
         return name
 
     def self_set_status_message(self, status_message):
@@ -331,8 +375,9 @@ class Tox(object):
         :return: True on success.
         """
         tox_err_set_info = c_int()
-        result = self.libtoxcore.tox_self_set_status_message(self._tox_pointer, c_char_p(status_message),
-                                                             c_size_t(len(status_message)), addressof(tox_err_set_info))
+        result = Tox.libtoxcore.tox_self_set_status_message(self._tox_pointer, c_char_p(status_message),
+                                                            c_size_t(len(status_message)), addressof(tox_err_set_info))
+        tox_err_set_info = tox_err_set_info.value
         if tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_OK']:
             return bool(result)
         elif tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_NULL']:
@@ -348,7 +393,7 @@ class Tox(object):
 
         :return: length of the current status message
         """
-        return self.libtoxcore.tox_self_get_status_message_size(self._tox_pointer)
+        return Tox.libtoxcore.tox_self_get_status_message_size(self._tox_pointer)
 
     def self_get_status_message(self, status_message=None):
         """
@@ -364,7 +409,7 @@ class Tox(object):
         """
         if status_message is None:
             status_message = create_string_buffer(self.self_get_status_message_size())
-        self.libtoxcore.tox_self_get_status_message(self._tox_pointer, status_message)
+        Tox.libtoxcore.tox_self_get_status_message(self._tox_pointer, status_message)
         return status_message
 
     def self_set_status(self, status):
@@ -373,7 +418,7 @@ class Tox(object):
 
         :param status: One of the user statuses listed in the enumeration TOX_USER_STATUS.
         """
-        self.libtoxcore.tox_self_set_status(self._tox_pointer, c_int(status))
+        Tox.libtoxcore.tox_self_set_status(self._tox_pointer, c_int(status))
 
     def self_get_status(self):
         """
@@ -381,7 +426,7 @@ class Tox(object):
 
         :return: client's user status
         """
-        return self.libtoxcore.tox_self_get_status(self._tox_pointer)
+        return Tox.libtoxcore.tox_self_get_status(self._tox_pointer)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Friend list management
@@ -406,8 +451,9 @@ class Tox(object):
         :return: the friend number on success, UINT32_MAX on failure.
         """
         tox_err_friend_add = c_int()
-        result = self.libtoxcore.tox_friend_add(self._tox_pointer, c_char_p(address), c_char_p(message),
-                                                c_size_t(len(message)), addressof(tox_err_friend_add))
+        result = Tox.libtoxcore.tox_friend_add(self._tox_pointer, c_char_p(address), c_char_p(message),
+                                               c_size_t(len(message)), addressof(tox_err_friend_add))
+        tox_err_friend_add = tox_err_friend_add.value
         if tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_OK']:
             return result
         elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_NULL']:
@@ -445,7 +491,8 @@ class Tox(object):
         :return: the friend number on success, UINT32_MAX on failure.
         """
         tox_err_friend_add = c_int()
-        result = self.libtoxcore.tox_friend_add(self._tox_pointer, c_char_p(public_key), addressof(tox_err_friend_add))
+        result = Tox.libtoxcore.tox_friend_add(self._tox_pointer, c_char_p(public_key), addressof(tox_err_friend_add))
+        tox_err_friend_add = tox_err_friend_add.value
         if tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_OK']:
             return result
         elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_NULL']:
@@ -478,8 +525,9 @@ class Tox(object):
         :return: True on success.
         """
         tox_err_friend_delete = c_int()
-        result = self.libtoxcore.tox_friend_delete(self._tox_pointer, c_uint32(friend_number),
-                                                   addressof(tox_err_friend_delete))
+        result = Tox.libtoxcore.tox_friend_delete(self._tox_pointer, c_uint32(friend_number),
+                                                  addressof(tox_err_friend_delete))
+        tox_err_friend_delete = tox_err_friend_delete.value
         if tox_err_friend_delete == TOX_ERR_FRIEND_DELETE['TOX_ERR_FRIEND_DELETE_OK']:
             return bool(result)
         elif tox_err_friend_delete == TOX_ERR_FRIEND_DELETE['TOX_ERR_FRIEND_DELETE_FRIEND_NOT_FOUND']:
@@ -497,8 +545,9 @@ class Tox(object):
         :return: friend number
         """
         tox_err_friend_by_public_key = c_int()
-        result = self.libtoxcore.tox_friend_by_public_key(self._tox_pointer, c_char_p(public_key),
-                                                          addressof(tox_err_friend_by_public_key))
+        result = Tox.libtoxcore.tox_friend_by_public_key(self._tox_pointer, c_char_p(public_key),
+                                                         addressof(tox_err_friend_by_public_key))
+        tox_err_friend_by_public_key = tox_err_friend_by_public_key.value
         if tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['TOX_ERR_FRIEND_BY_PUBLIC_KEY_OK']:
             return result
         elif tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['TOX_ERR_FRIEND_BY_PUBLIC_KEY_NULL']:
@@ -510,7 +559,7 @@ class Tox(object):
         """
         Checks if a friend with the given friend number exists and returns true if it does.
         """
-        return bool(self.libtoxcore.tox_friend_by_public_key(self._tox_pointer, c_uint32(friend_number)))
+        return bool(Tox.libtoxcore.tox_friend_by_public_key(self._tox_pointer, c_uint32(friend_number)))
 
     def self_get_friend_list_size(self):
         """
@@ -520,7 +569,7 @@ class Tox(object):
 
         :return: number of friends
         """
-        return self.libtoxcore.tox_self_get_friend_list_size(self._tox_pointer)
+        return Tox.libtoxcore.tox_self_get_friend_list_size(self._tox_pointer)
 
     def self_get_friend_list(self, friend_list=None):
         """
@@ -535,7 +584,7 @@ class Tox(object):
         if friend_list is None:
             friend_list = create_string_buffer(sizeof(c_uint32) * self.self_get_friend_list_size())
             friend_list = POINTER(c_uint32)(friend_list)
-        self.libtoxcore.tox_self_get_friend_list(self._tox_pointer, friend_list)
+        Tox.libtoxcore.tox_self_get_friend_list(self._tox_pointer, friend_list)
         return friend_list
 
     def friend_get_public_key(self, friend_number, public_key):
@@ -548,9 +597,10 @@ class Tox(object):
         :return: True on success.
         """
         tox_err_friend_get_public_key = c_int()
-        result = self.libtoxcore.tox_friend_get_public_key(self._tox_pointer, c_uint32(friend_number),
-                                                           c_char_p(public_key),
-                                                           addressof(tox_err_friend_get_public_key))
+        result = Tox.libtoxcore.tox_friend_get_public_key(self._tox_pointer, c_uint32(friend_number),
+                                                          c_char_p(public_key),
+                                                          addressof(tox_err_friend_get_public_key))
+        tox_err_friend_get_public_key = tox_err_friend_get_public_key.value
         if tox_err_friend_get_public_key == TOX_ERR_FRIEND_GET_PUBLIC_KEY['TOX_ERR_FRIEND_GET_PUBLIC_KEY_OK']:
             return bool(result)
         elif tox_err_friend_get_public_key == TOX_ERR_FRIEND_GET_PUBLIC_KEY['TOX_ERR_FRIEND_GET_PUBLIC_KEY_FRIEND_NOT_FOUND']:
@@ -565,8 +615,9 @@ class Tox(object):
         :return: unix-time timestamp
         """
         tox_err_last_online = c_int()
-        result = self.libtoxcore.tox_friend_get_last_online(self._tox_pointer, c_uint32(friend_number),
-                                                            addressof(tox_err_last_online))
+        result = Tox.libtoxcore.tox_friend_get_last_online(self._tox_pointer, c_uint32(friend_number),
+                                                           addressof(tox_err_last_online))
+        tox_err_last_online = tox_err_last_online.value
         if tox_err_last_online == TOX_ERR_FRIEND_GET_LAST_ONLINE['TOX_ERR_FRIEND_GET_LAST_ONLINE_OK']:
             return result
         elif tox_err_last_online == TOX_ERR_FRIEND_GET_LAST_ONLINE['TOX_ERR_FRIEND_GET_LAST_ONLINE_FRIEND_NOT_FOUND']:
@@ -583,8 +634,9 @@ class Tox(object):
         The return value is equal to the `length` argument received by the last `friend_name` callback.
         """
         tox_err_friend_query = c_int()
-        result = self.libtoxcore.tox_friend_get_name_size(self._tox_pointer, c_uint32(friend_number),
-                                                          addressof(tox_err_friend_query))
+        result = Tox.libtoxcore.tox_friend_get_name_size(self._tox_pointer, c_uint32(friend_number),
+                                                         addressof(tox_err_friend_query))
+        tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
             return result
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
@@ -606,8 +658,9 @@ class Tox(object):
         :return: True on success.
         """
         tox_err_friend_query = c_int()
-        result = self.libtoxcore.tox_friend_get_name(self._tox_pointer, c_uint32(friend_number), name,
-                                                     addressof(tox_err_friend_query))
+        result = Tox.libtoxcore.tox_friend_get_name(self._tox_pointer, c_uint32(friend_number), name,
+                                                    addressof(tox_err_friend_query))
+        tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
             return bool(result)
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
@@ -632,7 +685,7 @@ class Tox(object):
         """
         tox_friend_name_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_char_p, c_size_t, c_void_p)
         c_callback = tox_friend_name_cb(callback)
-        self.libtoxcore.tox_callback_friend_name(self._tox_pointer, c_callback, user_data)
+        Tox.libtoxcore.tox_callback_friend_name(self._tox_pointer, c_callback, user_data)
 
     def friend_get_status_message_size(self, friend_number):
         """
@@ -641,8 +694,9 @@ class Tox(object):
         :return: length of the friend's status message
         """
         tox_err_friend_query = c_int()
-        result = self.libtoxcore.tox_friend_get_status_message_size(self._tox_pointer, c_uint32(friend_number),
-                                                                    addressof(tox_err_friend_query))
+        result = Tox.libtoxcore.tox_friend_get_status_message_size(self._tox_pointer, c_uint32(friend_number),
+                                                                   addressof(tox_err_friend_query))
+        tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
             return result
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
@@ -666,8 +720,9 @@ class Tox(object):
         :return: True on success.
         """
         tox_err_friend_query = c_int()
-        result = self.libtoxcore.tox_friend_get_status_message(self._tox_pointer, c_uint32(friend_number),
-                                                               status_message, addressof(tox_err_friend_query))
+        result = Tox.libtoxcore.tox_friend_get_status_message(self._tox_pointer, c_uint32(friend_number),
+                                                              status_message, addressof(tox_err_friend_query))
+        tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
             return bool(result)
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
@@ -693,7 +748,7 @@ class Tox(object):
         """
         friend_status_message_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_char_p, c_size_t, c_void_p)
         c_callback = friend_status_message_cb(callback)
-        self.libtoxcore.tox_callback_friend_status_message(self._tox_pointer, c_callback, c_void_p(user_data))
+        Tox.libtoxcore.tox_callback_friend_status_message(self._tox_pointer, c_callback, c_void_p(user_data))
 
     def friend_get_status(self, friend_number):
         """
@@ -705,8 +760,9 @@ class Tox(object):
         :return: TOX_USER_STATUS
         """
         tox_err_friend_query = c_int()
-        result = self.libtoxcore.tox_friend_get_status(self._tox_pointer, c_uint32(friend_number),
-                                                       addressof(tox_err_friend_query))
+        result = Tox.libtoxcore.tox_friend_get_status(self._tox_pointer, c_uint32(friend_number),
+                                                      addressof(tox_err_friend_query))
+        tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
             return result
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
@@ -730,7 +786,7 @@ class Tox(object):
         """
         tox_friend_status_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_void_p)
         c_callback = tox_friend_status_cb(callback)
-        self.libtoxcore.tox_callback_friend_status(self._tox_pointer, c_callback, c_void_p(user_data))
+        Tox.libtoxcore.tox_callback_friend_status(self._tox_pointer, c_callback, c_void_p(user_data))
 
     def friend_get_connection_status(self, friend_number):
         """
@@ -743,8 +799,9 @@ class Tox(object):
         `friend_connection_status` event.
         """
         tox_err_friend_query = c_int()
-        result = self.libtoxcore.tox_friend_get_connection_status(self._tox_pointer, c_uint32(friend_number),
-                                                                  addressof(tox_err_friend_query))
+        result = Tox.libtoxcore.tox_friend_get_connection_status(self._tox_pointer, c_uint32(friend_number),
+                                                                 addressof(tox_err_friend_query))
+        tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
             return result
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
@@ -771,7 +828,7 @@ class Tox(object):
         """
         tox_friend_connection_status_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_void_p)
         c_callback = tox_friend_connection_status_cb(callback)
-        self.libtoxcore.tox_callback_friend_connection_status(self._tox_pointer, c_callback, c_void_p(user_data))
+        Tox.libtoxcore.tox_callback_friend_connection_status(self._tox_pointer, c_callback, c_void_p(user_data))
 
     def friend_get_typing(self, friend_number):
         """
@@ -781,8 +838,9 @@ class Tox(object):
         :return: true if the friend is typing.
         """
         tox_err_friend_query = c_int()
-        result = self.libtoxcore.tox_friend_get_typing(self._tox_pointer, c_uint32(friend_number),
-                                                       addressof(tox_err_friend_query))
+        result = Tox.libtoxcore.tox_friend_get_typing(self._tox_pointer, c_uint32(friend_number),
+                                                      addressof(tox_err_friend_query))
+        tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
             return bool(result)
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
@@ -806,7 +864,7 @@ class Tox(object):
         """
         tox_friend_typing_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_bool, c_void_p)
         c_callback = tox_friend_typing_cb(callback)
-        self.libtoxcore.tox_callback_friend_typing(self._tox_pointer, c_callback, c_void_p(user_data))
+        Tox.libtoxcore.tox_callback_friend_typing(self._tox_pointer, c_callback, c_void_p(user_data))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Sending private messages
@@ -823,8 +881,9 @@ class Tox(object):
         :return: True on success.
         """
         tox_err_set_typing = c_int()
-        result = self.libtoxcore.tox_friend_delete(self._tox_pointer, c_uint32(friend_number),
-                                                   c_bool(typing), addressof(tox_err_set_typing))
+        result = Tox.libtoxcore.tox_friend_delete(self._tox_pointer, c_uint32(friend_number),
+                                                  c_bool(typing), addressof(tox_err_set_typing))
+        tox_err_set_typing = tox_err_set_typing.value
         if tox_err_set_typing == TOX_ERR_SET_TYPING['TOX_ERR_SET_TYPING_OK']:
             return bool(result)
         elif tox_err_set_typing == TOX_ERR_SET_TYPING['TOX_ERR_SET_TYPING_FRIEND_NOT_FOUND']:
@@ -851,9 +910,10 @@ class Tox(object):
         :return: message ID
         """
         tox_err_friend_send_message = c_int()
-        result = self.libtoxcore.tox_friend_send_message(self._tox_pointer, c_uint32(friend_number),
-                                                         c_int(message_type), c_char_p(message), c_size_t(len(message)),
-                                                         addressof(tox_err_friend_send_message))
+        result = Tox.libtoxcore.tox_friend_send_message(self._tox_pointer, c_uint32(friend_number),
+                                                        c_int(message_type), c_char_p(message), c_size_t(len(message)),
+                                                        addressof(tox_err_friend_send_message))
+        tox_err_friend_send_message = tox_err_friend_send_message.value
         if tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_OK']:
             return result
         elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOX_ERR_FRIEND_SEND_MESSAGE_NULL']:
@@ -884,7 +944,7 @@ class Tox(object):
         """
         tox_friend_read_receipt_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_void_p)
         c_callback = tox_friend_read_receipt_cb(callback)
-        self.libtoxcore.tox_callback_friend_read_receipt(self._tox_pointer, c_callback, c_void_p(user_data))
+        Tox.libtoxcore.tox_callback_friend_read_receipt(self._tox_pointer, c_callback, c_void_p(user_data))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Receiving private messages and friend requests
@@ -905,7 +965,7 @@ class Tox(object):
         """
         tox_friend_request_cb = CFUNCTYPE(None, c_void_p, c_char_p, c_char_p, c_size_t, c_void_p)
         c_callback = tox_friend_request_cb(callback)
-        self.libtoxcore.tox_callback_friend_request(self._tox_pointer, c_callback, c_void_p(user_data))
+        Tox.libtoxcore.tox_callback_friend_request(self._tox_pointer, c_callback, c_void_p(user_data))
 
     def callback_friend_message(self, callback, user_data):
         """
@@ -923,7 +983,7 @@ class Tox(object):
         """
         tox_friend_message_cb = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_char_p, c_size_t, c_void_p)
         c_callback = tox_friend_message_cb(callback)
-        self.libtoxcore.tox_callback_friend_message(self._tox_pointer, c_callback, c_void_p(user_data))
+        Tox.libtoxcore.tox_callback_friend_message(self._tox_pointer, c_callback, c_void_p(user_data))
 
     # TODO File transmission: common between sending and receiving
 
@@ -940,13 +1000,11 @@ class Tox(object):
     # TODO Low-level network information
 
     def __del__(self):
-        if hasattr(self, 'tox_options'):
-            self.libtoxcore.tox_kill(self._tox_pointer)
-            self.libtoxcore.tox_options_free(self.tox_options)
+        Tox.libtoxcore.tox_kill(self._tox_pointer)
 
 
 if __name__ == '__main__':
-    c = c_uint64(24)
-    c = int(c.value)
-    print type(c)
-    print(c)
+    options = Tox.options_new()
+
+    print type(options)
+    print(options)
