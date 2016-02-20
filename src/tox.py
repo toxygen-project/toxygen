@@ -47,7 +47,7 @@ class Tox(object):
         operate correctly.
 
         :param tox_options: An options object. If this parameter is None, the default options are used.
-        :param tox_pointer: Tox instance pointer (c_void_p). If this parameter is not None, tox_options will be ignored.
+        :param tox_pointer: Tox instance pointer. If this parameter is not None, tox_options will be ignored.
         """
         if tox_pointer is not None:
             self._tox_pointer = tox_pointer
@@ -95,7 +95,7 @@ class Tox(object):
 
         If options is NULL, this function has no effect.
 
-        :param tox_options: A POINTER(ToxOptions) to options object to be filled with default options.
+        :param tox_options: A pointer to options object to be filled with default options.
         """
         Tox.libtoxcore.tox_options_default(tox_options)
 
@@ -108,7 +108,7 @@ class Tox(object):
 
         Objects returned from this function must be freed using the tox_options_free function.
 
-        :return: A POINTER(ToxOptions) to new ToxOptions object with default options or NULL on failure.
+        :return: A pointer to new ToxOptions object with default options or NULL on failure.
         """
         tox_err_options_new = c_int()
         Tox.libtoxcore.tox_options_new.restype = POINTER(ToxOptions)
@@ -126,7 +126,7 @@ class Tox(object):
 
         Passing a pointer that was not returned by tox_options_new results in undefined behaviour.
 
-        :param tox_options: A POINTER(ToxOptions) to new ToxOptions object
+        :param tox_options: A pointer to new ToxOptions object
         """
         Tox.libtoxcore.tox_options_free(tox_options)
 
