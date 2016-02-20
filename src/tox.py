@@ -111,8 +111,9 @@ class Tox(object):
         :return: A pointer to new ToxOptions object with default options or raise MemoryError.
         """
         tox_err_options_new = c_int()
-        Tox.libtoxcore.tox_options_new.restype = POINTER(ToxOptions)
-        result = Tox.libtoxcore.tox_options_new(addressof(tox_err_options_new))
+        f = Tox.libtoxcore.tox_options_new
+        f.restype = POINTER(ToxOptions)
+        result = f(addressof(tox_err_options_new))
         tox_err_options_new = tox_err_options_new.value
         if tox_err_options_new == TOX_ERR_OPTIONS_NEW['TOX_ERR_OPTIONS_NEW_OK']:
             return result
