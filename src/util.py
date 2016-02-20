@@ -1,4 +1,3 @@
-# TODO: add string to bin and bin to string (TOX ID) (and DHT connection?)
 
 
 def log(data):
@@ -13,4 +12,3 @@ def string_to_bin(tox_id):
 def bin_to_string(raw_id):
     res = ''.join('{:02x}'.format(ord(x)) for x in raw_id)
     return res.upper()
-

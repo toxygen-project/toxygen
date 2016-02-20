@@ -5,6 +5,7 @@ from profile import Profile
 import sys
 from PySide import QtCore, QtGui
 from tox import Tox
+from bootstrap import node_generator
 
 
 class login(object):
@@ -32,6 +33,10 @@ class login(object):
 def status(a, b, c):
     print 'WOW, it works!'
     print str(b)
+
+
+def friend_status(*args):
+    print 'Friend connected! Friend number: ' + str(args[1])
 
 
 def main():
@@ -72,8 +77,12 @@ def main():
     ms = MainWindow()
     # creating tox instance
     tox = Tox(data, settings)
+    # bootstrap
+    for data in node_generator():
+        tox.bootstrap(*data)
     # TODO: set callbacks
-    #tox.callback_self_connection_status(status, 0)
+    tox.callback_self_connection_status(status, 0)
+    tox.callback_friend_connection_status(friend_status, 0)
     # starting thread for tox iterate
     mainloop = ToxIterateThread(tox)
     mainloop.start()
