@@ -1,10 +1,10 @@
 from loginscreen import LoginScreen
 from settings import Settings
 from mainscreen import MainWindow
-from profile import Profile
+from profile import Profile, tox_factory
 import sys
 from PySide import QtCore, QtGui
-from tox import Tox, tox_factory
+from tox import Tox
 from bootstrap import node_generator
 
 
