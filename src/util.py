@@ -1,12 +1,15 @@
 
 
+program_version = '0.0.1 (alpha)'
+
+
 def log(data):
-    with open("logs.log", "a") as fl:
+    with open('logs.log', 'a') as fl:
         fl.write(str(data))
 
 
 def string_to_bin(tox_id):
-    return tox_id.decode("hex")
+    return tox_id.decode('hex')
 
 
 def bin_to_string(raw_id):

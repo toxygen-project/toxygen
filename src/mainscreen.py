@@ -44,6 +44,7 @@ class MainWindow(QtGui.QMainWindow):
         self.menuSettings.addAction(self.actionNotifications)
         self.menuSettings.addAction(self.actionNetwork)
         self.menuAbout.addAction(self.actionAbout_program)
+        self.actionAbout_program.triggered.connect(self.about_program)
         self.menubar.addAction(self.menuProfile.menuAction())
         self.menubar.addAction(self.menuSettings.menuAction())
         self.menubar.addAction(self.menuAbout.menuAction())
@@ -60,6 +61,13 @@ class MainWindow(QtGui.QMainWindow):
         self.actionAbout_program.setText(QtGui.QApplication.translate("MainWindow", "About program", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSettings.setText(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
+
+    def about_program(self):
+        import util
+        msgBox = QtGui.QMessageBox()
+        msgBox.setWindowTitle("About")
+        msgBox.setText("Toxygen is pythonic Tox client. Version: " + util.program_version)
+        msgBox.exec_()
 
     def setup_right_bottom(self, Form):
         Form.setObjectName("right_bottom")

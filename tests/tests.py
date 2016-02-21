@@ -1,7 +1,7 @@
 from src.settings import Settings
-from src.tox import Tox
 from src.util import bin_to_string, string_to_bin
 import sys
+from src.bootstrap import node_generator
 from src.profile import Profile
 import os
 
@@ -18,7 +18,7 @@ class TestSettings():
         os.remove(path)
         Settings()
         assert os.path.exists(path)
-        
+
 
 class TestProfile():
 
@@ -44,3 +44,14 @@ class TestUtils():
         data = string_to_bin(id)
         new_id = bin_to_string(data)
         assert id == new_id
+
+
+class TestNodeGen():
+
+    def test_generator(self):
+        for elem in node_generator():
+            assert len(elem) == 3
+
+    def test_ports(self):
+        for elem in node_generator():
+            assert elem[1] in [33445, 443, 5190, 2306, 1813]
