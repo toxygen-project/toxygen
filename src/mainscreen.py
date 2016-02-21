@@ -4,11 +4,62 @@ import sys
 from PySide import QtGui, QtCore
 
 
-class MainWindow(QtGui.QWidget):
+class MainWindow(QtGui.QMainWindow):
 
     def __init__(self):
         super(MainWindow, self).__init__()
         self.initUI()
+
+    def setup_menu(self, MainWindow):
+        self.menubar = QtGui.QMenuBar(MainWindow)
+        self.menubar.setObjectName("menubar")
+        self.menuProfile = QtGui.QMenu(self.menubar)
+        self.menuProfile.setObjectName("menuProfile")
+        self.menuSettings = QtGui.QMenu(self.menubar)
+        self.menuSettings.setObjectName("menuSettings")
+        self.menuAbout = QtGui.QMenu(self.menubar)
+        self.menuAbout.setObjectName("menuAbout")
+        self.statusbar = QtGui.QStatusBar(MainWindow)
+        self.statusbar.setObjectName("statusbar")
+        self.actionAdd_friend = QtGui.QAction(MainWindow)
+        self.actionAdd_friend.setObjectName("actionAdd_friend")
+        self.actionProfile_settings = QtGui.QAction(MainWindow)
+        self.actionProfile_settings.setObjectName("actionProfile_settings")
+        self.actionPrivacy_settings = QtGui.QAction(MainWindow)
+        self.actionPrivacy_settings.setObjectName("actionPrivacy_settings")
+        self.actionInterface_settings = QtGui.QAction(MainWindow)
+        self.actionInterface_settings.setObjectName("actionInterface_settings")
+        self.actionNotifications = QtGui.QAction(MainWindow)
+        self.actionNotifications.setObjectName("actionNotifications")
+        self.actionNetwork = QtGui.QAction(MainWindow)
+        self.actionNetwork.setObjectName("actionNetwork")
+        self.actionAbout_program = QtGui.QAction(MainWindow)
+        self.actionAbout_program.setObjectName("actionAbout_program")
+        self.actionSettings = QtGui.QAction(MainWindow)
+        self.actionSettings.setObjectName("actionSettings")
+        self.menuProfile.addAction(self.actionAdd_friend)
+        self.menuProfile.addAction(self.actionSettings)
+        self.menuSettings.addAction(self.actionPrivacy_settings)
+        self.menuSettings.addAction(self.actionInterface_settings)
+        self.menuSettings.addAction(self.actionNotifications)
+        self.menuSettings.addAction(self.actionNetwork)
+        self.menuAbout.addAction(self.actionAbout_program)
+        self.menubar.addAction(self.menuProfile.menuAction())
+        self.menubar.addAction(self.menuSettings.menuAction())
+        self.menubar.addAction(self.menuAbout.menuAction())
+
+        self.menuProfile.setTitle(QtGui.QApplication.translate("MainWindow", "Profile", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuSettings.setTitle(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuAbout.setTitle(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionAdd_friend.setText(QtGui.QApplication.translate("MainWindow", "Add contact", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionProfile_settings.setText(QtGui.QApplication.translate("MainWindow", "Profile", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionPrivacy_settings.setText(QtGui.QApplication.translate("MainWindow", "Privacy", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionInterface_settings.setText(QtGui.QApplication.translate("MainWindow", "Interface", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionNotifications.setText(QtGui.QApplication.translate("MainWindow", "Notifications", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionNetwork.setText(QtGui.QApplication.translate("MainWindow", "Network", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionAbout_program.setText(QtGui.QApplication.translate("MainWindow", "About program", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionSettings.setText(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def setup_right_bottom(self, Form):
         Form.setObjectName("right_bottom")
@@ -109,6 +160,7 @@ class MainWindow(QtGui.QWidget):
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def initUI(self):
+        main = QtGui.QWidget()
         grid = QtGui.QGridLayout()
         search = QtGui.QWidget()
         grid.setColumnStretch(1, 1)
@@ -123,11 +175,12 @@ class MainWindow(QtGui.QWidget):
         message = QtGui.QWidget()
         self.setup_right_bottom(message)
         grid.addWidget(message, 2, 1)
-        self.setLayout(grid)
+        main.setLayout(grid)
+        self.setup_menu(main)
+        self.setCentralWidget(main)
         self.setMinimumSize(800, 400)
         self.setGeometry(400, 400, 800, 400)
         self.setWindowTitle('Toxygen')
-        self.show()
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)

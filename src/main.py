@@ -64,7 +64,7 @@ def main():
         if not _login.t:
             return
         elif _login.t == 1:  # create new profile
-            # TODO: add creation of new profile
+            # TODO: add possibility to create new profile
             path = Settings.get_default_path()
             name = _login.name if _login.name else 'Toxygen User'
             return
@@ -81,19 +81,17 @@ def main():
     ms = MainWindow()
     # creating tox instance
     tox = tox_factory(data, settings)
+    ms.show()
     # bootstrap
     for data in node_generator():
         tox.bootstrap(*data)
-    # TODO: set all callbacks
+    # TODO: set all callbacks (create callback.py) and init it with ms
     tox.callback_friend_message(message, 0)
     tox.callback_self_connection_status(status, 0)
-    #tox.callback_friend_connection_status(friend_status, 0)
-
     # starting thread for tox iterate
     mainloop = ToxIterateThread(tox)
     mainloop.start()
 
-    ms.show()
     app.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app, QtCore.SLOT("quit()"))
     app.exec_()
     mainloop.stop = True
@@ -115,4 +113,5 @@ class ToxIterateThread(QtCore.QThread):
 
 
 if __name__ == '__main__':
+    # TODO: add command line options?
     main()

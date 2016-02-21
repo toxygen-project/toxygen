@@ -18,29 +18,7 @@ class TestSettings():
         os.remove(path)
         Settings()
         assert os.path.exists(path)
-
-
-class TestTox():
-
-    def test_public_key(self):
-        settings = Settings()
-        data = Profile.open_profile(Settings.get_default_path(), 'tox_save')
-        try:
-            tox = Tox(data, settings)
-        except:
-            raise
-            assert 0
-        try:
-            key = tox.self_get_public_key()
-        except:
-            raise
-            assert 0
-        assert len(key.raw) == 32
-        try:
-            del tox
-        except:
-            raise
-
+        
 
 class TestProfile():
 
