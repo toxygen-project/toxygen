@@ -56,26 +56,26 @@ class Tox(object):
             Tox.libtoxcore.tox_new.restype = POINTER(c_void_p)
             self._tox_pointer = Tox.libtoxcore.tox_new(tox_options, addressof(tox_err_new))
             tox_err_new = tox_err_new.value
-            if tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_NULL']:
+            if tox_err_new == TOX_ERR_NEW['NULL']:
                 raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
-            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_MALLOC']:
+            elif tox_err_new == TOX_ERR_NEW['MALLOC']:
                 raise MemoryError('The function was unable to allocate enough '
                                   'memory to store the internal structures for the Tox object.')
-            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_PORT_ALLOC']:
+            elif tox_err_new == TOX_ERR_NEW['PORT_ALLOC']:
                 raise MemoryError('The function was unable to bind to a port. This may mean that all ports have already'
                                   ' been bound, e.g. by other Tox instances, or it may mean a permission error. You may'
                                   ' be able to gather more information from errno.')
-            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_BAD_TYPE']:
+            elif tox_err_new == TOX_ERR_NEW['PROXY_BAD_TYPE']:
                 raise ArgumentError('proxy_type was invalid.')
-            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_BAD_HOST']:
+            elif tox_err_new == TOX_ERR_NEW['PROXY_BAD_HOST']:
                 raise ArgumentError('proxy_type was valid but the proxy_host passed had an invalid format or was NULL.')
-            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_BAD_PORT']:
+            elif tox_err_new == TOX_ERR_NEW['PROXY_BAD_PORT']:
                 raise ArgumentError('proxy_type was valid, but the proxy_port was invalid.')
-            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_PROXY_NOT_FOUND']:
+            elif tox_err_new == TOX_ERR_NEW['PROXY_NOT_FOUND']:
                 raise ArgumentError('The proxy address passed could not be resolved.')
-            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_LOAD_ENCRYPTED']:
+            elif tox_err_new == TOX_ERR_NEW['LOAD_ENCRYPTED']:
                 raise ArgumentError('The byte array to be loaded contained an encrypted save.')
-            elif tox_err_new == TOX_ERR_NEW['TOX_ERR_NEW_LOAD_BAD_FORMAT']:
+            elif tox_err_new == TOX_ERR_NEW['LOAD_BAD_FORMAT']:
                 raise ArgumentError('The data format was invalid. This can happen when loading data that was saved by'
                                     ' an older version of Tox, or when the data has been corrupted. When loading from'
                                     ' badly formatted data, some data may have been loaded, and the rest is discarded.'
@@ -125,9 +125,9 @@ class Tox(object):
         f.restype = POINTER(ToxOptions)
         result = f(addressof(tox_err_options_new))
         tox_err_options_new = tox_err_options_new.value
-        if tox_err_options_new == TOX_ERR_OPTIONS_NEW['TOX_ERR_OPTIONS_NEW_OK']:
+        if tox_err_options_new == TOX_ERR_OPTIONS_NEW['OK']:
             return result
-        elif tox_err_options_new == TOX_ERR_OPTIONS_NEW['TOX_ERR_OPTIONS_NEW_MALLOC']:
+        elif tox_err_options_new == TOX_ERR_OPTIONS_NEW['MALLOC']:
             raise MemoryError('The function failed to allocate enough memory for the options struct.')
 
     @staticmethod
@@ -189,14 +189,14 @@ class Tox(object):
         result = Tox.libtoxcore.tox_bootstrap(self._tox_pointer, c_char_p(address), c_uint16(port),
                                               c_char_p(public_key), addressof(tox_err_bootstrap))
         tox_err_bootstrap = tox_err_bootstrap.value
-        if tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_OK']:
+        if tox_err_bootstrap == TOX_ERR_BOOTSTRAP['OK']:
             return bool(result)
-        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_NULL']:
+        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
-        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_BAD_HOST']:
+        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['BAD_HOST']:
             raise ArgumentError('The address could not be resolved to an IP '
                                 'address, or the IP address passed was invalid.')
-        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_BAD_PORT']:
+        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['BAD_PORT']:
             raise ArgumentError('The port passed was invalid. The valid port range is (1, 65535).')
 
     def add_tcp_relay(self, address, port, public_key):
@@ -215,14 +215,14 @@ class Tox(object):
         result = Tox.libtoxcore.tox_add_tcp_relay(self._tox_pointer, c_char_p(address), c_uint16(port),
                                                   c_char_p(public_key), addressof(tox_err_bootstrap))
         tox_err_bootstrap = tox_err_bootstrap.value
-        if tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_OK']:
+        if tox_err_bootstrap == TOX_ERR_BOOTSTRAP['OK']:
             return bool(result)
-        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_NULL']:
+        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
-        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_BAD_HOST']:
+        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['BAD_HOST']:
             raise ArgumentError('The address could not be resolved to an IP '
                                 'address, or the IP address passed was invalid.')
-        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['TOX_ERR_BOOTSTRAP_BAD_PORT']:
+        elif tox_err_bootstrap == TOX_ERR_BOOTSTRAP['BAD_PORT']:
             raise ArgumentError('The port passed was invalid. The valid port range is (1, 65535).')
 
     def self_get_connection_status(self):
@@ -342,11 +342,11 @@ class Tox(object):
         result = Tox.libtoxcore.tox_self_set_name(self._tox_pointer, c_char_p(name),
                                                   c_size_t(len(name)), addressof(tox_err_set_info))
         tox_err_set_info = tox_err_set_info.value
-        if tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_OK']:
+        if tox_err_set_info == TOX_ERR_SET_INFO['OK']:
             return bool(result)
-        elif tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_NULL']:
+        elif tox_err_set_info == TOX_ERR_SET_INFO['NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
-        elif tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_TOO_LONG']:
+        elif tox_err_set_info == TOX_ERR_SET_INFO['TOO_LONG']:
             raise ArgumentError('Information length exceeded maximum permissible size.')
 
     def self_get_name_size(self):
@@ -390,11 +390,11 @@ class Tox(object):
         result = Tox.libtoxcore.tox_self_set_status_message(self._tox_pointer, c_char_p(status_message),
                                                             c_size_t(len(status_message)), addressof(tox_err_set_info))
         tox_err_set_info = tox_err_set_info.value
-        if tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_OK']:
+        if tox_err_set_info == TOX_ERR_SET_INFO['OK']:
             return bool(result)
-        elif tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_NULL']:
+        elif tox_err_set_info == TOX_ERR_SET_INFO['NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
-        elif tox_err_set_info == TOX_ERR_SET_INFO['TOX_ERR_SET_INFO_TOO_LONG']:
+        elif tox_err_set_info == TOX_ERR_SET_INFO['TOO_LONG']:
             raise ArgumentError('Information length exceeded maximum permissible size.')
 
     def self_get_status_message_size(self):
@@ -466,25 +466,25 @@ class Tox(object):
         result = Tox.libtoxcore.tox_friend_add(self._tox_pointer, c_char_p(address), c_char_p(message),
                                                c_size_t(len(message)), addressof(tox_err_friend_add))
         tox_err_friend_add = tox_err_friend_add.value
-        if tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_OK']:
+        if tox_err_friend_add == TOX_ERR_FRIEND_ADD['OK']:
             return result
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_NULL']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_TOO_LONG']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOO_LONG']:
             raise ArgumentError('The length of the friend request message exceeded TOX_MAX_FRIEND_REQUEST_LENGTH.')
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_NO_MESSAGE']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['NO_MESSAGE']:
             raise ArgumentError('The friend request message was empty. This, and the TOO_LONG code will never be'
                                 ' returned from tox_friend_add_norequest.')
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_OWN_KEY']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['OWN_KEY']:
             raise ArgumentError('The friend address belongs to the sending client.')
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_ALREADY_SENT']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['ALREADY_SENT']:
             raise ArgumentError('A friend request has already been sent, or the address belongs to a friend that is'
                                 ' already on the friend list.')
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_BAD_CHECKSUM']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['BAD_CHECKSUM']:
             raise ArgumentError('The friend address checksum failed.')
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_SET_NEW_NOSPAM']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['SET_NEW_NOSPAM']:
             raise ArgumentError('The friend was already there, but the nospam value was different.')
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_MALLOC']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['MALLOC']:
             raise MemoryError('A memory allocation failed when trying to increase the friend list size.')
 
     def friend_add_norequest(self, public_key):
@@ -505,25 +505,25 @@ class Tox(object):
         tox_err_friend_add = c_int()
         result = Tox.libtoxcore.tox_friend_add(self._tox_pointer, c_char_p(public_key), addressof(tox_err_friend_add))
         tox_err_friend_add = tox_err_friend_add.value
-        if tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_OK']:
+        if tox_err_friend_add == TOX_ERR_FRIEND_ADD['OK']:
             return result
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_NULL']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_TOO_LONG']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOO_LONG']:
             raise ArgumentError('The length of the friend request message exceeded TOX_MAX_FRIEND_REQUEST_LENGTH.')
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_NO_MESSAGE']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['NO_MESSAGE']:
             raise ArgumentError('The friend request message was empty. This, and the TOO_LONG code will never be'
                                 ' returned from tox_friend_add_norequest.')
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_OWN_KEY']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['OWN_KEY']:
             raise ArgumentError('The friend address belongs to the sending client.')
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_ALREADY_SENT']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['ALREADY_SENT']:
             raise ArgumentError('A friend request has already been sent, or the address belongs to a friend that is'
                                 ' already on the friend list.')
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_BAD_CHECKSUM']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['BAD_CHECKSUM']:
             raise ArgumentError('The friend address checksum failed.')
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_SET_NEW_NOSPAM']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['SET_NEW_NOSPAM']:
             raise ArgumentError('The friend was already there, but the nospam value was different.')
-        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['TOX_ERR_FRIEND_ADD_MALLOC']:
+        elif tox_err_friend_add == TOX_ERR_FRIEND_ADD['MALLOC']:
             raise MemoryError('A memory allocation failed when trying to increase the friend list size.')
 
     def friend_delete(self, friend_number):
@@ -540,9 +540,9 @@ class Tox(object):
         result = Tox.libtoxcore.tox_friend_delete(self._tox_pointer, c_uint32(friend_number),
                                                   addressof(tox_err_friend_delete))
         tox_err_friend_delete = tox_err_friend_delete.value
-        if tox_err_friend_delete == TOX_ERR_FRIEND_DELETE['TOX_ERR_FRIEND_DELETE_OK']:
+        if tox_err_friend_delete == TOX_ERR_FRIEND_DELETE['OK']:
             return bool(result)
-        elif tox_err_friend_delete == TOX_ERR_FRIEND_DELETE['TOX_ERR_FRIEND_DELETE_FRIEND_NOT_FOUND']:
+        elif tox_err_friend_delete == TOX_ERR_FRIEND_DELETE['FRIEND_NOT_FOUND']:
             raise ArgumentError('There was no friend with the given friend number. No friends were deleted.')
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -560,11 +560,11 @@ class Tox(object):
         result = Tox.libtoxcore.tox_friend_by_public_key(self._tox_pointer, c_char_p(public_key),
                                                          addressof(tox_err_friend_by_public_key))
         tox_err_friend_by_public_key = tox_err_friend_by_public_key.value
-        if tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['TOX_ERR_FRIEND_BY_PUBLIC_KEY_OK']:
+        if tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['OK']:
             return result
-        elif tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['TOX_ERR_FRIEND_BY_PUBLIC_KEY_NULL']:
+        elif tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
-        elif tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['TOX_ERR_FRIEND_BY_PUBLIC_KEY_NOT_FOUND']:
+        elif tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['NOT_FOUND']:
             raise ArgumentError('No friend with the given Public Key exists on the friend list.')
 
     def friend_exists(self, friend_number):
@@ -630,9 +630,9 @@ class Tox(object):
         result = Tox.libtoxcore.tox_friend_get_last_online(self._tox_pointer, c_uint32(friend_number),
                                                            addressof(tox_err_last_online))
         tox_err_last_online = tox_err_last_online.value
-        if tox_err_last_online == TOX_ERR_FRIEND_GET_LAST_ONLINE['TOX_ERR_FRIEND_GET_LAST_ONLINE_OK']:
+        if tox_err_last_online == TOX_ERR_FRIEND_GET_LAST_ONLINE['OK']:
             return result
-        elif tox_err_last_online == TOX_ERR_FRIEND_GET_LAST_ONLINE['TOX_ERR_FRIEND_GET_LAST_ONLINE_FRIEND_NOT_FOUND']:
+        elif tox_err_last_online == TOX_ERR_FRIEND_GET_LAST_ONLINE['FRIEND_NOT_FOUND']:
             raise ArgumentError('No friend with the given number exists on the friend list.')
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -649,13 +649,13 @@ class Tox(object):
         result = Tox.libtoxcore.tox_friend_get_name_size(self._tox_pointer, c_uint32(friend_number),
                                                          addressof(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
-        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
+        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
             return result
-        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['NULL']:
             raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
                                 ' the `_self_` variants of these functions, which have no effect when a parameter is'
                                 ' NULL, these functions return an error in that case.')
-        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND']:
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
     def friend_get_name(self, friend_number, name):
@@ -673,13 +673,13 @@ class Tox(object):
         result = Tox.libtoxcore.tox_friend_get_name(self._tox_pointer, c_uint32(friend_number), name,
                                                     addressof(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
-        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
+        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
             return bool(result)
-        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['NULL']:
             raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
                                 ' the `_self_` variants of these functions, which have no effect when a parameter is'
                                 ' NULL, these functions return an error in that case.')
-        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND']:
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
     def callback_friend_name(self, callback, user_data):
@@ -709,13 +709,13 @@ class Tox(object):
         result = Tox.libtoxcore.tox_friend_get_status_message_size(self._tox_pointer, c_uint32(friend_number),
                                                                    addressof(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
-        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
+        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
             return result
-        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['NULL']:
             raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
                                 ' the `_self_` variants of these functions, which have no effect when a parameter is'
                                 ' NULL, these functions return an error in that case.')
-        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND']:
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
     def friend_get_status_message(self, friend_number, status_message):
@@ -735,13 +735,13 @@ class Tox(object):
         result = Tox.libtoxcore.tox_friend_get_status_message(self._tox_pointer, c_uint32(friend_number),
                                                               status_message, addressof(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
-        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
+        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
             return bool(result)
-        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['NULL']:
             raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
                                 ' the `_self_` variants of these functions, which have no effect when a parameter is'
                                 ' NULL, these functions return an error in that case.')
-        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND']:
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
     def callback_friend_status_message(self, callback, user_data):
@@ -776,13 +776,13 @@ class Tox(object):
         result = Tox.libtoxcore.tox_friend_get_status(self._tox_pointer, c_uint32(friend_number),
                                                       addressof(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
-        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
+        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
             return result
-        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['NULL']:
             raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
                                 ' the `_self_` variants of these functions, which have no effect when a parameter is'
                                 ' NULL, these functions return an error in that case.')
-        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND']:
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
     def callback_friend_status(self, callback, user_data):
@@ -815,13 +815,13 @@ class Tox(object):
         result = Tox.libtoxcore.tox_friend_get_connection_status(self._tox_pointer, c_uint32(friend_number),
                                                                  addressof(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
-        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
+        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
             return result
-        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['NULL']:
             raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
                                 ' the `_self_` variants of these functions, which have no effect when a parameter is'
                                 ' NULL, these functions return an error in that case.')
-        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND']:
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
     def callback_friend_connection_status(self, callback, user_data):
@@ -855,13 +855,13 @@ class Tox(object):
         result = Tox.libtoxcore.tox_friend_get_typing(self._tox_pointer, c_uint32(friend_number),
                                                       addressof(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
-        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_OK']:
+        if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
             return bool(result)
-        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_NULL']:
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['NULL']:
             raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
                                 ' the `_self_` variants of these functions, which have no effect when a parameter is'
                                 ' NULL, these functions return an error in that case.')
-        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['TOX_ERR_FRIEND_QUERY_FRIEND_NOT_FOUND']:
+        elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
     def callback_friend_typing(self, callback, user_data):
@@ -898,9 +898,9 @@ class Tox(object):
         result = Tox.libtoxcore.tox_friend_delete(self._tox_pointer, c_uint32(friend_number),
                                                   c_bool(typing), addressof(tox_err_set_typing))
         tox_err_set_typing = tox_err_set_typing.value
-        if tox_err_set_typing == TOX_ERR_SET_TYPING['TOX_ERR_SET_TYPING_OK']:
+        if tox_err_set_typing == TOX_ERR_SET_TYPING['OK']:
             return bool(result)
-        elif tox_err_set_typing == TOX_ERR_SET_TYPING['TOX_ERR_SET_TYPING_FRIEND_NOT_FOUND']:
+        elif tox_err_set_typing == TOX_ERR_SET_TYPING['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend number did not designate a valid friend.')
 
     def friend_send_message(self, friend_number, message_type, message):
