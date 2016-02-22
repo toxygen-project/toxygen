@@ -1001,18 +1001,29 @@ class Tox(object):
         Tox.libtoxcore.tox_callback_friend_message(self._tox_pointer, self.tox_friend_message_cb, c_void_p(user_data))
 
     # TODO File transmission: common between sending and receiving
+    # -----------------------------------------------------------------------------------------------------------------
+    # File transmission: common between sending and receiving
+    # -----------------------------------------------------------------------------------------------------------------
 
     # TODO File transmission: sending
+    # -----------------------------------------------------------------------------------------------------------------
+    # File transmission: sending
+    # -----------------------------------------------------------------------------------------------------------------
 
     # TODO File transmission: receiving
-
-    # TODO Group chat management
-
-    # TODO Group chat message sending and receiving
+    # -----------------------------------------------------------------------------------------------------------------
+    # File transmission: receiving
+    # -----------------------------------------------------------------------------------------------------------------
 
     # TODO Low-level custom packet sending and receiving
+    # -----------------------------------------------------------------------------------------------------------------
+    # Low-level custom packet sending and receiving
+    # -----------------------------------------------------------------------------------------------------------------
 
     # TODO Low-level network information
+    # -----------------------------------------------------------------------------------------------------------------
+    # Low-level network information
+    # -----------------------------------------------------------------------------------------------------------------
 
     def __del__(self):
         Tox.libtoxcore.tox_kill(self._tox_pointer)
