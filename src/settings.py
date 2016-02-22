@@ -33,6 +33,7 @@ class Settings(dict):
             'save_history': False,
             'allow_inline': True,
             'allow_auto_accept': False,
+            'show_online_friends': False,
             'auto_accept_from_friends': [],
             'friends_aliases': [],
             'typing_notifications': True,

@@ -4,7 +4,7 @@ from mainscreen import MainWindow
 from profile import Profile, tox_factory
 import sys
 from PySide import QtCore, QtGui
-from callbacks import *
+from callbacks import init_callbacks
 from tox import Tox
 from bootstrap import node_generator
 
@@ -73,9 +73,7 @@ def main():
     # bootstrap
     for data in node_generator():
         tox.bootstrap(*data)
-    # TODO: set all callbacks and init it with ms
-    tox.callback_friend_message(message, 0)
-    tox.callback_self_connection_status(status, 0)
+    init_callbacks(tox)
     # starting thread for tox iterate
     mainloop = ToxIterateThread(tox)
     mainloop.start()

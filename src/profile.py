@@ -51,7 +51,7 @@ def tox_factory(data, settings):
     tox_options.contents.start_port = settings['start_port']
     tox_options.contents.end_port = settings['end_port']
     tox_options.contents.tcp_port = settings['tcp_port']
-    tox_options.contents.savedata_type = TOX_SAVEDATA_TYPE['TOX_SAVEDATA_TYPE_TOX_SAVE']
+    tox_options.contents.savedata_type = TOX_SAVEDATA_TYPE['TOX_SAVE']
     tox_options.contents.savedata_data = c_char_p(data)
     tox_options.contents.savedata_length = len(data)
     return Tox(tox_options)
