@@ -73,7 +73,7 @@ def main():
     # bootstrap
     for data in node_generator():
         tox.bootstrap(*data)
-    init_callbacks(tox)
+    init_callbacks(tox, ms)
     # starting thread for tox iterate
     mainloop = ToxIterateThread(tox)
     mainloop.start()

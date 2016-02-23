@@ -2,7 +2,7 @@ from src.settings import Settings
 from src.util import bin_to_string, string_to_bin
 import sys
 from src.bootstrap import node_generator
-from src.profile import Profile
+from src.profile import Profile, tox_factory
 import os
 
 
@@ -55,3 +55,14 @@ class TestNodeGen():
     def test_ports(self):
         for elem in node_generator():
             assert elem[1] in [33445, 443, 5190, 2306, 1813]
+
+
+class TestTox():
+
+    def test_creation(self):
+        data = Profile.open_profile(Settings.get_default_path(), 'tox_save')
+        settings = Settings.get_default_settings()
+        tox = tox_factory(data, settings)
+        for data in node_generator():
+            tox.bootstrap(*data)
+        del tox

@@ -11,10 +11,15 @@ def friend_status(a, b, c, d):
 
 
 def friend_message(a, b, c, d, e, f):
-    print 'Message: ', unicode(d, "utf-8")
+    print 'Message: ', str(d)
 
 
-def init_callbacks(tox):
+def init_callbacks(tox, window):
+    """
+    :param tox: tox instance
+    :param window: main window
+    :return: None
+    """
     tox.callback_friend_status(friend_status, 0)
     tox.callback_friend_message(friend_message, 0)
     tox.callback_self_connection_status(self_connection_status, 0)

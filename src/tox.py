@@ -24,9 +24,8 @@ class ToxOptions(Structure):
 class LibToxCore(object):
     def __init__(self):
         if system() == 'Linux':
-            temp = os.path.dirname(os.path.abspath(__file__)) + '/libs/'
-            os.chdir(temp)
-            self._libtoxcore = CDLL(temp + 'libtoxcore.so')
+            # be sure that libtoxcore and libsodium are installed in your os
+            self._libtoxcore = CDLL('libtoxcore.so')
         elif system() == 'Windows':
             self._libtoxcore = CDLL('libs/libtox.dll')
         else:
