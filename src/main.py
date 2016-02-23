@@ -52,23 +52,24 @@ def main():
         if not _login.t:
             return
         elif _login.t == 1:  # create new profile
-            # TODO: add possibility to create new profile
-            path = Settings.get_default_path()
+            # TODO: test
             name = _login.name if _login.name else 'Toxygen User'
-            return
+            tox = tox_factory()
+            tox.self_set_name(name)
+            Profile.save_profile(tox.get_savedata())
         else:  # load existing profile
             path, name = _login.get_data()
             if _login.default:
                 settings['auto_profile'] = (path, name)
                 settings.save()
+            data = Profile.open_profile(path, name)
+            tox = tox_factory(data, settings)
     else:
         path, name = settings['auto_profile']
-    # loading profile
-    print str(path), str(name)
-    data = Profile.open_profile(path, name)
+        data = Profile.open_profile(path, name)
+        tox = tox_factory(data, settings)
+
     ms = MainWindow()
-    # creating tox instance
-    tox = tox_factory(data, settings)
     ms.show()
     # bootstrap
     for data in node_generator():
