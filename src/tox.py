@@ -89,6 +89,7 @@ class Tox(object):
             self.tox_friend_read_receipt_cb = None
             self.tox_friend_typing_cb = None
             self.tox_friend_message_cb = None
+            self.tox_file_recv_control_cb = None
 
     # -----------------------------------------------------------------------------------------------------------------
     # Startup options
@@ -570,7 +571,7 @@ class Tox(object):
         """
         Checks if a friend with the given friend number exists and returns true if it does.
         """
-        return bool(Tox.libtoxcore.tox_friend_by_public_key(self._tox_pointer, c_uint32(friend_number)))
+        return bool(Tox.libtoxcore.tox_friend_exists(self._tox_pointer, c_uint32(friend_number)))
 
     def self_get_friend_list_size(self):
         """
@@ -999,29 +1000,148 @@ class Tox(object):
         self.tox_friend_message_cb = c_callback(callback)
         Tox.libtoxcore.tox_callback_friend_message(self._tox_pointer, self.tox_friend_message_cb, c_void_p(user_data))
 
-    # TODO File transmission: common between sending and receiving
     # -----------------------------------------------------------------------------------------------------------------
     # File transmission: common between sending and receiving
     # -----------------------------------------------------------------------------------------------------------------
 
+    @staticmethod
+    def hash(hash, data):
+        """
+        Generates a cryptographic hash of the given data.
+
+        This function may be used by clients for any purpose, but is provided primarily for validating cached avatars.
+        This use is highly recommended to avoid unnecessary avatar updates.
+
+        If hash is NULL or data is NULL while length is not 0 the function returns false, otherwise it returns true.
+
+        This function is a wrapper to internal message-digest functions.
+
+        :param hash: A valid memory location the hash data. It must be at least TOX_HASH_LENGTH bytes in size.
+        :param data: Data to be hashed or NULL.
+        :return: true if hash was not NULL.
+        """
+        return bool(Tox.libtoxcore.tox_hash(c_char_p(hash), c_char_p(data), c_size_t(len(data))))
+
+    def file_control(self, friend_number, file_number, control):
+        """
+        Sends a file control command to a friend for a given file transfer.
+
+        :param friend_number: The friend number of the friend the file is being transferred to or received from.
+        :param file_number: The friend-specific identifier for the file transfer.
+        :param control: The control (TOX_FILE_CONTROL) command to send.
+        :return: True on success.
+        """
+        tox_err_file_control = c_int()
+        result = Tox.libtoxcore.tox_file_control(self._tox_pointer, c_uint32(friend_number), c_uint32(file_number),
+                                                 c_int(control), addressof(tox_err_file_control))
+        tox_err_file_control = tox_err_file_control.value
+        if tox_err_file_control == TOX_ERR_FILE_CONTROL['OK']:
+            return bool(result)
+        elif tox_err_file_control == TOX_ERR_FILE_CONTROL['FRIEND_NOT_FOUND']:
+            raise ArgumentError('The friend_number passed did not designate a valid friend.')
+        elif tox_err_file_control == TOX_ERR_FILE_CONTROL['FRIEND_NOT_CONNECTED']:
+            raise RuntimeError('This client is currently not connected to the friend.')
+        elif tox_err_file_control == TOX_ERR_FILE_CONTROL['NOT_FOUND']:
+            raise ArgumentError('No file transfer with the given file number was found for the given friend.')
+        elif tox_err_file_control == TOX_ERR_FILE_CONTROL['NOT_PAUSED']:
+            raise ArgumentError('A RESUME control was sent, but the file transfer is running normally.')
+        elif tox_err_file_control == TOX_ERR_FILE_CONTROL['DENIED']:
+            raise ArgumentError('A RESUME control was sent, but the file transfer was paused by the other party. Only '
+                                'the party that paused the transfer can resume it.')
+        elif tox_err_file_control == TOX_ERR_FILE_CONTROL['ALREADY_PAUSED']:
+            raise ArgumentError('A PAUSE control was sent, but the file transfer was already paused.')
+        elif tox_err_file_control == TOX_ERR_FILE_CONTROL['SENDQ']:
+            raise RuntimeError('Packet queue is full.')
+
+    def callback_file_recv_control(self, callback, user_data):
+        """
+        Set the callback for the `file_recv_control` event. Pass NULL to unset.
+
+        This event is triggered when a file control command is received from a friend.
+
+        :param callback: Python function.
+        When receiving TOX_FILE_CONTROL_CANCEL, the client should release the resources associated with the file number
+        and consider the transfer failed.
+
+        Should take pointer (c_void_p) to Tox object,
+        The friend number (c_uint32) of the friend who is sending the file.
+        The friend-specific file number (c_uint32) the data received is associated with.
+        The file control (TOX_FILE_CONTROL) command received.
+        pointer (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
+        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_int, c_void_p)
+        self.tox_file_recv_control_cb = c_callback(callback)
+        Tox.libtoxcore.tox_callback_file_recv_control(self._tox_pointer,
+                                                      self.tox_file_recv_control_cb, user_data)
+
+    def file_seek(self, friend_number, file_number, position):
+        """
+        Sends a file seek control command to a friend for a given file transfer.
+
+        This function can only be called to resume a file transfer right before TOX_FILE_CONTROL_RESUME is sent.
+
+        :param friend_number: The friend number of the friend the file is being received from.
+        :param file_number: The friend-specific identifier for the file transfer.
+        :param position: The position that the file should be seeked to.
+        :return: True on success.
+        """
+        tox_err_file_seek = c_int()
+        result = Tox.libtoxcore.tox_file_control(self._tox_pointer, c_uint32(friend_number), c_uint32(file_number),
+                                                 c_uint64(position), addressof(tox_err_file_seek))
+        tox_err_file_seek = tox_err_file_seek.value
+        if tox_err_file_seek == TOX_ERR_FILE_SEEK['OK']:
+            return bool(result)
+        elif tox_err_file_seek == TOX_ERR_FILE_SEEK['FRIEND_NOT_FOUND']:
+            raise ArgumentError('The friend_number passed did not designate a valid friend.')
+        elif tox_err_file_seek == TOX_ERR_FILE_SEEK['FRIEND_NOT_CONNECTED']:
+            raise RuntimeError('This client is currently not connected to the friend.')
+        elif tox_err_file_seek == TOX_ERR_FILE_SEEK['NOT_FOUND']:
+            raise ArgumentError('No file transfer with the given file number was found for the given friend.')
+        elif tox_err_file_seek == TOX_ERR_FILE_SEEK['SEEK_DENIED']:
+            raise ArgumentError('File was not in a state where it could be seeked.')
+        elif tox_err_file_seek == TOX_ERR_FILE_SEEK['INVALID_POSITION']:
+            raise ArgumentError('Seek position was invalid')
+        elif tox_err_file_seek == TOX_ERR_FILE_SEEK['SENDQ']:
+            raise ArgumentError('Packet queue is full.')
+
+    def file_get_file_id(self, friend_number, file_number, file_id):
+        """
+        Copy the file id associated to the file transfer to a byte array.
+
+        :param friend_number: The friend number of the friend the file is being transferred to or received from.
+        :param file_number: The friend-specific identifier for the file transfer.
+        :param file_id: A pointer (c_char_p) to memory region of at least TOX_FILE_ID_LENGTH bytes. If this parameter is
+        None, this function has no effect.
+        :return: True on success.
+        """
+        tox_err_file_get = c_int()
+        result = Tox.libtoxcore.tox_file_control(self._tox_pointer, c_uint32(friend_number), c_uint32(file_number),
+                                                 file_id, addressof(tox_err_file_get))
+        tox_err_file_get = tox_err_file_get.value
+        if tox_err_file_get == TOX_ERR_FILE_GET['OK']:
+            return bool(result)
+        elif tox_err_file_get == TOX_ERR_FILE_GET['NULL']:
+            raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
+        elif tox_err_file_get == TOX_ERR_FILE_GET['FRIEND_NOT_FOUND']:
+            raise ArgumentError('The friend_number passed did not designate a valid friend.')
+        elif tox_err_file_get == TOX_ERR_FILE_GET['NOT_FOUND']:
+            raise ArgumentError('No file transfer with the given file number was found for the given friend.')
+
+    # -----------------------------------------------------------------------------------------------------------------
     # TODO File transmission: sending
     # -----------------------------------------------------------------------------------------------------------------
-    # File transmission: sending
-    # -----------------------------------------------------------------------------------------------------------------
 
+    # -----------------------------------------------------------------------------------------------------------------
     # TODO File transmission: receiving
     # -----------------------------------------------------------------------------------------------------------------
-    # File transmission: receiving
-    # -----------------------------------------------------------------------------------------------------------------
 
+    # -----------------------------------------------------------------------------------------------------------------
     # TODO Low-level custom packet sending and receiving
     # -----------------------------------------------------------------------------------------------------------------
-    # Low-level custom packet sending and receiving
-    # -----------------------------------------------------------------------------------------------------------------
 
-    # TODO Low-level network information
     # -----------------------------------------------------------------------------------------------------------------
-    # Low-level network information
+    # TODO Low-level network information
     # -----------------------------------------------------------------------------------------------------------------
 
     def __del__(self):
@@ -1029,7 +1149,6 @@ class Tox(object):
 
 
 if __name__ == '__main__':
-    options = Tox.options_new()
-
-    print type(options)
-    print(options)
+    tox = Tox(Tox.options_new())
+    b = tox.friend_exists(13)
+    del tox
