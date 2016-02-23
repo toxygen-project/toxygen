@@ -91,6 +91,9 @@ class Tox(object):
             self.tox_friend_message_cb = None
             self.tox_file_recv_control_cb = None
 
+    def __del__(self):
+        Tox.libtoxcore.tox_kill(self._tox_pointer)
+
     # -----------------------------------------------------------------------------------------------------------------
     # Startup options
     # -----------------------------------------------------------------------------------------------------------------
@@ -1141,14 +1144,56 @@ class Tox(object):
     # -----------------------------------------------------------------------------------------------------------------
 
     # -----------------------------------------------------------------------------------------------------------------
-    # TODO Low-level network information
+    # Low-level network information
     # -----------------------------------------------------------------------------------------------------------------
 
-    def __del__(self):
-        Tox.libtoxcore.tox_kill(self._tox_pointer)
+    def self_get_dht_id(self, dht_id=None):
+        """
+        Writes the temporary DHT public key of this instance to a byte array.
+
+        This can be used in combination with an externally accessible IP address and the bound port (from
+        tox_self_get_udp_port) to run a temporary bootstrap node.
+
+        Be aware that every time a new instance is created, the DHT public key changes, meaning this cannot be used to
+        run a permanent bootstrap node.
+
+        :param dht_id: pointer (c_char_p) to a memory region of at least TOX_PUBLIC_KEY_SIZE bytes. If this parameter is
+        None, this function allocates memory for dht_id.
+        :return: dht_id
+        """
+        if dht_id is None:
+            dht_id = create_string_buffer(TOX_PUBLIC_KEY_SIZE)
+        Tox.libtoxcore.tox_self_get_dht_id(self._tox_pointer, dht_id)
+        return dht_id
+
+    def self_get_udp_port(self):
+        """
+        Return the UDP port this Tox instance is bound to.
+        """
+        tox_err_get_port = c_int()
+        result = Tox.libtoxcore.tox_self_get_udp_port(self._tox_pointer, addressof(tox_err_get_port))
+        tox_err_get_port = tox_err_get_port.value
+        if tox_err_get_port == TOX_ERR_GET_PORT['OK']:
+            return result
+        elif tox_err_get_port == TOX_ERR_GET_PORT['NOT_BOUND']:
+            raise RuntimeError('The instance was not bound to any port.')
+
+    def self_get_tcp_port(self):
+        """
+        Return the TCP port this Tox instance is bound to. This is only relevant if the instance is acting as a TCP
+        relay.
+        """
+        tox_err_get_port = c_int()
+        result = Tox.libtoxcore.tox_self_get_tcp_port(self._tox_pointer, addressof(tox_err_get_port))
+        tox_err_get_port = tox_err_get_port.value
+        if tox_err_get_port == TOX_ERR_GET_PORT['OK']:
+            return result
+        elif tox_err_get_port == TOX_ERR_GET_PORT['NOT_BOUND']:
+            raise RuntimeError('The instance was not bound to any port.')
 
 
 if __name__ == '__main__':
     tox = Tox(Tox.options_new())
-    b = tox.friend_exists(13)
+    port = tox.self_get_tcp_port()
+    print type(port)
     del tox
