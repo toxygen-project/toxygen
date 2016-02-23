@@ -2,6 +2,7 @@
 
 import sys
 from PySide import QtGui, QtCore
+from menu import *
 from toxcore_enums_and_consts import *
 
 
@@ -74,10 +75,17 @@ class MainWindow(QtGui.QMainWindow):
         self.menuSettings.addAction(self.actionNotifications)
         self.menuSettings.addAction(self.actionNetwork)
         self.menuAbout.addAction(self.actionAbout_program)
-        self.actionAbout_program.triggered.connect(self.about_program)
         self.menubar.addAction(self.menuProfile.menuAction())
         self.menubar.addAction(self.menuSettings.menuAction())
         self.menubar.addAction(self.menuAbout.menuAction())
+
+        self.actionAbout_program.triggered.connect(self.about_program)
+        self.actionNetwork.triggered.connect(self.network_settings)
+        self.actionAdd_friend.triggered.connect(self.add_contact)
+        self.actionSettings.triggered.connect(self.profile_settings)
+        self.actionPrivacy_settings.triggered.connect(self.privacy_settings)
+        self.actionInterface_settings.triggered.connect(self.interface_settings)
+        self.actionNotifications.triggered.connect(self.notification_settings)
 
         self.menuProfile.setTitle(QtGui.QApplication.translate("MainWindow", "Profile", None, QtGui.QApplication.UnicodeUTF8))
         self.menuSettings.setTitle(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
@@ -91,17 +99,6 @@ class MainWindow(QtGui.QMainWindow):
         self.actionAbout_program.setText(QtGui.QApplication.translate("MainWindow", "About program", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSettings.setText(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
-
-    def about_program(self):
-        import util
-        msgBox = QtGui.QMessageBox()
-        msgBox.setWindowTitle("About")
-        msgBox.setText("Toxygen is pythonic Tox client. Version: " + util.program_version)
-        msgBox.exec_()
-
-    def paintEvent(self, event):
-        pass
-        #self.connection_status.paintEvent(event)
 
     def setup_right_bottom(self, Form):
         Form.setObjectName("right_bottom")
@@ -173,7 +170,6 @@ class MainWindow(QtGui.QMainWindow):
         self.connection_status.setBaseSize(QtCore.QSize(32, 32))
         self.connection_status.setObjectName("connection_status")
 
-
     def setup_right_top(self, Form):
         Form.setObjectName("Form")
         Form.resize(495, 111)
@@ -224,6 +220,42 @@ class MainWindow(QtGui.QMainWindow):
         self.setMinimumSize(800, 400)
         self.setGeometry(400, 400, 800, 400)
         self.setWindowTitle('Toxygen')
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Functions which called when user click in menu
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def about_program(self):
+        import util
+        msgBox = QtGui.QMessageBox()
+        msgBox.setWindowTitle("About")
+        msgBox.setText("Toxygen is pythonic Tox client. Version: " + util.program_version)
+        msgBox.exec_()
+
+    def network_settings(self):
+        self.n_s = NetworkSettings()
+        self.n_s.show()
+
+    def add_contact(self):
+        self.a_c = AddContact()
+        self.a_c.show()
+
+    def profile_settings(self):
+        self.p_s = ProfileSettings()
+        self.p_s.show()
+
+    def privacy_settings(self):
+        self.priv_s = PrivacySettings()
+        self.priv_s.show()
+
+    def notification_settings(self):
+        self.notif_s = NotificationsSettings()
+        self.notif_s.show()
+
+    def interface_settings(self):
+        self.int_s = InterfaceSettings()
+        self.int_s.show()
+
 
 if __name__ == '__main__':
     app = QtGui.QApplication(sys.argv)
