@@ -2,6 +2,36 @@
 
 import sys
 from PySide import QtGui, QtCore
+from toxcore_enums_and_consts import *
+
+
+class StatusCircle(QtGui.QWidget):
+
+    def __init__(self, parent=None):
+        QtGui.QWidget.__init__(self, parent)
+        # setGeometry(x_pos, y_pos, width, height)
+        self.setGeometry(0, 0, 32, 32)
+        self.status = 0
+
+    def paintEvent(self, event):
+        paint = QtGui.QPainter()
+        paint.begin(self)
+        paint.setRenderHint(QtGui.QPainter.Antialiasing)
+        # make a white drawing background
+        paint.setBrush(QtCore.Qt.white)
+        paint.drawRect(event.rect())
+        k = 16
+        rad_x = rad_y = 10
+        if not self.status:  # offline
+            color = QtCore.Qt.red
+        else:
+            color = QtCore.Qt.green
+
+        paint.setPen(color)
+        center = QtCore.QPoint(k, k)
+        paint.setBrush(color)
+        paint.drawEllipse(center, rad_x, rad_y)
+        paint.end()
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -69,6 +99,10 @@ class MainWindow(QtGui.QMainWindow):
         msgBox.setText("Toxygen is pythonic Tox client. Version: " + util.program_version)
         msgBox.exec_()
 
+    def paintEvent(self, event):
+        pass
+        #self.connection_status.paintEvent(event)
+
     def setup_right_bottom(self, Form):
         Form.setObjectName("right_bottom")
         Form.resize(500, 150)
@@ -132,12 +166,13 @@ class MainWindow(QtGui.QMainWindow):
         font.setBold(False)
         self.label_2.setFont(font)
         self.label_2.setObjectName("label_2")
-        self.graphicsView_2 = QtGui.QGraphicsView(Form)
-        self.graphicsView_2.setGeometry(QtCore.QRect(200, 34, 64, 64))
-        self.graphicsView_2.setMinimumSize(QtCore.QSize(32, 32))
-        self.graphicsView_2.setMaximumSize(QtCore.QSize(32, 32))
-        self.graphicsView_2.setBaseSize(QtCore.QSize(32, 32))
-        self.graphicsView_2.setObjectName("graphicsView_2")
+        self.connection_status = StatusCircle(self)
+        self.connection_status.setGeometry(QtCore.QRect(200, 34, 64, 64))
+        self.connection_status.setMinimumSize(QtCore.QSize(32, 32))
+        self.connection_status.setMaximumSize(QtCore.QSize(32, 32))
+        self.connection_status.setBaseSize(QtCore.QSize(32, 32))
+        self.connection_status.setObjectName("connection_status")
+
 
     def setup_right_top(self, Form):
         Form.setObjectName("Form")

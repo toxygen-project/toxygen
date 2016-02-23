@@ -1,9 +1,12 @@
 # TODO: add all callbacks (replace test callbacks and use wrappers)
 
 
-def self_connection_status(a, b, c):
-    print 'WOW, it works!'
-    print 'Status: ', str(b)
+def self_connection_status(st):
+    def wrapped(a, b, c):
+        print 'WOW, it works!'
+        print 'Status: ', str(b)
+        st.status = b
+    return wrapped
 
 
 def friend_status(a, b, c, d):
@@ -22,4 +25,4 @@ def init_callbacks(tox, window):
     """
     tox.callback_friend_status(friend_status, 0)
     tox.callback_friend_message(friend_message, 0)
-    tox.callback_self_connection_status(self_connection_status, 0)
+    tox.callback_self_connection_status(self_connection_status(window.connection_status), 0)
