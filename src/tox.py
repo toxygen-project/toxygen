@@ -2,7 +2,6 @@
 from ctypes import *
 from platform import system
 from toxcore_enums_and_consts import *
-import os
 
 
 class ToxOptions(Structure):
@@ -372,12 +371,12 @@ class Tox(object):
 
         :param name: pointer (c_char_p) to a memory region location large enough to hold the nickname. If this parameter
         is NULL, the function allocates memory for the nickname.
-        :return: pointer (c_char_p) to a memory region with the nickname
+        :return: nickname
         """
         if name is None:
             name = create_string_buffer(self.self_get_name_size())
         Tox.libtoxcore.tox_self_get_name(self._tox_pointer, name)
-        return name
+        return name.value.decode('utf8')
 
     def self_set_status_message(self, status_message):
         """
@@ -420,12 +419,12 @@ class Tox(object):
 
         :param status_message: pointer (c_char_p) to a valid memory location large enough to hold the status message.
         If this parameter is None, the function allocates memory for the status message.
-        :return: pointer (c_char_p) to a memory region with the status message
+        :return: status message
         """
         if status_message is None:
             status_message = create_string_buffer(self.self_get_status_message_size())
         Tox.libtoxcore.tox_self_get_status_message(self._tox_pointer, status_message)
-        return status_message
+        return status_message.value.decode('utf8')
 
     def self_set_status(self, status):
         """
@@ -661,7 +660,7 @@ class Tox(object):
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
-    def friend_get_name(self, friend_number, name):
+    def friend_get_name(self, friend_number, name=None):
         """
         Write the name of the friend designated by the given friend number to a byte array.
 
@@ -670,14 +669,16 @@ class Tox(object):
         The data written to `name` is equal to the data received by the last `friend_name` callback.
 
         :param name: pointer (c_char_p) to a valid memory region large enough to store the friend's name.
-        :return: True on success.
+        :return: name of the friend
         """
+        if name is None:
+            name = create_string_buffer(self.friend_get_name_size(friend_number))
         tox_err_friend_query = c_int()
-        result = Tox.libtoxcore.tox_friend_get_name(self._tox_pointer, c_uint32(friend_number), name,
-                                                    addressof(tox_err_friend_query))
+        Tox.libtoxcore.tox_friend_get_name(self._tox_pointer, c_uint32(friend_number), name,
+                                           addressof(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
-            return bool(result)
+            return name.value.decode('utf8')
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['NULL']:
             raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
                                 ' the `_self_` variants of these functions, which have no effect when a parameter is'
@@ -721,7 +722,7 @@ class Tox(object):
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
-    def friend_get_status_message(self, friend_number, status_message):
+    def friend_get_status_message(self, friend_number, status_message=None):
         """
         Write the status message of the friend designated by the given friend number to a byte array.
 
@@ -732,14 +733,16 @@ class Tox(object):
         :param friend_number:
         :param status_message: pointer (c_char_p) to a valid memory region large enough to store the friend's status
         message.
-        :return: True on success.
+        :return: status message of the friend
         """
+        if status_message is None:
+            status_message = create_string_buffer(self.friend_get_status_message_size(friend_number))
         tox_err_friend_query = c_int()
-        result = Tox.libtoxcore.tox_friend_get_status_message(self._tox_pointer, c_uint32(friend_number),
-                                                              status_message, addressof(tox_err_friend_query))
+        Tox.libtoxcore.tox_friend_get_status_message(self._tox_pointer, c_uint32(friend_number), status_message,
+                                                     addressof(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
-            return bool(result)
+            return status_message.value.decode('utf8')
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['NULL']:
             raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
                                 ' the `_self_` variants of these functions, which have no effect when a parameter is'
@@ -1194,6 +1197,7 @@ class Tox(object):
 
 if __name__ == '__main__':
     tox = Tox(Tox.options_new())
-    port = tox.self_get_tcp_port()
-    print type(port)
+    p = tox.self_get_connection_status()
+    print type(p)
+    print p
     del tox
