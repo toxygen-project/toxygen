@@ -11,32 +11,29 @@ class StatusCircle(QtGui.QWidget):
     def __init__(self, parent):
         QtGui.QWidget.__init__(self, parent)
         self.setGeometry(0, 0, 32, 32)
-        self.status = TOX_USER_CONNECTION_STATUS['OFFLINE']
         self.tox = parent.tox
 
     def mouseReleaseEvent(self, event):
-        if self.status != TOX_USER_CONNECTION_STATUS['OFFLINE']:
-            self.status += 1
-            self.status %= TOX_USER_CONNECTION_STATUS['OFFLINE']
-            self.tox.self_set_status(self.status)
-            self.repaint()
+        pass
 
     def paintEvent(self, event):
         paint = QtGui.QPainter()
         paint.begin(self)
         paint.setRenderHint(QtGui.QPainter.Antialiasing)
-        paint.setBrush(QtCore.Qt.white)
-        paint.drawRect(event.rect())
+        #paint.setBrush(QtCore.Qt.white)
+        #paint.drawRect(event.rect())
         k = 16
         rad_x = rad_y = 10
-        if self.status == TOX_USER_CONNECTION_STATUS['OFFLINE']:
+        if not self.tox.self_get_connection_status():
             color = QtCore.Qt.black
-        elif self.status == TOX_USER_CONNECTION_STATUS['ONLINE']:
-            color = QtCore.Qt.green
-        elif self.status == TOX_USER_CONNECTION_STATUS['AWAY']:
-            color = QtCore.Qt.yellow
-        else:  # self.status == TOX_USER_CONNECTION_STATUS['BUSY']:
-            color = QtCore.Qt.red
+        else:
+            status = self.tox.self_get_status()
+            if status == TOX_USER_STATUS['NONE']:
+                color = QtCore.Qt.green
+            elif status == TOX_USER_STATUS['AWAY']:
+                color = QtCore.Qt.yellow
+            else:  # self.status == TOX_USER_STATUS['BUSY']:
+                color = QtCore.Qt.red
 
         paint.setPen(color)
         center = QtCore.QPoint(k, k)

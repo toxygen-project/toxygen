@@ -1,5 +1,5 @@
 from PySide import QtCore
-from toxcore_enums_and_consts import TOX_USER_CONNECTION_STATUS, TOX_CONNECTION
+from notifications import *
 # TODO: add all callbacks (replace test callbacks and use wrappers)
 
 
@@ -33,10 +33,6 @@ def repaint_widget(widget):
 def self_connection_status(st, tox_link):
     def wrapped(tox, connection, user_data):
         print 'Connection status: ', str(connection)
-        if connection == TOX_CONNECTION['NONE']:
-            st.status = TOX_USER_CONNECTION_STATUS['OFFLINE']
-        else:
-            st.status = int(tox_link.self_get_status())
         invoke_in_main_thread(repaint_widget(st))
     return wrapped
 
@@ -47,6 +43,7 @@ def friend_status(a, b, c, d):
 
 def friend_message(a, b, c, d, e, f):
     print 'Message: ', d.decode('utf8')
+    tray_notification('Message', d.decode('utf8'))
 
 
 def init_callbacks(tox, window):
