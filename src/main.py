@@ -5,7 +5,6 @@ from profile import Profile, tox_factory
 import sys
 from PySide import QtCore, QtGui
 from callbacks import init_callbacks
-from tox import Tox
 from bootstrap import node_generator
 
 
@@ -74,6 +73,7 @@ def main():
     # bootstrap
     for data in node_generator():
         tox.bootstrap(*data)
+    # initializing callbacks
     init_callbacks(tox, ms)
     # starting thread for tox iterate
     mainloop = ToxIterateThread(tox)

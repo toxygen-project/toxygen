@@ -59,7 +59,7 @@ class TestNodeGen():
 
 class TestTox():
 
-    def test_creation(self):
+    def test_loading(self):
         data = Profile.open_profile(Settings.get_default_path(), 'tox_save')
         settings = Settings.get_default_settings()
         tox = tox_factory(data, settings)

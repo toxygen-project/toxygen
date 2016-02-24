@@ -1,11 +1,39 @@
+from PySide import QtCore
 # TODO: add all callbacks (replace test callbacks and use wrappers)
 
 
+class InvokeEvent(QtCore.QEvent):
+    EVENT_TYPE = QtCore.QEvent.Type(QtCore.QEvent.registerEventType())
+
+    def __init__(self, fn, *args, **kwargs):
+        QtCore.QEvent.__init__(self, InvokeEvent.EVENT_TYPE)
+        self.fn = fn
+        self.args = args
+        self.kwargs = kwargs
+
+
+class Invoker(QtCore.QObject):
+
+    def event(self, event):
+        event.fn(*event.args, **event.kwargs)
+        return True
+
+_invoker = Invoker()
+
+
+def invoke_in_main_thread(fn, *args, **kwargs):
+    QtCore.QCoreApplication.postEvent(_invoker, InvokeEvent(fn, *args, **kwargs))
+
+
+def repaint_widget(widget):
+    return widget.repaint
+
+
 def self_connection_status(st):
-    def wrapped(a, b, c):
-        print 'WOW, it works!'
-        print 'Status: ', str(b)
-        st.status = b
+    def wrapped(tox, connection, user_data):
+        print 'Connection status: ', str(connection)
+        st.status = connection
+        invoke_in_main_thread(repaint_widget(st))
     return wrapped
 
 
