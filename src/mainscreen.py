@@ -14,7 +14,7 @@ class StatusCircle(QtGui.QWidget):
         self.status = TOX_USER_CONNECTION_STATUS['OFFLINE']
         self.tox = parent.tox
 
-    def mouseClick(self, event):
+    def mouseReleaseEvent(self, event):
         if self.status != TOX_USER_CONNECTION_STATUS['OFFLINE']:
             self.status += 1
             self.status %= TOX_USER_CONNECTION_STATUS['OFFLINE']
@@ -55,6 +55,7 @@ class MainWindow(QtGui.QMainWindow):
     def setup_menu(self, MainWindow):
         self.menubar = QtGui.QMenuBar(MainWindow)
         self.menubar.setObjectName("menubar")
+        self.menubar.setNativeMenuBar(True)
         self.menubar.setHidden(True)
         self.menuProfile = QtGui.QMenu(self.menubar)
         self.menuProfile.setObjectName("menuProfile")
@@ -162,7 +163,6 @@ class MainWindow(QtGui.QMainWindow):
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(16)
-        #font.setWeight(75)
         font.setBold(True)
         self.name.setFont(font)
         self.name.setObjectName("name")
@@ -171,7 +171,6 @@ class MainWindow(QtGui.QMainWindow):
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(14)
-        #font.setWeight(50)
         font.setBold(False)
         self.status_message.setFont(font)
         self.status_message.setObjectName("status_message")
@@ -181,7 +180,6 @@ class MainWindow(QtGui.QMainWindow):
         self.connection_status.setMaximumSize(QtCore.QSize(32, 32))
         self.connection_status.setBaseSize(QtCore.QSize(32, 32))
         self.connection_status.setObjectName("connection_status")
-        self.connect(self.connection_status, QtCore.SIGNAL('clicked()'), self.connection_status.mouseClick)
 
     def setup_right_top(self, Form):
         Form.setObjectName("Form")
@@ -212,8 +210,8 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def setup_info_from_tox(self):
-        self.name.setText(str(self.tox.self_get_name().value))
-        self.status_message.setText(str(self.tox.self_get_status_message().value))
+        self.name.setText(self.tox.self_get_name())
+        self.status_message.setText(self.tox.self_get_status_message())
 
     def initUI(self):
         main = QtGui.QWidget()
@@ -232,11 +230,18 @@ class MainWindow(QtGui.QMainWindow):
         self.setup_right_bottom(message)
         grid.addWidget(message, 2, 1)
         main.setLayout(grid)
-        self.setup_menu(main)
         self.setCentralWidget(main)
+        self.setup_menu(self)
         self.setMinimumSize(800, 400)
         self.setGeometry(400, 400, 800, 400)
         self.setWindowTitle('Toxygen')
+
+    def mouseReleaseEvent(self, event):
+        if self.connection_status.status != TOX_USER_CONNECTION_STATUS['OFFLINE']:
+            self.connection_status.status += 1
+            self.connection_status.status %= TOX_USER_CONNECTION_STATUS['OFFLINE']
+            self.tox.self_set_status(self.connection_status.status)
+            self.connection_status.repaint()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click in menu
