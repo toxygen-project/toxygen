@@ -46,7 +46,7 @@ def friend_status(a, b, c, d):
 
 
 def friend_message(a, b, c, d, e, f):
-    print 'Message: ', str(d)
+    print 'Message: ', d.decode('utf8')
 
 
 def init_callbacks(tox, window):
