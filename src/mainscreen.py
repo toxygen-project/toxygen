@@ -55,16 +55,16 @@ class MainWindow(QtGui.QMainWindow):
     def setup_menu(self, MainWindow):
         self.menubar = QtGui.QMenuBar(MainWindow)
         self.menubar.setObjectName("menubar")
-        self.menubar.setNativeMenuBar(True)
-        self.menubar.setHidden(True)
+        self.menubar.setNativeMenuBar(False)
+        self.menubar.setMinimumSize(self.width(), 25)
+        self.menubar.setMaximumSize(self.width(), 25)
+        self.menubar.setBaseSize(self.width(), 25)
         self.menuProfile = QtGui.QMenu(self.menubar)
         self.menuProfile.setObjectName("menuProfile")
         self.menuSettings = QtGui.QMenu(self.menubar)
         self.menuSettings.setObjectName("menuSettings")
         self.menuAbout = QtGui.QMenu(self.menubar)
         self.menuAbout.setObjectName("menuAbout")
-        #self.statusbar = QtGui.QStatusBar(MainWindow)
-        #self.statusbar.setObjectName("statusbar")
         self.actionAdd_friend = QtGui.QAction(MainWindow)
         self.actionAdd_friend.setObjectName("actionAdd_friend")
         self.actionProfile_settings = QtGui.QAction(MainWindow)
@@ -209,10 +209,6 @@ class MainWindow(QtGui.QMainWindow):
         self.callButton.setText(QtGui.QApplication.translate("Form", "Start call", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QMetaObject.connectSlotsByName(Form)
 
-    def setup_info_from_tox(self):
-        self.name.setText(self.tox.self_get_name())
-        self.status_message.setText(self.tox.self_get_status_message())
-
     def initUI(self):
         main = QtGui.QWidget()
         grid = QtGui.QGridLayout()
@@ -237,11 +233,16 @@ class MainWindow(QtGui.QMainWindow):
         self.setWindowTitle('Toxygen')
 
     def mouseReleaseEvent(self, event):
-        if self.connection_status.status != TOX_USER_CONNECTION_STATUS['OFFLINE']:
-            self.connection_status.status += 1
-            self.connection_status.status %= TOX_USER_CONNECTION_STATUS['OFFLINE']
-            self.tox.self_set_status(self.connection_status.status)
-            self.connection_status.repaint()
+        pass
+        # if self.connection_status.status != TOX_USER_CONNECTION_STATUS['OFFLINE']:
+        #     self.connection_status.status += 1
+        #     self.connection_status.status %= TOX_USER_CONNECTION_STATUS['OFFLINE']
+        #     self.tox.self_set_status(self.connection_status.status)
+        #     self.connection_status.repaint()
+
+    def setup_info_from_tox(self):
+        self.name.setText(self.tox.self_get_name())
+        self.status_message.setText(self.tox.self_get_status_message())
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click in menu

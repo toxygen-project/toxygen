@@ -6,6 +6,7 @@ import sys
 from PySide import QtCore, QtGui
 from callbacks import init_callbacks
 from bootstrap import node_generator
+from util import curr_directory
 
 
 class login(object):
@@ -35,7 +36,7 @@ def main():
         main function of app. loads loginscreen if needed and starts mainscreen
     """
     app = QtGui.QApplication(sys.argv)
-    app.setWindowIcon(QtGui.QIcon('images/icon.png'))
+    app.setWindowIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
     settings = Settings()
     if not settings['auto_profile']:
         # show login screen if default profile not found
