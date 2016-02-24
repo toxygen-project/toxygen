@@ -68,7 +68,8 @@ def main():
         data = Profile.open_profile(path, name)
         tox = tox_factory(data, settings)
 
-    ms = MainWindow()
+    ms = MainWindow(tox)
+    ms.setup_info_from_tox()
     ms.show()
     # bootstrap
     for data in node_generator():

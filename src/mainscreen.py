@@ -8,25 +8,35 @@ from toxcore_enums_and_consts import *
 
 class StatusCircle(QtGui.QWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         QtGui.QWidget.__init__(self, parent)
-        # setGeometry(x_pos, y_pos, width, height)
         self.setGeometry(0, 0, 32, 32)
-        self.status = 0
+        self.status = TOX_USER_CONNECTION_STATUS['OFFLINE']
+        self.tox = parent.tox
+
+    def mouseClick(self, event):
+        if self.status != TOX_USER_CONNECTION_STATUS['OFFLINE']:
+            self.status += 1
+            self.status %= TOX_USER_CONNECTION_STATUS['OFFLINE']
+            self.tox.self_set_status(self.status)
+            self.repaint()
 
     def paintEvent(self, event):
         paint = QtGui.QPainter()
         paint.begin(self)
         paint.setRenderHint(QtGui.QPainter.Antialiasing)
-        # make a white drawing background
         paint.setBrush(QtCore.Qt.white)
         paint.drawRect(event.rect())
         k = 16
         rad_x = rad_y = 10
-        if not self.status:  # offline
-            color = QtCore.Qt.red
-        else:
+        if self.status == TOX_USER_CONNECTION_STATUS['OFFLINE']:
+            color = QtCore.Qt.black
+        elif self.status == TOX_USER_CONNECTION_STATUS['ONLINE']:
             color = QtCore.Qt.green
+        elif self.status == TOX_USER_CONNECTION_STATUS['AWAY']:
+            color = QtCore.Qt.yellow
+        else:  # self.status == TOX_USER_CONNECTION_STATUS['BUSY']:
+            color = QtCore.Qt.red
 
         paint.setPen(color)
         center = QtCore.QPoint(k, k)
@@ -37,21 +47,23 @@ class StatusCircle(QtGui.QWidget):
 
 class MainWindow(QtGui.QMainWindow):
 
-    def __init__(self):
+    def __init__(self, tox):
         super(MainWindow, self).__init__()
+        self.tox = tox
         self.initUI()
 
     def setup_menu(self, MainWindow):
         self.menubar = QtGui.QMenuBar(MainWindow)
         self.menubar.setObjectName("menubar")
+        self.menubar.setHidden(True)
         self.menuProfile = QtGui.QMenu(self.menubar)
         self.menuProfile.setObjectName("menuProfile")
         self.menuSettings = QtGui.QMenu(self.menubar)
         self.menuSettings.setObjectName("menuSettings")
         self.menuAbout = QtGui.QMenu(self.menubar)
         self.menuAbout.setObjectName("menuAbout")
-        self.statusbar = QtGui.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
+        #self.statusbar = QtGui.QStatusBar(MainWindow)
+        #self.statusbar.setObjectName("statusbar")
         self.actionAdd_friend = QtGui.QAction(MainWindow)
         self.actionAdd_friend.setObjectName("actionAdd_friend")
         self.actionProfile_settings = QtGui.QAction(MainWindow)
@@ -145,30 +157,31 @@ class MainWindow(QtGui.QMainWindow):
         self.graphicsView.setMaximumSize(QtCore.QSize(64, 64))
         self.graphicsView.setBaseSize(QtCore.QSize(64, 64))
         self.graphicsView.setObjectName("graphicsView")
-        self.label = QtGui.QLabel(Form)
-        self.label.setGeometry(QtCore.QRect(80, 30, 191, 17))
-        font = QtGui.QFont()
-        font.setFamily("Times New Roman")
-        font.setPointSize(18)
-        font.setWeight(75)
-        font.setBold(True)
-        self.label.setFont(font)
-        self.label.setObjectName("label")
-        self.label_2 = QtGui.QLabel(Form)
-        self.label_2.setGeometry(QtCore.QRect(80, 60, 191, 17))
+        self.name = QtGui.QLabel(Form)
+        self.name.setGeometry(QtCore.QRect(80, 30, 191, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(16)
-        font.setWeight(50)
+        #font.setWeight(75)
+        font.setBold(True)
+        self.name.setFont(font)
+        self.name.setObjectName("name")
+        self.status_message = QtGui.QLabel(Form)
+        self.status_message.setGeometry(QtCore.QRect(80, 60, 191, 17))
+        font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(14)
+        #font.setWeight(50)
         font.setBold(False)
-        self.label_2.setFont(font)
-        self.label_2.setObjectName("label_2")
+        self.status_message.setFont(font)
+        self.status_message.setObjectName("status_message")
         self.connection_status = StatusCircle(self)
         self.connection_status.setGeometry(QtCore.QRect(200, 34, 64, 64))
         self.connection_status.setMinimumSize(QtCore.QSize(32, 32))
         self.connection_status.setMaximumSize(QtCore.QSize(32, 32))
         self.connection_status.setBaseSize(QtCore.QSize(32, 32))
         self.connection_status.setObjectName("connection_status")
+        self.connect(self.connection_status, QtCore.SIGNAL('clicked()'), self.connection_status.mouseClick)
 
     def setup_right_top(self, Form):
         Form.setObjectName("Form")
@@ -197,6 +210,10 @@ class MainWindow(QtGui.QMainWindow):
         self.account_status.setText(QtGui.QApplication.translate("Form", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
         self.callButton.setText(QtGui.QApplication.translate("Form", "Start call", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QMetaObject.connectSlotsByName(Form)
+
+    def setup_info_from_tox(self):
+        self.name.setText(str(self.tox.self_get_name().value))
+        self.status_message.setText(str(self.tox.self_get_status_message().value))
 
     def initUI(self):
         main = QtGui.QWidget()

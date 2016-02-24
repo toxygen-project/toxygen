@@ -19,3 +19,11 @@ def bin_to_string(raw_id):
 
 def curr_directory():
     return os.path.dirname(os.path.realpath(__file__))
+
+
+class Singleton(object):
+
+    def __new__(cls):
+        if not hasattr(cls, 'instance'):
+            cls.instance = super(Singleton, cls).__new__(cls)
+        return cls.instance

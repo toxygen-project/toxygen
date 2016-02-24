@@ -1,13 +1,14 @@
 from platform import system
 import json
 import os
+from util import Singleton
 
 
-class Settings(dict):
+class Settings(dict, Singleton):
 
     def __init__(self):
         self.path = Settings.get_default_path() + 'toxygen.json'
-        if os.path.exists(self.path):
+        if os.path.isfile(self.path):
             with open(self.path) as fl:
                 data = fl.read()
             super(self.__class__, self).__init__(json.loads(data))
@@ -51,4 +52,3 @@ class Settings(dict):
             return os.getenv('HOME') + '/.config/tox/'
         elif system() == 'Windows':
             return os.getenv('APPDATA') + '/Tox/'
-
