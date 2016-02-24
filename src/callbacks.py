@@ -1,5 +1,6 @@
 from PySide import QtCore
 from notifications import *
+from settings import Settings
 # TODO: add all callbacks (replace test callbacks and use wrappers)
 
 
@@ -26,14 +27,15 @@ def invoke_in_main_thread(fn, *args, **kwargs):
     QtCore.QCoreApplication.postEvent(_invoker, InvokeEvent(fn, *args, **kwargs))
 
 
-def repaint_widget(widget):
-    return widget.repaint
-
-
 def self_connection_status(st, tox_link):
+    """
+    :param st: widget on mainscreen which shows status
+    :param tox_link: tox instance
+    :return: function for tox.callback_self_connection_status
+    """
     def wrapped(tox, connection, user_data):
         print 'Connection status: ', str(connection)
-        invoke_in_main_thread(repaint_widget(st))
+        invoke_in_main_thread(st.repaint)
     return wrapped
 
 
@@ -41,17 +43,23 @@ def friend_status(a, b, c, d):
     print "Friend connected! Friend's data: ", str(a), str(b), str(c)
 
 
-def friend_message(a, b, c, d, e, f):
-    print 'Message: ', d.decode('utf8')
-    tray_notification('Message', d.decode('utf8'))
+def friend_message(window):
+    """
+    :param window: main window
+    :return: function for tox.callback_friend_message
+    """
+    def wrapped(tox, friend_number, message_type, message, size, user_data):
+        print 'Message: ', message.decode('utf8')
+        if not window.isActiveWindow() and Settings()['notifications']:
+            tray_notification('Message', message.decode('utf8'))
+    return wrapped
 
 
 def init_callbacks(tox, window):
     """
     :param tox: tox instance
     :param window: main window
-    :return: None
     """
     tox.callback_friend_status(friend_status, 0)
-    tox.callback_friend_message(friend_message, 0)
+    tox.callback_friend_message(friend_message(window), 0)
     tox.callback_self_connection_status(self_connection_status(window.connection_status, tox), 0)
