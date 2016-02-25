@@ -1,7 +1,7 @@
 from loginscreen import LoginScreen
 from settings import Settings
 from mainscreen import MainWindow
-from profile import Profile, tox_factory
+from profile import ProfileHelper, tox_factory
 import sys
 from PySide import QtCore, QtGui
 from callbacks import init_callbacks
@@ -42,7 +42,7 @@ def main():
         # show login screen if default profile not found
         ls = LoginScreen()
         ls.setWindowIconText("Toxygen")
-        profiles = Profile.find_profiles()
+        profiles = ProfileHelper.find_profiles()
         ls.update_select(map(lambda x: x[1], profiles))
         _login = login(profiles)
         ls.update_on_close(_login.login_screen_close)
@@ -57,17 +57,17 @@ def main():
             tox = tox_factory()
             tox.self_set_name('Toxygen User')
             tox.self_set_status('Toxing on Toxygen')
-            Profile.save_profile(tox.get_savedata(), name)
+            ProfileHelper.save_profile(tox.get_savedata(), name)
         else:  # load existing profile
             path, name = _login.get_data()
             if _login.default:
                 settings['auto_profile'] = (path, name)
                 settings.save()
-            data = Profile.open_profile(path, name)
+            data = ProfileHelper.open_profile(path, name)
             tox = tox_factory(data, settings)
     else:
         path, name = settings['auto_profile']
-        data = Profile.open_profile(path, name)
+        data = ProfileHelper.open_profile(path, name)
         tox = tox_factory(data, settings)
 
     ms = MainWindow(tox)

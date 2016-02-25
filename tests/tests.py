@@ -2,7 +2,7 @@ from src.settings import Settings
 from src.util import bin_to_string, string_to_bin
 import sys
 from src.bootstrap import node_generator
-from src.profile import Profile, tox_factory
+from src.profile import ProfileHelper, tox_factory
 import os
 
 
@@ -23,17 +23,17 @@ class TestSettings():
 class TestProfile():
 
     def test_search(self):
-        arr = Profile.find_profiles()
+        arr = ProfileHelper.find_profiles()
         assert arr
 
     def test_open(self):
-        data = Profile.open_profile(Settings.get_default_path(), 'tox_save')
+        data = ProfileHelper.open_profile(Settings.get_default_path(), 'tox_save')
         assert data
 
     def test_open_save(self):
-        data = Profile.open_profile(Settings.get_default_path(), 'tox_save')
-        Profile.save_profile(data)
-        new_data = Profile.open_profile(Settings.get_default_path(), 'tox_save')
+        data = ProfileHelper.open_profile(Settings.get_default_path(), 'tox_save')
+        ProfileHelper.save_profile(data)
+        new_data = ProfileHelper.open_profile(Settings.get_default_path(), 'tox_save')
         assert new_data == data
 
 
@@ -60,7 +60,7 @@ class TestNodeGen():
 class TestTox():
 
     def test_loading(self):
-        data = Profile.open_profile(Settings.get_default_path(), 'tox_save')
+        data = ProfileHelper.open_profile(Settings.get_default_path(), 'tox_save')
         settings = Settings.get_default_settings()
         tox = tox_factory(data, settings)
         for data in node_generator():
@@ -68,9 +68,11 @@ class TestTox():
         del tox
 
     def test_friend_list(self):
-        data = Profile.open_profile(Settings.get_default_path(), 'tox_save')
+        data = ProfileHelper.open_profile(Settings.get_default_path(), 'tox_save')
         settings = Settings.get_default_settings()
         tox = tox_factory(data, settings)
         s = tox.self_get_friend_list()
+        size = tox.self_get_friend_list_size()
+        assert size
         assert s
         del tox

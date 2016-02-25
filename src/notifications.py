@@ -10,5 +10,5 @@ def tray_notification(title, text):
         tray.setContextMenu(QtGui.QMenu())
         tray.show()
         if len(text) > 30:
-            text = text[:30] + '...'
+            text = text[:27] + '...'
         tray.showMessage(title, text, QtGui.QSystemTrayIcon.NoIcon, 3000)

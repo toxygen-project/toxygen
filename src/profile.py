@@ -1,11 +1,12 @@
 from settings import Settings
 import os
 from tox import Tox
+from util import Singleton
 from toxcore_enums_and_consts import *
 from ctypes import *
 
 
-class Profile(object):
+class ProfileHelper(object):
 
     @staticmethod
     def find_profiles():
@@ -26,22 +27,112 @@ class Profile(object):
 
     @staticmethod
     def open_profile(path, name):
-        Profile._path = path + name + '.tox'
-        with open(Profile._path, 'rb') as fl:
+        ProfileHelper._path = path + name + '.tox'
+        with open(ProfileHelper._path, 'rb') as fl:
             data = fl.read()
         if data:
-            print 'Data loaded from: {}'.format(Profile._path)
+            print 'Data loaded from: {}'.format(ProfileHelper._path)
             return data
         else:
-            raise IOError('Save file not found. Path: {}'.format(Profile._path))
+            raise IOError('Save file not found. Path: {}'.format(ProfileHelper._path))
 
     @staticmethod
     def save_profile(data, name=None):
         if name is not None:
-            Profile._path = Settings.get_default_path() + name + '.tox'
-        with open(Profile._path, 'wb') as fl:
+            ProfileHelper._path = Settings.get_default_path() + name + '.tox'
+        with open(ProfileHelper._path, 'wb') as fl:
             fl.write(data)
-        print 'Data saved to: {}'.format(Profile._path)
+        print 'Data saved to: {}'.format(ProfileHelper._path)
+
+
+class Contact(object):
+
+    def __init__(self, name, status_message, number, widget):
+        self._name, self._status_message, self._number = name, status_message, number
+        self._status, self._widget = None, widget
+        widget.name.setText(name)
+        widget.status_message.setText(status_message)
+
+    def getName(self):
+        return self._name
+
+    def setName(self, value):
+        self._name = value
+        self._widget.name.setText(value)
+
+    name = property(getName, setName)
+
+    def getStatusMessage(self):
+        return self._status_message
+
+    def setStatusMessage(self, value):
+        self._status_message = value
+        self._widget.status.setText(value)
+
+    status_message = property(getStatusMessage, setStatusMessage)
+
+    def getStatus(self):
+        return self._status
+
+    def setStatus(self, value):
+        self._status = value
+
+    status = property(getStatus, setStatus)
+
+
+class Friend(Contact):
+
+    def __init__(self, *args):
+        super(Friend, self).__init__(*args)
+        self._new_messages = False
+
+    def setVisibility(self, value):
+        self._widget.setVisibility(value)
+
+    def setMessages(self, value):
+        self._new_messages = value
+
+    messages = property(None, setMessages)
+
+    def getNumber(self):
+        return self._number
+
+    number = property(getNumber)
+
+
+class Profile(Contact, Singleton):
+
+    def __init__(self, tox, widgets, widget):
+        self._widget = widget
+        self.tox = tox
+        data = tox.self_get_friend_list()
+        self.friends, num, self._active_friend = [], 0, -1
+        for i in data:
+            name = tox.friend_get_name(i)
+            status_message = tox.friend_get_status_message(i)
+            self.friends.append(Friend(name, status_message, i, widgets[num]))
+            num += 1
+
+    def getActive(self):
+        return self._active_friend
+
+    def setActive(self, value):
+        if 0 <= value < self.tox.self_get_friend_list_size():
+            self._active_friend = value
+
+    active_friend = property(getActive, setActive)
+
+    def getActiveNumber(self):
+        return self.friends[self._active_friend].getNumber()
+
+    def isActiveOnline(self):
+        if not self._active_friend + 1:  # no active friend
+            return False
+        else:
+            # TODO: callbacks!
+            return True
+            status = self.friends[self._active_friend].getStatus()
+            return status is not None
 
 
 def tox_factory(data=None, settings=None):

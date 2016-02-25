@@ -3,7 +3,33 @@
 import sys
 from PySide import QtGui, QtCore
 from menu import *
+from profile import Profile
 from toxcore_enums_and_consts import *
+
+
+class ContactItem(QtGui.QListWidget):
+
+    def __init__(self, parent=None):
+        QtGui.QListWidget.__init__(self, parent)
+        # self.setMinimumSize(QtCore.QSize(250, 50))
+        # self.setMaximumSize(QtCore.QSize(250, 50))
+        self.setBaseSize(QtCore.QSize(250, 50))
+        self.name = QtGui.QLabel(self)
+        self.name.setGeometry(QtCore.QRect(80, 10, 191, 25))
+        font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(12)
+        font.setBold(True)
+        self.name.setFont(font)
+        self.name.setObjectName("name")
+        self.status_message = QtGui.QLabel(self)
+        self.status_message.setGeometry(QtCore.QRect(80, 30, 191, 17))
+        font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(10)
+        font.setBold(False)
+        self.status_message.setFont(font)
+        self.status_message.setObjectName("status_message")
 
 
 class StatusCircle(QtGui.QWidget):
@@ -126,6 +152,7 @@ class MainWindow(QtGui.QMainWindow):
         self.sendMessageButton = QtGui.QPushButton(Form)
         self.sendMessageButton.setGeometry(QtCore.QRect(440, 10, 51, 131))
         self.sendMessageButton.setObjectName("sendMessageButton")
+        self.sendMessageButton.clicked.connect(self.send_message)
         self.screenshotButton.setText(QtGui.QApplication.translate("Form", "Screenshot", None, QtGui.QApplication.UnicodeUTF8))
         self.fileTransferButton.setText(QtGui.QApplication.translate("Form", "File transfer", None, QtGui.QApplication.UnicodeUTF8))
         self.sendMessageButton.setText(QtGui.QApplication.translate("Form", "Send", None, QtGui.QApplication.UnicodeUTF8))
@@ -148,7 +175,7 @@ class MainWindow(QtGui.QMainWindow):
         Form.resize(500, 300)
         Form.setMinimumSize(QtCore.QSize(250, 100))
         Form.setMaximumSize(QtCore.QSize(250, 100))
-        Form.setBaseSize(QtCore.QSize(2500, 100))
+        Form.setBaseSize(QtCore.QSize(250, 100))
         self.graphicsView = QtGui.QGraphicsView(Form)
         self.graphicsView.setGeometry(QtCore.QRect(10, 20, 64, 64))
         self.graphicsView.setMinimumSize(QtCore.QSize(64, 64))
@@ -201,16 +228,36 @@ class MainWindow(QtGui.QMainWindow):
         self.callButton = QtGui.QPushButton(Form)
         self.callButton.setGeometry(QtCore.QRect(380, 30, 98, 27))
         self.callButton.setObjectName("callButton")
-        self.account_name.setText(QtGui.QApplication.translate("Form", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
-        self.account_status.setText(QtGui.QApplication.translate("Form", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
         self.callButton.setText(QtGui.QApplication.translate("Form", "Start call", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QMetaObject.connectSlotsByName(Form)
 
+    def setup_left_bottom(self, widget):
+        # widget.setFixedWidth(250)
+        # widget.setMinimumSize(QtCore.QSize(250, 500))
+        # widget.setMaximumSize(QtCore.QSize(250, 500))
+        # widget.setBaseSize(QtCore.QSize(250, 500))
+        self.friends_list = QtGui.QListWidget(widget)
+        self.friends_list.setGeometry(0, 0, 250, 300)
+        count = self.tox.self_get_friend_list_size()
+        widgets = []
+        for i in xrange(count):
+            item = ContactItem()
+            elem = QtGui.QListWidgetItem(self.friends_list)
+            print item.sizeHint()
+            elem.setSizeHint(QtCore.QSize(250, 50))
+            self.friends_list.addItem(elem)
+            self.friends_list.setItemWidget(elem, item)
+            widgets.append(item)
+        self.profile = Profile(self.tox, widgets, None)
+        self.friends_list.clicked.connect(self.friend_click)
+
     def initUI(self):
+        self.setMinimumSize(800, 400)
+        self.setGeometry(400, 400, 800, 400)
+        self.setWindowTitle('Toxygen')
         main = QtGui.QWidget()
         grid = QtGui.QGridLayout()
         search = QtGui.QWidget()
-        grid.setColumnStretch(1, 1)
         self.setup_left_center(search)
         grid.addWidget(search, 1, 0)
         name = QtGui.QWidget()
@@ -222,12 +269,14 @@ class MainWindow(QtGui.QMainWindow):
         message = QtGui.QWidget()
         self.setup_right_bottom(message)
         grid.addWidget(message, 2, 1)
+        main_list = QtGui.QWidget()
+        self.setup_left_bottom(main_list)
+        grid.addWidget(main_list, 2, 0)
+        grid.setColumnMinimumWidth(1, 500)
+        grid.setColumnMinimumWidth(0, 250)
         main.setLayout(grid)
         self.setCentralWidget(main)
         self.setup_menu(self)
-        self.setMinimumSize(800, 400)
-        self.setGeometry(400, 400, 800, 400)
-        self.setWindowTitle('Toxygen')
 
     def mouseReleaseEvent(self, event):
         pass
@@ -238,6 +287,7 @@ class MainWindow(QtGui.QMainWindow):
         #     self.connection_status.repaint()
 
     def setup_info_from_tox(self):
+        # TODO: remove - use Profile()
         self.name.setText(self.tox.self_get_name())
         self.status_message.setText(self.tox.self_get_status_message())
 
@@ -275,6 +325,28 @@ class MainWindow(QtGui.QMainWindow):
     def interface_settings(self):
         self.int_s = InterfaceSettings()
         self.int_s.show()
+
+# -----------------------------------------------------------------------------------------------------------------
+# Messages
+# -----------------------------------------------------------------------------------------------------------------
+
+    def send_message(self):
+        text = self.messageEdit.toPlainText()
+        if self.profile.isActiveOnline() and text:
+            num = self.profile.getActiveNumber()
+            self.tox.friend_send_message(num, TOX_MESSAGE_TYPE['NORMAL'], text)
+
+# -----------------------------------------------------------------------------------------------------------------
+# Functions which called when user click somewhere else
+# -----------------------------------------------------------------------------------------------------------------
+
+    def friend_click(self, index):
+        print 'row:', index.row()
+        num = index.row()
+        self.profile.setActive(num)
+        friend = self.profile.friends[num]
+        self.account_name.setText(friend.name)
+        self.account_status.setText(friend.status_message)
 
 
 if __name__ == '__main__':
