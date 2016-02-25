@@ -593,13 +593,14 @@ class Tox(object):
 
         :param friend_list: pointer (c_char_p) to a memory region with enough space to hold the friend list. If this
         parameter is None, this function allocates memory for the friend list.
-        :return: pointer (c_char_p) to a memory region with the friend list
+        :return: friend list
         """
+        friend_list_size = self.self_get_friend_list_size()
         if friend_list is None:
-            friend_list = create_string_buffer(sizeof(c_uint32) * self.self_get_friend_list_size())
+            friend_list = create_string_buffer(sizeof(c_uint32) * friend_list_size)
             friend_list = POINTER(c_uint32)(friend_list)
         Tox.libtoxcore.tox_self_get_friend_list(self._tox_pointer, friend_list)
-        return friend_list
+        return friend_list[0:friend_list_size]
 
     def friend_get_public_key(self, friend_number, public_key):
         """
