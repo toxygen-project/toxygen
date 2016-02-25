@@ -59,7 +59,7 @@ def tox_factory(data=None, settings=None):
         tox_options.contents.savedata_type = TOX_SAVEDATA_TYPE['TOX_SAVE']
         tox_options.contents.savedata_data = c_char_p(data)
         tox_options.contents.savedata_length = len(data)
-    else: # create new profile
+    else:  # create new profile
         tox_options.contents.savedata_type = TOX_SAVEDATA_TYPE['NONE']
         tox_options.contents.savedata_data = None
         tox_options.contents.savedata_length = 0

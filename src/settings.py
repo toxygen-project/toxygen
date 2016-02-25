@@ -38,7 +38,8 @@ class Settings(dict, Singleton):
             'auto_accept_from_friends': [],
             'friends_aliases': [],
             'typing_notifications': True,
-            'auto_profile': None
+            'auto_profile': None,
+            'calls_sound': True
         }
 
     def save(self):

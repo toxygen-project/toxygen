@@ -1,4 +1,5 @@
 from PySide import QtCore, QtGui
+from settings import Settings
 
 
 class AddContact(QtGui.QWidget):
@@ -233,21 +234,31 @@ class NotificationsSettings(QtGui.QWidget):
         self.enableNotifications = QtGui.QCheckBox(self)
         self.enableNotifications.setGeometry(QtCore.QRect(30, 20, 241, 22))
         self.enableNotifications.setObjectName("enableNotifications")
-        self.checkBox_2 = QtGui.QCheckBox(self)
-        self.checkBox_2.setGeometry(QtCore.QRect(30, 100, 231, 22))
-        self.checkBox_2.setObjectName("checkBox_2")
-        self.checkBox_3 = QtGui.QCheckBox(self)
-        self.checkBox_3.setGeometry(QtCore.QRect(30, 60, 231, 22))
-        self.checkBox_3.setObjectName("checkBox_3")
-
+        self.soundNotifications = QtGui.QCheckBox(self)
+        self.soundNotifications.setGeometry(QtCore.QRect(30, 100, 231, 22))
+        self.soundNotifications.setObjectName("checkBox_2")
+        self.callsSound = QtGui.QCheckBox(self)
+        self.callsSound.setGeometry(QtCore.QRect(30, 60, 231, 22))
+        self.callsSound.setObjectName("checkBox_3")
+        s = Settings()
+        self.enableNotifications.setChecked(s['notifications'])
+        self.soundNotifications.setChecked(s['sound_notifications'])
+        self.callsSound.setChecked(s['calls_sound'])
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("notificationsForm", "Notification settings", None, QtGui.QApplication.UnicodeUTF8))
         self.enableNotifications.setText(QtGui.QApplication.translate("notificationsForm", "Enable notifications", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_2.setText(QtGui.QApplication.translate("notificationsForm", "Enable call\'s sound", None, QtGui.QApplication.UnicodeUTF8))
-        self.checkBox_3.setText(QtGui.QApplication.translate("notificationsForm", "Enable sound notifications", None, QtGui.QApplication.UnicodeUTF8))
+        self.soundNotifications.setText(QtGui.QApplication.translate("notificationsForm", "Enable call\'s sound", None, QtGui.QApplication.UnicodeUTF8))
+        self.callsSound.setText(QtGui.QApplication.translate("notificationsForm", "Enable sound notifications", None, QtGui.QApplication.UnicodeUTF8))
+
+    def closeEvent(self, *args, **kwargs):
+        settings = Settings()
+        settings['notifications'] = self.enableNotifications.isChecked()
+        settings['sound_notifications'] = self.soundNotifications.isChecked()
+        settings['calls_sound'] = self.callsSound.isChecked()
+        settings.save()
 
 
 class InterfaceSettings(QtGui.QWidget):
