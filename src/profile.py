@@ -36,9 +36,9 @@ class Profile(object):
             raise IOError('Save file not found. Path: {}'.format(Profile._path))
 
     @staticmethod
-    def save_profile(data):
-        if not hasattr(Profile, '_path'):
-            Profile._path = Settings.get_default_path()
+    def save_profile(data, name=None):
+        if name is not None:
+            Profile._path = Settings.get_default_path() + name + '.tox'
         with open(Profile._path, 'wb') as fl:
             fl.write(data)
         print 'Data saved to: {}'.format(Profile._path)

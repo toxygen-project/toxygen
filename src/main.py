@@ -53,10 +53,11 @@ def main():
             return
         elif _login.t == 1:  # create new profile
             # TODO: test
-            name = _login.name if _login.name else 'Toxygen User'
+            name = _login.name if _login.name else 'toxygen_user'
             tox = tox_factory()
-            tox.self_set_name(name)
-            Profile.save_profile(tox.get_savedata())
+            tox.self_set_name('Toxygen User')
+            tox.self_set_status('Toxing on Toxygen')
+            Profile.save_profile(tox.get_savedata(), name)
         else:  # load existing profile
             path, name = _login.get_data()
             if _login.default:
