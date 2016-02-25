@@ -50,8 +50,9 @@ class AddContact(QtGui.QWidget):
 
 class ProfileSettings(QtGui.QWidget):
     """Form with profile settings such as name, status, TOX ID"""
-    def __init__(self):
+    def __init__(self, tox):
         super(ProfileSettings, self).__init__()
+        self.tox = tox
         self.initUI()
 
     def initUI(self):
@@ -63,9 +64,11 @@ class ProfileSettings(QtGui.QWidget):
         self.nick = QtGui.QLineEdit(self)
         self.nick.setGeometry(QtCore.QRect(30, 60, 351, 27))
         self.nick.setObjectName("nick")
+        self.nick.setText(self.tox.self_get_name())
         self.status = QtGui.QLineEdit(self)
         self.status.setGeometry(QtCore.QRect(30, 130, 351, 27))
         self.status.setObjectName("status")
+        self.status.setText(self.tox.self_get_status_message())
         self.label = QtGui.QLabel(self)
         self.label.setGeometry(QtCore.QRect(50, 30, 91, 21))
         font = QtGui.QFont()
@@ -91,16 +94,20 @@ class ProfileSettings(QtGui.QWidget):
         self.label_3.setFont(font)
         self.label_3.setObjectName("label_3")
         self.tox_id = QtGui.QLabel(self)
-        self.tox_id.setGeometry(QtCore.QRect(10, 210, 91, 21))
+        self.tox_id.setGeometry(QtCore.QRect(10, 210, self.width(), 21))
         font = QtGui.QFont()
-        font.setPointSize(18)
-        font.setWeight(75)
+        font.setPointSize(12)
+        #font.setWeight(75)
         font.setBold(True)
         self.tox_id.setFont(font)
         self.tox_id.setObjectName("tox_id")
+        # TODO: copy TOX ID to self.tox_id
+        s = 'ID'
+        self.tox_id.setText(s)
         self.copyId = QtGui.QPushButton(self)
         self.copyId.setGeometry(QtCore.QRect(40, 250, 98, 31))
         self.copyId.setObjectName("copyId")
+        self.copyId.clicked.connect(self.copy)
         self.comboBox = QtGui.QComboBox(self)
         self.comboBox.setGeometry(QtCore.QRect(30, 350, 211, 27))
         self.comboBox.setObjectName("comboBox")
@@ -120,9 +127,13 @@ class ProfileSettings(QtGui.QWidget):
         self.label.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Name:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Status:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("ProfileSettingsForm", "TOX ID:", None, QtGui.QApplication.UnicodeUTF8))
-        self.tox_id.setText(QtGui.QApplication.translate("ProfileSettingsForm", "TOX ID:", None, QtGui.QApplication.UnicodeUTF8))
         self.copyId.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Copy TOX ID", None, QtGui.QApplication.UnicodeUTF8))
         self.tox_id_2.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Language:", None, QtGui.QApplication.UnicodeUTF8))
+
+    def copy(self):
+        clipboard = QtGui.QApplication.clipboard()
+        id = unicode(self.tox.self_get_public_key())
+        clipboard.setText(id)
 
 
 class NetworkSettings(QtGui.QWidget):

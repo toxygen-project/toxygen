@@ -261,7 +261,7 @@ class MainWindow(QtGui.QMainWindow):
         self.a_c.show()
 
     def profile_settings(self):
-        self.p_s = ProfileSettings()
+        self.p_s = ProfileSettings(self.tox)
         self.p_s.show()
 
     def privacy_settings(self):
