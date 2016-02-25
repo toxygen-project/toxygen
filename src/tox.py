@@ -311,7 +311,7 @@ class Tox(object):
         """
         if public_key is None:
             public_key = create_string_buffer(TOX_PUBLIC_KEY_SIZE)
-        Tox.libtoxcore.tox_self_get_address(self._tox_pointer, public_key)
+        Tox.libtoxcore.tox_self_get_public_key(self._tox_pointer, public_key)
         return public_key
 
     def self_get_secret_key(self, secret_key=None):
