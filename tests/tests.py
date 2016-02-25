@@ -66,3 +66,11 @@ class TestTox():
         for data in node_generator():
             tox.bootstrap(*data)
         del tox
+
+    def test_friend_list(self):
+        data = Profile.open_profile(Settings.get_default_path(), 'tox_save')
+        settings = Settings.get_default_settings()
+        tox = tox_factory(data, settings)
+        s = tox.self_get_friend_list()
+        assert s
+        del tox
