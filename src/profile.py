@@ -7,7 +7,9 @@ from ctypes import *
 
 
 class ProfileHelper(object):
-
+    """
+    Class with static methods for search, load and save profiles
+    """
     @staticmethod
     def find_profiles():
         path = Settings.get_default_path()
@@ -46,8 +48,14 @@ class ProfileHelper(object):
 
 
 class Contact(object):
+    """
+    Class encapsulating TOX contact
+    Properties: name (alias of contact or name), status_message, status (connection status)
+    number - unique number of friend in list, widget - widget for update
+    """
 
     def __init__(self, name, status_message, number, widget):
+        # TODO: remove number
         self._name, self._status_message, self._number = name, status_message, number
         self._status, self._widget = None, widget
         widget.name.setText(name)
@@ -81,6 +89,9 @@ class Contact(object):
 
 
 class Friend(Contact):
+    """
+    Friend in list of friends. Can be hidden, unread messages added
+    """
 
     def __init__(self, *args):
         super(Friend, self).__init__(*args)
@@ -101,14 +112,17 @@ class Friend(Contact):
 
 
 class Profile(Contact, Singleton):
-
+    """
+    Profile of current toxygen user. Contains friends list, tox instance
+    """
+    # TODO: add slices
     def __init__(self, tox, widgets, widget):
         self._widget = widget
         self.tox = tox
         data = tox.self_get_friend_list()
         self.friends, num, self._active_friend = [], 0, -1
         for i in data:
-            name = tox.friend_get_name(i)
+            name = tox.friend_get_name(i) or 'Tox user'  # tox.friend_get_public_key(i)
             status_message = tox.friend_get_status_message(i)
             self.friends.append(Friend(name, status_message, i, widgets[num]))
             num += 1
@@ -136,6 +150,11 @@ class Profile(Contact, Singleton):
 
 
 def tox_factory(data=None, settings=None):
+    """
+    :param data: user data from .tox file. None = no saved data, create new profile
+    :param settings: current application settings. None = defaults settings will be used
+    :return: new tox instance
+    """
     if settings is None:
         settings = Settings.get_default_settings()
     tox_options = Tox.options_new()

@@ -158,7 +158,7 @@ class MainWindow(QtGui.QMainWindow):
         self.sendMessageButton.setText(QtGui.QApplication.translate("Form", "Send", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QMetaObject.connectSlotsByName(Form)
 
-    def setup_left_center(self, Form):
+    def setup_left_bottom(self, Form):
         Form.setObjectName("left_center")
         Form.resize(500, 80)
         self.online_contacts = QtGui.QCheckBox(Form)
@@ -231,7 +231,7 @@ class MainWindow(QtGui.QMainWindow):
         self.callButton.setText(QtGui.QApplication.translate("Form", "Start call", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QMetaObject.connectSlotsByName(Form)
 
-    def setup_left_bottom(self, widget):
+    def setup_left_center(self, widget):
         # widget.setFixedWidth(250)
         # widget.setMinimumSize(QtCore.QSize(250, 500))
         # widget.setMaximumSize(QtCore.QSize(250, 500))
@@ -258,8 +258,8 @@ class MainWindow(QtGui.QMainWindow):
         main = QtGui.QWidget()
         grid = QtGui.QGridLayout()
         search = QtGui.QWidget()
-        self.setup_left_center(search)
-        grid.addWidget(search, 1, 0)
+        self.setup_left_bottom(search)
+        grid.addWidget(search, 2, 0)
         name = QtGui.QWidget()
         self.setup_left_top(name)
         grid.addWidget(name, 0, 0)
@@ -270,8 +270,8 @@ class MainWindow(QtGui.QMainWindow):
         self.setup_right_bottom(message)
         grid.addWidget(message, 2, 1)
         main_list = QtGui.QWidget()
-        self.setup_left_bottom(main_list)
-        grid.addWidget(main_list, 2, 0)
+        self.setup_left_center(main_list)
+        grid.addWidget(main_list, 1, 0)
         grid.setColumnMinimumWidth(1, 500)
         grid.setColumnMinimumWidth(0, 250)
         main.setLayout(grid)
@@ -335,6 +335,7 @@ class MainWindow(QtGui.QMainWindow):
         if self.profile.isActiveOnline() and text:
             num = self.profile.getActiveNumber()
             self.tox.friend_send_message(num, TOX_MESSAGE_TYPE['NORMAL'], text)
+            self.messageEdit.clear()
 
 # -----------------------------------------------------------------------------------------------------------------
 # Functions which called when user click somewhere else
