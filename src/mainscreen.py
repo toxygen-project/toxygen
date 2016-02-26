@@ -12,7 +12,6 @@ class MessageItem(QtGui.QListWidget):
 
     def __init__(self, text, time, user='', parent=None):
         QtGui.QListWidget.__init__(self, parent)
-        self.setBaseSize(QtCore.QSize(250, 250))
         self.name = QtGui.QLabel(self)
         self.name.setGeometry(QtCore.QRect(0, 0, 50, 25))
         font = QtGui.QFont()
@@ -24,7 +23,7 @@ class MessageItem(QtGui.QListWidget):
         self.name.setText(user)
 
         self.time = QtGui.QLabel(self)
-        self.time.setGeometry(QtCore.QRect(250, 0, 30, 20))
+        self.time.setGeometry(QtCore.QRect(450, 0, 50, 50))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(10)
@@ -34,6 +33,7 @@ class MessageItem(QtGui.QListWidget):
         self.time.setText(time)
 
         self.message = QtGui.QPlainTextEdit(self)
+        self.message.setGeometry(QtCore.QRect(50, 0, 400, 50))
         self.message.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
         self.message.setPlainText(text)
 
@@ -263,10 +263,6 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def setup_left_center(self, widget, profile_widget):
-        # widget.setFixedWidth(250)
-        # widget.setMinimumSize(QtCore.QSize(250, 500))
-        # widget.setMaximumSize(QtCore.QSize(250, 500))
-        # widget.setBaseSize(QtCore.QSize(250, 500))
         self.friends_list = QtGui.QListWidget(widget)
         self.friends_list.setGeometry(0, 0, 250, 300)
         count = self.tox.self_get_friend_list_size()
@@ -284,7 +280,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def setup_right_center(self, widget):
         self.messages = QtGui.QListWidget(widget)
-        self.messages.setGeometry(0, 0, 250, 300)
+        self.messages.setGeometry(0, 0, 500, 500)
 
     def initUI(self):
         self.setMinimumSize(800, 400)

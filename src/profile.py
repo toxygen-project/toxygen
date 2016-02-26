@@ -170,7 +170,7 @@ class Profile(Contact):
             item = mainscreen.MessageItem(message, curr_time(), user_name)
             elem = QtGui.QListWidgetItem(self._messages)
             print item.sizeHint()
-            elem.setSizeHint(QtCore.QSize(250, 50))
+            elem.setSizeHint(QtCore.QSize(500, 100))
             self._messages.addItem(elem)
             self._messages.setItemWidget(elem, item)
             self._messages.repaint()

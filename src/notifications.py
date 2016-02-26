@@ -1,7 +1,7 @@
 from PySide import QtGui
 from util import curr_directory
 # TODO: add sound notifications
-# TODO: add reaction om mouse move
+# TODO: make app icon active
 
 
 def tray_notification(title, text):
