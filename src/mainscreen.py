@@ -5,6 +5,37 @@ from PySide import QtGui, QtCore
 from menu import *
 from profile import Profile
 from toxcore_enums_and_consts import *
+from util import curr_time
+
+
+class MessageItem(QtGui.QListWidget):
+
+    def __init__(self, text, time, user='', parent=None):
+        QtGui.QListWidget.__init__(self, parent)
+        self.setBaseSize(QtCore.QSize(250, 250))
+        self.name = QtGui.QLabel(self)
+        self.name.setGeometry(QtCore.QRect(0, 0, 50, 25))
+        font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(12)
+        font.setBold(True)
+        self.name.setFont(font)
+        self.name.setObjectName("name")
+        self.name.setText(user)
+
+        self.time = QtGui.QLabel(self)
+        self.time.setGeometry(QtCore.QRect(250, 0, 30, 20))
+        font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(10)
+        font.setBold(False)
+        self.time.setFont(font)
+        self.time.setObjectName("time")
+        self.time.setText(time)
+
+        self.message = QtGui.QPlainTextEdit(self)
+        self.message.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
+        self.message.setPlainText(text)
 
 
 class ContactItem(QtGui.QListWidget):
@@ -231,7 +262,7 @@ class MainWindow(QtGui.QMainWindow):
         self.callButton.setText(QtGui.QApplication.translate("Form", "Start call", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QMetaObject.connectSlotsByName(Form)
 
-    def setup_left_center(self, widget):
+    def setup_left_center(self, widget, profile_widget):
         # widget.setFixedWidth(250)
         # widget.setMinimumSize(QtCore.QSize(250, 500))
         # widget.setMaximumSize(QtCore.QSize(250, 500))
@@ -248,8 +279,12 @@ class MainWindow(QtGui.QMainWindow):
             self.friends_list.addItem(elem)
             self.friends_list.setItemWidget(elem, item)
             widgets.append(item)
-        self.profile = Profile(self.tox, widgets, None)
+        self.profile = Profile(self.tox, widgets, profile_widget, self.messages)
         self.friends_list.clicked.connect(self.friend_click)
+
+    def setup_right_center(self, widget):
+        self.messages = QtGui.QListWidget(widget)
+        self.messages.setGeometry(0, 0, 250, 300)
 
     def initUI(self):
         self.setMinimumSize(800, 400)
@@ -263,22 +298,27 @@ class MainWindow(QtGui.QMainWindow):
         name = QtGui.QWidget()
         self.setup_left_top(name)
         grid.addWidget(name, 0, 0)
+        messages = QtGui.QWidget()
+        self.setup_right_center(messages)
+        grid.addWidget(messages, 1, 1)
         info = QtGui.QWidget()
         self.setup_right_top(info)
         grid.addWidget(info, 0, 1)
-        message = QtGui.QWidget()
-        self.setup_right_bottom(message)
-        grid.addWidget(message, 2, 1)
+        message_buttons = QtGui.QWidget()
+        self.setup_right_bottom(message_buttons)
+        grid.addWidget(message_buttons, 2, 1)
         main_list = QtGui.QWidget()
-        self.setup_left_center(main_list)
+        self.setup_left_center(main_list, name)
         grid.addWidget(main_list, 1, 0)
         grid.setColumnMinimumWidth(1, 500)
         grid.setColumnMinimumWidth(0, 250)
         main.setLayout(grid)
         self.setCentralWidget(main)
         self.setup_menu(self)
+        self.setup_info_from_tox()
 
     def mouseReleaseEvent(self, event):
+        # TODO: add reaction on mouse click
         pass
         # if self.connection_status.status != TOX_USER_CONNECTION_STATUS['OFFLINE']:
         #     self.connection_status.status += 1
@@ -288,8 +328,8 @@ class MainWindow(QtGui.QMainWindow):
 
     def setup_info_from_tox(self):
         # TODO: remove - use Profile()
-        self.name.setText(self.tox.self_get_name())
-        self.status_message.setText(self.tox.self_get_status_message())
+        self.name.setText(self.profile.name)
+        self.status_message.setText(self.profile.status_message)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click in menu

@@ -71,7 +71,7 @@ def main():
         tox = tox_factory(data, settings)
 
     ms = MainWindow(tox)
-    ms.setup_info_from_tox()
+    #ms.setup_info_from_tox()
     ms.show()
     # bootstrap
     for data in node_generator():

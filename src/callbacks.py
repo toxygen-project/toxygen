@@ -1,7 +1,9 @@
 from PySide import QtCore
 from notifications import *
 from settings import Settings
-# TODO: add all callbacks (replace test callbacks and use wrappers)
+from profile import Profile
+# TODO: add all callbacks (remove test callbacks and use wrappers)
+# NOTE: don't forget to call repaint
 
 
 class InvokeEvent(QtCore.QEvent):
@@ -52,6 +54,8 @@ def friend_message(window):
         print 'Message: ', message.decode('utf8')
         if not window.isActiveWindow() and Settings()['notifications']:
             tray_notification('Message', message.decode('utf8'))
+        profile = Profile.getInstance()
+        invoke_in_main_thread(profile.newMessage, friend_number, message_type, message)
     return wrapped
 
 

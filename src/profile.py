@@ -1,9 +1,11 @@
+import mainscreen
 from settings import Settings
+from PySide import QtCore, QtGui
 import os
 from tox import Tox
-from util import Singleton
 from toxcore_enums_and_consts import *
 from ctypes import *
+from util import curr_time
 
 
 class ProfileHelper(object):
@@ -75,7 +77,7 @@ class Contact(object):
 
     def setStatusMessage(self, value):
         self._status_message = value
-        self._widget.status.setText(value)
+        self._widget.status_message.setText(value)
 
     status_message = property(getStatusMessage, setStatusMessage)
 
@@ -83,6 +85,7 @@ class Contact(object):
         return self._status
 
     def setStatus(self, value):
+        # TODO: status repaint
         self._status = value
 
     status = property(getStatus, setStatus)
@@ -109,16 +112,21 @@ class Friend(Contact):
         return self._number
 
     number = property(getNumber)
+    # TODO: check if setNumber needed
 
 
-class Profile(Contact, Singleton):
+class Profile(Contact):
     """
     Profile of current toxygen user. Contains friends list, tox instance
     """
     # TODO: add slices
-    def __init__(self, tox, widgets, widget):
+    def __init__(self, tox, widgets, widget, messages_list):
         self._widget = widget
+        self._messages = messages_list
         self.tox = tox
+        self._name = tox.self_get_name()
+        self._status_message = tox.self_get_status_message()
+        self._status = None
         data = tox.self_get_friend_list()
         self.friends, num, self._active_friend = [], 0, -1
         for i in data:
@@ -126,6 +134,11 @@ class Profile(Contact, Singleton):
             status_message = tox.friend_get_status_message(i)
             self.friends.append(Friend(name, status_message, i, widgets[num]))
             num += 1
+        Profile._instance = self
+
+    @staticmethod
+    def getInstance():
+        return Profile._instance
 
     def getActive(self):
         return self._active_friend
@@ -139,6 +152,9 @@ class Profile(Contact, Singleton):
     def getActiveNumber(self):
         return self.friends[self._active_friend].getNumber()
 
+    def getActiveName(self):
+        return self.friends[self._active_friend].getName()
+
     def isActiveOnline(self):
         if not self._active_friend + 1:  # no active friend
             return False
@@ -147,6 +163,25 @@ class Profile(Contact, Singleton):
             return True
             status = self.friends[self._active_friend].getStatus()
             return status is not None
+
+    def newMessage(self, id, message_type, message):
+        if id == self._active_friend:  # add message to list
+            user_name = Profile.getInstance().getActiveName()
+            item = mainscreen.MessageItem(message, curr_time(), user_name)
+            elem = QtGui.QListWidgetItem(self._messages)
+            print item.sizeHint()
+            elem.setSizeHint(QtCore.QSize(250, 50))
+            self._messages.addItem(elem)
+            self._messages.setItemWidget(elem, item)
+            self._messages.repaint()
+        else:
+            friend = filter(lambda x: x.getNumber() == id, self.friends)[0]
+            friend.setMessages(True)
+
+    def changeStatus(self):
+        if self._status is not None:
+            self._status += 1
+            self._status %= 3
 
 
 def tox_factory(data=None, settings=None):
