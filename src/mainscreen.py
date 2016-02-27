@@ -368,9 +368,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def send_message(self):
         text = self.messageEdit.toPlainText()
-        if self.profile.isActiveOnline() and text:
-            num = self.profile.getActiveNumber()
-            self.tox.friend_send_message(num, TOX_MESSAGE_TYPE['NORMAL'], text)
+        if self.profile.sendMessage(text):
             self.messageEdit.clear()
 
 # -----------------------------------------------------------------------------------------------------------------

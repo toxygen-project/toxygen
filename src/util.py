@@ -14,7 +14,7 @@ def curr_directory():
 
 
 def curr_time():
-    return time.strftime("%H:%M:")
+    return time.strftime("%H:%M")
 
 
 class Singleton(object):

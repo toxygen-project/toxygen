@@ -120,6 +120,7 @@ class Profile(Contact):
     Profile of current toxygen user. Contains friends list, tox instance
     """
     # TODO: add slices
+    # TODO: add unicode support
     def __init__(self, tox, widgets, widget, messages_list):
         self._widget = widget
         self._messages = messages_list
@@ -165,6 +166,7 @@ class Profile(Contact):
             return status is not None
 
     def newMessage(self, id, message_type, message):
+        # TODO: add support of action (/me) messages
         if id == self._active_friend:  # add message to list
             user_name = Profile.getInstance().getActiveName()
             item = mainscreen.MessageItem(message, curr_time(), user_name)
@@ -173,10 +175,25 @@ class Profile(Contact):
             elem.setSizeHint(QtCore.QSize(500, 100))
             self._messages.addItem(elem)
             self._messages.setItemWidget(elem, item)
+            self._messages.scrollToBottom()
             self._messages.repaint()
         else:
             friend = filter(lambda x: x.getNumber() == id, self.friends)[0]
             friend.setMessages(True)
+
+    def sendMessage(self, text):
+        if self.isActiveOnline() and text:
+            self.tox.friend_send_message(self._active_friend, TOX_MESSAGE_TYPE['NORMAL'], text)
+            item = mainscreen.MessageItem(text, curr_time(), self._name)
+            elem = QtGui.QListWidgetItem(self._messages)
+            elem.setSizeHint(QtCore.QSize(500, 100))
+            self._messages.addItem(elem)
+            self._messages.setItemWidget(elem, item)
+            self._messages.scrollToBottom()
+            self._messages.repaint()
+            return True
+        else:
+            return False
 
     def changeStatus(self):
         if self._status is not None:
