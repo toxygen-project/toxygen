@@ -198,7 +198,7 @@ class Tox(object):
         """
         tox_err_bootstrap = c_int()
         result = Tox.libtoxcore.tox_bootstrap(self._tox_pointer, c_char_p(address), c_uint16(port),
-                                              c_char_p(public_key), addressof(tox_err_bootstrap))
+                                              c_char_p(string_to_bin(public_key)), addressof(tox_err_bootstrap))
         tox_err_bootstrap = tox_err_bootstrap.value
         if tox_err_bootstrap == TOX_ERR_BOOTSTRAP['OK']:
             return bool(result)
