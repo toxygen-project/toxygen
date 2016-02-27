@@ -1,4 +1,4 @@
-from mainscreen import *
+import mainscreen
 from settings import Settings
 from PySide import QtCore, QtGui
 import os
@@ -167,7 +167,7 @@ class Profile(Contact):
     def newMessage(self, id, message_type, message):
         if id == self._active_friend:  # add message to list
             user_name = Profile.getInstance().getActiveName()
-            item = MessageItem(message, curr_time(), user_name)
+            item = mainscreen.MessageItem(message, curr_time(), user_name)
             elem = QtGui.QListWidgetItem(self._messages)
             print item.sizeHint()
             elem.setSizeHint(QtCore.QSize(500, 100))
