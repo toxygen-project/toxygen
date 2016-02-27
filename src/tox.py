@@ -34,6 +34,15 @@ class LibToxCore(object):
         return self._libtoxcore.__getattr__(item)
 
 
+def string_to_bin(tox_id):
+    return c_char_p(tox_id.decode('hex'))
+
+
+def bin_to_string(raw_id, length):
+    res = ''.join('{:02x}'.format(ord(raw_id[i])) for i in xrange(length))
+    return res.upper()
+
+
 class Tox(object):
     libtoxcore = LibToxCore()
     
@@ -274,16 +283,16 @@ class Tox(object):
     def self_get_address(self, address=None):
         """
         Writes the Tox friend address of the client to a byte array. The address is not in human-readable format. If a
-         client wants to display the address, formatting is required.
+        client wants to display the address, formatting is required.
 
         :param address: pointer (c_char_p) to a memory region of at least TOX_ADDRESS_SIZE bytes. If this parameter is
         None, this function allocates memory for address.
-        :return: pointer (c_char_p) to a memory region with the Tox friend address
+        :return: Tox friend address
         """
         if address is None:
             address = create_string_buffer(TOX_ADDRESS_SIZE)
         Tox.libtoxcore.tox_self_get_address(self._tox_pointer, address)
-        return address
+        return bin_to_string(address, TOX_ADDRESS_SIZE)
 
     def self_set_nospam(self, nospam):
         """
@@ -307,12 +316,12 @@ class Tox(object):
 
         :param public_key: A memory region of at least TOX_PUBLIC_KEY_SIZE bytes. If this parameter is NULL, this
         function allocates memory for Tox Public Key.
-        :return: pointer (c_char_p) to a memory region with the Tox Public Key
+        :return: Tox Public Key
         """
         if public_key is None:
             public_key = create_string_buffer(TOX_PUBLIC_KEY_SIZE)
         Tox.libtoxcore.tox_self_get_public_key(self._tox_pointer, public_key)
-        return public_key
+        return bin_to_string(public_key, TOX_PUBLIC_KEY_SIZE)
 
     def self_get_secret_key(self, secret_key=None):
         """
@@ -320,12 +329,12 @@ class Tox(object):
 
         :param secret_key: pointer (c_char_p) to a memory region of at least TOX_SECRET_KEY_SIZE bytes. If this
         parameter is NULL, this function allocates memory for Tox Secret Key.
-        :return: pointer (c_char_p) to a memory region with the Tox Secret Key
+        :return: Tox Secret Key
         """
         if secret_key is None:
-            secret_key = create_string_buffer(TOX_PUBLIC_KEY_SIZE)
+            secret_key = create_string_buffer(TOX_SECRET_KEY_SIZE)
         Tox.libtoxcore.tox_self_get_secret_key(self._tox_pointer, secret_key)
-        return secret_key
+        return bin_to_string(secret_key, TOX_SECRET_KEY_SIZE)
 
     # -----------------------------------------------------------------------------------------------------------------
     # User-visible client information (nickname/status)
@@ -602,22 +611,23 @@ class Tox(object):
         Tox.libtoxcore.tox_self_get_friend_list(self._tox_pointer, friend_list)
         return friend_list[0:friend_list_size]
 
-    def friend_get_public_key(self, friend_number, public_key):
+    def friend_get_public_key(self, friend_number, public_key=None):
         """
         Copies the Public Key associated with a given friend number to a byte array.
 
         :param friend_number: The friend number you want the Public Key of.
         :param public_key: pointer (c_char_p) to a memory region of at least TOX_PUBLIC_KEY_SIZE bytes. If this
-        parameter is None, this function has no effect.
-        :return: True on success.
+        parameter is None, this function allocates memory for Tox Public Key.
+        :return: Tox Public Key
         """
+        if public_key is None:
+            public_key = create_string_buffer(TOX_PUBLIC_KEY_SIZE)
         tox_err_friend_get_public_key = c_int()
-        result = Tox.libtoxcore.tox_friend_get_public_key(self._tox_pointer, c_uint32(friend_number),
-                                                          c_char_p(public_key),
-                                                          addressof(tox_err_friend_get_public_key))
+        Tox.libtoxcore.tox_friend_get_public_key(self._tox_pointer, c_uint32(friend_number), public_key,
+                                                 addressof(tox_err_friend_get_public_key))
         tox_err_friend_get_public_key = tox_err_friend_get_public_key.value
         if tox_err_friend_get_public_key == TOX_ERR_FRIEND_GET_PUBLIC_KEY['OK']:
-            return bool(result)
+            return bin_to_string(public_key, TOX_PUBLIC_KEY_SIZE)
         elif tox_err_friend_get_public_key == TOX_ERR_FRIEND_GET_PUBLIC_KEY['FRIEND_NOT_FOUND']:
             raise ArgumentError('No friend with the given number exists on the friend list.')
 
@@ -902,8 +912,8 @@ class Tox(object):
         :return: True on success.
         """
         tox_err_set_typing = c_int()
-        result = Tox.libtoxcore.tox_friend_delete(self._tox_pointer, c_uint32(friend_number),
-                                                  c_bool(typing), addressof(tox_err_set_typing))
+        result = Tox.libtoxcore.tox_self_set_typing(self._tox_pointer, c_uint32(friend_number),
+                                                    c_bool(typing), addressof(tox_err_set_typing))
         tox_err_set_typing = tox_err_set_typing.value
         if tox_err_set_typing == TOX_ERR_SET_TYPING['OK']:
             return bool(result)
@@ -1012,7 +1022,7 @@ class Tox(object):
     # -----------------------------------------------------------------------------------------------------------------
 
     @staticmethod
-    def hash(hash, data):
+    def hash(data, hash=None):
         """
         Generates a cryptographic hash of the given data.
 
@@ -1027,7 +1037,10 @@ class Tox(object):
         :param data: Data to be hashed or NULL.
         :return: true if hash was not NULL.
         """
-        return bool(Tox.libtoxcore.tox_hash(c_char_p(hash), c_char_p(data), c_size_t(len(data))))
+        if hash is None:
+            hash = create_string_buffer(TOX_HASH_LENGTH)
+        Tox.libtoxcore.tox_hash(hash, c_char_p(data), c_size_t(len(data)))
+        return bin_to_string(hash, TOX_HASH_LENGTH)
 
     def file_control(self, friend_number, file_number, control):
         """
@@ -1112,7 +1125,7 @@ class Tox(object):
         elif tox_err_file_seek == TOX_ERR_FILE_SEEK['SENDQ']:
             raise ArgumentError('Packet queue is full.')
 
-    def file_get_file_id(self, friend_number, file_number, file_id):
+    def file_get_file_id(self, friend_number, file_number, file_id=None):
         """
         Copy the file id associated to the file transfer to a byte array.
 
@@ -1120,14 +1133,16 @@ class Tox(object):
         :param file_number: The friend-specific identifier for the file transfer.
         :param file_id: A pointer (c_char_p) to memory region of at least TOX_FILE_ID_LENGTH bytes. If this parameter is
         None, this function has no effect.
-        :return: True on success.
+        :return: file id.
         """
+        if file_id is None:
+            file_id = create_string_buffer(TOX_FILE_ID_LENGTH)
         tox_err_file_get = c_int()
-        result = Tox.libtoxcore.tox_file_control(self._tox_pointer, c_uint32(friend_number), c_uint32(file_number),
-                                                 file_id, addressof(tox_err_file_get))
+        Tox.libtoxcore.tox_file_control(self._tox_pointer, c_uint32(friend_number), c_uint32(file_number), file_id,
+                                        addressof(tox_err_file_get))
         tox_err_file_get = tox_err_file_get.value
         if tox_err_file_get == TOX_ERR_FILE_GET['OK']:
-            return bool(result)
+            return bin_to_string(file_id, TOX_FILE_ID_LENGTH)
         elif tox_err_file_get == TOX_ERR_FILE_GET['NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
         elif tox_err_file_get == TOX_ERR_FILE_GET['FRIEND_NOT_FOUND']:
@@ -1168,7 +1183,7 @@ class Tox(object):
         if dht_id is None:
             dht_id = create_string_buffer(TOX_PUBLIC_KEY_SIZE)
         Tox.libtoxcore.tox_self_get_dht_id(self._tox_pointer, dht_id)
-        return dht_id
+        return bin_to_string(dht_id, TOX_PUBLIC_KEY_SIZE)
 
     def self_get_udp_port(self):
         """
@@ -1198,7 +1213,7 @@ class Tox(object):
 
 if __name__ == '__main__':
     tox = Tox(Tox.options_new())
-    p = tox.self_get_connection_status()
+    p = tox.self_get_secret_key()
     print type(p)
     print p
     del tox
