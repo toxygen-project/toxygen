@@ -1,6 +1,5 @@
 from PySide import QtCore, QtGui
 from settings import Settings
-from util import bin_to_string
 
 
 class AddContact(QtGui.QWidget):
@@ -103,7 +102,7 @@ class ProfileSettings(QtGui.QWidget):
         font.setBold(True)
         self.tox_id.setFont(font)
         self.tox_id.setObjectName("tox_id")
-        s = bin_to_string(self.tox.self_get_address().value)
+        s = self.tox.self_get_address()
         self.tox_id.setText(s)
         self.copyId = QtGui.QPushButton(self)
         self.copyId.setGeometry(QtCore.QRect(40, 250, 98, 31))

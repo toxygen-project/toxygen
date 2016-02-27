@@ -1,4 +1,3 @@
-from util import string_to_bin
 import random
 
 
@@ -7,7 +6,7 @@ class Node(object):
         self._ip, self._port, self._tox_key, self.rand = ip, port, tox_key, rand
 
     def get_data(self):
-        return self._ip, self._port, string_to_bin(self._tox_key)
+        return self._ip, self._port, self._tox_key
 
 
 def node_generator():
