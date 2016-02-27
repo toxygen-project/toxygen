@@ -2,7 +2,7 @@ from src.settings import Settings
 from src.util import bin_to_string, string_to_bin
 import sys
 from src.bootstrap import node_generator
-from src.profile import ProfileHelper, tox_factory
+from src.profile import *
 import os
 
 
@@ -60,7 +60,7 @@ class TestNodeGen():
 class TestTox():
 
     def test_loading(self):
-        data = ProfileHelper.open_profile(Settings.get_default_path(), 'tox_save')
+        data = ProfileHelper.open_profile(Settings.get_default_path(), 'alice')
         settings = Settings.get_default_settings()
         tox = tox_factory(data, settings)
         for data in node_generator():
@@ -68,11 +68,11 @@ class TestTox():
         del tox
 
     def test_friend_list(self):
-        data = ProfileHelper.open_profile(Settings.get_default_path(), 'tox_save')
+        data = ProfileHelper.open_profile(Settings.get_default_path(), 'bob')
         settings = Settings.get_default_settings()
         tox = tox_factory(data, settings)
         s = tox.self_get_friend_list()
         size = tox.self_get_friend_list_size()
-        assert size
-        assert s
+        assert size == 2
+        assert len(s) == 2
         del tox

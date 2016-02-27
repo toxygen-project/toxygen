@@ -3,7 +3,7 @@
 import sys
 from PySide import QtGui, QtCore
 from menu import *
-from profile import Profile
+from profile import *
 from toxcore_enums_and_consts import *
 from util import curr_time
 
