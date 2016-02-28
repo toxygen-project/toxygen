@@ -5,9 +5,9 @@ from PySide import QtGui, QtCore
 from menu import *
 from profile import *
 from toxcore_enums_and_consts import *
-from util import curr_time
 
 
+# TODO: move list items to new file
 class MessageItem(QtGui.QListWidget):
 
     def __init__(self, text, time, user='', message_type=TOX_MESSAGE_TYPE['NORMAL'], parent=None):
@@ -372,23 +372,20 @@ class MainWindow(QtGui.QMainWindow):
 
     def send_message(self):
         text = self.messageEdit.toPlainText()
-        if self.profile.sendMessage(text):
+        if self.profile.send_message(text):
             self.messageEdit.clear()
 
 # -----------------------------------------------------------------------------------------------------------------
 # Functions which called when user click somewhere else
 # -----------------------------------------------------------------------------------------------------------------
 
-    def friend_click(self, index):
-        print 'row:', index.row()
-        num = index.row()
-        self.profile.setActive(num)
-        friend = self.profile.getActiveFriendData()
+    def update_active_friend(self):
+        friend = self.profile.get_active_friend_data()
         self.account_name.setText(friend[0])
         self.account_status.setText(friend[1])
 
-
-if __name__ == '__main__':
-    app = QtGui.QApplication(sys.argv)
-    ex = MainWindow()
-    sys.exit(app.exec_())
+    def friend_click(self, index):
+        print 'row:', index.row()
+        num = index.row()
+        self.profile.set_active(num)
+        self.update_active_friend()

@@ -62,37 +62,39 @@ class Contact(object):
         widget.name.setText(name)
         widget.status_message.setText(status_message)
 
-    def getName(self):
+    def get_name(self):
         return self._name
 
-    def setName(self, value):
+    def set_name(self, value):
         self._name = value
         self._widget.name.setText(value)
+        self._widget.name.repaint()
 
-    name = property(getName, setName)
+    name = property(get_name, set_name)
 
-    def getStatusMessage(self):
+    def get_status_message(self):
         return self._status_message
 
-    def setStatusMessage(self, value):
+    def set_status_message(self, value):
         self._status_message = value
         self._widget.status_message.setText(value)
+        self._widget.status_message.repaint()
 
-    status_message = property(getStatusMessage, setStatusMessage)
+    status_message = property(get_status_message, set_status_message)
 
-    def getStatus(self):
+    def get_status(self):
         return self._status
 
-    def setStatus(self, value):
+    def set_status(self, value):
         # TODO: status repaint
         self._status = value
 
-    status = property(getStatus, setStatus)
+    status = property(get_status, set_status)
 
 
 class Friend(Contact):
     """
-    Friend in list of friends. Can be hidden, unread messages added
+    Friend in list of friends. Can be hidden, property 'has unread messages' added
     """
 
     def __init__(self, number, *args):
@@ -101,32 +103,37 @@ class Friend(Contact):
         self._new_messages = False
         self._visible = True
 
-    def getVisibility(self):
+    def get_visibility(self):
         return self._visible
 
-    def setVisibility(self, value):
+    def set_visibility(self, value):
         self._widget.setVisibility(value)
         self._visible = value
 
-    visibility = property(getVisibility, setVisibility)
+    visibility = property(get_visibility, set_visibility)
 
-    def setMessages(self, value):
+    def get_messages(self):
+        return self._new_messages
+
+    def set_messages(self, value):
         self._new_messages = value
 
-    messages = property(None, setMessages)
+    messages = property(get_messages, set_messages)
 
-    def getNumber(self):
+    def get_number(self):
         return self._number
 
-    number = property(getNumber)
+    number = property(get_number)
     # TODO: check if setNumber needed
+
+    def __del__(self):
+        del self._widget
 
 
 class Profile(Contact):
     """
-    Profile of current toxygen user. Contains friends list, tox instance
+    Profile of current toxygen user. Contains friends list, tox instance, list of messages
     """
-    # TODO: add unicode support in messages
     def __init__(self, tox, widgets, widget, messages_list):
         self._widget = widget
         self._messages = messages_list
@@ -144,50 +151,58 @@ class Profile(Contact):
         Profile._instance = self
 
     @staticmethod
-    def getInstance():
+    def get_instance():
         return Profile._instance
 
-    def getActive(self):
-        return self._active_friend
-
-    def setActive(self, value):
-        try:
-            visible_friends = filter(lambda num, friend: friend.visibility, enumerate(self.friends))
-            self._active_friend = visible_friends[value][0]
-            self._messages.clear()
-            # TODO: load history
-        except:  # no friend found. ignore
-            log('Incorrect friend value: ' + str(value))
-
-    active_friend = property(getActive, setActive)
-
-    def getActiveFriendData(self):
-        friend = self.friends[self._active_friend]
-        return friend.name, friend.status_message
-
-    def getActiveNumber(self):
-        return self.friends[self._active_friend].number
-
-    def getActiveName(self):
-        return self.friends[self._active_friend].name
-
-    def isActiveOnline(self):
-        if not self._active_friend + 1:  # no active friend
-            return False
-        else:
-            # TODO: callbacks!
-            return True
-            status = self.friends[self._active_friend].status
-            return status is not None
+    def change_status(self):
+        if self._status is not None:
+            self._status += 1
+            self._status %= 3
 
     def filtration(self, show_online=True, filter_str=''):
         for friend in self.friends:
             friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name)
 
-    def newMessage(self, id, message_type, message):
+    # -----------------------------------------------------------------------------------------------------------------
+    # Work with active friend
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def get_active(self):
+        return self._active_friend
+
+    def set_active(self, value):
+        try:
+            visible_friends = filter(lambda elem: elem[1].visibility, enumerate(self.friends))
+            self._active_friend = visible_friends[value][0]
+            self._messages.clear()
+            self._messages.repaint()
+            # TODO: load history
+        except:  # no friend found. ignore
+            log('Incorrect friend value: ' + str(value))
+
+    active_friend = property(get_active, set_active)
+
+    def get_active_friend_data(self):
+        friend = self.friends[self._active_friend]
+        return friend.name, friend.status_message
+
+    def get_active_number(self):
+        return self.friends[self._active_friend].number
+
+    def get_active_name(self):
+        return self.friends[self._active_friend].name
+
+    def is_active_online(self):
+        return self._active_friend + 1 and self.friends[self._active_friend].status is not None
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Private messages
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def new_message(self, id, message_type, message):
         if id == self._active_friend:  # add message to list
-            user_name = Profile.getInstance().getActiveName()
-            item = mainscreen.MessageItem(message, curr_time(), user_name, message_type)
+            user_name = Profile.get_instance().get_active_name()
+            item = mainscreen.MessageItem(message.decode('utf-8'), curr_time(), user_name, message_type)
             elem = QtGui.QListWidgetItem(self._messages)
             elem.setSizeHint(QtCore.QSize(500, 100))
             self._messages.addItem(elem)
@@ -195,17 +210,17 @@ class Profile(Contact):
             self._messages.scrollToBottom()
             self._messages.repaint()
         else:
-            friend = filter(lambda x: x.getNumber() == id, self.friends)[0]
-            friend.setMessages(True)
+            friend = filter(lambda x: x.number == id, self.friends)[0]
+            friend.set_messages(True)
 
-    def sendMessage(self, text):
-        if self.isActiveOnline() and text:
+    def send_message(self, text):
+        if self.is_active_online() and text:
             if text.startswith('/me'):
                 message_type = TOX_MESSAGE_TYPE['ACTION']
                 text = text[3:]
             else:
                 message_type = TOX_MESSAGE_TYPE['NORMAL']
-            self.tox.friend_send_message(self._active_friend, message_type, text)
+            self.tox.friend_send_message(self._active_friend, message_type, text.encode('utf-8'))
             item = mainscreen.MessageItem(text, curr_time(), self._name, message_type)
             elem = QtGui.QListWidgetItem(self._messages)
             elem.setSizeHint(QtCore.QSize(500, 100))
@@ -217,10 +232,14 @@ class Profile(Contact):
         else:
             return False
 
-    def changeStatus(self):
-        if self._status is not None:
-            self._status += 1
-            self._status %= 3
+    # -----------------------------------------------------------------------------------------------------------------
+    # Work with friends (add, remove)
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def delete_friend(self, num):
+        self.tox.friend_delete(num)
+        friend = filter(lambda x: x.number == num, self.friends)[0]
+        del friend
 
 
 def tox_factory(data=None, settings=None):

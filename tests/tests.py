@@ -1,5 +1,4 @@
 from src.settings import Settings
-from src.util import bin_to_string, string_to_bin
 import sys
 from src.bootstrap import node_generator
 from src.profile import *
@@ -35,15 +34,6 @@ class TestProfile():
         ProfileHelper.save_profile(data)
         new_data = ProfileHelper.open_profile(Settings.get_default_path(), 'tox_save')
         assert new_data == data
-
-
-class TestUtils():
-
-    def test_convert(self):
-        id = 'C4CEB8C7AC607C6B374E2E782B3C00EA3A63B80D4910B8649CCACDD19F260819'
-        data = string_to_bin(id)
-        new_id = bin_to_string(data)
-        assert id == new_id
 
 
 class TestNodeGen():
