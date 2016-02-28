@@ -52,11 +52,10 @@ def main():
         if not _login.t:
             return
         elif _login.t == 1:  # create new profile
-            # TODO: test
             name = _login.name if _login.name else 'toxygen_user'
             tox = tox_factory()
-            tox.self_set_name('Toxygen User')
-            tox.self_set_status('Toxing on Toxygen')
+            tox.self_set_name(_login.name if _login.name else 'Toxygen User')
+            tox.self_set_status_message('Toxing on Toxygen')
             ProfileHelper.save_profile(tox.get_savedata(), name)
         else:  # load existing profile
             path, name = _login.get_data()
@@ -71,7 +70,6 @@ def main():
         tox = tox_factory(data, settings)
 
     ms = MainWindow(tox)
-    #ms.setup_info_from_tox()
     ms.show()
     # bootstrap
     for data in node_generator():

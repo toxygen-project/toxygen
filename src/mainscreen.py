@@ -10,10 +10,11 @@ from util import curr_time
 
 class MessageItem(QtGui.QListWidget):
 
-    def __init__(self, text, time, user='', parent=None):
+    def __init__(self, text, time, user='', message_type=TOX_MESSAGE_TYPE['NORMAL'], parent=None):
         QtGui.QListWidget.__init__(self, parent)
         self.name = QtGui.QLabel(self)
         self.name.setGeometry(QtCore.QRect(0, 0, 50, 25))
+        self.name.setTextFormat(QtCore.Qt.PlainText)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(12)
@@ -36,6 +37,10 @@ class MessageItem(QtGui.QListWidget):
         self.message.setGeometry(QtCore.QRect(50, 0, 400, 50))
         self.message.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
         self.message.setPlainText(text)
+
+        if message_type == TOX_MESSAGE_TYPE['ACTION']:
+            self.name.setStyleSheet("QLabel { color: blue; }")
+            self.message.setStyleSheet("QPlainTextEdit { color: blue; }")
 
 
 class ContactItem(QtGui.QListWidget):
@@ -323,7 +328,6 @@ class MainWindow(QtGui.QMainWindow):
         #     self.connection_status.repaint()
 
     def setup_info_from_tox(self):
-        # TODO: remove - use Profile()
         self.name.setText(self.profile.name)
         self.status_message.setText(self.profile.status_message)
 
@@ -379,9 +383,9 @@ class MainWindow(QtGui.QMainWindow):
         print 'row:', index.row()
         num = index.row()
         self.profile.setActive(num)
-        friend = self.profile.friends[num]
-        self.account_name.setText(friend.name)
-        self.account_status.setText(friend.status_message)
+        friend = self.profile.getActiveFriendData()
+        self.account_name.setText(friend[0])
+        self.account_status.setText(friend[1])
 
 
 if __name__ == '__main__':
