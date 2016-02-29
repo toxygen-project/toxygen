@@ -3,7 +3,7 @@ from notifications import *
 from settings import Settings
 from profile import Profile
 from toxcore_enums_and_consts import *
-# TODO: add all callbacks (remove test callbacks and use wrappers)
+# TODO: add all callbacks (use wrappers)
 
 
 class InvokeEvent(QtCore.QEvent):
@@ -29,7 +29,7 @@ def invoke_in_main_thread(fn, *args, **kwargs):
     QtCore.QCoreApplication.postEvent(_invoker, InvokeEvent(fn, *args, **kwargs))
 
 
-def self_connection_status(st, tox_link):
+def self_connection_status(tox_link):
     """
     :param st: widget on mainscreen which shows status
     :param tox_link: tox instance
@@ -80,7 +80,8 @@ def friend_name(window):
         friend = profile.get_friend_by_number(friend_num)
         print 'New name: ', str(friend_num), str(name)
         invoke_in_main_thread(friend.set_name, name)
-        invoke_in_main_thread(window.update_active_friend)
+        if profile.get_active_number() == friend_num:
+            invoke_in_main_thread(window.update_active_friend)
     return wrapped
 
 
@@ -95,7 +96,8 @@ def friend_status_message(window):
         friend = profile.get_friend_by_number(friend_num)
         invoke_in_main_thread(friend.set_status_message, status_message)
         print 'User #{} has new status: {}'.format(friend_num, status_message)
-        invoke_in_main_thread(window.update_active_friend)
+        if profile.get_active_number() == friend_num:
+            invoke_in_main_thread(window.update_active_friend)
     return wrapped
 
 
@@ -122,7 +124,7 @@ def init_callbacks(tox, window):
     """
     tox.callback_friend_status(friend_status, 0)
     tox.callback_friend_message(friend_message(window), 0)
-    tox.callback_self_connection_status(self_connection_status(window.connection_status, tox), 0)
+    tox.callback_self_connection_status(self_connection_status(tox), 0)
     tox.callback_friend_connection_status(friend_connection_status, 0)
     tox.callback_friend_name(friend_name(window), 0)
     tox.callback_friend_status_message(friend_status_message(window), 0)

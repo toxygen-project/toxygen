@@ -1,5 +1,6 @@
 from PySide import QtCore, QtGui
 from settings import Settings
+from profile import Profile
 
 
 class AddContact(QtGui.QWidget):
@@ -97,7 +98,7 @@ class ProfileSettings(QtGui.QWidget):
         self.tox_id = QtGui.QLabel(self)
         self.tox_id.setGeometry(QtCore.QRect(10, 210, self.width(), 21))
         font = QtGui.QFont()
-        font.setPointSize(12)
+        font.setPointSize(10)
         #font.setWeight(75)
         font.setBold(True)
         self.tox_id.setFont(font)
@@ -132,8 +133,13 @@ class ProfileSettings(QtGui.QWidget):
 
     def copy(self):
         clipboard = QtGui.QApplication.clipboard()
-        id = bin_to_string(self.tox.self_get_address().value)
+        id = self.tox.self_get_address()
         clipboard.setText(id)
+
+    def closeEvent(self, event):
+        profile = Profile.get_instance()
+        profile.name = self.nick.text()
+        profile.status_message = self.status.text()
 
 
 class NetworkSettings(QtGui.QWidget):
@@ -294,12 +300,3 @@ class InterfaceSettings(QtGui.QWidget):
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("interfaceForm", "Interface settings", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("interfaceForm", "Theme:", None, QtGui.QApplication.UnicodeUTF8))
-
-
-if __name__ == "__main__":
-    import sys
-    app = QtGui.QApplication(sys.argv)
-    ex = NetworkSettings()
-    ex.show()
-    app.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app, QtCore.SLOT("quit()"))
-    app.exec_()

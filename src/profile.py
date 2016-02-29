@@ -158,11 +158,17 @@ class Profile(Contact):
 
     def change_status(self):
         if self._status is not None:
-            self._status += 1
-            self._status %= 3
-            self.tox.self_set_status(self._status)
-            self._widget.connection_status.data = self._status
-            self._widget.connection_status.repaint()
+            status = (self._status + 1) % 3
+            super(self.__class__, self).set_status(status)
+            self.tox.self_set_status(status)
+
+    def set_name(self, value):
+        super(self.__class__, self).set_name(value)
+        self.tox.self_set_name(value)
+
+    def set_status_message(self, value):
+        super(self.__class__, self).set_status_message(value)
+        self.tox.self_set_status_message(value)
 
     def filtration(self, show_online=True, filter_str=''):
         for friend in self._friends:
@@ -195,7 +201,7 @@ class Profile(Contact):
             friend = self._friends[self._active_friend]
             return friend.name, friend.status_message
         else:
-            return '', ''
+            log('Something is wrong in get_active_friend_data')
 
     def get_active_number(self):
         return self._friends[self._active_friend].number

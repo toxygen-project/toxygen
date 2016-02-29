@@ -9,7 +9,9 @@ from toxcore_enums_and_consts import *
 
 # TODO: move list items to new file
 class MessageItem(QtGui.QListWidget):
-
+    """
+    Message in messages list
+    """
     def __init__(self, text, time, user='', message_type=TOX_MESSAGE_TYPE['NORMAL'], parent=None):
         QtGui.QListWidget.__init__(self, parent)
         self.name = QtGui.QLabel(self)
@@ -44,7 +46,9 @@ class MessageItem(QtGui.QListWidget):
 
 
 class ContactItem(QtGui.QListWidget):
-
+    """
+    Contact in friends list
+    """
     def __init__(self, parent=None):
         QtGui.QListWidget.__init__(self, parent)
         # self.setMinimumSize(QtCore.QSize(250, 50))
@@ -75,6 +79,9 @@ class ContactItem(QtGui.QListWidget):
 
 
 class StatusCircle(QtGui.QWidget):
+    """
+    Connection status
+    """
 
     def __init__(self, parent):
         QtGui.QWidget.__init__(self, parent)
@@ -272,7 +279,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def setup_left_center(self, widget, profile_widget):
         self.friends_list = QtGui.QListWidget(widget)
-        self.friends_list.setGeometry(0, 0, 250, 300)
+        self.friends_list.setGeometry(0, 0, 250, 150)
         count = self.tox.self_get_friend_list_size()
         widgets = []
         for i in xrange(count):
@@ -288,7 +295,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def setup_right_center(self, widget):
         self.messages = QtGui.QListWidget(widget)
-        self.messages.setGeometry(0, 0, 500, 500)
+        self.messages.setGeometry(0, 0, 500, 200)
 
     def initUI(self):
         self.setMinimumSize(800, 400)
@@ -321,12 +328,8 @@ class MainWindow(QtGui.QMainWindow):
         self.setup_menu(self)
 
     def mouseReleaseEvent(self, event):
+        # TODO: process click
         self.profile.change_status()
-        # if self.connection_status.status != TOX_USER_CONNECTION_STATUS['OFFLINE']:
-        #     self.connection_status.status += 1
-        #     self.connection_status.status %= TOX_USER_CONNECTION_STATUS['OFFLINE']
-        #     self.tox.self_set_status(self.connection_status.status)
-        #     self.connection_status.repaint()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click in menu
@@ -386,3 +389,4 @@ class MainWindow(QtGui.QMainWindow):
         num = index.row()
         self.profile.set_active(num)
         self.update_active_friend()
+        self.messageEdit.clear()
