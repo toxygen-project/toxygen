@@ -138,8 +138,8 @@ class ProfileSettings(QtGui.QWidget):
 
     def closeEvent(self, event):
         profile = Profile.get_instance()
-        profile.name = self.nick.text()
-        profile.status_message = self.status.text()
+        profile.set_name(self.nick.text().encode('utf-8'))
+        profile.set_status_message(self.status.text().encode('utf-8'))
 
 
 class NetworkSettings(QtGui.QWidget):

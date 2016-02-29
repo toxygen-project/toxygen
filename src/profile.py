@@ -57,7 +57,7 @@ class Contact(object):
     """
 
     def __init__(self, name, status_message, widget):
-        self._name, self._status_message= name, status_message
+        self._name, self._status_message = name, status_message
         self._status, self._widget = None, widget
         widget.name.setText(name)
         widget.status_message.setText(status_message)
@@ -66,8 +66,8 @@ class Contact(object):
         return self._name
 
     def set_name(self, value):
-        self._name = value
-        self._widget.name.setText(value)
+        self._name = value.decode('utf-8')
+        self._widget.name.setText(self._name)
         self._widget.name.repaint()
 
     name = property(get_name, set_name)
@@ -76,8 +76,8 @@ class Contact(object):
         return self._status_message
 
     def set_status_message(self, value):
-        self._status_message = value
-        self._widget.status_message.setText(value)
+        self._status_message = value.decode('utf-8')
+        self._widget.status_message.setText(self._status_message)
         self._widget.status_message.repaint()
 
     status_message = property(get_status_message, set_status_message)
@@ -149,8 +149,8 @@ class Profile(Contact):
             self._friends.append(Friend(i, name, status_message, widgets[num]))
             num += 1
         Profile._instance = self
-        self.set_name(tox.self_get_name())
-        self.set_status_message(tox.self_get_status_message())
+        self.set_name(tox.self_get_name().encode('utf-8'))
+        self.set_status_message(tox.self_get_status_message().encode('utf-8'))
 
     @staticmethod
     def get_instance():
@@ -164,11 +164,11 @@ class Profile(Contact):
 
     def set_name(self, value):
         super(self.__class__, self).set_name(value)
-        self.tox.self_set_name(value)
+        self.tox.self_set_name(self._name.encode('utf-8'))
 
     def set_status_message(self, value):
         super(self.__class__, self).set_status_message(value)
-        self.tox.self_set_status_message(value)
+        self.tox.self_set_status_message(self._status_message.encode('utf-8'))
 
     def filtration(self, show_online=True, filter_str=''):
         for friend in self._friends:
@@ -202,6 +202,7 @@ class Profile(Contact):
             return friend.name, friend.status_message
         else:
             log('Something is wrong in get_active_friend_data')
+            return '', ''
 
     def get_active_number(self):
         return self._friends[self._active_friend].number

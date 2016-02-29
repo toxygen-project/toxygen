@@ -84,6 +84,8 @@ def main():
     app.exec_()
     mainloop.stop = True
     mainloop.wait()
+    data = tox.get_savedata()
+    ProfileHelper.save_profile(data)
     del tox
 
 
