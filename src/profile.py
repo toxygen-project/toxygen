@@ -86,8 +86,8 @@ class Contact(object):
         return self._status
 
     def set_status(self, value):
-        # TODO: status repaint
-        self._status = value
+        self._widget.connection_status.data = self._status = value
+        self._widget.connection_status.repaint()
 
     status = property(get_status, set_status)
 
@@ -142,13 +142,15 @@ class Profile(Contact):
         self._status_message = tox.self_get_status_message()
         self._status = None
         data = tox.self_get_friend_list()
-        self.friends, num, self._active_friend = [], 0, -1
+        self._friends, num, self._active_friend = [], 0, -1
         for i in data:
             name = tox.friend_get_name(i) or tox.friend_get_public_key(i)
             status_message = tox.friend_get_status_message(i)
-            self.friends.append(Friend(i, name, status_message, widgets[num]))
+            self._friends.append(Friend(i, name, status_message, widgets[num]))
             num += 1
         Profile._instance = self
+        self.set_name(tox.self_get_name())
+        self.set_status_message(tox.self_get_status_message())
 
     @staticmethod
     def get_instance():
@@ -158,10 +160,16 @@ class Profile(Contact):
         if self._status is not None:
             self._status += 1
             self._status %= 3
+            self.tox.self_set_status(self._status)
+            self._widget.connection_status.data = self._status
+            self._widget.connection_status.repaint()
 
     def filtration(self, show_online=True, filter_str=''):
-        for friend in self.friends:
+        for friend in self._friends:
             friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name)
+
+    def get_friend_by_number(self, num):
+        return filter(lambda x: x.number == num, self._friends)[0]
 
     # -----------------------------------------------------------------------------------------------------------------
     # Work with active friend
@@ -172,7 +180,7 @@ class Profile(Contact):
 
     def set_active(self, value):
         try:
-            visible_friends = filter(lambda elem: elem[1].visibility, enumerate(self.friends))
+            visible_friends = filter(lambda elem: elem[1].visibility, enumerate(self._friends))
             self._active_friend = visible_friends[value][0]
             self._messages.clear()
             self._messages.repaint()
@@ -183,17 +191,20 @@ class Profile(Contact):
     active_friend = property(get_active, set_active)
 
     def get_active_friend_data(self):
-        friend = self.friends[self._active_friend]
-        return friend.name, friend.status_message
+        if self._active_friend != -1:
+            friend = self._friends[self._active_friend]
+            return friend.name, friend.status_message
+        else:
+            return '', ''
 
     def get_active_number(self):
-        return self.friends[self._active_friend].number
+        return self._friends[self._active_friend].number
 
     def get_active_name(self):
-        return self.friends[self._active_friend].name
+        return self._friends[self._active_friend].name
 
     def is_active_online(self):
-        return self._active_friend + 1 and self.friends[self._active_friend].status is not None
+        return self._active_friend + 1 and self._friends[self._active_friend].status is not None
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private messages
@@ -210,7 +221,7 @@ class Profile(Contact):
             self._messages.scrollToBottom()
             self._messages.repaint()
         else:
-            friend = filter(lambda x: x.number == id, self.friends)[0]
+            friend = filter(lambda x: x.number == id, self._friends)[0]
             friend.set_messages(True)
 
     def send_message(self, text):
@@ -238,7 +249,7 @@ class Profile(Contact):
 
     def delete_friend(self, num):
         self.tox.friend_delete(num)
-        friend = filter(lambda x: x.number == num, self.friends)[0]
+        friend = filter(lambda x: x.number == num, self._friends)[0]
         del friend
 
 

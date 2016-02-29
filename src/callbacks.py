@@ -37,7 +37,12 @@ def self_connection_status(st, tox_link):
     """
     def wrapped(tox, connection, user_data):
         print 'Connection status: ', str(connection)
-        invoke_in_main_thread(st.repaint)
+        profile = Profile.get_instance()
+        if profile.status is None:
+            status = tox_link.self_get_status()
+            invoke_in_main_thread(profile.set_status, status)
+        elif connection == TOX_CONNECTION['NONE']:
+            invoke_in_main_thread(profile.set_status, None)
     return wrapped
 
 
@@ -47,7 +52,7 @@ def friend_status(tox, friend_num, new_status, user_data):
     """
     print "Friend's #{} status changed! New status: ".format(friend_num, new_status)
     profile = Profile.get_instance()
-    friend = filter(lambda x: x.number == friend_num, profile.friends)[0]
+    friend = profile.get_friend_by_number(friend_num)
     invoke_in_main_thread(friend.set_status, new_status)
 
 
@@ -57,11 +62,11 @@ def friend_connection_status(tox, friend_num, new_status, user_data):
     """
     print "Friend #{} connected! Friend's status: ".format(friend_num, new_status)
     profile = Profile.get_instance()
-    friend = filter(lambda x: x.number == friend_num, profile.friends)[0]
+    friend = profile.get_friend_by_number(friend_num)
     if new_status == TOX_CONNECTION['NONE']:
         invoke_in_main_thread(friend.set_status, None)
-    elif friend.status is None:
-        invoke_in_main_thread(friend.set_status, TOX_USER_STATUS['NONE'])
+    #elif friend.status is None:
+    #    invoke_in_main_thread(friend.set_status, TOX_USER_STATUS['NONE'])
 
 
 def friend_name(window):
@@ -72,7 +77,7 @@ def friend_name(window):
     """
     def wrapped(tox, friend_num, name, size, user_data):
         profile = Profile.get_instance()
-        friend = filter(lambda x: x.number == friend_num, profile.friends)[0]
+        friend = profile.get_friend_by_number(friend_num)
         print 'New name: ', str(friend_num), str(name)
         invoke_in_main_thread(friend.set_name, name)
         invoke_in_main_thread(window.update_active_friend)
@@ -87,7 +92,7 @@ def friend_status_message(window):
     """
     def wrapped(tox, friend_num, status_message, size, user_data):
         profile = Profile.get_instance()
-        friend = filter(lambda x: x.number == friend_num, profile.friends)[0]
+        friend = profile.get_friend_by_number(friend_num)
         invoke_in_main_thread(friend.set_status_message, status_message)
         print 'User #{} has new status: {}'.format(friend_num, status_message)
         invoke_in_main_thread(window.update_active_friend)
@@ -101,9 +106,10 @@ def friend_message(window):
     """
     def wrapped(tox, friend_number, message_type, message, size, user_data):
         print 'Message: ', message.decode('utf8')
-        if not window.isActiveWindow() and Settings()['notifications']:
-            tray_notification('Message', message.decode('utf8'))
         profile = Profile.get_instance()
+        if not window.isActiveWindow() and Settings()['notifications']:
+            friend = profile.get_friend_by_number(friend_number)
+            tray_notification(friend.name, message.decode('utf8'))
         invoke_in_main_thread(profile.new_message, friend_number, message_type, message)
     return wrapped
 

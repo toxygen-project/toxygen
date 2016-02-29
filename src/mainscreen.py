@@ -66,6 +66,12 @@ class ContactItem(QtGui.QListWidget):
         font.setBold(False)
         self.status_message.setFont(font)
         self.status_message.setObjectName("status_message")
+        self.connection_status = StatusCircle(self)
+        self.connection_status.setGeometry(QtCore.QRect(200, 5, 16, 16))
+        self.connection_status.setMinimumSize(QtCore.QSize(32, 32))
+        self.connection_status.setMaximumSize(QtCore.QSize(32, 32))
+        self.connection_status.setBaseSize(QtCore.QSize(32, 32))
+        self.connection_status.setObjectName("connection_status")
 
 
 class StatusCircle(QtGui.QWidget):
@@ -73,7 +79,7 @@ class StatusCircle(QtGui.QWidget):
     def __init__(self, parent):
         QtGui.QWidget.__init__(self, parent)
         self.setGeometry(0, 0, 32, 32)
-        self.tox = parent.tox
+        self.data = None
 
     def mouseReleaseEvent(self, event):
         pass
@@ -82,20 +88,17 @@ class StatusCircle(QtGui.QWidget):
         paint = QtGui.QPainter()
         paint.begin(self)
         paint.setRenderHint(QtGui.QPainter.Antialiasing)
-        #paint.setBrush(QtCore.Qt.white)
-        #paint.drawRect(event.rect())
         k = 16
-        rad_x = rad_y = 10
-        if not self.tox.self_get_connection_status():
-            color = QtCore.Qt.black
+        rad_x = rad_y = 5
+        if self.data is None:
+            color = QtCore.Qt.transparent
         else:
-            status = self.tox.self_get_status()
-            if status == TOX_USER_STATUS['NONE']:
-                color = QtCore.Qt.green
-            elif status == TOX_USER_STATUS['AWAY']:
+            if self.data == TOX_USER_STATUS['NONE']:
+                color = QtCore.Qt.darkGreen
+            elif self.data == TOX_USER_STATUS['AWAY']:
                 color = QtCore.Qt.yellow
-            else:  # self.status == TOX_USER_STATUS['BUSY']:
-                color = QtCore.Qt.red
+            else:  # self.data == TOX_USER_STATUS['BUSY']:
+                color = QtCore.Qt.darkRed
 
         paint.setPen(color)
         center = QtCore.QPoint(k, k)
@@ -212,34 +215,34 @@ class MainWindow(QtGui.QMainWindow):
         Form.setMinimumSize(QtCore.QSize(250, 100))
         Form.setMaximumSize(QtCore.QSize(250, 100))
         Form.setBaseSize(QtCore.QSize(250, 100))
-        self.graphicsView = QtGui.QGraphicsView(Form)
-        self.graphicsView.setGeometry(QtCore.QRect(10, 20, 64, 64))
-        self.graphicsView.setMinimumSize(QtCore.QSize(64, 64))
-        self.graphicsView.setMaximumSize(QtCore.QSize(64, 64))
-        self.graphicsView.setBaseSize(QtCore.QSize(64, 64))
-        self.graphicsView.setObjectName("graphicsView")
-        self.name = QtGui.QLabel(Form)
-        self.name.setGeometry(QtCore.QRect(80, 30, 191, 25))
+        Form.graphicsView = QtGui.QGraphicsView(Form)
+        Form.graphicsView.setGeometry(QtCore.QRect(10, 20, 64, 64))
+        Form.graphicsView.setMinimumSize(QtCore.QSize(64, 64))
+        Form.graphicsView.setMaximumSize(QtCore.QSize(64, 64))
+        Form.graphicsView.setBaseSize(QtCore.QSize(64, 64))
+        Form.graphicsView.setObjectName("graphicsView")
+        self.name = Form.name = QtGui.QLabel(Form)
+        Form.name.setGeometry(QtCore.QRect(80, 30, 191, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(16)
         font.setBold(True)
-        self.name.setFont(font)
-        self.name.setObjectName("name")
-        self.status_message = QtGui.QLabel(Form)
-        self.status_message.setGeometry(QtCore.QRect(80, 60, 191, 17))
+        Form.name.setFont(font)
+        Form.name.setObjectName("name")
+        self.status_message = Form.status_message = QtGui.QLabel(Form)
+        Form.status_message.setGeometry(QtCore.QRect(80, 60, 191, 17))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(14)
         font.setBold(False)
-        self.status_message.setFont(font)
-        self.status_message.setObjectName("status_message")
-        self.connection_status = StatusCircle(self)
-        self.connection_status.setGeometry(QtCore.QRect(200, 34, 64, 64))
-        self.connection_status.setMinimumSize(QtCore.QSize(32, 32))
-        self.connection_status.setMaximumSize(QtCore.QSize(32, 32))
-        self.connection_status.setBaseSize(QtCore.QSize(32, 32))
-        self.connection_status.setObjectName("connection_status")
+        Form.status_message.setFont(font)
+        Form.status_message.setObjectName("status_message")
+        self.connection_status = Form.connection_status = StatusCircle(self)
+        Form.connection_status.setGeometry(QtCore.QRect(200, 34, 64, 64))
+        Form.connection_status.setMinimumSize(QtCore.QSize(32, 32))
+        Form.connection_status.setMaximumSize(QtCore.QSize(32, 32))
+        Form.connection_status.setBaseSize(QtCore.QSize(32, 32))
+        Form.connection_status.setObjectName("connection_status")
 
     def setup_right_top(self, Form):
         Form.setObjectName("Form")
@@ -316,20 +319,14 @@ class MainWindow(QtGui.QMainWindow):
         main.setLayout(grid)
         self.setCentralWidget(main)
         self.setup_menu(self)
-        self.setup_info_from_tox()
 
     def mouseReleaseEvent(self, event):
-        # TODO: add reaction on mouse click
-        pass
+        self.profile.change_status()
         # if self.connection_status.status != TOX_USER_CONNECTION_STATUS['OFFLINE']:
         #     self.connection_status.status += 1
         #     self.connection_status.status %= TOX_USER_CONNECTION_STATUS['OFFLINE']
         #     self.tox.self_set_status(self.connection_status.status)
         #     self.connection_status.repaint()
-
-    def setup_info_from_tox(self):
-        self.name.setText(self.profile.name)
-        self.status_message.setText(self.profile.status_message)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click in menu
