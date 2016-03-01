@@ -1,4 +1,4 @@
-import mainscreen
+from list_items import MessageItem
 from settings import Settings
 from PySide import QtCore, QtGui
 import os
@@ -220,7 +220,7 @@ class Profile(Contact):
     def new_message(self, id, message_type, message):
         if id == self._active_friend:  # add message to list
             user_name = Profile.get_instance().get_active_name()
-            item = mainscreen.MessageItem(message.decode('utf-8'), curr_time(), user_name, message_type)
+            item = MessageItem(message.decode('utf-8'), curr_time(), user_name, message_type)
             elem = QtGui.QListWidgetItem(self._messages)
             elem.setSizeHint(QtCore.QSize(500, 100))
             self._messages.addItem(elem)
@@ -239,7 +239,7 @@ class Profile(Contact):
             else:
                 message_type = TOX_MESSAGE_TYPE['NORMAL']
             self.tox.friend_send_message(self._active_friend, message_type, text.encode('utf-8'))
-            item = mainscreen.MessageItem(text, curr_time(), self._name, message_type)
+            item = MessageItem(text, curr_time(), self._name, message_type)
             elem = QtGui.QListWidgetItem(self._messages)
             elem.setSizeHint(QtCore.QSize(500, 100))
             self._messages.addItem(elem)
