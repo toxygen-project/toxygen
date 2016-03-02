@@ -102,9 +102,10 @@ class MainWindow(QtGui.QMainWindow):
         self.online_contacts.setGeometry(QtCore.QRect(0, 20, 141, 22))
         self.online_contacts.setObjectName("online_contacts")
         self.online_contacts.clicked.connect(self.filtering)
-        self.lineEdit = QtGui.QLineEdit(Form)
-        self.lineEdit.setGeometry(QtCore.QRect(0, 40, 140, 28))
-        self.lineEdit.setObjectName("lineEdit")
+        self.contact_name = QtGui.QLineEdit(Form)
+        self.contact_name.setGeometry(QtCore.QRect(0, 40, 140, 28))
+        self.contact_name.setObjectName("contact_name")
+        self.contact_name.textChanged.connect(self.filtering)
         self.online_contacts.setText(QtGui.QApplication.translate("Form", "Online contacts", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QMetaObject.connectSlotsByName(Form)
 
@@ -284,4 +285,4 @@ class MainWindow(QtGui.QMainWindow):
         self.messageEdit.clear()
 
     def filtering(self):
-        self.profile.filtration(self.online_contacts.isChecked())
+        self.profile.filtration(self.online_contacts.isChecked(), self.contact_name.text())

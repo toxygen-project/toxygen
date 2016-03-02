@@ -174,8 +174,9 @@ class Profile(Contact):
 
     def filtration(self, show_online=True, filter_str=''):
         # TODO: hide elements in list
+        filter_str = filter_str.lower()
         for friend in self._friends:
-            friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name)
+            friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name.lower())
         self.show_online, self.filter_string = show_online, filter_str
 
     def get_friend_by_number(self, num):
