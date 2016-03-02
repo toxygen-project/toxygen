@@ -101,6 +101,7 @@ class MainWindow(QtGui.QMainWindow):
         self.online_contacts = QtGui.QCheckBox(Form)
         self.online_contacts.setGeometry(QtCore.QRect(0, 20, 141, 22))
         self.online_contacts.setObjectName("online_contacts")
+        self.online_contacts.clicked.connect(self.filtering)
         self.lineEdit = QtGui.QLineEdit(Form)
         self.lineEdit.setGeometry(QtCore.QRect(0, 40, 140, 28))
         self.lineEdit.setObjectName("lineEdit")
@@ -170,7 +171,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def setup_left_center(self, widget, profile_widget):
         self.friends_list = QtGui.QListWidget(widget)
-        self.friends_list.setGeometry(0, 0, 250, 150)
+        self.friends_list.setGeometry(0, 0, 250, 250)
         count = self.tox.self_get_friend_list_size()
         widgets = []
         for i in xrange(count):
@@ -186,7 +187,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def setup_right_center(self, widget):
         self.messages = QtGui.QListWidget(widget)
-        self.messages.setGeometry(0, 0, 500, 200)
+        self.messages.setGeometry(0, 0, 500, 250)
 
     def initUI(self):
         self.setMinimumSize(800, 400)
@@ -281,3 +282,6 @@ class MainWindow(QtGui.QMainWindow):
         self.profile.set_active(num)
         self.update_active_friend()
         self.messageEdit.clear()
+
+    def filtering(self):
+        self.profile.filtration(self.online_contacts.isChecked())

@@ -37,8 +37,8 @@ def main():
     """
     app = QtGui.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
-    settings = Settings()
-    if not settings['auto_profile']:
+    auto_profile = Settings.get_auto_profile()
+    if not auto_profile:
         # show login screen if default profile not found
         ls = LoginScreen()
         ls.setWindowIconText("Toxygen")
@@ -53,19 +53,21 @@ def main():
             return
         elif _login.t == 1:  # create new profile
             name = _login.name if _login.name else 'toxygen_user'
+            settings = Settings(name)
             tox = tox_factory()
             tox.self_set_name(_login.name if _login.name else 'Toxygen User')
             tox.self_set_status_message('Toxing on Toxygen')
             ProfileHelper.save_profile(tox.get_savedata(), name)
         else:  # load existing profile
             path, name = _login.get_data()
+            settings = Settings(name)
             if _login.default:
-                settings['auto_profile'] = (path, name)
-                settings.save()
+                Settings.set_auto_profile(path, name)
             data = ProfileHelper.open_profile(path, name)
             tox = tox_factory(data, settings)
     else:
-        path, name = settings['auto_profile']
+        path, name = auto_profile
+        settings = Settings(name)
         data = ProfileHelper.open_profile(path, name)
         tox = tox_factory(data, settings)
 

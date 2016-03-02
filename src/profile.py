@@ -107,8 +107,8 @@ class Friend(Contact):
         return self._visible
 
     def set_visibility(self, value):
-        self._widget.setVisibility(value)
         self._visible = value
+        self._widget.setVisible(value)
 
     visibility = property(get_visibility, set_visibility)
 
@@ -141,6 +141,7 @@ class Profile(Contact):
         self._name = tox.self_get_name()
         self._status_message = tox.self_get_status_message()
         self._status = None
+        self.show_online = Settings()['show_online_friends']
         data = tox.self_get_friend_list()
         self._friends, num, self._active_friend = [], 0, -1
         for i in data:
@@ -151,6 +152,7 @@ class Profile(Contact):
         Profile._instance = self
         self.set_name(tox.self_get_name().encode('utf-8'))
         self.set_status_message(tox.self_get_status_message().encode('utf-8'))
+        self.filtration(self.show_online)
 
     @staticmethod
     def get_instance():
@@ -171,8 +173,10 @@ class Profile(Contact):
         self.tox.self_set_status_message(self._status_message.encode('utf-8'))
 
     def filtration(self, show_online=True, filter_str=''):
+        # TODO: hide elements in list
         for friend in self._friends:
             friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name)
+        self.show_online, self.filter_string = show_online, filter_str
 
     def get_friend_by_number(self, num):
         return filter(lambda x: x.number == num, self._friends)[0]

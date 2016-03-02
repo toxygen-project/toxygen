@@ -6,8 +6,8 @@ from util import Singleton
 
 class Settings(dict, Singleton):
 
-    def __init__(self):
-        self.path = Settings.get_default_path() + 'toxygen.json'
+    def __init__(self, name=''):
+        self.path = Settings.get_default_path() + str(name) + '.json'
         if os.path.isfile(self.path):
             with open(self.path) as fl:
                 data = fl.read()
@@ -15,6 +15,24 @@ class Settings(dict, Singleton):
         else:
             super(self.__class__, self).__init__(Settings.get_default_settings())
             self.save()
+
+    @staticmethod
+    def get_auto_profile():
+        path = Settings.get_default_path() + 'toxygen.json'
+        if os.path.isfile(path):
+            with open(path) as fl:
+                data = fl.read()
+            auto = json.loads(data)
+            return auto['path'], auto['name']
+        else:
+            return None
+
+    @staticmethod
+    def set_auto_profile(path, name):
+        p = Settings.get_default_path() + 'toxygen.json'
+        data = json.dumps({'path': path, 'name': name})
+        with open(p, 'w') as fl:
+                fl.write(data)
 
     @staticmethod
     def get_default_settings():
@@ -38,7 +56,6 @@ class Settings(dict, Singleton):
             'auto_accept_from_friends': [],
             'friends_aliases': [],
             'typing_notifications': True,
-            'auto_profile': None,
             'calls_sound': True
         }
 
