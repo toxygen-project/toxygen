@@ -6,7 +6,7 @@ import sys
 from PySide import QtCore, QtGui
 from callbacks import init_callbacks
 from bootstrap import node_generator
-from util import curr_directory
+from util import curr_directory, get_style
 
 
 class login(object):
@@ -73,6 +73,7 @@ def main():
 
     ms = MainWindow(tox)
     ms.show()
+    QtGui.QApplication.setStyle(get_style(settings['theme']))  # set application style
     # bootstrap
     for data in node_generator():
         tox.bootstrap(*data)

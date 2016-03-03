@@ -1,6 +1,7 @@
 from PySide import QtCore, QtGui
 from settings import Settings
 from profile import Profile
+from util import get_style
 
 
 class AddContact(QtGui.QWidget):
@@ -214,6 +215,10 @@ class PrivacySettings(QtGui.QWidget):
         self.typingNotifications.setObjectName("typingNotifications")
 
         self.retranslateUi()
+        settings = Settings()
+        self.typingNotifications.setChecked(settings['typing_notifications'])
+        self.fileautoaccept.setChecked(settings['allow_auto_accept'])
+        self.saveHistory.setChecked(settings['save_history'])
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
@@ -221,6 +226,13 @@ class PrivacySettings(QtGui.QWidget):
         self.saveHistory.setText(QtGui.QApplication.translate("privacySettings", "Save chat history", None, QtGui.QApplication.UnicodeUTF8))
         self.fileautoaccept.setText(QtGui.QApplication.translate("privacySettings", "Allow file autoaccept", None, QtGui.QApplication.UnicodeUTF8))
         self.typingNotifications.setText(QtGui.QApplication.translate("privacySettings", "Send typing notifications", None, QtGui.QApplication.UnicodeUTF8))
+
+    def closeEvent(self, event):
+        settings = Settings()
+        settings['typing_notifications'] = self.typingNotifications.isChecked()
+        settings['allow_auto_accept'] = self.fileautoaccept.isChecked()
+        settings['save_history'] = self.saveHistory.isChecked()
+        settings.save()
 
 
 class NotificationsSettings(QtGui.QWidget):
@@ -293,10 +305,21 @@ class InterfaceSettings(QtGui.QWidget):
         font.setPointSize(17)
         self.themeSelect.setFont(font)
         self.themeSelect.setObjectName("themeSelect")
-
+        list_of_themes = ['default', 'windows', 'gtk', 'cde', 'plastique', 'motif']
+        self.themeSelect.addItems(list_of_themes)
+        theme = Settings()['theme']
+        index = list_of_themes.index(theme)
+        self.themeSelect.setCurrentIndex(index)
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("interfaceForm", "Interface settings", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("interfaceForm", "Theme:", None, QtGui.QApplication.UnicodeUTF8))
+
+    def closeEvent(self, event):
+        settings = Settings()
+        style = str(self.themeSelect.currentText())
+        settings['theme'] = style
+        settings.save()
+        QtGui.QApplication.setStyle(get_style(style))

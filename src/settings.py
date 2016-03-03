@@ -4,7 +4,7 @@ import os
 from util import Singleton
 
 
-class Settings(dict, Singleton):
+class Settings(Singleton, dict):
 
     def __init__(self, name=''):
         self.path = Settings.get_default_path() + str(name) + '.json'

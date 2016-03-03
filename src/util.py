@@ -1,5 +1,7 @@
 import os
 import time
+from platform import system
+
 
 program_version = '0.0.1 (alpha)'
 
@@ -15,6 +17,16 @@ def curr_directory():
 
 def curr_time():
     return time.strftime("%H:%M")
+
+
+def get_style(style):
+    if style != 'default':
+        return style
+    else:
+        if system() == 'Linux':
+            return 'gtk'
+        elif system() == 'Windows':
+            return 'windows'
 
 
 class Singleton(object):
