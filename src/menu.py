@@ -215,7 +215,7 @@ class PrivacySettings(QtGui.QWidget):
         self.typingNotifications.setObjectName("typingNotifications")
 
         self.retranslateUi()
-        settings = Settings()
+        settings = Settings.get_instance()
         self.typingNotifications.setChecked(settings['typing_notifications'])
         self.fileautoaccept.setChecked(settings['allow_auto_accept'])
         self.saveHistory.setChecked(settings['save_history'])
@@ -228,7 +228,7 @@ class PrivacySettings(QtGui.QWidget):
         self.typingNotifications.setText(QtGui.QApplication.translate("privacySettings", "Send typing notifications", None, QtGui.QApplication.UnicodeUTF8))
 
     def closeEvent(self, event):
-        settings = Settings()
+        settings = Settings.get_instance()
         settings['typing_notifications'] = self.typingNotifications.isChecked()
         settings['allow_auto_accept'] = self.fileautoaccept.isChecked()
         settings['save_history'] = self.saveHistory.isChecked()
@@ -257,7 +257,7 @@ class NotificationsSettings(QtGui.QWidget):
         self.callsSound = QtGui.QCheckBox(self)
         self.callsSound.setGeometry(QtCore.QRect(30, 60, 231, 22))
         self.callsSound.setObjectName("checkBox_3")
-        s = Settings()
+        s = Settings.get_instance()
         self.enableNotifications.setChecked(s['notifications'])
         self.soundNotifications.setChecked(s['sound_notifications'])
         self.callsSound.setChecked(s['calls_sound'])
@@ -271,7 +271,7 @@ class NotificationsSettings(QtGui.QWidget):
         self.callsSound.setText(QtGui.QApplication.translate("notificationsForm", "Enable sound notifications", None, QtGui.QApplication.UnicodeUTF8))
 
     def closeEvent(self, *args, **kwargs):
-        settings = Settings()
+        settings = Settings.get_instance()
         settings['notifications'] = self.enableNotifications.isChecked()
         settings['sound_notifications'] = self.soundNotifications.isChecked()
         settings['calls_sound'] = self.callsSound.isChecked()
@@ -307,7 +307,7 @@ class InterfaceSettings(QtGui.QWidget):
         self.themeSelect.setObjectName("themeSelect")
         list_of_themes = ['default', 'windows', 'gtk', 'cde', 'plastique', 'motif']
         self.themeSelect.addItems(list_of_themes)
-        theme = Settings()['theme']
+        theme = Settings.get_instance()['theme']
         index = list_of_themes.index(theme)
         self.themeSelect.setCurrentIndex(index)
         self.retranslateUi()
@@ -318,7 +318,7 @@ class InterfaceSettings(QtGui.QWidget):
         self.label.setText(QtGui.QApplication.translate("interfaceForm", "Theme:", None, QtGui.QApplication.UnicodeUTF8))
 
     def closeEvent(self, event):
-        settings = Settings()
+        settings = Settings.get_instance()
         style = str(self.themeSelect.currentText())
         settings['theme'] = style
         settings.save()

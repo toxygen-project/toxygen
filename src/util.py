@@ -31,7 +31,11 @@ def get_style(style):
 
 class Singleton(object):
 
-    def __new__(cls, *args):
-        if not hasattr(cls, 'instance'):
-            cls.instance = super(Singleton, cls,).__new__(cls, *args)
-        return cls.instance
+    def __new__(cls, *args, **kwargs):
+        if not hasattr(cls, '_instance'):
+            cls._instance = super(Singleton, cls).__new__(cls, *args, **kwargs)
+        return cls._instance
+
+    @classmethod
+    def get_instance(cls):
+        return cls._instance

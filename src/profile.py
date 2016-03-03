@@ -141,7 +141,7 @@ class Profile(Contact):
         self._name = tox.self_get_name()
         self._status_message = tox.self_get_status_message()
         self._status = None
-        self.show_online = Settings()['show_online_friends']
+        self.show_online = Settings.get_instance()['show_online_friends']
         data = tox.self_get_friend_list()
         self._friends, num, self._active_friend = [], 0, -1
         for i in data:
