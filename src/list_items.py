@@ -1,5 +1,34 @@
 from toxcore_enums_and_consts import *
 from PySide import QtGui, QtCore
+# TODO: remove some hardcoded values
+
+
+class MessageEdit(QtGui.QPlainTextEdit):
+    def __init__(self, text='', parent=None):
+        super(MessageEdit, self).__init__(parent)
+
+        self.setWordWrapMode(QtGui.QTextOption.WrapAtWordBoundaryOrAnywhere)
+        self.setPlainText(text)
+        self.document().setTextWidth(parent.width() - 100)
+        font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(10)
+        font.setBold(False)
+
+        self.setFont(font)
+        lines = prev = 0
+        try:
+            for elem in xrange(self.document().blockCount()):
+                pos = self.document().findBlockByLineNumber(elem).position()
+                lines += (pos - prev) // 55 + 1
+                prev = pos
+        except:
+            print 'updateSize failed'
+        print 'lines ', lines
+        self.setFixedHeight(lines * 17)
+        self.setMinimumHeight(lines * 17)
+        self.setMaximumHeight(lines * 17)
+        self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
 
 
 class MessageItem(QtGui.QListWidget):
@@ -29,14 +58,28 @@ class MessageItem(QtGui.QListWidget):
         self.time.setObjectName("time")
         self.time.setText(time)
 
-        self.message = QtGui.QPlainTextEdit(self)
-        self.message.setGeometry(QtCore.QRect(50, 0, 400, 50))
-        self.message.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
-        self.message.setPlainText(text)
+        self.message = MessageEdit(text, self)
+        print parent.width()
+        print self.message.height()
+        self.message.setGeometry(QtCore.QRect(50, 0, parent.width() - 100, self.message.height()))
+        self.h = self.message.height()
+        self.message.setFrameShape(QtGui.QFrame.NoFrame)
+        self.time.setFrameShape(QtGui.QFrame.NoFrame)
+        self.name.setFrameShape(QtGui.QFrame.NoFrame)
+        self.setFrameShape(QtGui.QFrame.NoFrame)
 
         if message_type == TOX_MESSAGE_TYPE['ACTION']:
             self.name.setStyleSheet("QLabel { color: blue; }")
             self.message.setStyleSheet("QPlainTextEdit { color: blue; }")
+        else:
+            if text[0] == '>':
+                self.message.setStyleSheet("QPlainTextEdit { color: green; }")
+            if text[-1] == '<':
+                self.message.setStyleSheet("QPlainTextEdit { color: red; }")
+
+    def getHeight(self):
+        return max(self.h, 30)
+
 
 
 class ContactItem(QtGui.QListWidget):

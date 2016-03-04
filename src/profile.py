@@ -225,9 +225,10 @@ class Profile(Contact):
     def new_message(self, id, message_type, message):
         if id == self._active_friend:  # add message to list
             user_name = Profile.get_instance().get_active_name()
-            item = MessageItem(message.decode('utf-8'), curr_time(), user_name, message_type)
+            item = MessageItem(message.decode('utf-8'), curr_time(), user_name, message_type, self._messages)
             elem = QtGui.QListWidgetItem(self._messages)
-            elem.setSizeHint(QtCore.QSize(500, 100))
+            print 'item height', item.height()
+            elem.setSizeHint(QtCore.QSize(500, item.getHeight()))
             self._messages.addItem(elem)
             self._messages.setItemWidget(elem, item)
             self._messages.scrollToBottom()
@@ -238,15 +239,16 @@ class Profile(Contact):
 
     def send_message(self, text):
         if self.is_active_online() and text:
-            if text.startswith('/me'):
+            if text.startswith('/me '):
                 message_type = TOX_MESSAGE_TYPE['ACTION']
-                text = text[3:]
+                text = text[4:]
             else:
                 message_type = TOX_MESSAGE_TYPE['NORMAL']
             self.tox.friend_send_message(self._active_friend, message_type, text.encode('utf-8'))
-            item = MessageItem(text, curr_time(), self._name, message_type)
+            item = MessageItem(text, curr_time(), self._name, message_type, self._messages)
             elem = QtGui.QListWidgetItem(self._messages)
-            elem.setSizeHint(QtCore.QSize(500, 100))
+            print 'item height', item.height()
+            elem.setSizeHint(QtCore.QSize(500, item.getHeight()))
             self._messages.addItem(elem)
             self._messages.setItemWidget(elem, item)
             self._messages.scrollToBottom()

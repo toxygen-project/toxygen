@@ -50,7 +50,7 @@ def friend_status(tox, friend_num, new_status, user_data):
     """
     Check friend's status (none, busy, away)
     """
-    print "Friend's #{} status changed! New status: ".format(friend_num, new_status)
+    print "Friend's #{} status changed! New status: {}".format(friend_num, new_status)
     profile = Profile.get_instance()
     friend = profile.get_friend_by_number(friend_num)
     invoke_in_main_thread(friend.set_status, new_status)
@@ -60,7 +60,7 @@ def friend_connection_status(tox, friend_num, new_status, user_data):
     """
     Check friend's connection status (offline, udp, tcp)
     """
-    print "Friend #{} connected! Friend's status: ".format(friend_num, new_status)
+    print "Friend #{} connected! Friend's status: {}".format(friend_num, new_status)
     profile = Profile.get_instance()
     friend = profile.get_friend_by_number(friend_num)
     if new_status == TOX_CONNECTION['NONE']:
