@@ -62,6 +62,10 @@ class Contact(object):
         widget.name.setText(name)
         widget.status_message.setText(status_message)
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # name - current name or alias of user
+    # -----------------------------------------------------------------------------------------------------------------
+
     def get_name(self):
         return self._name
 
@@ -72,6 +76,10 @@ class Contact(object):
 
     name = property(get_name, set_name)
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # Status message
+    # -----------------------------------------------------------------------------------------------------------------
+
     def get_status_message(self):
         return self._status_message
 
@@ -81,6 +89,10 @@ class Contact(object):
         self._widget.status_message.repaint()
 
     status_message = property(get_status_message, set_status_message)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Status
+    # -----------------------------------------------------------------------------------------------------------------
 
     def get_status(self):
         return self._status
@@ -103,6 +115,14 @@ class Friend(Contact):
         self._new_messages = False
         self._visible = True
 
+    def __del__(self):
+        self.set_visibility(False)
+        del self._widget
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Visibility in friends' list
+    # -----------------------------------------------------------------------------------------------------------------
+
     def get_visibility(self):
         return self._visible
 
@@ -112,6 +132,10 @@ class Friend(Contact):
 
     visibility = property(get_visibility, set_visibility)
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # Unread messages from friend
+    # -----------------------------------------------------------------------------------------------------------------
+
     def get_messages(self):
         return self._new_messages
 
@@ -120,14 +144,15 @@ class Friend(Contact):
 
     messages = property(get_messages, set_messages)
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # Friend's number (can be used in toxcore)
+    # -----------------------------------------------------------------------------------------------------------------
+
     def get_number(self):
         return self._number
 
     number = property(get_number)
     # TODO: check if setNumber needed
-
-    def __del__(self):
-        del self._widget
 
 
 class Profile(Contact):
@@ -158,6 +183,10 @@ class Profile(Contact):
     def get_instance():
         return Profile._instance
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # Edit current user's data
+    # -----------------------------------------------------------------------------------------------------------------
+
     def change_status(self):
         if self._status is not None:
             status = (self._status + 1) % 3
@@ -171,6 +200,10 @@ class Profile(Contact):
     def set_status_message(self, value):
         super(self.__class__, self).set_status_message(value)
         self.tox.self_set_status_message(self._status_message.encode('utf-8'))
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Filtration
+    # -----------------------------------------------------------------------------------------------------------------
 
     def filtration(self, show_online=True, filter_str=''):
         # TODO: hide elements in list
@@ -193,6 +226,7 @@ class Profile(Contact):
         try:
             visible_friends = filter(lambda elem: elem[1].visibility, enumerate(self._friends))
             self._active_friend = visible_friends[value][0]
+            self.friends[self._active_friend].set_messages(False)
             self._messages.clear()
             self._messages.repaint()
             # TODO: load history
@@ -227,7 +261,6 @@ class Profile(Contact):
             user_name = Profile.get_instance().get_active_name()
             item = MessageItem(message.decode('utf-8'), curr_time(), user_name, message_type, self._messages)
             elem = QtGui.QListWidgetItem(self._messages)
-            print 'item height', item.height()
             elem.setSizeHint(QtCore.QSize(500, item.getHeight()))
             self._messages.addItem(elem)
             self._messages.setItemWidget(elem, item)
@@ -247,7 +280,6 @@ class Profile(Contact):
             self.tox.friend_send_message(self._active_friend, message_type, text.encode('utf-8'))
             item = MessageItem(text, curr_time(), self._name, message_type, self._messages)
             elem = QtGui.QListWidgetItem(self._messages)
-            print 'item height', item.height()
             elem.setSizeHint(QtCore.QSize(500, item.getHeight()))
             self._messages.addItem(elem)
             self._messages.setItemWidget(elem, item)
@@ -261,6 +293,7 @@ class Profile(Contact):
     # Work with friends (add, remove)
     # -----------------------------------------------------------------------------------------------------------------
 
+    # TODO: add friends
     def delete_friend(self, num):
         self.tox.friend_delete(num)
         friend = filter(lambda x: x.number == num, self._friends)[0]

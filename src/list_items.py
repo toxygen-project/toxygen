@@ -25,9 +25,9 @@ class MessageEdit(QtGui.QPlainTextEdit):
         except:
             print 'updateSize failed'
         print 'lines ', lines
-        self.setFixedHeight(lines * 17)
-        self.setMinimumHeight(lines * 17)
-        self.setMaximumHeight(lines * 17)
+        self.setFixedHeight(max(lines * 18, 30))
+        self.setMinimumHeight(max(lines * 18, 30))
+        self.setMaximumHeight(max(lines * 18, 30))
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
 
 
@@ -59,10 +59,10 @@ class MessageItem(QtGui.QListWidget):
         self.time.setText(time)
 
         self.message = MessageEdit(text, self)
-        print parent.width()
-        print self.message.height()
         self.message.setGeometry(QtCore.QRect(50, 0, parent.width() - 100, self.message.height()))
         self.h = self.message.height()
+        self.setFixedHeight(self.getHeight())
+
         self.message.setFrameShape(QtGui.QFrame.NoFrame)
         self.time.setFrameShape(QtGui.QFrame.NoFrame)
         self.name.setFrameShape(QtGui.QFrame.NoFrame)
@@ -79,7 +79,6 @@ class MessageItem(QtGui.QListWidget):
 
     def getHeight(self):
         return max(self.h, 30)
-
 
 
 class ContactItem(QtGui.QListWidget):
@@ -119,7 +118,7 @@ class StatusCircle(QtGui.QWidget):
     """
     Connection status
     """
-
+    # TODO: rewrite with showing unread messages
     def __init__(self, parent):
         QtGui.QWidget.__init__(self, parent)
         self.setGeometry(0, 0, 32, 32)

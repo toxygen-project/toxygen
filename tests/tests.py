@@ -12,12 +12,6 @@ class TestSettings():
         assert s['ipv6_enabled'] is not None
         assert s['notifications'] is not None
 
-    def test_with_delete(self):
-        path = Settings.get_default_path() + 'toxygen.json'
-        os.remove(path)
-        Settings()
-        assert os.path.exists(path)
-
 
 class TestProfile():
 
