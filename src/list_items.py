@@ -4,7 +4,7 @@ from PySide import QtGui, QtCore
 
 
 class MessageEdit(QtGui.QPlainTextEdit):
-    def __init__(self, text='', parent=None):
+    def __init__(self, text, width, parent=None):
         super(MessageEdit, self).__init__(parent)
 
         self.setWordWrapMode(QtGui.QTextOption.WrapAtWordBoundaryOrAnywhere)
@@ -12,22 +12,25 @@ class MessageEdit(QtGui.QPlainTextEdit):
         self.document().setTextWidth(parent.width() - 100)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
-        font.setPointSize(10)
+        font.setPixelSize(12)
         font.setBold(False)
-
         self.setFont(font)
-        lines = prev = 0
+        lines = 0
+        fm = QtGui.QFontMetrics(font)
         try:
             for elem in xrange(self.document().blockCount()):
-                pos = self.document().findBlockByLineNumber(elem).position()
-                lines += (pos - prev) // 55 + 1
-                prev = pos
+                block = self.document().findBlockByLineNumber(elem)
+                l = block.length()
+                line_width = fm.width(block.text())
+                print 'Width: ', line_width
+                print 'Parent width', parent.width()
+                lines += line_width // width + 1
         except:
             print 'updateSize failed'
         print 'lines ', lines
-        self.setFixedHeight(max(lines * 18, 30))
-        self.setMinimumHeight(max(lines * 18, 30))
-        self.setMaximumHeight(max(lines * 18, 30))
+        if self.document().blockCount() == 1:
+            lines += 1
+        self.setFixedHeight(max(lines * 15, 30))
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
 
 
@@ -49,7 +52,7 @@ class MessageItem(QtGui.QListWidget):
         self.name.setText(user)
 
         self.time = QtGui.QLabel(self)
-        self.time.setGeometry(QtCore.QRect(450, 0, 50, 50))
+        self.time.setGeometry(QtCore.QRect(450, 0, 50, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(10)
@@ -58,7 +61,7 @@ class MessageItem(QtGui.QListWidget):
         self.time.setObjectName("time")
         self.time.setText(time)
 
-        self.message = MessageEdit(text, self)
+        self.message = MessageEdit(text, parent.width() - 100, self)
         self.message.setGeometry(QtCore.QRect(50, 0, parent.width() - 100, self.message.height()))
         self.h = self.message.height()
         self.setFixedHeight(self.getHeight())

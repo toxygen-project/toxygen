@@ -5,6 +5,19 @@ from profile import *
 from list_items import *
 
 
+class MessageArea(QtGui.QPlainTextEdit):
+
+    def __init__(self, parent, form):
+        super(MessageArea, self).__init__(parent)
+        self.parent = form
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Return:
+            self.parent.send_message()
+        else:
+            super(self.__class__, self).keyPressEvent(event)
+
+
 class MainWindow(QtGui.QMainWindow):
 
     def __init__(self, tox):
@@ -77,7 +90,7 @@ class MainWindow(QtGui.QMainWindow):
         Form.setObjectName("right_bottom")
         Form.resize(500, 150)
         Form.setMinimumSize(QtCore.QSize(100, 50))
-        self.messageEdit = QtGui.QTextEdit(Form)
+        self.messageEdit = MessageArea(Form, self)
         self.messageEdit.setGeometry(QtCore.QRect(20, 20, 311, 111))
         self.messageEdit.setObjectName("messageEdit")
         self.screenshotButton = QtGui.QPushButton(Form)
@@ -96,7 +109,7 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def setup_left_bottom(self, Form):
-        Form.setObjectName("left_center")
+        Form.setObjectName("left_bottom")
         Form.resize(500, 80)
         self.online_contacts = QtGui.QCheckBox(Form)
         self.online_contacts.setGeometry(QtCore.QRect(0, 20, 141, 22))
@@ -286,3 +299,5 @@ class MainWindow(QtGui.QMainWindow):
 
     def filtering(self):
         self.profile.filtration(self.online_contacts.isChecked(), self.contact_name.text())
+
+

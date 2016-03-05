@@ -264,7 +264,7 @@ class Profile(Contact):
             elem.setSizeHint(QtCore.QSize(500, item.getHeight()))
             self._messages.addItem(elem)
             self._messages.setItemWidget(elem, item)
-            self._messages.scrollToBottom()
+            #self._messages.scrollToBottom()
             self._messages.repaint()
         else:
             friend = filter(lambda x: x.number == id, self._friends)[0]
