@@ -140,7 +140,8 @@ class Friend(Contact):
         return self._new_messages
 
     def set_messages(self, value):
-        self._new_messages = value
+        self._widget.connection_status.messages = self._new_messages = value
+        self._widget.connection_status.repaint()
 
     messages = property(get_messages, set_messages)
 
@@ -223,15 +224,19 @@ class Profile(Contact):
         return self._active_friend
 
     def set_active(self, value):
+        # TODO: rewrite to work with filtering
+        if self._active_friend == value:
+            return False
         try:
             visible_friends = filter(lambda elem: elem[1].visibility, enumerate(self._friends))
             self._active_friend = visible_friends[value][0]
-            self.friends[self._active_friend].set_messages(False)
+            self._friends[self._active_friend].set_messages(False)
             self._messages.clear()
             self._messages.repaint()
             # TODO: load history
         except:  # no friend found. ignore
             log('Incorrect friend value: ' + str(value))
+        return True
 
     active_friend = property(get_active, set_active)
 

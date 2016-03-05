@@ -234,8 +234,12 @@ class MainWindow(QtGui.QMainWindow):
         self.setup_menu(self)
 
     def mouseReleaseEvent(self, event):
-        # TODO: process click
-        self.profile.change_status()
+        x, y = event.x(), event.y()
+        pos = self.connection_status.pos()
+        if (pos.x() < x < pos.x() + 32) and (pos.y() < y < pos.y() + 32):
+            self.profile.change_status()
+        else:
+            super(self.__class__, self).mouseReleaseEvent(event)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click in menu
@@ -293,9 +297,10 @@ class MainWindow(QtGui.QMainWindow):
     def friend_click(self, index):
         print 'row:', index.row()
         num = index.row()
-        self.profile.set_active(num)
-        self.update_active_friend()
-        self.messageEdit.clear()
+        if self.profile.set_active(num):
+            self.update_active_friend()
+            self.messages.clear()
+            self.messageEdit.clear()
 
     def filtering(self):
         self.profile.filtration(self.online_contacts.isChecked(), self.contact_name.text())

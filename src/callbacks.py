@@ -65,8 +65,6 @@ def friend_connection_status(tox, friend_num, new_status, user_data):
     friend = profile.get_friend_by_number(friend_num)
     if new_status == TOX_CONNECTION['NONE']:
         invoke_in_main_thread(friend.set_status, None)
-    #elif friend.status is None:
-    #    invoke_in_main_thread(friend.set_status, TOX_USER_STATUS['NONE'])
 
 
 def friend_name(window):

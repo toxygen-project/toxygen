@@ -1,6 +1,5 @@
 from toxcore_enums_and_consts import *
 from PySide import QtGui, QtCore
-# TODO: remove some hardcoded values
 
 
 class MessageEdit(QtGui.QPlainTextEdit):
@@ -121,14 +120,11 @@ class StatusCircle(QtGui.QWidget):
     """
     Connection status
     """
-    # TODO: rewrite with showing unread messages
     def __init__(self, parent):
         QtGui.QWidget.__init__(self, parent)
         self.setGeometry(0, 0, 32, 32)
         self.data = None
-
-    def mouseReleaseEvent(self, event):
-        pass
+        self.messages = False
 
     def paintEvent(self, event):
         paint = QtGui.QPainter()
@@ -150,4 +146,10 @@ class StatusCircle(QtGui.QWidget):
         center = QtCore.QPoint(k, k)
         paint.setBrush(color)
         paint.drawEllipse(center, rad_x, rad_y)
+        if self.messages:
+            if color == QtCore.Qt.transparent:
+                color = QtCore.Qt.darkRed
+            paint.setBrush(QtCore.Qt.transparent)
+            paint.setPen(color)
+            paint.drawEllipse(center, rad_x + 5, rad_y + 5)
         paint.end()
