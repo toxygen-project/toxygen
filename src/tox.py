@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from ctypes import *
+from ctypes import c_char_p, Structure, CDLL, c_bool, addressof, c_int, c_size_t, POINTER, c_uint16, c_void_p, c_uint64
+from ctypes import create_string_buffer, ArgumentError, CFUNCTYPE, c_uint32, sizeof
 from platform import system
 from toxcore_enums_and_consts import *
 
@@ -88,16 +89,17 @@ class Tox(object):
                                     ' badly formatted data, some data may have been loaded, and the rest is discarded.'
                                     ' Passing an invalid length parameter also causes this error.')
 
-            self.tox_self_connection_status_cb = None
-            self.tox_friend_name_cb = None
+            self.self_connection_status_cb = None
+            self.friend_name_cb = None
             self.friend_status_message_cb = None
-            self.tox_friend_status_cb = None
-            self.tox_friend_connection_status_cb = None
-            self.tox_friend_request_cb = None
-            self.tox_friend_read_receipt_cb = None
-            self.tox_friend_typing_cb = None
-            self.tox_friend_message_cb = None
-            self.tox_file_recv_control_cb = None
+            self.friend_status_cb = None
+            self.friend_connection_status_cb = None
+            self.friend_request_cb = None
+            self.friend_read_receipt_cb = None
+            self.friend_typing_cb = None
+            self.friend_message_cb = None
+            self.file_recv_control_cb = None
+            self.file_chunk_request_cb = None
 
     def __del__(self):
         Tox.libtoxcore.tox_kill(self._tox_pointer)
@@ -259,9 +261,9 @@ class Tox(object):
         :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_int, c_void_p)
-        self.tox_self_connection_status_cb = c_callback(callback)
+        self.self_connection_status_cb = c_callback(callback)
         Tox.libtoxcore.tox_callback_self_connection_status(self._tox_pointer,
-                                                           self.tox_self_connection_status_cb, user_data)
+                                                           self.self_connection_status_cb, user_data)
 
     def iteration_interval(self):
         """
@@ -711,8 +713,8 @@ class Tox(object):
         :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_char_p, c_size_t, c_void_p)
-        self.tox_friend_name_cb = c_callback(callback)
-        Tox.libtoxcore.tox_callback_friend_name(self._tox_pointer, self.tox_friend_name_cb, user_data)
+        self.friend_name_cb = c_callback(callback)
+        Tox.libtoxcore.tox_callback_friend_name(self._tox_pointer, self.friend_name_cb, user_data)
 
     def friend_get_status_message_size(self, friend_number):
         """
@@ -815,8 +817,8 @@ class Tox(object):
         :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_void_p)
-        self.tox_friend_status_cb = c_callback(callback)
-        Tox.libtoxcore.tox_callback_friend_status(self._tox_pointer, self.tox_friend_status_cb, c_void_p(user_data))
+        self.friend_status_cb = c_callback(callback)
+        Tox.libtoxcore.tox_callback_friend_status(self._tox_pointer, self.friend_status_cb, c_void_p(user_data))
 
     def friend_get_connection_status(self, friend_number):
         """
@@ -857,9 +859,9 @@ class Tox(object):
         :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_void_p)
-        self.tox_friend_connection_status_cb = c_callback(callback)
+        self.friend_connection_status_cb = c_callback(callback)
         Tox.libtoxcore.tox_callback_friend_connection_status(self._tox_pointer,
-                                                             self.tox_friend_connection_status_cb, c_void_p(user_data))
+                                                             self.friend_connection_status_cb, c_void_p(user_data))
 
     def friend_get_typing(self, friend_number):
         """
@@ -894,8 +896,8 @@ class Tox(object):
         :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_bool, c_void_p)
-        self.tox_friend_typing_cb = c_callback(callback)
-        Tox.libtoxcore.tox_callback_friend_typing(self._tox_pointer, self.tox_friend_typing_cb, c_void_p(user_data))
+        self.friend_typing_cb = c_callback(callback)
+        Tox.libtoxcore.tox_callback_friend_typing(self._tox_pointer, self.friend_typing_cb, c_void_p(user_data))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Sending private messages
@@ -974,9 +976,9 @@ class Tox(object):
         :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_void_p)
-        self.tox_friend_read_receipt_cb = c_callback(callback)
+        self.friend_read_receipt_cb = c_callback(callback)
         Tox.libtoxcore.tox_callback_friend_read_receipt(self._tox_pointer,
-                                                        self.tox_friend_read_receipt_cb, c_void_p(user_data))
+                                                        self.friend_read_receipt_cb, c_void_p(user_data))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Receiving private messages and friend requests
@@ -996,8 +998,8 @@ class Tox(object):
         :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_char_p, c_char_p, c_size_t, c_void_p)
-        self.tox_friend_request_cb = c_callback(callback)
-        Tox.libtoxcore.tox_callback_friend_request(self._tox_pointer, self.tox_friend_request_cb, c_void_p(user_data))
+        self.friend_request_cb = c_callback(callback)
+        Tox.libtoxcore.tox_callback_friend_request(self._tox_pointer, self.friend_request_cb, c_void_p(user_data))
 
     def callback_friend_message(self, callback, user_data):
         """
@@ -1014,8 +1016,8 @@ class Tox(object):
         :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_char_p, c_size_t, c_void_p)
-        self.tox_friend_message_cb = c_callback(callback)
-        Tox.libtoxcore.tox_callback_friend_message(self._tox_pointer, self.tox_friend_message_cb, c_void_p(user_data))
+        self.friend_message_cb = c_callback(callback)
+        Tox.libtoxcore.tox_callback_friend_message(self._tox_pointer, self.friend_message_cb, c_void_p(user_data))
 
     # -----------------------------------------------------------------------------------------------------------------
     # File transmission: common between sending and receiving
@@ -1091,9 +1093,9 @@ class Tox(object):
         :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_int, c_void_p)
-        self.tox_file_recv_control_cb = c_callback(callback)
+        self.file_recv_control_cb = c_callback(callback)
         Tox.libtoxcore.tox_callback_file_recv_control(self._tox_pointer,
-                                                      self.tox_file_recv_control_cb, user_data)
+                                                      self.file_recv_control_cb, user_data)
 
     def file_seek(self, friend_number, file_number, position):
         """
@@ -1151,8 +1153,147 @@ class Tox(object):
             raise ArgumentError('No file transfer with the given file number was found for the given friend.')
 
     # -----------------------------------------------------------------------------------------------------------------
-    # TODO File transmission: sending
+    # File transmission: sending
     # -----------------------------------------------------------------------------------------------------------------
+
+    def file_send(self, friend_number, kind, file_size, file_id, filename):
+        """
+        Send a file transmission request.
+
+        Maximum filename length is TOX_MAX_FILENAME_LENGTH bytes. The filename should generally just be a file name, not
+        a path with directory names.
+
+        If a non-UINT64_MAX file size is provided, it can be used by both sides to determine the sending progress. File
+        size can be set to UINT64_MAX for streaming data of unknown size.
+
+        File transmission occurs in chunks, which are requested through the `file_chunk_request` event.
+
+        When a friend goes offline, all file transfers associated with the friend are purged from core.
+
+        If the file contents change during a transfer, the behaviour is unspecified in general. What will actually
+        happen depends on the mode in which the file was modified and how the client determines the file size.
+
+        - If the file size was increased
+            - and sending mode was streaming (file_size = UINT64_MAX), the behaviour will be as expected.
+            - and sending mode was file (file_size != UINT64_MAX), the file_chunk_request callback will receive length =
+            0 when Core thinks the file transfer has finished. If the client remembers the file size as it was when
+            sending the request, it will terminate the transfer normally. If the client re-reads the size, it will think
+            the friend cancelled the transfer.
+        - If the file size was decreased
+            - and sending mode was streaming, the behaviour is as expected.
+            - and sending mode was file, the callback will return 0 at the new (earlier) end-of-file, signalling to the
+            friend that the transfer was cancelled.
+        - If the file contents were modified
+            - at a position before the current read, the two files (local and remote) will differ after the transfer
+            terminates.
+            - at a position after the current read, the file transfer will succeed as expected.
+            - In either case, both sides will regard the transfer as complete and successful.
+
+        :param friend_number: The friend number of the friend the file send request should be sent to.
+        :param kind: The meaning of the file to be sent.
+        :param file_size: Size in bytes of the file the client wants to send, UINT64_MAX if unknown or streaming.
+        :param file_id: A file identifier of length TOX_FILE_ID_LENGTH that can be used to uniquely identify file
+        transfers across core restarts. If NULL, a random one will be generated by core. It can then be obtained by
+        using tox_file_get_file_id().
+        :param filename: Name of the file. Does not need to be the actual name. This name will be sent along with the
+        file send request.
+        :return: A file number used as an identifier in subsequent callbacks. This number is per friend. File numbers
+        are reused after a transfer terminates. On failure, this function returns UINT32_MAX. Any pattern in file
+        numbers should not be relied on.
+        """
+        tox_err_file_send = c_int()
+        result = self.libtoxcore.tox_file_send(self._tox_pointer, c_uint32(friend_number), c_uint32(kind),
+                                               c_uint64(file_size), string_to_bin(file_id), c_char_p(filename),
+                                               c_size_t(len(filename)), addressof(tox_err_file_send))
+        tox_err_file_send = tox_err_file_send.value
+        if tox_err_file_send == TOX_ERR_FILE_SEND['OK']:
+            return result
+        elif tox_err_file_send == TOX_ERR_FILE_SEND['NULL']:
+            raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
+        elif tox_err_file_send == TOX_ERR_FILE_SEND['FRIEND_NOT_FOUND']:
+            raise ArgumentError('The friend_number passed did not designate a valid friend.')
+        elif tox_err_file_send == TOX_ERR_FILE_SEND['FRIEND_NOT_CONNECTED']:
+            raise RuntimeError('This client is currently not connected to the friend.')
+        elif tox_err_file_send == TOX_ERR_FILE_SEND['NAME_TOO_LONG']:
+            raise ArgumentError('Filename length exceeded TOX_MAX_FILENAME_LENGTH bytes.')
+        elif tox_err_file_send == TOX_ERR_FILE_SEND['TOO_MANY']:
+            raise RuntimeError('Too many ongoing transfers. The maximum number of concurrent file transfers is 256 per'
+                               'friend per direction (sending and receiving).')
+
+    def file_send_chunk(self, friend_number, file_number, position, data):
+        """
+        Send a chunk of file data to a friend.
+
+        This function is called in response to the `file_chunk_request` callback. The length parameter should be equal
+        to the one received though the callback. If it is zero, the transfer is assumed complete. For files with known
+        size, Core will know that the transfer is complete after the last byte has been received, so it is not necessary
+        (though not harmful) to send a zero-length chunk to terminate. For streams, core will know that the transfer is
+        finished if a chunk with length less than the length requested in the callback is sent.
+
+        :param friend_number: The friend number of the receiving friend for this file.
+        :param file_number: The file transfer identifier returned by tox_file_send.
+        :param position: The file or stream position from which to continue reading.
+        :param data: Chunk of file data
+        :return: true on success.
+        """
+        tox_err_file_send_chunk = c_int()
+        result = self.libtoxcore.tox_file_send_chunk(self._tox_pointer, c_uint32(friend_number), c_uint32(file_number),
+                                                     c_uint64(position), c_char_p(data), c_size_t(len(data)),
+                                                     addressof(tox_err_file_send_chunk))
+        tox_err_file_send_chunk = tox_err_file_send_chunk.value
+        if tox_err_file_send_chunk == TOX_ERR_FILE_SEND_CHUNK['OK']:
+            return bool(result)
+        elif tox_err_file_send_chunk == TOX_ERR_FILE_SEND_CHUNK['NULL']:
+            raise ArgumentError('The length parameter was non-zero, but data was NULL.')
+        elif tox_err_file_send_chunk == TOX_ERR_FILE_SEND_CHUNK['FRIEND_NOT_FOUND']:
+            ArgumentError('The friend_number passed did not designate a valid friend.')
+        elif tox_err_file_send_chunk == TOX_ERR_FILE_SEND_CHUNK['FRIEND_NOT_CONNECTED']:
+            raise ArgumentError('This client is currently not connected to the friend.')
+        elif tox_err_file_send_chunk == TOX_ERR_FILE_SEND_CHUNK['NOT_FOUND']:
+            raise ArgumentError('No file transfer with the given file number was found for the given friend.')
+        elif tox_err_file_send_chunk == TOX_ERR_FILE_SEND_CHUNK['NOT_TRANSFERRING']:
+            raise ArgumentError('File transfer was found but isn\'t in a transferring state: (paused, done, broken, '
+                                'etc...) (happens only when not called from the request chunk callback).')
+        elif tox_err_file_send_chunk == TOX_ERR_FILE_SEND_CHUNK['INVALID_LENGTH']:
+            raise ArgumentError('Attempted to send more or less data than requested. The requested data size is '
+                                'adjusted according to maximum transmission unit and the expected end of the file. '
+                                'Trying to send less or more than requested will return this error.')
+        elif tox_err_file_send_chunk == TOX_ERR_FILE_SEND_CHUNK['SENDQ']:
+            raise ArgumentError('Packet queue is full.')
+        elif tox_err_file_send_chunk == TOX_ERR_FILE_SEND_CHUNK['WRONG_POSITION']:
+            raise ArgumentError('Position parameter was wrong.')
+
+    def callback_file_chunk_request(self, callback, user_data):
+        """
+        Set the callback for the `file_chunk_request` event. Pass NULL to unset.
+
+        This event is triggered when Core is ready to send more file data.
+
+        :param callback: Python function.
+        If the length parameter is 0, the file transfer is finished, and the client's resources associated with the file
+        number should be released. After a call with zero length, the file number can be reused for future file
+        transfers.
+
+        If the requested position is not equal to the client's idea of the current file or stream position, it will need
+        to seek. In case of read-once streams, the client should keep the last read chunk so that a seek back can be
+        supported. A seek-back only ever needs to read from the last requested chunk. This happens when a chunk was
+        requested, but the send failed. A seek-back request can occur an arbitrary number of times for any given chunk.
+
+        In response to receiving this callback, the client should call the function `tox_file_send_chunk` with the
+        requested chunk. If the number of bytes sent through that function is zero, the file transfer is assumed
+        complete. A client must send the full length of data requested with this callback.
+
+        Should take pointer (c_void_p) to Tox object,
+        The friend number (c_uint32) of the receiving friend for this file.
+        The file transfer identifier (c_uint32) returned by tox_file_send.
+        The file or stream position (c_uint64) from which to continue reading.
+        The number of bytes (c_size_t) requested for the current chunk.
+        pointer (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
+        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_uint64, c_size_t, c_void_p)
+        self.file_chunk_request_cb = c_callback(callback)
+        self.libtoxcore.tox_callback_file_chunk_request(self._tox_pointer, self.file_chunk_request_cb, user_data)
 
     # -----------------------------------------------------------------------------------------------------------------
     # TODO File transmission: receiving

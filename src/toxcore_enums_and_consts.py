@@ -160,7 +160,7 @@ TOX_ERR_FILE_SEND = {
     'TOO_MANY': 5,
 }
 
-CHUNK = {
+TOX_ERR_FILE_SEND_CHUNK = {
     'OK': 0,
     'NULL': 1,
     'FRIEND_NOT_FOUND': 2,
