@@ -100,6 +100,8 @@ class Tox(object):
             self.friend_message_cb = None
             self.file_recv_control_cb = None
             self.file_chunk_request_cb = None
+            self.file_recv_cb = None
+            self.file_recv_chunk_cb = None
 
     def __del__(self):
         Tox.libtoxcore.tox_kill(self._tox_pointer)
@@ -1265,7 +1267,7 @@ class Tox(object):
 
     def callback_file_chunk_request(self, callback, user_data):
         """
-        Set the callback for the `file_chunk_request` event. Pass NULL to unset.
+        Set the callback for the `file_chunk_request` event. Pass None to unset.
 
         This event is triggered when Core is ready to send more file data.
 
@@ -1296,8 +1298,61 @@ class Tox(object):
         self.libtoxcore.tox_callback_file_chunk_request(self._tox_pointer, self.file_chunk_request_cb, user_data)
 
     # -----------------------------------------------------------------------------------------------------------------
-    # TODO File transmission: receiving
+    # File transmission: receiving
     # -----------------------------------------------------------------------------------------------------------------
+
+    def callback_file_recv(self, callback, user_data):
+        """
+        Set the callback for the `file_recv` event. Pass None to unset.
+
+        This event is triggered when a file transfer request is received.
+
+        :param callback: Python function.
+        The client should acquire resources to be associated with the file transfer. Incoming file transfers start in
+        the PAUSED state. After this callback returns, a transfer can be rejected by sending a TOX_FILE_CONTROL_CANCEL
+        control command before any other control commands. It can be accepted by sending TOX_FILE_CONTROL_RESUME.
+
+        Should take pointer (c_void_p) to Tox object,
+        The friend number (c_uint32) of the friend who is sending the file transfer request.
+        The friend-specific file number (c_uint32) the data received is associated with.
+        The meaning of the file (c_uint32) to be sent.
+        Size in bytes (c_uint64) of the file the client wants to send, UINT64_MAX if unknown or streaming.
+        Name of the file (c_char_p). Does not need to be the actual name. This name will be sent along with the file
+        send request.
+        Size in bytes (c_size_t) of the filename.
+        pointer (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
+        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_uint32, c_uint64, c_char_p, c_size_t, c_void_p)
+        self.file_recv_cb = c_callback(callback)
+        self.libtoxcore.tox_callback_file_recv(self._tox_pointer, self.file_recv_cb, user_data)
+
+    def callback_file_recv_chunk(self, callback, user_data):
+        """
+        Set the callback for the `file_recv_chunk` event. Pass NULL to unset.
+
+        This event is first triggered when a file transfer request is received, and subsequently when a chunk of file
+        data for an accepted request was received.
+
+        :param callback: Python function.
+        When length is 0, the transfer is finished and the client should release the resources it acquired for the
+        transfer. After a call with length = 0, the file number can be reused for new file transfers.
+
+        If position is equal to file_size (received in the file_receive callback) when the transfer finishes, the file
+        was received completely. Otherwise, if file_size was UINT64_MAX, streaming ended successfully when length is 0.
+
+        Should take pointer (c_void_p) to Tox object,
+        The friend number (c_uint32) of the friend who is sending the file.
+        The friend-specific file number (c_uint32) the data received is associated with.
+        The file position (c_uint64) of the first byte in data.
+        A byte array (c_char_p) containing the received chunk.
+        The length (c_size_t) of the received chunk.
+        pointer (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
+        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_uint64, c_char_p, c_size_t, c_void_p)
+        self.file_recv_chunk_cb = c_callback(callback)
+        self.libtoxcore.tox_callback_file_recv_chunk(self._tox_pointer, self.file_recv_chunk_cb, user_data)
 
     # -----------------------------------------------------------------------------------------------------------------
     # TODO Low-level custom packet sending and receiving
