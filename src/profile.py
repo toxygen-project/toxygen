@@ -5,7 +5,7 @@ import os
 from tox import Tox
 from toxcore_enums_and_consts import *
 from ctypes import *
-from util import curr_time, log
+from util import curr_time, log, Singleton
 
 
 class ProfileHelper(object):
@@ -153,10 +153,9 @@ class Friend(Contact):
         return self._number
 
     number = property(get_number)
-    # TODO: check if setNumber needed
 
 
-class Profile(Contact):
+class Profile(Contact, Singleton):
     """
     Profile of current toxygen user. Contains friends list, tox instance, list of messages
     """
@@ -179,10 +178,6 @@ class Profile(Contact):
         self.set_name(tox.self_get_name().encode('utf-8'))
         self.set_status_message(tox.self_get_status_message().encode('utf-8'))
         self.filtration(self.show_online)
-
-    @staticmethod
-    def get_instance():
-        return Profile._instance
 
     # -----------------------------------------------------------------------------------------------------------------
     # Edit current user's data

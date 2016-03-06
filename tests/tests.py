@@ -1,8 +1,5 @@
-from src.settings import Settings
-import sys
 from src.bootstrap import node_generator
 from src.profile import *
-import os
 
 
 class TestSettings():
@@ -18,15 +15,16 @@ class TestProfile():
     def test_search(self):
         arr = ProfileHelper.find_profiles()
         assert arr
+        assert len(arr) >= 2
 
     def test_open(self):
-        data = ProfileHelper.open_profile(Settings.get_default_path(), 'tox_save')
+        data = ProfileHelper.open_profile(Settings.get_default_path(), 'alice')
         assert data
 
     def test_open_save(self):
-        data = ProfileHelper.open_profile(Settings.get_default_path(), 'tox_save')
+        data = ProfileHelper.open_profile(Settings.get_default_path(), 'alice')
         ProfileHelper.save_profile(data)
-        new_data = ProfileHelper.open_profile(Settings.get_default_path(), 'tox_save')
+        new_data = ProfileHelper.open_profile(Settings.get_default_path(), 'alice')
         assert new_data == data
 
 
@@ -50,6 +48,20 @@ class TestTox():
         for data in node_generator():
             tox.bootstrap(*data)
         del tox
+
+    def test_creation(self):
+        name = 'Toxygen User'
+        status_message = 'Toxing on Toxygen'
+        tox = tox_factory()
+        tox.self_set_name(name)
+        tox.self_set_status_message(status_message)
+        data = tox.get_savedata()
+        length = tox.get_savedata_size()
+        savedata = ''.join('{}'.format(data[i]) for i in xrange(length))
+        del tox
+        tox = tox_factory(savedata)
+        assert tox.self_get_name() == name
+        assert tox.self_get_status_message() == status_message
 
     def test_friend_list(self):
         data = ProfileHelper.open_profile(Settings.get_default_path(), 'bob')
