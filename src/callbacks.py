@@ -31,7 +31,6 @@ def invoke_in_main_thread(fn, *args, **kwargs):
 
 def self_connection_status(tox_link):
     """
-    :param st: widget on mainscreen which shows status
     :param tox_link: tox instance
     :return: function for tox.callback_self_connection_status
     """
@@ -65,6 +64,7 @@ def friend_connection_status(tox, friend_num, new_status, user_data):
     friend = profile.get_friend_by_number(friend_num)
     if new_status == TOX_CONNECTION['NONE']:
         invoke_in_main_thread(friend.set_status, None)
+    invoke_in_main_thread(profile.update_filtration)
 
 
 def friend_name(window):

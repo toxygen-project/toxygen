@@ -53,9 +53,8 @@ class AddContact(QtGui.QWidget):
 
 class ProfileSettings(QtGui.QWidget):
     """Form with profile settings such as name, status, TOX ID"""
-    def __init__(self, tox):
+    def __init__(self):
         super(ProfileSettings, self).__init__()
-        self.tox = tox
         self.initUI()
 
     def initUI(self):
@@ -67,11 +66,12 @@ class ProfileSettings(QtGui.QWidget):
         self.nick = QtGui.QLineEdit(self)
         self.nick.setGeometry(QtCore.QRect(30, 60, 351, 27))
         self.nick.setObjectName("nick")
-        self.nick.setText(self.tox.self_get_name())
+        profile = Profile.get_instance()
+        self.nick.setText(profile.name)
         self.status = QtGui.QLineEdit(self)
         self.status.setGeometry(QtCore.QRect(30, 130, 351, 27))
         self.status.setObjectName("status")
-        self.status.setText(self.tox.self_get_status_message())
+        self.status.setText(profile.status_message)
         self.label = QtGui.QLabel(self)
         self.label.setGeometry(QtCore.QRect(50, 30, 91, 21))
         font = QtGui.QFont()
@@ -82,29 +82,18 @@ class ProfileSettings(QtGui.QWidget):
         self.label.setObjectName("label")
         self.label_2 = QtGui.QLabel(self)
         self.label_2.setGeometry(QtCore.QRect(50, 100, 91, 21))
-        font = QtGui.QFont()
-        font.setPointSize(18)
-        font.setWeight(75)
-        font.setBold(True)
         self.label_2.setFont(font)
         self.label_2.setObjectName("label_2")
         self.label_3 = QtGui.QLabel(self)
         self.label_3.setGeometry(QtCore.QRect(50, 170, 91, 21))
-        font = QtGui.QFont()
-        font.setPointSize(18)
-        font.setWeight(75)
-        font.setBold(True)
         self.label_3.setFont(font)
         self.label_3.setObjectName("label_3")
         self.tox_id = QtGui.QLabel(self)
         self.tox_id.setGeometry(QtCore.QRect(10, 210, self.width(), 21))
-        font = QtGui.QFont()
         font.setPointSize(10)
-        #font.setWeight(75)
-        font.setBold(True)
         self.tox_id.setFont(font)
         self.tox_id.setObjectName("tox_id")
-        s = self.tox.self_get_address()
+        s = profile.tox_id
         self.tox_id.setText(s)
         self.copyId = QtGui.QPushButton(self)
         self.copyId.setGeometry(QtCore.QRect(40, 250, 98, 31))
@@ -115,10 +104,7 @@ class ProfileSettings(QtGui.QWidget):
         self.comboBox.setObjectName("comboBox")
         self.tox_id_2 = QtGui.QLabel(self)
         self.tox_id_2.setGeometry(QtCore.QRect(40, 310, 121, 31))
-        font = QtGui.QFont()
         font.setPointSize(18)
-        font.setWeight(75)
-        font.setBold(True)
         self.tox_id_2.setFont(font)
         self.tox_id_2.setObjectName("tox_id_2")
         self.retranslateUi()
@@ -134,8 +120,8 @@ class ProfileSettings(QtGui.QWidget):
 
     def copy(self):
         clipboard = QtGui.QApplication.clipboard()
-        id = self.tox.self_get_address()
-        clipboard.setText(id)
+        profile = Profile.get_instance()
+        clipboard.setText(profile.tox_id)
 
     def closeEvent(self, event):
         profile = Profile.get_instance()
@@ -145,7 +131,7 @@ class ProfileSettings(QtGui.QWidget):
 
 class NetworkSettings(QtGui.QWidget):
     """Network settings form: UDP, Ipv6 and proxy"""
-
+    # TODO: add possibility to change network settings
     def __init__(self):
         super(NetworkSettings, self).__init__()
         self.initUI()

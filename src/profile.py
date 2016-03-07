@@ -5,7 +5,7 @@ import os
 from tox import Tox
 from toxcore_enums_and_consts import *
 from ctypes import *
-from util import curr_time, log, Singleton
+from util import curr_time, log, Singleton, curr_directory
 
 
 class ProfileHelper(object):
@@ -56,11 +56,13 @@ class Contact(object):
     number - unique number of friend in list, widget - widget for update
     """
 
-    def __init__(self, name, status_message, widget):
+    def __init__(self, name, status_message, widget, tox_id):
         self._name, self._status_message = name, status_message
         self._status, self._widget = None, widget
         widget.name.setText(name)
         widget.status_message.setText(status_message)
+        self._tox_id = tox_id
+        # self.load_avatar()
 
     # -----------------------------------------------------------------------------------------------------------------
     # name - current name or alias of user
@@ -102,6 +104,29 @@ class Contact(object):
         self._widget.connection_status.repaint()
 
     status = property(get_status, set_status)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # TOX ID. WARNING: for friend it will return public key, for profile - full address
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def get_tox_id(self):
+        return self._tox_id
+
+    tox_id = property(get_tox_id)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Avatars
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def load_avatar(self):
+        avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        print 'Avatar', avatar_path
+        if not os.path.isfile(avatar_path):  # load default image
+            avatar_path = curr_directory() + '/images/avatar.png'
+        pixmap = QtGui.QPixmap(QtCore.QSize(64, 64))
+        pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio)
+        self._widget.avatar_label.setPixmap(avatar_path)
+        self._widget.avatar_label.repaint()
 
 
 class Friend(Contact):
@@ -152,7 +177,10 @@ class Friend(Contact):
     def get_number(self):
         return self._number
 
-    number = property(get_number)
+    def set_number(self, value):
+        self._number = value
+
+    number = property(get_number, set_number)
 
 
 class Profile(Contact, Singleton):
@@ -160,6 +188,12 @@ class Profile(Contact, Singleton):
     Profile of current toxygen user. Contains friends list, tox instance, list of messages
     """
     def __init__(self, tox, widgets, widget, messages_list):
+        """
+        :param tox: tox instance
+        :param widgets: list of widgets - friends' list
+        :param widget: widget in top-left corner with current user's data
+        :param messages_list: qlistwidget with messages
+        """
         self._widget = widget
         self._messages = messages_list
         self.tox = tox
@@ -170,14 +204,16 @@ class Profile(Contact, Singleton):
         data = tox.self_get_friend_list()
         self._friends, num, self._active_friend = [], 0, -1
         for i in data:
-            name = tox.friend_get_name(i) or tox.friend_get_public_key(i)
+            tox_id = tox.friend_get_public_key(i)
+            name = tox.friend_get_name(i) or tox_id
             status_message = tox.friend_get_status_message(i)
-            self._friends.append(Friend(i, name, status_message, widgets[num]))
+            self._friends.append(Friend(i, name, status_message, widgets[num], tox_id))
             num += 1
-        Profile._instance = self
         self.set_name(tox.self_get_name().encode('utf-8'))
         self.set_status_message(tox.self_get_status_message().encode('utf-8'))
         self.filtration(self.show_online)
+        self._tox_id = tox.self_get_address()
+        self.load_avatar()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Edit current user's data
@@ -208,6 +244,9 @@ class Profile(Contact, Singleton):
             friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name.lower())
         self.show_online, self.filter_string = show_online, filter_str
 
+    def update_filtration(self):
+        self.filtration(self.show_online, self.filter_string)
+
     def get_friend_by_number(self, num):
         return filter(lambda x: x.number == num, self._friends)[0]
 
@@ -226,8 +265,6 @@ class Profile(Contact, Singleton):
             visible_friends = filter(lambda elem: elem[1].visibility, enumerate(self._friends))
             self._active_friend = visible_friends[value][0]
             self._friends[self._active_friend].set_messages(False)
-            self._messages.clear()
-            self._messages.repaint()
             # TODO: load history
         except:  # no friend found. ignore
             log('Incorrect friend value: ' + str(value))
@@ -257,6 +294,12 @@ class Profile(Contact, Singleton):
     # -----------------------------------------------------------------------------------------------------------------
 
     def new_message(self, id, message_type, message):
+        """
+        Current user gets new message
+        :param id: id of friend who sent message
+        :param message_type: message type - plain text or actionmessage
+        :param message: text of message
+        """
         if id == self._active_friend:  # add message to list
             user_name = Profile.get_instance().get_active_name()
             item = MessageItem(message.decode('utf-8'), curr_time(), user_name, message_type, self._messages)
@@ -264,13 +307,17 @@ class Profile(Contact, Singleton):
             elem.setSizeHint(QtCore.QSize(500, item.getHeight()))
             self._messages.addItem(elem)
             self._messages.setItemWidget(elem, item)
-            #self._messages.scrollToBottom()
             self._messages.repaint()
         else:
             friend = filter(lambda x: x.number == id, self._friends)[0]
             friend.set_messages(True)
 
     def send_message(self, text):
+        """
+        Send message to active friend
+        :param text: message text
+        :return: True on success
+        """
         if self.is_active_online() and text:
             if text.startswith('/me '):
                 message_type = TOX_MESSAGE_TYPE['ACTION']

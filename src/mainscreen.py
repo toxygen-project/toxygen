@@ -88,10 +88,10 @@ class MainWindow(QtGui.QMainWindow):
 
     def setup_right_bottom(self, Form):
         Form.setObjectName("right_bottom")
-        Form.resize(500, 150)
-        Form.setMinimumSize(QtCore.QSize(100, 50))
+        Form.resize(500, 100)
+        #Form.setMinimumSize(QtCore.QSize(100, 50))
         self.messageEdit = MessageArea(Form, self)
-        self.messageEdit.setGeometry(QtCore.QRect(20, 20, 311, 111))
+        self.messageEdit.setGeometry(QtCore.QRect(20, 20, 311, 100))
         self.messageEdit.setObjectName("messageEdit")
         self.screenshotButton = QtGui.QPushButton(Form)
         self.screenshotButton.setGeometry(QtCore.QRect(340, 10, 98, 61))
@@ -128,25 +128,20 @@ class MainWindow(QtGui.QMainWindow):
         Form.setMinimumSize(QtCore.QSize(250, 100))
         Form.setMaximumSize(QtCore.QSize(250, 100))
         Form.setBaseSize(QtCore.QSize(250, 100))
-        Form.graphicsView = QtGui.QGraphicsView(Form)
-        Form.graphicsView.setGeometry(QtCore.QRect(10, 20, 64, 64))
-        Form.graphicsView.setMinimumSize(QtCore.QSize(64, 64))
-        Form.graphicsView.setMaximumSize(QtCore.QSize(64, 64))
-        Form.graphicsView.setBaseSize(QtCore.QSize(64, 64))
-        Form.graphicsView.setObjectName("graphicsView")
+        self.avatar_label = Form.avatar_label = QtGui.QLabel(Form)
+        self.avatar_label.setGeometry(QtCore.QRect(10, 20, 64, 64))
+        self.avatar_label.setScaledContents(True)
         self.name = Form.name = QtGui.QLabel(Form)
-        Form.name.setGeometry(QtCore.QRect(80, 30, 191, 25))
+        Form.name.setGeometry(QtCore.QRect(80, 30, 200, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
-        font.setPointSize(16)
+        font.setPointSize(14)
         font.setBold(True)
         Form.name.setFont(font)
         Form.name.setObjectName("name")
         self.status_message = Form.status_message = QtGui.QLabel(Form)
         Form.status_message.setGeometry(QtCore.QRect(80, 60, 191, 17))
-        font = QtGui.QFont()
-        font.setFamily("Times New Roman")
-        font.setPointSize(14)
+        font.setPointSize(12)
         font.setBold(False)
         Form.status_message.setFont(font)
         Form.status_message.setObjectName("status_message")
@@ -160,25 +155,25 @@ class MainWindow(QtGui.QMainWindow):
     def setup_right_top(self, Form):
         Form.setObjectName("Form")
         Form.resize(495, 111)
-        self.graphicsView = QtGui.QGraphicsView(Form)
-        self.graphicsView.setGeometry(QtCore.QRect(10, 20, 64, 64))
-        self.graphicsView.setObjectName("graphicsView")
+        self.account_avatar = QtGui.QLabel(Form)
+        self.account_avatar.setGeometry(QtCore.QRect(10, 20, 64, 64))
+        self.account_avatar.setScaledContents(True)
         self.account_name = QtGui.QLabel(Form)
-        self.account_name.setGeometry(QtCore.QRect(100, 20, 211, 17))
+        self.account_name.setGeometry(QtCore.QRect(100, 30, 300, 25))
         font = QtGui.QFont()
-        font.setWeight(75)
+        font.setFamily("Times New Roman")
+        font.setPointSize(14)
         font.setBold(True)
         self.account_name.setFont(font)
         self.account_name.setObjectName("account_name")
         self.account_status = QtGui.QLabel(Form)
-        self.account_status.setGeometry(QtCore.QRect(100, 50, 211, 17))
-        font = QtGui.QFont()
-        font.setWeight(50)
+        self.account_status.setGeometry(QtCore.QRect(100, 50, 300, 25))
+        font.setPointSize(12)
         font.setBold(False)
         self.account_status.setFont(font)
         self.account_status.setObjectName("account_status")
         self.callButton = QtGui.QPushButton(Form)
-        self.callButton.setGeometry(QtCore.QRect(380, 30, 98, 27))
+        self.callButton.setGeometry(QtCore.QRect(400, 30, 100, 30))
         self.callButton.setObjectName("callButton")
         self.callButton.setText(QtGui.QApplication.translate("Form", "Start call", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -204,8 +199,9 @@ class MainWindow(QtGui.QMainWindow):
         self.messages.setGeometry(0, 0, 500, 250)
 
     def initUI(self):
-        self.setMinimumSize(800, 400)
-        self.setGeometry(400, 400, 800, 400)
+        self.setMinimumSize(800, 550)
+        self.setMaximumSize(800, 550)
+        self.setGeometry(400, 400, 800, 550)
         self.setWindowTitle('Toxygen')
         main = QtGui.QWidget()
         grid = QtGui.QGridLayout()
@@ -229,17 +225,10 @@ class MainWindow(QtGui.QMainWindow):
         grid.addWidget(main_list, 1, 0)
         grid.setColumnMinimumWidth(1, 500)
         grid.setColumnMinimumWidth(0, 250)
+        grid.setRowMinimumHeight(1, 250)
         main.setLayout(grid)
         self.setCentralWidget(main)
         self.setup_menu(self)
-
-    def mouseReleaseEvent(self, event):
-        x, y = event.x(), event.y()
-        pos = self.connection_status.pos()
-        if (pos.x() < x < pos.x() + 32) and (pos.y() < y < pos.y() + 32):
-            self.profile.change_status()
-        else:
-            super(self.__class__, self).mouseReleaseEvent(event)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click in menu
@@ -261,7 +250,7 @@ class MainWindow(QtGui.QMainWindow):
         self.a_c.show()
 
     def profile_settings(self):
-        self.p_s = ProfileSettings(self.tox)
+        self.p_s = ProfileSettings()
         self.p_s.show()
 
     def privacy_settings(self):
@@ -293,6 +282,7 @@ class MainWindow(QtGui.QMainWindow):
         friend = self.profile.get_active_friend_data()
         self.account_name.setText(friend[0])
         self.account_status.setText(friend[1])
+        # TODO: update avatar
 
     def friend_click(self, index):
         print 'row:', index.row()
@@ -301,6 +291,14 @@ class MainWindow(QtGui.QMainWindow):
             self.update_active_friend()
             self.messages.clear()
             self.messageEdit.clear()
+
+    def mouseReleaseEvent(self, event):
+        x, y = event.x(), event.y()
+        pos = self.connection_status.pos()
+        if (pos.x() < x < pos.x() + 32) and (pos.y() < y < pos.y() + 32):
+            self.profile.change_status()
+        else:
+            super(self.__class__, self).mouseReleaseEvent(event)
 
     def filtering(self):
         self.profile.filtration(self.online_contacts.isChecked(), self.contact_name.text())
