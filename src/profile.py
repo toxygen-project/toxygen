@@ -62,7 +62,7 @@ class Contact(object):
         widget.name.setText(name)
         widget.status_message.setText(status_message)
         self._tox_id = tox_id
-        # self.load_avatar()
+        self.load_avatar()
 
     # -----------------------------------------------------------------------------------------------------------------
     # name - current name or alias of user
@@ -139,10 +139,22 @@ class Friend(Contact):
         self._number = number
         self._new_messages = False
         self._visible = True
+        self._alias = False
 
     def __del__(self):
         self.set_visibility(False)
         del self._widget
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Alias support
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def set_name(self, value):
+        if not self._alias:
+            super(self.__class__, self).set_name(value)
+
+    def set_alias(self, alias):
+        self._alias = bool(alias)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Visibility in friends' list
@@ -200,14 +212,22 @@ class Profile(Contact, Singleton):
         self._name = tox.self_get_name()
         self._status_message = tox.self_get_status_message()
         self._status = None
+        settings = Settings.get_instance()
         self.show_online = Settings.get_instance()['show_online_friends']
+        aliases = settings['friends_aliases']
         data = tox.self_get_friend_list()
         self._friends, num, self._active_friend = [], 0, -1
         for i in data:
             tox_id = tox.friend_get_public_key(i)
-            name = tox.friend_get_name(i) or tox_id
+            try:
+                alias = filter(lambda x: x[0] == tox_id, aliases)[0][1]
+            except:
+                alias = ''
+            name = alias or tox.friend_get_name(i) or tox_id
             status_message = tox.friend_get_status_message(i)
-            self._friends.append(Friend(i, name, status_message, widgets[num], tox_id))
+            friend = Friend(i, name, status_message, widgets[num], tox_id)
+            friend.set_alias(alias)
+            self._friends.append(friend)
             num += 1
         self.set_name(tox.self_get_name().encode('utf-8'))
         self.set_status_message(tox.self_get_status_message().encode('utf-8'))

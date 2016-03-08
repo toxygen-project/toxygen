@@ -29,7 +29,8 @@ class MessageEdit(QtGui.QPlainTextEdit):
         print 'lines ', lines
         if self.document().blockCount() == 1:
             lines += 1
-        self.setFixedHeight(max(lines * 15, 30))
+        size = (lines - 1) * 18 + 12
+        self.setFixedHeight(max(size, 30))
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
 
 
@@ -40,18 +41,18 @@ class MessageItem(QtGui.QListWidget):
     def __init__(self, text, time, user='', message_type=TOX_MESSAGE_TYPE['NORMAL'], parent=None):
         QtGui.QListWidget.__init__(self, parent)
         self.name = QtGui.QLabel(self)
-        self.name.setGeometry(QtCore.QRect(0, 0, 50, 25))
+        self.name.setGeometry(QtCore.QRect(5, 0, 95, 30))
         self.name.setTextFormat(QtCore.Qt.PlainText)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
-        font.setPointSize(12)
+        font.setPointSize(10)
         font.setBold(True)
         self.name.setFont(font)
         self.name.setObjectName("name")
         self.name.setText(user)
 
         self.time = QtGui.QLabel(self)
-        self.time.setGeometry(QtCore.QRect(450, 0, 50, 25))
+        self.time.setGeometry(QtCore.QRect(parent.width() - 50, 0, 50, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(10)
@@ -60,9 +61,10 @@ class MessageItem(QtGui.QListWidget):
         self.time.setObjectName("time")
         self.time.setText(time)
 
-        self.message = MessageEdit(text, parent.width() - 100, self)
-        self.message.setGeometry(QtCore.QRect(50, 0, parent.width() - 100, self.message.height()))
+        self.message = MessageEdit(text, parent.width() - 150, self)
+        self.message.setGeometry(QtCore.QRect(100, 0, parent.width() - 150, self.message.height()))
         self.h = self.message.height()
+        print 'self.h ', self.h
         self.setFixedHeight(self.getHeight())
 
         self.message.setFrameShape(QtGui.QFrame.NoFrame)
@@ -89,11 +91,12 @@ class ContactItem(QtGui.QListWidget):
     """
     def __init__(self, parent=None):
         QtGui.QListWidget.__init__(self, parent)
-        # self.setMinimumSize(QtCore.QSize(250, 50))
-        # self.setMaximumSize(QtCore.QSize(250, 50))
-        self.setBaseSize(QtCore.QSize(250, 50))
+        self.setBaseSize(QtCore.QSize(250, 70))
+        self.avatar_label = QtGui.QLabel(self)
+        self.avatar_label.setGeometry(QtCore.QRect(3, 3, 64, 64))
+        self.avatar_label.setScaledContents(True)
         self.name = QtGui.QLabel(self)
-        self.name.setGeometry(QtCore.QRect(80, 10, 191, 25))
+        self.name.setGeometry(QtCore.QRect(70, 10, 170, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(12)
@@ -101,18 +104,16 @@ class ContactItem(QtGui.QListWidget):
         self.name.setFont(font)
         self.name.setObjectName("name")
         self.status_message = QtGui.QLabel(self)
-        self.status_message.setGeometry(QtCore.QRect(80, 30, 191, 17))
-        font = QtGui.QFont()
-        font.setFamily("Times New Roman")
+        self.status_message.setGeometry(QtCore.QRect(70, 30, 180, 20))
         font.setPointSize(10)
         font.setBold(False)
         self.status_message.setFont(font)
         self.status_message.setObjectName("status_message")
         self.connection_status = StatusCircle(self)
-        self.connection_status.setGeometry(QtCore.QRect(200, 5, 16, 16))
-        self.connection_status.setMinimumSize(QtCore.QSize(32, 32))
-        self.connection_status.setMaximumSize(QtCore.QSize(32, 32))
-        self.connection_status.setBaseSize(QtCore.QSize(32, 32))
+        self.connection_status.setGeometry(QtCore.QRect(218, 5, 32, 32))
+        # self.connection_status.setMinimumSize(QtCore.QSize(32, 32))
+        # self.connection_status.setMaximumSize(QtCore.QSize(32, 32))
+        # self.connection_status.setBaseSize(QtCore.QSize(32, 32))
         self.connection_status.setObjectName("connection_status")
 
 
@@ -136,11 +137,11 @@ class StatusCircle(QtGui.QWidget):
             color = QtCore.Qt.transparent
         else:
             if self.data == TOX_USER_STATUS['NONE']:
-                color = QtCore.Qt.darkGreen
+                color = QtGui.QColor(50, 205, 50)
             elif self.data == TOX_USER_STATUS['AWAY']:
-                color = QtCore.Qt.yellow
+                color = QtGui.QColor(255, 200, 50)
             else:  # self.data == TOX_USER_STATUS['BUSY']:
-                color = QtCore.Qt.darkRed
+                color = QtGui.QColor(255, 50, 0)
 
         paint.setPen(color)
         center = QtCore.QPoint(k, k)
@@ -151,5 +152,5 @@ class StatusCircle(QtGui.QWidget):
                 color = QtCore.Qt.darkRed
             paint.setBrush(QtCore.Qt.transparent)
             paint.setPen(color)
-            paint.drawEllipse(center, rad_x + 5, rad_y + 5)
+            paint.drawEllipse(center, rad_x + 3, rad_y + 3)
         paint.end()
