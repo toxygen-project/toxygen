@@ -3,6 +3,7 @@ from notifications import *
 from settings import Settings
 from profile import Profile
 from toxcore_enums_and_consts import *
+from tox import bin_to_string
 # TODO: add all callbacks (use wrappers)
 
 
@@ -79,7 +80,7 @@ def friend_name(window):
         print 'New name: ', str(friend_num), str(name)
         invoke_in_main_thread(friend.set_name, name)
         if profile.get_active_number() == friend_num:
-            invoke_in_main_thread(window.update_active_friend)
+            invoke_in_main_thread(profile.set_active)
     return wrapped
 
 
@@ -95,7 +96,7 @@ def friend_status_message(window):
         invoke_in_main_thread(friend.set_status_message, status_message)
         print 'User #{} has new status: {}'.format(friend_num, status_message)
         if profile.get_active_number() == friend_num:
-            invoke_in_main_thread(window.update_active_friend)
+            invoke_in_main_thread(profile.set_active)
     return wrapped
 
 
@@ -114,6 +115,12 @@ def friend_message(window):
     return wrapped
 
 
+def friend_request(tox, public_key, message, message_size, user_data):
+    profile = Profile.get_instance()
+    tox_id = bin_to_string(public_key, TOX_PUBLIC_KEY_SIZE)
+    invoke_in_main_thread(profile.process_friend_request, tox_id, message.decode('utf-8'))
+
+
 def init_callbacks(tox, window):
     """
     Initialization of all callbacks.
@@ -126,3 +133,4 @@ def init_callbacks(tox, window):
     tox.callback_friend_connection_status(friend_connection_status, 0)
     tox.callback_friend_name(friend_name(window), 0)
     tox.callback_friend_status_message(friend_status_message(window), 0)
+    tox.callback_friend_request(friend_request, 0)

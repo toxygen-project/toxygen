@@ -88,23 +88,22 @@ class MainWindow(QtGui.QMainWindow):
 
     def setup_right_bottom(self, Form):
         Form.setObjectName("right_bottom")
-        Form.resize(500, 100)
-        #Form.setMinimumSize(QtCore.QSize(100, 50))
+        Form.resize(650, 100)
         self.messageEdit = MessageArea(Form, self)
-        self.messageEdit.setGeometry(QtCore.QRect(20, 20, 311, 100))
+        self.messageEdit.setGeometry(QtCore.QRect(0, 10, 450, 110))
         self.messageEdit.setObjectName("messageEdit")
         self.screenshotButton = QtGui.QPushButton(Form)
-        self.screenshotButton.setGeometry(QtCore.QRect(340, 10, 98, 61))
+        self.screenshotButton.setGeometry(QtCore.QRect(460, 10, 90, 50))
         self.screenshotButton.setObjectName("screenshotButton")
         self.fileTransferButton = QtGui.QPushButton(Form)
-        self.fileTransferButton.setGeometry(QtCore.QRect(340, 80, 98, 61))
+        self.fileTransferButton.setGeometry(QtCore.QRect(460, 70, 90, 50))
         self.fileTransferButton.setObjectName("fileTransferButton")
         self.sendMessageButton = QtGui.QPushButton(Form)
-        self.sendMessageButton.setGeometry(QtCore.QRect(440, 10, 51, 131))
+        self.sendMessageButton.setGeometry(QtCore.QRect(550, 10, 60, 110))
         self.sendMessageButton.setObjectName("sendMessageButton")
         self.sendMessageButton.clicked.connect(self.send_message)
         self.screenshotButton.setText(QtGui.QApplication.translate("Form", "Screenshot", None, QtGui.QApplication.UnicodeUTF8))
-        self.fileTransferButton.setText(QtGui.QApplication.translate("Form", "File transfer", None, QtGui.QApplication.UnicodeUTF8))
+        self.fileTransferButton.setText(QtGui.QApplication.translate("Form", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.sendMessageButton.setText(QtGui.QApplication.translate("Form", "Send", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QMetaObject.connectSlotsByName(Form)
 
@@ -181,17 +180,6 @@ class MainWindow(QtGui.QMainWindow):
     def setup_left_center(self, widget, profile_widget):
         self.friends_list = QtGui.QListWidget(widget)
         self.friends_list.setGeometry(0, 0, 250, 250)
-        count = self.tox.self_get_friend_list_size()
-        widgets = []
-        for i in xrange(count):
-            item = ContactItem()
-            elem = QtGui.QListWidgetItem(self.friends_list)
-            print item.sizeHint()
-            elem.setSizeHint(QtCore.QSize(250, 70))
-            self.friends_list.addItem(elem)
-            self.friends_list.setItemWidget(elem, item)
-            widgets.append(item)
-        self.profile = Profile(self.tox, widgets, profile_widget, self.messages)
         self.friends_list.clicked.connect(self.friend_click)
 
     def setup_right_center(self, widget):
@@ -229,6 +217,9 @@ class MainWindow(QtGui.QMainWindow):
         main.setLayout(grid)
         self.setCentralWidget(main)
         self.setup_menu(self)
+        self.user_info = name
+        self.friend_info = info
+        self.profile = Profile(self.tox, self)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click in menu
@@ -271,26 +262,16 @@ class MainWindow(QtGui.QMainWindow):
 
     def send_message(self):
         text = self.messageEdit.toPlainText()
-        if self.profile.send_message(text):
-            self.messageEdit.clear()
+        self.profile.send_message(text)
 
 # -----------------------------------------------------------------------------------------------------------------
 # Functions which called when user click somewhere else
 # -----------------------------------------------------------------------------------------------------------------
 
-    def update_active_friend(self):
-        friend = self.profile.get_active_friend_data()
-        self.account_name.setText(friend[0])
-        self.account_status.setText(friend[1])
-        # TODO: update avatar
-
     def friend_click(self, index):
         print 'row:', index.row()
         num = index.row()
-        if self.profile.set_active(num):
-            self.update_active_friend()
-            self.messages.clear()
-            self.messageEdit.clear()
+        self.profile.set_active(num)
 
     def mouseReleaseEvent(self, event):
         x, y = event.x(), event.y()

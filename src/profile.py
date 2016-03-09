@@ -1,4 +1,4 @@
-from list_items import MessageItem
+from list_items import MessageItem, ContactItem
 from settings import Settings
 from PySide import QtCore, QtGui
 import os
@@ -120,7 +120,6 @@ class Contact(object):
 
     def load_avatar(self):
         avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
-        print 'Avatar', avatar_path
         if not os.path.isfile(avatar_path):  # load default image
             avatar_path = curr_directory() + '/images/avatar.png'
         pixmap = QtGui.QPixmap(QtCore.QSize(64, 64))
@@ -199,21 +198,21 @@ class Profile(Contact, Singleton):
     """
     Profile of current toxygen user. Contains friends list, tox instance, list of messages
     """
-    def __init__(self, tox, widgets, widget, messages_list):
+    def __init__(self, tox, screen):
         """
         :param tox: tox instance
-        :param widgets: list of widgets - friends' list
-        :param widget: widget in top-left corner with current user's data
-        :param messages_list: qlistwidget with messages
+        :param screen: ref to main screen
         """
-        self._widget = widget
-        self._messages = messages_list
+        self.screen = screen
+        self._widget = screen.user_info
+        self._messages = screen.messages
         self.tox = tox
         self._name = tox.self_get_name()
         self._status_message = tox.self_get_status_message()
         self._status = None
         settings = Settings.get_instance()
-        self.show_online = Settings.get_instance()['show_online_friends']
+        self.show_online = settings['show_online_friends']
+        screen.online_contacts.setChecked(self.show_online)
         aliases = settings['friends_aliases']
         data = tox.self_get_friend_list()
         self._friends, num, self._active_friend = [], 0, -1
@@ -223,9 +222,10 @@ class Profile(Contact, Singleton):
                 alias = filter(lambda x: x[0] == tox_id, aliases)[0][1]
             except:
                 alias = ''
+            item = self.create_friend_item()
             name = alias or tox.friend_get_name(i) or tox_id
             status_message = tox.friend_get_status_message(i)
-            friend = Friend(i, name, status_message, widgets[num], tox_id)
+            friend = Friend(i, name, status_message, item, tox_id)
             friend.set_alias(alias)
             self._friends.append(friend)
             num += 1
@@ -263,6 +263,9 @@ class Profile(Contact, Singleton):
         for friend in self._friends:
             friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name.lower())
         self.show_online, self.filter_string = show_online, filter_str
+        settings = Settings.get_instance()
+        settings['show_online_friends'] = self.show_online
+        settings.save()
 
     def update_filtration(self):
         self.filtration(self.show_online, self.filter_string)
@@ -277,28 +280,33 @@ class Profile(Contact, Singleton):
     def get_active(self):
         return self._active_friend
 
-    def set_active(self, value):
+    def set_active(self, value=None):
+        """
+        :param value: number of new active friend in friend's list or None to update active user's data
+        """
         # TODO: rewrite to work with filtering
-        if self._active_friend == value:
-            return False
         try:
-            visible_friends = filter(lambda elem: elem[1].visibility, enumerate(self._friends))
-            self._active_friend = visible_friends[value][0]
-            self._friends[self._active_friend].set_messages(False)
+            if value is not None:
+                visible_friends = filter(lambda elem: elem[1].visibility, enumerate(self._friends))
+                self._active_friend = visible_friends[value][0]
+                self._friends[self._active_friend].set_messages(False)
+                self.screen.messages.clear()
+                self.screen.messageEdit.clear()
+            friend = self._friends[self._active_friend]
+            self.screen.account_name.setText(friend.name)
+            self.screen.account_status.setText(friend.status_message)
+            avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(friend.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+            if not os.path.isfile(avatar_path):  # load default image
+                avatar_path = curr_directory() + '/images/avatar.png'
+            pixmap = QtGui.QPixmap(QtCore.QSize(64, 64))
+            pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio)
+            self.screen.account_avatar.setPixmap(avatar_path)
+            self.screen.account_avatar.repaint()
             # TODO: load history
         except:  # no friend found. ignore
             log('Incorrect friend value: ' + str(value))
-        return True
 
     active_friend = property(get_active, set_active)
-
-    def get_active_friend_data(self):
-        if self._active_friend != -1:
-            friend = self._friends[self._active_friend]
-            return friend.name, friend.status_message
-        else:
-            log('Something is wrong in get_active_friend_data')
-            return '', ''
 
     def get_active_number(self):
         return self._friends[self._active_friend].number
@@ -313,14 +321,14 @@ class Profile(Contact, Singleton):
     # Private messages
     # -----------------------------------------------------------------------------------------------------------------
 
-    def new_message(self, id, message_type, message):
+    def new_message(self, friend_num, message_type, message):
         """
         Current user gets new message
-        :param id: id of friend who sent message
+        :param friend_num: friend_num of friend who sent message
         :param message_type: message type - plain text or actionmessage
         :param message: text of message
         """
-        if id == self._active_friend:  # add message to list
+        if friend_num == self._friends[self._active_friend].number:  # add message to list
             user_name = Profile.get_instance().get_active_name()
             item = MessageItem(message.decode('utf-8'), curr_time(), user_name, message_type, self._messages)
             elem = QtGui.QListWidgetItem(self._messages)
@@ -329,7 +337,7 @@ class Profile(Contact, Singleton):
             self._messages.setItemWidget(elem, item)
             self._messages.repaint()
         else:
-            friend = filter(lambda x: x.number == id, self._friends)[0]
+            friend = filter(lambda x: x.number == friend_num, self._friends)[0]
             friend.set_messages(True)
 
     def send_message(self, text):
@@ -352,15 +360,51 @@ class Profile(Contact, Singleton):
             self._messages.setItemWidget(elem, item)
             self._messages.scrollToBottom()
             self._messages.repaint()
-            return True
-        else:
-            return False
+            self.screen.messageEdit.clear()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Work with friends (add, remove)
     # -----------------------------------------------------------------------------------------------------------------
 
-    # TODO: add friends
+    def create_friend_item(self):
+        item = ContactItem()
+        elem = QtGui.QListWidgetItem(self.screen.friends_list)
+        elem.setSizeHint(QtCore.QSize(250, 70))
+        self.screen.friends_list.addItem(elem)
+        self.screen.friends_list.setItemWidget(elem, item)
+        return item
+
+    def send_friend_request(self, id, message):
+        """
+        Function tries to add friend with specified id to contact list
+        :param id: id of new contact
+        :param message: additional message
+        :return: True on success else error string
+        """
+        try:
+            message = message or 'Add me to your contact list'
+            result = self.tox.friend_add(id, message.encode('utf-8'))
+            tox_id = id[:TOX_PUBLIC_KEY_SIZE * 2]
+            item = self.create_friend_item()
+            friend = Friend(result, tox_id, '', item, tox_id)
+            self._friends.append(friend)
+            return True
+        except Exception as ex:  # wrong data
+            log('Send friend failed with ' + str(ex))
+            return str(ex)
+
+    def process_friend_request(self, tox_id, message):
+        try:
+            info = 'User {} wants to add you to contact list. Message:\n{}'.format(tox_id, message)
+            reply = QtGui.QMessageBox.question(None, 'Friend request', info, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if reply == QtGui.QMessageBox.Yes:  # accepted
+                num = self.tox.friend_add_norequest(tox_id)  # num - friend number
+                item = self.create_friend_item()
+                friend = Friend(num, tox_id, '', item, tox_id)
+                self._friends.append(friend)
+        except Exception as ex:  # smth is wrong
+            log('Accept friend request failed! ' + str(ex))
+
     def delete_friend(self, num):
         self.tox.friend_delete(num)
         friend = filter(lambda x: x.number == num, self._friends)[0]
