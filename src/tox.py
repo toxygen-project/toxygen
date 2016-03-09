@@ -478,7 +478,7 @@ class Tox(object):
         :return: the friend number on success, UINT32_MAX on failure.
         """
         tox_err_friend_add = c_int()
-        result = Tox.libtoxcore.tox_friend_add(self._tox_pointer, c_char_p(address), c_char_p(message),
+        result = Tox.libtoxcore.tox_friend_add(self._tox_pointer, string_to_bin(address), c_char_p(message),
                                                c_size_t(len(message)), addressof(tox_err_friend_add))
         tox_err_friend_add = tox_err_friend_add.value
         if tox_err_friend_add == TOX_ERR_FRIEND_ADD['OK']:
@@ -518,7 +518,8 @@ class Tox(object):
         :return: the friend number on success, UINT32_MAX on failure.
         """
         tox_err_friend_add = c_int()
-        result = Tox.libtoxcore.tox_friend_add(self._tox_pointer, c_char_p(public_key), addressof(tox_err_friend_add))
+        result = Tox.libtoxcore.tox_friend_add_norequest(self._tox_pointer, string_to_bin(public_key),
+                                                         addressof(tox_err_friend_add))
         tox_err_friend_add = tox_err_friend_add.value
         if tox_err_friend_add == TOX_ERR_FRIEND_ADD['OK']:
             return result
