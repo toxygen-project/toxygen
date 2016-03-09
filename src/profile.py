@@ -164,7 +164,11 @@ class Friend(Contact):
 
     def set_visibility(self, value):
         self._visible = value
-        self._widget.setVisible(value)
+        # #self._widget.setVisible(value)
+        # if value:
+        #     self._widget.parent().setSizeHint(250, 70)
+        # else:
+        #     self._widget.parent().setSizeHint(250, 0)
 
     visibility = property(get_visibility, set_visibility)
 
@@ -258,10 +262,13 @@ class Profile(Contact, Singleton):
     # -----------------------------------------------------------------------------------------------------------------
 
     def filtration(self, show_online=True, filter_str=''):
-        # TODO: hide elements in list
         filter_str = filter_str.lower()
-        for friend in self._friends:
+        for index, friend in enumerate(self._friends):
             friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name.lower())
+            if friend.visibility:
+                self.screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 70))
+            else:
+                self.screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 0))
         self.show_online, self.filter_string = show_online, filter_str
         settings = Settings.get_instance()
         settings['show_online_friends'] = self.show_online
@@ -284,11 +291,11 @@ class Profile(Contact, Singleton):
         """
         :param value: number of new active friend in friend's list or None to update active user's data
         """
-        # TODO: rewrite to work with filtering
+        if value is None and self._active_friend == -1:  # nothing to update
+            return
         try:
             if value is not None:
-                visible_friends = filter(lambda elem: elem[1].visibility, enumerate(self._friends))
-                self._active_friend = visible_friends[value][0]
+                self._active_friend = value
                 self._friends[self._active_friend].set_messages(False)
                 self.screen.messages.clear()
                 self.screen.messageEdit.clear()
@@ -325,10 +332,10 @@ class Profile(Contact, Singleton):
         """
         Current user gets new message
         :param friend_num: friend_num of friend who sent message
-        :param message_type: message type - plain text or actionmessage
+        :param message_type: message type - plain text or action message (/me)
         :param message: text of message
         """
-        if friend_num == self._friends[self._active_friend].number:  # add message to list
+        if friend_num == self.get_active_number():  # add message to list
             user_name = Profile.get_instance().get_active_name()
             item = MessageItem(message.decode('utf-8'), curr_time(), user_name, message_type, self._messages)
             elem = QtGui.QListWidgetItem(self._messages)

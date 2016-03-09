@@ -4,7 +4,6 @@ from settings import Settings
 from profile import Profile
 from toxcore_enums_and_consts import *
 from tox import bin_to_string
-# TODO: add all callbacks (use wrappers)
 
 
 class InvokeEvent(QtCore.QEvent):
@@ -116,6 +115,9 @@ def friend_message(window):
 
 
 def friend_request(tox, public_key, message, message_size, user_data):
+    """
+    Called when user get new friend request
+    """
     profile = Profile.get_instance()
     tox_id = bin_to_string(public_key, TOX_PUBLIC_KEY_SIZE)
     invoke_in_main_thread(profile.process_friend_request, tox_id, message.decode('utf-8'))
