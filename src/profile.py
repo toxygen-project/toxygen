@@ -53,10 +53,16 @@ class Contact(object):
     """
     Class encapsulating TOX contact
     Properties: name (alias of contact or name), status_message, status (connection status)
-    number - unique number of friend in list, widget - widget for update
+    widget - widget for update
     """
 
     def __init__(self, name, status_message, widget, tox_id):
+        """
+        :param name: name, example: 'Toxygen user'
+        :param status_message: status message, example: 'Toxing on toxygen'
+        :param widget: ContactItem instance
+        :param tox_id: tox id of contact
+        """
         self._name, self._status_message = name, status_message
         self._status, self._widget = None, widget
         widget.name.setText(name)
@@ -119,6 +125,9 @@ class Contact(object):
     # -----------------------------------------------------------------------------------------------------------------
 
     def load_avatar(self):
+        """
+        Tries to load avatar of contact or uses default avatar
+        """
         avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
         if not os.path.isfile(avatar_path):  # load default image
             avatar_path = curr_directory() + '/images/avatar.png'
@@ -130,10 +139,13 @@ class Contact(object):
 
 class Friend(Contact):
     """
-    Friend in list of friends. Can be hidden, property 'has unread messages' added
+    Friend in list of friends. Can be hidden, properties 'has unread messages' and 'has alias' added
     """
 
     def __init__(self, number, *args):
+        """
+        :param number: number of friend.
+        """
         super(Friend, self).__init__(*args)
         self._number = number
         self._new_messages = False
@@ -164,11 +176,6 @@ class Friend(Contact):
 
     def set_visibility(self, value):
         self._visible = value
-        # #self._widget.setVisible(value)
-        # if value:
-        #     self._widget.parent().setSizeHint(250, 70)
-        # else:
-        #     self._widget.parent().setSizeHint(250, 0)
 
     visibility = property(get_visibility, set_visibility)
 
@@ -200,7 +207,7 @@ class Friend(Contact):
 
 class Profile(Contact, Singleton):
     """
-    Profile of current toxygen user. Contains friends list, tox instance, list of messages
+    Profile of current toxygen user. Contains friends list, tox instance
     """
     def __init__(self, tox, screen):
         """
@@ -219,8 +226,8 @@ class Profile(Contact, Singleton):
         screen.online_contacts.setChecked(self.show_online)
         aliases = settings['friends_aliases']
         data = tox.self_get_friend_list()
-        self._friends, num, self._active_friend = [], 0, -1
-        for i in data:
+        self._friends, self._active_friend = [], -1
+        for i in data:  # creates list of friends
             tox_id = tox.friend_get_public_key(i)
             try:
                 alias = filter(lambda x: x[0] == tox_id, aliases)[0][1]
@@ -232,7 +239,6 @@ class Profile(Contact, Singleton):
             friend = Friend(i, name, status_message, item, tox_id)
             friend.set_alias(alias)
             self._friends.append(friend)
-            num += 1
         self.set_name(tox.self_get_name().encode('utf-8'))
         self.set_status_message(tox.self_get_status_message().encode('utf-8'))
         self.filtration(self.show_online)
@@ -244,6 +250,9 @@ class Profile(Contact, Singleton):
     # -----------------------------------------------------------------------------------------------------------------
 
     def change_status(self):
+        """
+        Changes status of user (online, away, busy)
+        """
         if self._status is not None:
             status = (self._status + 1) % 3
             super(self.__class__, self).set_status(status)
@@ -262,6 +271,11 @@ class Profile(Contact, Singleton):
     # -----------------------------------------------------------------------------------------------------------------
 
     def filtration(self, show_online=True, filter_str=''):
+        """
+        Filtration of friends list
+        :param show_online: show online only contacts
+        :param filter_str: show contacts which name contains this substring
+        """
         filter_str = filter_str.lower()
         for index, friend in enumerate(self._friends):
             friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name.lower())
@@ -275,6 +289,9 @@ class Profile(Contact, Singleton):
         settings.save()
 
     def update_filtration(self):
+        """
+        Update list of contacts when 1 of friends change connection status
+        """
         self.filtration(self.show_online, self.filter_string)
 
     def get_friend_by_number(self, num):
@@ -335,6 +352,7 @@ class Profile(Contact, Singleton):
         :param message_type: message type - plain text or action message (/me)
         :param message: text of message
         """
+        # TODO: save message to history
         if friend_num == self.get_active_number():  # add message to list
             user_name = Profile.get_instance().get_active_name()
             item = MessageItem(message.decode('utf-8'), curr_time(), user_name, message_type, self._messages)
@@ -351,8 +369,8 @@ class Profile(Contact, Singleton):
         """
         Send message to active friend
         :param text: message text
-        :return: True on success
         """
+        # TODO: save message to history
         if self.is_active_online() and text:
             if text.startswith('/me '):
                 message_type = TOX_MESSAGE_TYPE['ACTION']
@@ -374,6 +392,10 @@ class Profile(Contact, Singleton):
     # -----------------------------------------------------------------------------------------------------------------
 
     def create_friend_item(self):
+        """
+        Method-factory
+        :return: new widget for friend instance
+        """
         item = ContactItem()
         elem = QtGui.QListWidgetItem(self.screen.friends_list)
         elem.setSizeHint(QtCore.QSize(250, 70))
@@ -381,17 +403,17 @@ class Profile(Contact, Singleton):
         self.screen.friends_list.setItemWidget(elem, item)
         return item
 
-    def send_friend_request(self, id, message):
+    def send_friend_request(self, tox_id, message):
         """
-        Function tries to add friend with specified id to contact list
-        :param id: id of new contact
+        Function tries to send request to contact with specified id
+        :param tox_id: id of new contact
         :param message: additional message
         :return: True on success else error string
         """
         try:
             message = message or 'Add me to your contact list'
-            result = self.tox.friend_add(id, message.encode('utf-8'))
-            tox_id = id[:TOX_PUBLIC_KEY_SIZE * 2]
+            result = self.tox.friend_add(tox_id, message.encode('utf-8'))
+            tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
             item = self.create_friend_item()
             friend = Friend(result, tox_id, '', item, tox_id)
             self._friends.append(friend)
@@ -401,6 +423,11 @@ class Profile(Contact, Singleton):
             return str(ex)
 
     def process_friend_request(self, tox_id, message):
+        """
+        Accept or ignore friend request
+        :param tox_id: tox id of contact
+        :param message: message
+        """
         try:
             info = 'User {} wants to add you to contact list. Message:\n{}'.format(tox_id, message)
             reply = QtGui.QMessageBox.question(None, 'Friend request', info, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
@@ -409,10 +436,14 @@ class Profile(Contact, Singleton):
                 item = self.create_friend_item()
                 friend = Friend(num, tox_id, '', item, tox_id)
                 self._friends.append(friend)
-        except Exception as ex:  # smth is wrong
+        except Exception as ex:  # something is wrong
             log('Accept friend request failed! ' + str(ex))
 
     def delete_friend(self, num):
+        """
+        Removes friend from contact list
+        :param num: number of friend
+        """
         self.tox.friend_delete(num)
         friend = filter(lambda x: x.number == num, self._friends)[0]
         del friend
