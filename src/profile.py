@@ -17,16 +17,18 @@ class ProfileHelper(object):
         path = Settings.get_default_path()
         result = []
         # check default path
+        if not os.path.exists(path):
+            os.makedirs(path)
         for fl in os.listdir(path):
             if fl.endswith('.tox'):
                 name = fl[:-4]
                 result.append((path, name))
-        path = os.path.dirname(os.path.abspath(__file__))
+        path = curr_directory()
         # check current directory
         for fl in os.listdir(path):
             if fl.endswith('.tox'):
                 name = fl[:-4]
-                result.append((path, name))
+                result.append((path + '/', name))
         return result
 
     @staticmethod
@@ -401,7 +403,7 @@ class Profile(Contact, Singleton):
     def set_alias(self, num):
         friend = self._friends[num]
         name = friend.name.encode('utf-8')
-        dialog = "Enter new alias for friend {} or leave empty to use friend's name:".format(name)
+        dialog = "Enter new alias for friend " + name.decode('utf-8') + "  or leave empty to use friend's name:"
         text, ok = QtGui.QInputDialog.getText(None, 'Set alias', dialog)
         if ok:
             settings = Settings.get_instance()
