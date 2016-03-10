@@ -74,11 +74,11 @@ def main():
     ms = MainWindow(tox)
     ms.show()
     QtGui.QApplication.setStyle(get_style(settings['theme']))  # set application style
-    # bootstrap
-    for data in node_generator():
-        tox.bootstrap(*data)
-    # initializing callbacks
-    init_callbacks(tox, ms)
+
+    # init thread
+    init = InitThread(tox, ms)
+    init.start()
+
     # starting thread for tox iterate
     mainloop = ToxIterateThread(tox)
     mainloop.start()
@@ -90,6 +90,20 @@ def main():
     data = tox.get_savedata()
     ProfileHelper.save_profile(data)
     del tox
+
+
+class InitThread(QtCore.QThread):
+
+    def __init__(self, tox, ms):
+        QtCore.QThread.__init__(self)
+        self.tox, self.ms = tox, ms
+
+    def run(self):
+        # initializing callbacks
+        init_callbacks(self.tox, self.ms)
+        # bootstrap
+        for data in node_generator():
+            self.tox.bootstrap(*data)
 
 
 class ToxIterateThread(QtCore.QThread):

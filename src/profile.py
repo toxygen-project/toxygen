@@ -310,6 +310,14 @@ class Profile(Contact, Singleton):
         """
         if value is None and self._active_friend == -1:  # nothing to update
             return
+        if value == -1:  # all friends were deleted
+            self.screen.account_name.setText('')
+            self.screen.account_status.setText('')
+            self._active_friend = -1
+            self.screen.account_avatar.setHidden(True)
+            self.screen.messages.clear()
+            self.screen.messageEdit.clear()
+            return
         try:
             if value is not None:
                 self._active_friend = value
@@ -388,8 +396,37 @@ class Profile(Contact, Singleton):
             self.screen.messageEdit.clear()
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Work with friends (add, remove)
+    # Work with friends (add, remove, set alias, clear history)
     # -----------------------------------------------------------------------------------------------------------------
+    def set_alias(self, num):
+        friend = self._friends[num]
+        name = friend.name.encode('utf-8')
+        dialog = "Enter new alias for friend {} or leave empty to use friend's name:".format(name)
+        text, ok = QtGui.QInputDialog.getText(None, 'Set alias', dialog)
+        if ok:
+            settings = Settings.get_instance()
+            aliases = settings['friends_aliases']
+            if text:
+                friend.name = text.encode('utf-8')
+                try:
+                    index = map(lambda x: x[0], aliases).index(friend.tox_id)
+                    aliases[index] = (friend.tox_id, text)
+                except:
+                    aliases.append((friend.tox_id, text))
+                friend.set_alias(text)
+            else:  # use default name
+                friend.name = self.tox.friend_get_name(friend.number)
+                friend.set_alias('')
+                try:
+                    index = map(lambda x: x[0], aliases).index(friend.tox_id)
+                    del aliases[index]
+                except:
+                    pass
+            settings.save()
+            self.set_active()
+
+    def friend_public_key(self, num):
+        return self._friends[num].tox_id
 
     def create_friend_item(self):
         """
@@ -442,11 +479,17 @@ class Profile(Contact, Singleton):
     def delete_friend(self, num):
         """
         Removes friend from contact list
-        :param num: number of friend
+        :param num: number of friend in list
         """
-        self.tox.friend_delete(num)
-        friend = filter(lambda x: x.number == num, self._friends)[0]
-        del friend
+        friend = self._friends[num]
+        self.tox.friend_delete(friend.number)
+        del self._friends[num]
+        self.screen.friends_list.takeItem(num)
+        if num == self._active_friend:  # active friend was deleted
+            if not len(self._friends):  # last friend was deleted
+                self.set_active(-1)
+            else:
+                self.set_active(0)
 
 
 def tox_factory(data=None, settings=None):

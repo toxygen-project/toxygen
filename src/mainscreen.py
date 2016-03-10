@@ -181,6 +181,9 @@ class MainWindow(QtGui.QMainWindow):
         self.friends_list = QtGui.QListWidget(widget)
         self.friends_list.setGeometry(0, 0, 250, 250)
         self.friends_list.clicked.connect(self.friend_click)
+        self.friends_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.friends_list.connect(self.friends_list, QtCore.SIGNAL("customContextMenuRequested(QPoint)"),
+                                  self.friend_right_click)
 
     def setup_right_center(self, widget):
         self.messages = QtGui.QListWidget(widget)
@@ -263,6 +266,43 @@ class MainWindow(QtGui.QMainWindow):
     def send_message(self):
         text = self.messageEdit.toPlainText()
         self.profile.send_message(text)
+
+# -----------------------------------------------------------------------------------------------------------------
+# Functions which called when user open context menu in friends list
+# -----------------------------------------------------------------------------------------------------------------
+
+    def friend_right_click(self, pos):
+        item = self.friends_list.itemAt(pos)
+        if item is not None:
+            self.listMenu = QtGui.QMenu()
+            set_alias_item = self.listMenu.addAction('Set alias')
+            clear_history_item = self.listMenu.addAction('Clear history')
+            copy_key_item = self.listMenu.addAction('Copy public key')
+            remove_item = self.listMenu.addAction('Remove friend')
+            self.connect(set_alias_item, QtCore.SIGNAL("triggered()"), lambda: self.set_alias(item))
+            self.connect(remove_item, QtCore.SIGNAL("triggered()"), lambda: self.remove_friend(item))
+            self.connect(copy_key_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_friend_key(item))
+            self.connect(clear_history_item, QtCore.SIGNAL("triggered()"), lambda: self.clear_history(item))
+            parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
+            self.listMenu.move(parent_position + pos)
+            self.listMenu.show()
+
+    def set_alias(self, item):
+        num = self.friends_list.indexFromItem(item).row()
+        self.profile.set_alias(num)
+
+    def remove_friend(self, item):
+        num = self.friends_list.indexFromItem(item).row()
+        self.profile.delete_friend(num)
+
+    def copy_friend_key(self, item):
+        num = self.friends_list.indexFromItem(item).row()
+        tox_id = self.profile.friend_public_key(num)
+        clipboard = QtGui.QApplication.clipboard()
+        clipboard.setText(tox_id)
+
+    def clear_history(self, item):
+        num = self.friends_list.indexFromItem(item).row()
 
 # -----------------------------------------------------------------------------------------------------------------
 # Functions which called when user click somewhere else
