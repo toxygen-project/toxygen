@@ -83,9 +83,8 @@ def friend_name(window):
     return wrapped
 
 
-def friend_status_message(window):
+def friend_status_message():
     """
-    :param window: main window
     :return: function for callback friend_status_message. It updates friend's status message
     and calls window repaint
     """
@@ -113,6 +112,8 @@ def friend_message(window):
             friend = profile.get_friend_by_number(friend_number)
             if settings['notifications']:
                 invoke_in_main_thread(tray_notification, friend.name, message.decode('utf8'))
+            if settings['sound_notifications']:
+                sound_notification(SOUND_NOTIFICATION['MESSAGE'])
     return wrapped
 
 
@@ -136,5 +137,5 @@ def init_callbacks(tox, window):
     tox.callback_self_connection_status(self_connection_status(tox), 0)
     tox.callback_friend_connection_status(friend_connection_status, 0)
     tox.callback_friend_name(friend_name(window), 0)
-    tox.callback_friend_status_message(friend_status_message(window), 0)
+    tox.callback_friend_status_message(friend_status_message(), 0)
     tox.callback_friend_request(friend_request, 0)
