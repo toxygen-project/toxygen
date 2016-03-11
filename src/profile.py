@@ -138,6 +138,18 @@ class Contact(object):
         self._widget.avatar_label.setPixmap(avatar_path)
         self._widget.avatar_label.repaint()
 
+    def reset_avatar(self):
+        avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        if os.path.isfile(avatar_path):
+            os.remove(avatar_path)
+            self.load_avatar()
+
+    def set_avatar(self, avatar):
+        avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        with open(avatar_path, 'wb') as f:
+            f.write(avatar)
+        self.load_avatar()
+
 
 class Friend(Contact):
     """
@@ -398,8 +410,9 @@ class Profile(Contact, Singleton):
             self.screen.messageEdit.clear()
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Work with friends (add, remove, set alias, clear history)
+    # Work with friends (remove, set alias, clear history)
     # -----------------------------------------------------------------------------------------------------------------
+
     def set_alias(self, num):
         friend = self._friends[num]
         name = friend.name.encode('utf-8')
@@ -442,6 +455,25 @@ class Profile(Contact, Singleton):
         self.screen.friends_list.setItemWidget(elem, item)
         return item
 
+    def delete_friend(self, num):
+        """
+        Removes friend from contact list
+        :param num: number of friend in list
+        """
+        friend = self._friends[num]
+        self.tox.friend_delete(friend.number)
+        del self._friends[num]
+        self.screen.friends_list.takeItem(num)
+        if num == self._active_friend:  # active friend was deleted
+            if not len(self._friends):  # last friend was deleted
+                self.set_active(-1)
+            else:
+                self.set_active(0)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Friend requests
+    # -----------------------------------------------------------------------------------------------------------------
+
     def send_friend_request(self, tox_id, message):
         """
         Function tries to send request to contact with specified id
@@ -477,21 +509,6 @@ class Profile(Contact, Singleton):
                 self._friends.append(friend)
         except Exception as ex:  # something is wrong
             log('Accept friend request failed! ' + str(ex))
-
-    def delete_friend(self, num):
-        """
-        Removes friend from contact list
-        :param num: number of friend in list
-        """
-        friend = self._friends[num]
-        self.tox.friend_delete(friend.number)
-        del self._friends[num]
-        self.screen.friends_list.takeItem(num)
-        if num == self._active_friend:  # active friend was deleted
-            if not len(self._friends):  # last friend was deleted
-                self.set_active(-1)
-            else:
-                self.set_active(0)
 
 
 def tox_factory(data=None, settings=None):

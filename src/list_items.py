@@ -11,7 +11,7 @@ class MessageEdit(QtGui.QPlainTextEdit):
         self.document().setTextWidth(parent.width() - 100)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
-        font.setPixelSize(12)
+        font.setPixelSize(14)
         font.setBold(False)
         self.setFont(font)
         lines = 0
@@ -19,7 +19,6 @@ class MessageEdit(QtGui.QPlainTextEdit):
         try:
             for elem in xrange(self.document().blockCount()):
                 block = self.document().findBlockByLineNumber(elem)
-                l = block.length()
                 line_width = fm.width(block.text())
                 print 'Width: ', line_width
                 print 'Parent width', parent.width()
@@ -29,7 +28,7 @@ class MessageEdit(QtGui.QPlainTextEdit):
         print 'lines ', lines
         if self.document().blockCount() == 1:
             lines += 1
-        size = (lines - 1) * 18 + 12
+        size = lines * 21
         self.setFixedHeight(max(size, 30))
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
 
@@ -41,11 +40,11 @@ class MessageItem(QtGui.QListWidget):
     def __init__(self, text, time, user='', message_type=TOX_MESSAGE_TYPE['NORMAL'], parent=None):
         QtGui.QListWidget.__init__(self, parent)
         self.name = QtGui.QLabel(self)
-        self.name.setGeometry(QtCore.QRect(5, 0, 95, 30))
+        self.name.setGeometry(QtCore.QRect(0, 0, 95, 40))
         self.name.setTextFormat(QtCore.Qt.PlainText)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
-        font.setPointSize(10)
+        font.setPointSize(12)
         font.setBold(True)
         self.name.setFont(font)
         self.name.setObjectName("name")

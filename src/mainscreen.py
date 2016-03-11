@@ -124,6 +124,7 @@ class MainWindow(QtGui.QMainWindow):
     def setup_left_top(self, Form):
         Form.setObjectName("left_top")
         Form.resize(500, 300)
+        Form.setCursor(QtCore.Qt.PointingHandCursor)
         Form.setMinimumSize(QtCore.QSize(250, 100))
         Form.setMaximumSize(QtCore.QSize(250, 100))
         Form.setBaseSize(QtCore.QSize(250, 100))
@@ -131,7 +132,7 @@ class MainWindow(QtGui.QMainWindow):
         self.avatar_label.setGeometry(QtCore.QRect(10, 20, 64, 64))
         self.avatar_label.setScaledContents(True)
         self.name = Form.name = QtGui.QLabel(Form)
-        Form.name.setGeometry(QtCore.QRect(80, 30, 200, 25))
+        Form.name.setGeometry(QtCore.QRect(80, 30, 120, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(14)
@@ -149,6 +150,10 @@ class MainWindow(QtGui.QMainWindow):
         Form.connection_status.setMinimumSize(QtCore.QSize(32, 32))
         Form.connection_status.setMaximumSize(QtCore.QSize(32, 32))
         Form.connection_status.setBaseSize(QtCore.QSize(32, 32))
+        self.avatar_label.mouseReleaseEvent = self.profile_settings
+        self.status_message.mouseReleaseEvent = self.profile_settings
+        self.name.mouseReleaseEvent = self.profile_settings
+        self.connection_status.raise_()
         Form.connection_status.setObjectName("connection_status")
 
     def setup_right_top(self, Form):
@@ -243,7 +248,7 @@ class MainWindow(QtGui.QMainWindow):
         self.a_c = AddContact()
         self.a_c.show()
 
-    def profile_settings(self):
+    def profile_settings(self, *args):
         self.p_s = ProfileSettings()
         self.p_s.show()
 

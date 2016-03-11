@@ -107,10 +107,12 @@ def friend_message(window):
     def wrapped(tox, friend_number, message_type, message, size, user_data):
         print 'Message: ', message.decode('utf8')
         profile = Profile.get_instance()
-        if not window.isActiveWindow() and Settings()['notifications']:
-            friend = profile.get_friend_by_number(friend_number)
-            tray_notification(friend.name, message.decode('utf8'))
+        settings = Settings.get_instance()
         invoke_in_main_thread(profile.new_message, friend_number, message_type, message)
+        if not window.isActiveWindow():
+            friend = profile.get_friend_by_number(friend_number)
+            if settings['notifications']:
+                invoke_in_main_thread(tray_notification, friend.name, message.decode('utf8'))
     return wrapped
 
 

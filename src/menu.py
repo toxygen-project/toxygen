@@ -4,7 +4,19 @@ from profile import Profile
 from util import get_style
 
 
-class AddContact(QtGui.QWidget):
+class CenteredWidget(QtGui.QWidget):
+    def __init__(self):
+        super(CenteredWidget, self).__init__()
+        self.center()
+
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
+
+class AddContact(CenteredWidget):
     """Add contact form"""
 
     def __init__(self):
@@ -64,7 +76,7 @@ class AddContact(QtGui.QWidget):
         self.label_2.setText(QtGui.QApplication.translate('AddContact', "Message:", None, QtGui.QApplication.UnicodeUTF8))
 
 
-class ProfileSettings(QtGui.QWidget):
+class ProfileSettings(CenteredWidget):
     """Form with profile settings such as name, status, TOX ID"""
     def __init__(self):
         super(ProfileSettings, self).__init__()
@@ -72,10 +84,8 @@ class ProfileSettings(QtGui.QWidget):
 
     def initUI(self):
         self.setObjectName("ProfileSettingsForm")
-        self.resize(600, 400)
-        self.setMinimumSize(QtCore.QSize(700, 400))
-        self.setMaximumSize(QtCore.QSize(700, 400))
-        self.setBaseSize(QtCore.QSize(700, 400))
+        self.setMinimumSize(QtCore.QSize(650, 400))
+        self.setMaximumSize(QtCore.QSize(650, 400))
         self.nick = QtGui.QLineEdit(self)
         self.nick.setGeometry(QtCore.QRect(30, 60, 351, 27))
         self.nick.setObjectName("nick")
@@ -120,6 +130,12 @@ class ProfileSettings(QtGui.QWidget):
         font.setPointSize(18)
         self.tox_id_2.setFont(font)
         self.tox_id_2.setObjectName("tox_id_2")
+        self.new_avatar = QtGui.QPushButton(self)
+        self.new_avatar.setGeometry(QtCore.QRect(400, 50, 200, 50))
+        self.delete_avatar = QtGui.QPushButton(self)
+        self.delete_avatar.setGeometry(QtCore.QRect(400, 100, 200, 50))
+        self.delete_avatar.clicked.connect(self.reset_avatar)
+        self.new_avatar.clicked.connect(self.set_avatar)
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -130,11 +146,24 @@ class ProfileSettings(QtGui.QWidget):
         self.label_3.setText(QtGui.QApplication.translate("ProfileSettingsForm", "TOX ID:", None, QtGui.QApplication.UnicodeUTF8))
         self.copyId.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Copy TOX ID", None, QtGui.QApplication.UnicodeUTF8))
         self.tox_id_2.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Language:", None, QtGui.QApplication.UnicodeUTF8))
+        self.new_avatar.setText(QtGui.QApplication.translate("ProfileSettingsForm", "New avatar", None, QtGui.QApplication.UnicodeUTF8))
+        self.delete_avatar.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Reset avatar", None, QtGui.QApplication.UnicodeUTF8))
 
     def copy(self):
         clipboard = QtGui.QApplication.clipboard()
         profile = Profile.get_instance()
         clipboard.setText(profile.tox_id)
+
+    def reset_avatar(self):
+        Profile.get_instance().reset_avatar()
+
+    def set_avatar(self):
+        name = QtGui.QFileDialog.getOpenFileName(self, 'Open file')
+        print name
+        if name[0]:
+            with open(name[0], 'rb') as f:
+                data = f.read()
+            Profile.get_instance().set_avatar(data)
 
     def closeEvent(self, event):
         profile = Profile.get_instance()
@@ -142,7 +171,7 @@ class ProfileSettings(QtGui.QWidget):
         profile.set_status_message(self.status.text().encode('utf-8'))
 
 
-class NetworkSettings(QtGui.QWidget):
+class NetworkSettings(CenteredWidget):
     """Network settings form: UDP, Ipv6 and proxy"""
     # TODO: add possibility to change network settings
     def __init__(self):
@@ -189,7 +218,7 @@ class NetworkSettings(QtGui.QWidget):
         self.label_2.setText(QtGui.QApplication.translate("Form", "Port:", None, QtGui.QApplication.UnicodeUTF8))
 
 
-class PrivacySettings(QtGui.QWidget):
+class PrivacySettings(CenteredWidget):
     """Privacy settings form: history, typing notifications"""
 
     def __init__(self):
@@ -234,7 +263,7 @@ class PrivacySettings(QtGui.QWidget):
         settings.save()
 
 
-class NotificationsSettings(QtGui.QWidget):
+class NotificationsSettings(CenteredWidget):
     """Notifications settings form"""
 
     def __init__(self):
@@ -277,7 +306,7 @@ class NotificationsSettings(QtGui.QWidget):
         settings.save()
 
 
-class InterfaceSettings(QtGui.QWidget):
+class InterfaceSettings(CenteredWidget):
     """Interface settings form"""
 
     def __init__(self):
