@@ -6,6 +6,7 @@ from tox import Tox
 from toxcore_enums_and_consts import *
 from ctypes import *
 from util import curr_time, log, Singleton, curr_directory
+from tox_dns import tox_dns
 
 
 class ProfileHelper(object):
@@ -49,6 +50,15 @@ class ProfileHelper(object):
         with open(ProfileHelper._path, 'wb') as fl:
             fl.write(data)
         print 'Data saved to: {}'.format(ProfileHelper._path)
+
+    @staticmethod
+    def export_profile(new_path):
+        new_path += ProfileHelper._path.split('/')[-1]
+        with open(ProfileHelper._path, 'rb') as fin:
+            data = fin.read()
+        with open(new_path, 'wb') as fout:
+            fout.write(data)
+        print 'Data exported to: {}'.format(new_path)
 
 
 class Contact(object):
@@ -477,12 +487,16 @@ class Profile(Contact, Singleton):
     def send_friend_request(self, tox_id, message):
         """
         Function tries to send request to contact with specified id
-        :param tox_id: id of new contact
+        :param tox_id: id of new contact or tox dns 4 value
         :param message: additional message
         :return: True on success else error string
         """
         try:
             message = message or 'Add me to your contact list'
+            if '@' in tox_id:  # value like groupbot@toxme.io
+                tox_id = tox_dns()
+                if tox_id is None:
+                    raise Exception('TOX DNS lookup failed')
             result = self.tox.friend_add(tox_id, message.encode('utf-8'))
             tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
             item = self.create_friend_item()
@@ -490,7 +504,7 @@ class Profile(Contact, Singleton):
             self._friends.append(friend)
             return True
         except Exception as ex:  # wrong data
-            log('Send friend failed with ' + str(ex))
+            log('Friend request failed with ' + str(ex))
             return str(ex)
 
     def process_friend_request(self, tox_id, message):

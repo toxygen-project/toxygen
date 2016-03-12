@@ -1,6 +1,6 @@
 from src.bootstrap import node_generator
 from src.profile import *
-
+from src.tox_dns import tox_dns
 
 class TestSettings():
 
@@ -72,3 +72,11 @@ class TestTox():
         assert size == 2
         assert len(s) == 2
         del tox
+
+
+class TestDNS():
+
+    def test_dns(self):
+        bot_id = '56A1ADE4B65B86BCD51CC73E2CD4E542179F47959FE3E0E21B4B0ACDADE51855D34D34D37CB5'
+        tox_id = tox_dns('groupbot@toxme.io')
+        assert tox_id == bot_id

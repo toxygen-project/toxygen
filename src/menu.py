@@ -1,6 +1,6 @@
 from PySide import QtCore, QtGui
 from settings import Settings
-from profile import Profile
+from profile import Profile, ProfileHelper
 from util import get_style
 
 
@@ -119,9 +119,13 @@ class ProfileSettings(CenteredWidget):
         s = profile.tox_id
         self.tox_id.setText(s)
         self.copyId = QtGui.QPushButton(self)
-        self.copyId.setGeometry(QtCore.QRect(40, 250, 98, 31))
+        self.copyId.setGeometry(QtCore.QRect(40, 250, 100, 30))
         self.copyId.setObjectName("copyId")
         self.copyId.clicked.connect(self.copy)
+        self.export = QtGui.QPushButton(self)
+        self.export.setGeometry(QtCore.QRect(150, 250, 100, 30))
+        self.export.setObjectName("export")
+        self.export.clicked.connect(self.export_profile)
         self.comboBox = QtGui.QComboBox(self)
         self.comboBox.setGeometry(QtCore.QRect(30, 350, 211, 27))
         self.comboBox.setObjectName("comboBox")
@@ -140,6 +144,7 @@ class ProfileSettings(CenteredWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
+        self.export.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Export profile", None, QtGui.QApplication.UnicodeUTF8))
         self.setWindowTitle(QtGui.QApplication.translate("ProfileSettingsForm", "Profile settings", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Name:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Status:", None, QtGui.QApplication.UnicodeUTF8))
@@ -164,6 +169,10 @@ class ProfileSettings(CenteredWidget):
             with open(name[0], 'rb') as f:
                 data = f.read()
             Profile.get_instance().set_avatar(data)
+
+    def export_profile(self):
+        directory = QtGui.QFileDialog.getExistingDirectory()
+        ProfileHelper.export_profile(directory + '/')
 
     def closeEvent(self, event):
         profile = Profile.get_instance()
