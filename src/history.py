@@ -113,11 +113,3 @@ class History(object):
 
         def __del__(self):
             self._db.close()
-
-
-if __name__ == '__main__':
-    h = History('test')
-    if not h.friend_exists_in_db('42'):
-        h.add_friend_to_db('42')
-        h.save_messages_to_db('42', [('bugara', 1, 123412413, 1)])
-    h.delete_messages('42')

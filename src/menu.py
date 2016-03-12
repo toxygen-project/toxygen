@@ -270,6 +270,8 @@ class PrivacySettings(CenteredWidget):
         settings = Settings.get_instance()
         settings['typing_notifications'] = self.typingNotifications.isChecked()
         settings['allow_auto_accept'] = self.fileautoaccept.isChecked()
+        if settings['history'] and not self.saveHistory.isChecked(): # clear history
+            Profile.get_instance().clear_history()
         settings['save_history'] = self.saveHistory.isChecked()
         settings.save()
 

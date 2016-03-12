@@ -229,6 +229,9 @@ class MainWindow(QtGui.QMainWindow):
         self.friend_info = info
         self.profile = Profile(self.tox, self)
 
+    def closeEvent(self, *args, **kwargs):
+        self.profile.save()
+
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click in menu
     # -----------------------------------------------------------------------------------------------------------------
@@ -308,6 +311,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def clear_history(self, item):
         num = self.friends_list.indexFromItem(item).row()
+        self.profile.clear_history(num)
 
 # -----------------------------------------------------------------------------------------------------------------
 # Functions which called when user click somewhere else
