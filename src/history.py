@@ -1,7 +1,7 @@
 # coding=utf-8
-import sqlite3
+from sqlite3 import connect
 from settings import Settings
-import os
+from os import chdir
 
 
 MESSAGE_OWNER = {
@@ -13,8 +13,8 @@ MESSAGE_OWNER = {
 class History(object):
     def __init__(self, name):
         self._name = name
-        os.chdir(Settings.get_default_path())
-        db = sqlite3.connect(name + '.hstr')
+        chdir(Settings.get_default_path())
+        db = connect(name + '.hstr')
         cursor = db.cursor()
         cursor.execute('CREATE TABLE IF NOT EXISTS friends('
                        '    tox_id TEXT PRIMARY KEY'
@@ -22,8 +22,8 @@ class History(object):
         db.close()
 
     def add_friend_to_db(self, tox_id):
-        os.chdir(Settings.get_default_path())
-        db = sqlite3.connect(self._name + '.hstr')
+        chdir(Settings.get_default_path())
+        db = connect(self._name + '.hstr')
         try:
             cursor = db.cursor()
             cursor.execute('INSERT INTO friends VALUES (?);', (tox_id, ))
@@ -31,7 +31,7 @@ class History(object):
                            '    id INTEGER PRIMARY KEY,'
                            '    message TEXT,'
                            '    owner INTEGER,'
-                           '    unix_time INTEGER'
+                           '    unix_time INTEGER,'
                            '    message_type INTEGER'
                            ')')
             db.commit()
@@ -42,8 +42,8 @@ class History(object):
             db.close()
 
     def delete_friend_from_db(self, tox_id):
-        os.chdir(Settings.get_default_path())
-        db = sqlite3.connect(self._name + '.hstr')
+        chdir(Settings.get_default_path())
+        db = connect(self._name + '.hstr')
         try:
             cursor = db.cursor()
             cursor.execute('DELETE FROM friends WHERE tox_id=?;', (tox_id, ))
@@ -56,8 +56,8 @@ class History(object):
             db.close()
 
     def friend_exists_in_db(self, tox_id):
-        os.chdir(Settings.get_default_path())
-        db = sqlite3.connect(self._name + '.hstr')
+        chdir(Settings.get_default_path())
+        db = connect(self._name + '.hstr')
         cursor = db.cursor()
         cursor.execute('SELECT 0 FROM friends WHERE tox_id=?', (tox_id, ))
         result = cursor.fetchone()
@@ -65,12 +65,25 @@ class History(object):
         return result is not None
 
     def save_messages_to_db(self, tox_id, messages_iter):
-        os.chdir(Settings.get_default_path())
-        db = sqlite3.connect(self._name + '.hstr')
+        chdir(Settings.get_default_path())
+        db = connect(self._name + '.hstr')
         try:
             cursor = db.cursor()
-            cursor.executemany('INSERT INTO id' + tox_id + '(message, owner, unix_time) '
-                               'VALUES (?, ?, ?);', messages_iter)
+            cursor.executemany('INSERT INTO id' + tox_id + '(message, owner, unix_time, message_type) '
+                               'VALUES (?, ?, ?, ?);', messages_iter)
+            db.commit()
+        except:
+            db.rollback()
+            raise
+        finally:
+            db.close()
+
+    def delete_messages(self, tox_id):
+        chdir(Settings.get_default_path())
+        db = connect(self._name + '.hstr')
+        try:
+            cursor = db.cursor()
+            cursor.execute('DELETE FROM id' + tox_id + ';')
             db.commit()
         except:
             db.rollback()
@@ -83,10 +96,10 @@ class History(object):
 
     class MessageGetter(object):
         def __init__(self, name, tox_id):
-            os.chdir(Settings.get_default_path())
-            self._db = sqlite3.connect(name + '.hstr')
+            chdir(Settings.get_default_path())
+            self._db = connect(name + '.hstr')
             self._cursor = self._db.cursor()
-            self._cursor.execute('SELECT message, owner, unix_time FROM id' + tox_id +
+            self._cursor.execute('SELECT message, owner, unix_time, message_type FROM id' + tox_id +
                                  ' ORDER BY unix_time DESC;')
 
         def get_one(self):
@@ -104,5 +117,7 @@ class History(object):
 
 if __name__ == '__main__':
     h = History('test')
-    getter = h.messages_getter('42')
-    print h.friend_exists_in_db('42'), type(h.friend_exists_in_db('42'))
+    if not h.friend_exists_in_db('42'):
+        h.add_friend_to_db('42')
+        h.save_messages_to_db('42', [('bugara', 1, 123412413, 1)])
+    h.delete_messages('42')
