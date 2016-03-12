@@ -35,9 +35,9 @@ class History(object):
                            '    message_type INTEGER'
                            ')')
             db.commit()
-        except Exception as e:
+        except:
             db.rollback()
-            raise e
+            raise
         finally:
             db.close()
 
@@ -49,11 +49,20 @@ class History(object):
             cursor.execute('DELETE FROM friends WHERE tox_id=?;', (tox_id, ))
             cursor.execute('DROP TABLE id' + tox_id + ';')
             db.commit()
-        except Exception as e:
+        except:
             db.rollback()
-            raise e
+            raise
         finally:
             db.close()
+
+    def friend_exists_in_db(self, tox_id):
+        os.chdir(Settings.get_default_path())
+        db = sqlite3.connect(self._name + '.hstr')
+        cursor = db.cursor()
+        cursor.execute('SELECT 0 FROM friends WHERE tox_id=?', (tox_id, ))
+        result = cursor.fetchone()
+        db.close()
+        return result is not None
 
     def save_messages_to_db(self, tox_id, messages_iter):
         os.chdir(Settings.get_default_path())
@@ -63,9 +72,9 @@ class History(object):
             cursor.executemany('INSERT INTO id' + tox_id + '(message, owner, unix_time) '
                                'VALUES (?, ?, ?);', messages_iter)
             db.commit()
-        except Exception as e:
+        except:
             db.rollback()
-            raise e
+            raise
         finally:
             db.close()
 
@@ -96,5 +105,4 @@ class History(object):
 if __name__ == '__main__':
     h = History('test')
     getter = h.messages_getter('42')
-    print getter.get_all()
-    print getter.get(5)
+    print h.friend_exists_in_db('42'), type(h.friend_exists_in_db('42'))
