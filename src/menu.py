@@ -36,7 +36,7 @@ class AddContact(CenteredWidget):
         self.tox_id.setGeometry(QtCore.QRect(50, 40, 471, 27))
         self.tox_id.setObjectName("lineEdit")
         self.label = QtGui.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(70, 10, 50, 20))
+        self.label.setGeometry(QtCore.QRect(30, 10, 80, 20))
         self.error_label = QtGui.QLabel(self)
         self.error_label.setGeometry(QtCore.QRect(120, 10, 400, 20))
         font = QtGui.QFont()
@@ -67,6 +67,8 @@ class AddContact(CenteredWidget):
             # request was successful
             self.close()
         else:  # print error data
+            if len(send) > 40:
+                send = send[:40] + '...'
             self.error_label.setText(send)
 
     def retranslateUi(self):

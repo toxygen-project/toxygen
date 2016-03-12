@@ -494,7 +494,7 @@ class Profile(Contact, Singleton):
         try:
             message = message or 'Add me to your contact list'
             if '@' in tox_id:  # value like groupbot@toxme.io
-                tox_id = tox_dns()
+                tox_id = tox_dns(tox_id)
                 if tox_id is None:
                     raise Exception('TOX DNS lookup failed')
             result = self.tox.friend_add(tox_id, message.encode('utf-8'))
