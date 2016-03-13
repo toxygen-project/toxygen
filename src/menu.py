@@ -219,7 +219,12 @@ class NetworkSettings(CenteredWidget):
         self.label_2 = QtGui.QLabel(self)
         self.label_2.setGeometry(QtCore.QRect(40, 190, 66, 17))
         self.label_2.setObjectName("label_2")
-
+        settings = Settings.get_instance()
+        self.ipv.setChecked(settings['ipv6_enabled'])
+        self.udp.setChecked(settings['udp_enabled'])
+        self.proxy.setChecked(settings['proxy_type'] != 0)
+        self.proxyip.setText(settings['proxy_host'])
+        self.proxyport.setText(unicode(settings['proxy_port']))
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -230,6 +235,12 @@ class NetworkSettings(CenteredWidget):
         self.proxy.setText(QtGui.QApplication.translate("Form", "Proxy", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Form", "IP:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("Form", "Port:", None, QtGui.QApplication.UnicodeUTF8))
+
+    def closeEvent(self, *args, **kwargs):
+        settings = Settings.get_instance()
+        old_data = str(settings['ipv6_enabled']) + str(settings['udp_enabled']) + str(settings['proxy_type'])
+        
+        # check if proxy data changed and recreate tox instance
 
 
 class PrivacySettings(CenteredWidget):
@@ -273,7 +284,7 @@ class PrivacySettings(CenteredWidget):
         settings = Settings.get_instance()
         settings['typing_notifications'] = self.typingNotifications.isChecked()
         settings['allow_auto_accept'] = self.fileautoaccept.isChecked()
-        if settings['history'] and not self.saveHistory.isChecked(): # clear history
+        if settings['save_history'] and not self.saveHistory.isChecked():  # clear history
             Profile.get_instance().clear_history()
         settings['save_history'] = self.saveHistory.isChecked()
         settings.save()
