@@ -230,7 +230,7 @@ class MainWindow(QtGui.QMainWindow):
         self.profile = Profile(self.tox, self)
 
     def closeEvent(self, *args, **kwargs):
-        self.profile.save()
+        self.profile.save_history()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click in menu
@@ -267,17 +267,17 @@ class MainWindow(QtGui.QMainWindow):
         self.int_s = InterfaceSettings()
         self.int_s.show()
 
-# -----------------------------------------------------------------------------------------------------------------
-# Messages
-# -----------------------------------------------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
+    # Messages
+    # -----------------------------------------------------------------------------------------------------------------
 
     def send_message(self):
         text = self.messageEdit.toPlainText()
         self.profile.send_message(text)
 
-# -----------------------------------------------------------------------------------------------------------------
-# Functions which called when user open context menu in friends list
-# -----------------------------------------------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
+    # Functions which called when user open context menu in friends list
+    # -----------------------------------------------------------------------------------------------------------------
 
     def friend_right_click(self, pos):
         item = self.friends_list.itemAt(pos)
@@ -313,9 +313,9 @@ class MainWindow(QtGui.QMainWindow):
         num = self.friends_list.indexFromItem(item).row()
         self.profile.clear_history(num)
 
-# -----------------------------------------------------------------------------------------------------------------
-# Functions which called when user click somewhere else
-# -----------------------------------------------------------------------------------------------------------------
+    # -----------------------------------------------------------------------------------------------------------------
+    # Functions which called when user click somewhere else
+    # -----------------------------------------------------------------------------------------------------------------
 
     def friend_click(self, index):
         print 'row:', index.row()

@@ -120,5 +120,5 @@ class ToxIterateThread(QtCore.QThread):
 
 
 if __name__ == '__main__':
-    # TODO: add command line options?
+    # TODO: add command line options (example: portable, multiprofile)
     main()

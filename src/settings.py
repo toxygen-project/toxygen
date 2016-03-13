@@ -8,6 +8,7 @@ class Settings(Singleton, dict):
 
     def __init__(self, name=''):
         self.path = Settings.get_default_path() + str(name) + '.json'
+        self.name = name
         if os.path.isfile(self.path):
             with open(self.path) as fl:
                 data = fl.read()
@@ -62,6 +63,11 @@ class Settings(Singleton, dict):
     def save(self):
         text = json.dumps(self)
         with open(self.path, 'w') as fl:
+            fl.write(text)
+
+    def export(self, path):
+        text = json.dumps(self)
+        with open(path + str(self.name) + '.json', 'w') as fl:
             fl.write(text)
 
     @staticmethod

@@ -5,7 +5,7 @@ import os
 from settings import Settings
 from toxcore_enums_and_consts import *
 from ctypes import *
-from util import curr_time, log, Singleton, curr_directory
+from util import curr_time, log, Singleton, curr_directory, convert_time
 from tox_dns import tox_dns
 from history import *
 import time
@@ -170,6 +170,7 @@ class Friend(Contact):
 
     def __init__(self, message_getter, number, *args):
         """
+        :param message_getter: gets messages from db
         :param number: number of friend.
         """
         super(Friend, self).__init__(*args)
@@ -180,6 +181,7 @@ class Friend(Contact):
         self._message_getter = message_getter
         self._corr = []
         self._unsaved_messages = 0
+        self._history_loaded = False
 
     def __del__(self):
         self.set_visibility(False)
@@ -189,25 +191,41 @@ class Friend(Contact):
     # History support
     # -----------------------------------------------------------------------------------------------------------------
 
-    def load_corr(self):
+    def load_corr(self, first_time=True):
+        """
+        :param first_time: friend became active, load first part of messages
+        """
+        if first_time and self._history_loaded:
+            return
         data = self._message_getter.get(42)
         if data is not None and len(data):
             data.reverse()
         else:
             return
         self._corr = data + self._corr
+        self._history_loaded = True
 
     def get_corr_for_saving(self):
+        """
+        Get data to save in db
+        :return: list of unsaved messages or []
+        """
         return self._corr[-self._unsaved_messages:] if self._unsaved_messages else []
 
     def get_corr(self):
         return self._corr
 
     def append_message(self, message):
+        """
+        :param message: tuple (message, owner, unix_time, message_type)
+        """
         self._corr.append(message)
         self._unsaved_messages += 1
 
     def clear_corr(self):
+        """
+        Clear messages list
+        """
         self._corr = []
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -215,6 +233,10 @@ class Friend(Contact):
     # -----------------------------------------------------------------------------------------------------------------
 
     def set_name(self, value):
+        """
+        Set new name or ignore if alias exists
+        :param value: new name
+        """
         if not self._alias:
             super(self.__class__, self).set_name(value)
 
@@ -268,19 +290,19 @@ class Profile(Contact, Singleton):
         :param tox: tox instance
         :param screen: ref to main screen
         """
+        super(Profile, self).__init__(tox.self_get_name(),
+                                      tox.self_get_status_message(),
+                                      screen.user_info,
+                                      tox.self_get_address())
         self.screen = screen
-        self._widget = screen.user_info
         self._messages = screen.messages
         self.tox = tox
-        self._name = tox.self_get_name()
-        self._status_message = tox.self_get_status_message()
-        self._status = None
         settings = Settings.get_instance()
         self.show_online = settings['show_online_friends']
         screen.online_contacts.setChecked(self.show_online)
         aliases = settings['friends_aliases']
         data = tox.self_get_friend_list()
-        self.history = History(tox.self_get_public_key())
+        self.history = History(tox.self_get_public_key())  # connection to db
         self._friends, self._active_friend = [], -1
         for i in data:  # creates list of friends
             tox_id = tox.friend_get_public_key(i)
@@ -297,18 +319,7 @@ class Profile(Contact, Singleton):
             friend = Friend(message_getter, i, name, status_message, item, tox_id)
             friend.set_alias(alias)
             self._friends.append(friend)
-        self.set_name(tox.self_get_name().encode('utf-8'))
-        self.set_status_message(tox.self_get_status_message().encode('utf-8'))
         self.filtration(self.show_online)
-        self._tox_id = tox.self_get_address()
-        self.load_avatar()
-
-    def save(self):
-        print 'In save'
-        for friend in self._friends:
-            messages = friend.get_corr_for_saving()
-            self.history.save_messages_to_db(friend.tox_id, messages)
-        del self.history
 
     # -----------------------------------------------------------------------------------------------------------------
     # Edit current user's data
@@ -375,6 +386,8 @@ class Profile(Contact, Singleton):
         """
         if value is None and self._active_friend == -1:  # nothing to update
             return
+        if value == self._active_friend:
+            return
         if value == -1:  # all friends were deleted
             self.screen.account_name.setText('')
             self.screen.account_status.setText('')
@@ -386,10 +399,19 @@ class Profile(Contact, Singleton):
         try:
             if value is not None:
                 self._active_friend = value
+                friend = self._friends[value]
                 self._friends[self._active_friend].set_messages(False)
                 self.screen.messageEdit.clear()
-            self.screen.messages.clear()
-            friend = self._friends[self._active_friend]
+                self.screen.messages.clear()
+                friend.load_corr()
+                messages = friend.get_corr()[-42:]
+                for message in messages:
+                    self.create_message_item(message[0],
+                                             convert_time(message[2]),
+                                             friend.name if message[1] else self._name,
+                                             message[3])
+            else:
+                friend = self._friends[self._active_friend]
             self.screen.account_name.setText(friend.name)
             self.screen.account_status.setText(friend.status_message)
             avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(friend.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
@@ -399,13 +421,6 @@ class Profile(Contact, Singleton):
             pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio)
             self.screen.account_avatar.setPixmap(avatar_path)
             self.screen.account_avatar.repaint()
-            friend.load_corr()  # TODO: call not every time and compute time
-            messages = friend.get_corr()[-42:]
-            for message in messages:
-                self.create_message_item(message[0],
-                                         curr_time(),
-                                         friend.name if message[1] else self._name,
-                                         message[3])
         except:  # no friend found. ignore
             log('Incorrect friend value: ' + str(value))
 
@@ -443,7 +458,7 @@ class Profile(Contact, Singleton):
             friend.set_messages(True)
             friend.append_message((message.decode('utf-8'),
                                    MESSAGE_OWNER['FRIEND'],
-                                   time.time(),
+                                   int(time.time()),
                                    message_type))
 
     def send_message(self, text):
@@ -458,13 +473,42 @@ class Profile(Contact, Singleton):
             else:
                 message_type = TOX_MESSAGE_TYPE['NORMAL']
             friend = self._friends[self._active_friend]
+            # TODO: add message splitting
             self.tox.friend_send_message(friend.number, message_type, text.encode('utf-8'))
             self.create_message_item(text, curr_time(), self._name, message_type)
             self.screen.messageEdit.clear()
             friend.append_message((text,
                                    MESSAGE_OWNER['ME'],
-                                   time.time(),
+                                   int(time.time()),
                                    message_type))
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # History support
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def save_history(self):
+        """
+        Save history to db
+        """
+        print 'In save'
+        if Settings.get_instance()['save_history']:
+            for friend in self._friends:
+                messages = friend.get_corr_for_saving()
+                self.history.save_messages_to_db(friend.tox_id, messages)
+        del self.history
+
+    def clear_history(self, num=None):
+        if num is not None:
+            friend = self._friends[num]
+            friend.clear_corr()
+            self.history.delete_messages(friend.tox_id)
+        else:  # clear all history
+            for friend in self._friends:
+                friend.clear_corr()
+                self.history.delete_messages(friend.tox_id)
+                self.history.delete_friend_from_db(friend.tox_id)
+        if num is None or num == self.get_active_number():
+            self._messages.clear()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Factories for friend and message items
@@ -489,8 +533,9 @@ class Profile(Contact, Singleton):
         self._messages.addItem(elem)
         self._messages.setItemWidget(elem, item)
         self._messages.repaint()
+
     # -----------------------------------------------------------------------------------------------------------------
-    # Work with friends (remove, set alias, clear history)
+    # Work with friends (remove, set alias, get public key)
     # -----------------------------------------------------------------------------------------------------------------
 
     def set_alias(self, num):
@@ -519,18 +564,6 @@ class Profile(Contact, Singleton):
                     pass
             settings.save()
             self.set_active()
-
-    def clear_history(self, num=None):
-        if num is not None:
-            friend = self._friends[num]
-            friend.clear_corr()
-            self.history.delete_messages(friend.tox_id)
-        else:  # clear all history
-            for friend in self._friends:
-                friend.clear_corr()
-                self.history.delete_messages(friend.tox_id)
-                self.history.delete_friend_from_db(friend.tox_id)
-        self.set_active()
 
     def friend_public_key(self, num):
         return self._friends[num].tox_id

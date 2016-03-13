@@ -67,35 +67,26 @@ def friend_connection_status(tox, friend_num, new_status, user_data):
     invoke_in_main_thread(profile.update_filtration)
 
 
-def friend_name(window):
-    """
-    :param window: main window
-    :return: function for callback friend_name. It updates friend's name
-    and calls window repaint
-    """
-    def wrapped(tox, friend_num, name, size, user_data):
-        profile = Profile.get_instance()
-        friend = profile.get_friend_by_number(friend_num)
-        print 'New name: ', str(friend_num), str(name)
-        invoke_in_main_thread(friend.set_name, name)
-        if profile.get_active_number() == friend_num:
-            invoke_in_main_thread(profile.set_active)
-    return wrapped
+def friend_name(tox, friend_num, name, size, user_data):
+    profile = Profile.get_instance()
+    friend = profile.get_friend_by_number(friend_num)
+    print 'New name: ', str(friend_num), str(name)
+    invoke_in_main_thread(friend.set_name, name)
+    if profile.get_active_number() == friend_num:
+        invoke_in_main_thread(profile.set_active)
 
 
-def friend_status_message():
+def friend_status_message(tox, friend_num, status_message, size, user_data):
     """
     :return: function for callback friend_status_message. It updates friend's status message
     and calls window repaint
     """
-    def wrapped(tox, friend_num, status_message, size, user_data):
-        profile = Profile.get_instance()
-        friend = profile.get_friend_by_number(friend_num)
-        invoke_in_main_thread(friend.set_status_message, status_message)
-        print 'User #{} has new status: {}'.format(friend_num, status_message)
-        if profile.get_active_number() == friend_num:
-            invoke_in_main_thread(profile.set_active)
-    return wrapped
+    profile = Profile.get_instance()
+    friend = profile.get_friend_by_number(friend_num)
+    invoke_in_main_thread(friend.set_status_message, status_message)
+    print 'User #{} has new status: {}'.format(friend_num, status_message)
+    if profile.get_active_number() == friend_num:
+        invoke_in_main_thread(profile.set_active)
 
 
 def friend_message(window):
@@ -136,6 +127,6 @@ def init_callbacks(tox, window):
     tox.callback_friend_message(friend_message(window), 0)
     tox.callback_self_connection_status(self_connection_status(tox), 0)
     tox.callback_friend_connection_status(friend_connection_status, 0)
-    tox.callback_friend_name(friend_name(window), 0)
-    tox.callback_friend_status_message(friend_status_message(), 0)
+    tox.callback_friend_name(friend_name, 0)
+    tox.callback_friend_status_message(friend_status_message, 0)
     tox.callback_friend_request(friend_request, 0)

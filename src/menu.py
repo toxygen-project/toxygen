@@ -173,8 +173,11 @@ class ProfileSettings(CenteredWidget):
             Profile.get_instance().set_avatar(data)
 
     def export_profile(self):
-        directory = QtGui.QFileDialog.getExistingDirectory()
-        ProfileHelper.export_profile(directory + '/')
+        # TODO: export history
+        directory = QtGui.QFileDialog.getExistingDirectory() + '/'
+        ProfileHelper.export_profile(directory)
+        settings = Settings.get_instance()
+        settings.export(directory)
 
     def closeEvent(self, event):
         profile = Profile.get_instance()

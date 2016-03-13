@@ -16,7 +16,15 @@ def curr_directory():
 
 
 def curr_time():
-    return time.strftime("%H:%M")
+    return time.strftime('%H:%M')
+
+
+def convert_time(t):
+    sec = int(t) - time.timezone
+    m, s = divmod(sec, 60)
+    h, m = divmod(m, 60)
+    d, h = divmod(h, 24)
+    return '%02d:%02d' % (h, m)
 
 
 def get_style(style):
