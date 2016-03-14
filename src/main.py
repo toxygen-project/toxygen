@@ -9,7 +9,7 @@ from bootstrap import node_generator
 from util import curr_directory, get_style
 
 
-class login(object):
+class Login(object):
 
     def __init__(self, arr):
         self.arr = arr
@@ -33,7 +33,7 @@ class login(object):
 
 def main():
     """
-        main function of app. loads loginscreen if needed and starts mainscreen
+        main function of app. loads login screen if needed and starts main screen
     """
     app = QtGui.QApplication(sys.argv)
     app.setWindowIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
@@ -44,7 +44,7 @@ def main():
         ls.setWindowIconText("Toxygen")
         profiles = ProfileHelper.find_profiles()
         ls.update_select(map(lambda x: x[1], profiles))
-        _login = login(profiles)
+        _login = Login(profiles)
         ls.update_on_close(_login.login_screen_close)
         ls.show()
         app.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app, QtCore.SLOT("quit()"))
@@ -120,5 +120,5 @@ class ToxIterateThread(QtCore.QThread):
 
 
 if __name__ == '__main__':
-    # TODO: add command line options (example: portable, multiprofile)
+    # TODO: add command line options
     main()

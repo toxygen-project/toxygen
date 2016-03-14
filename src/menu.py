@@ -238,9 +238,20 @@ class NetworkSettings(CenteredWidget):
 
     def closeEvent(self, *args, **kwargs):
         settings = Settings.get_instance()
-        old_data = str(settings['ipv6_enabled']) + str(settings['udp_enabled']) + str(settings['proxy_type'])
-        
-        # check if proxy data changed and recreate tox instance
+        old_data = str(settings['ipv6_enabled']) + str(settings['udp_enabled']) + str(bool(settings['proxy_type']))
+        new_data = str(self.ipv.isChecked()) + str(self.udp.isChecked()) + str(self.proxy.isChecked())
+        changed = old_data != new_data
+        if self.proxy.isChecked() and (self.proxyip.text() != settings['proxy_host'] or self.proxyport.text() != settings['proxy_port']):
+            changed = True
+        if changed:
+            settings['ipv6_enabled'] = self.ipv.isChecked()
+            settings['udp_enabled'] = self.udp.isChecked()
+            settings['proxy_type'] = int(self.proxy.isChecked())
+            settings['proxy_host'] = self.proxyip.text()
+            settings['proxy_port'] = self.proxyport.text()
+            settings.save()
+            # recreate tox instance
+            Profile.get_instance().reset()
 
 
 class PrivacySettings(CenteredWidget):

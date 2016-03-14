@@ -449,6 +449,7 @@ class Profile(Contact, Singleton):
         if friend_num == self.get_active_number():  # add message to list
             user_name = Profile.get_instance().get_active_name()
             self.create_message_item(message.decode('utf-8'), curr_time(), user_name, message_type)
+            self._messages.scrollToBottom()
             self._friends[self._active_friend].append_message((message,
                                                                MESSAGE_OWNER['FRIEND'],
                                                                time.time(),
@@ -477,6 +478,7 @@ class Profile(Contact, Singleton):
             self.tox.friend_send_message(friend.number, message_type, text.encode('utf-8'))
             self.create_message_item(text, curr_time(), self._name, message_type)
             self.screen.messageEdit.clear()
+            self._messages.scrollToBottom()
             friend.append_message((text,
                                    MESSAGE_OWNER['ME'],
                                    int(time.time()),
@@ -630,6 +632,19 @@ class Profile(Contact, Singleton):
                 self._friends.append(friend)
         except Exception as ex:  # something is wrong
             log('Accept friend request failed! ' + str(ex))
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Reset
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def reset(self):
+        """
+        Recreate tox instance
+        """
+        print 'In reset'
+        data = self.tox.get_savedata()
+        ProfileHelper.save_profile(data)
+        # TODO: recreate tox
 
 
 def tox_factory(data=None, settings=None):
