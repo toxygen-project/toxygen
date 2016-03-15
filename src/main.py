@@ -55,12 +55,17 @@ class Toxygen(object):
             data = ProfileHelper.open_profile(path, name)
             self.tox = tox_factory(data, settings)
 
+        # tray icon
+        self.tray = QtGui.QSystemTrayIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
+        self.tray.setContextMenu(QtGui.QMenu())
+        self.tray.show()
+
         self.ms = MainWindow(self.tox, self.reset)
         self.ms.show()
         QtGui.QApplication.setStyle(get_style(settings['theme']))  # set application style
 
         # init thread
-        self.init = self.InitThread(self.tox, self.ms)
+        self.init = self.InitThread(self.tox, self.ms, self.tray)
         self.init.start()
 
         # starting thread for tox iterate
@@ -83,14 +88,12 @@ class Toxygen(object):
         self.mainloop.wait()
         self.init.terminate()
         data = self.tox.get_savedata()
-        length = self.tox.get_savedata_size()
-        savedata = ''.join('{}'.format(data[i]) for i in xrange(length))
-        ProfileHelper.save_profile(savedata)
+        ProfileHelper.save_profile(data)
         del self.tox
         # create new tox instance
-        self.tox = tox_factory(savedata, Settings.get_instance())
+        self.tox = tox_factory(data, Settings.get_instance())
         # init thread
-        self.init = self.InitThread(self.tox, self.ms)
+        self.init = self.InitThread(self.tox, self.ms, self.tray)
         self.init.start()
 
         # starting thread for tox iterate
@@ -104,13 +107,13 @@ class Toxygen(object):
 
     class InitThread(QtCore.QThread):
 
-        def __init__(self, tox, ms):
+        def __init__(self, tox, ms, tray):
             QtCore.QThread.__init__(self)
-            self.tox, self.ms = tox, ms
+            self.tox, self.ms, self.tray = tox, ms, tray
 
         def run(self):
             # initializing callbacks
-            init_callbacks(self.tox, self.ms)
+            init_callbacks(self.tox, self.ms, self.tray)
             # bootstrap
             for data in node_generator():
                 self.tox.bootstrap(*data)

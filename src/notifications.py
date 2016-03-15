@@ -11,11 +11,8 @@ SOUND_NOTIFICATION = {
 }
 
 
-def tray_notification(title, text):
+def tray_notification(title, text, tray):
     if QtGui.QSystemTrayIcon.isSystemTrayAvailable():
-        tray = QtGui.QSystemTrayIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
-        tray.setContextMenu(QtGui.QMenu())
-        tray.show()
         if len(text) > 30:
             text = text[:27] + '...'
         tray.showMessage(title, text, QtGui.QSystemTrayIcon.NoIcon, 3000)

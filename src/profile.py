@@ -428,10 +428,10 @@ class Profile(Contact, Singleton):
     active_friend = property(get_active, set_active)
 
     def get_active_number(self):
-        return self._friends[self._active_friend].number
+        return self._friends[self._active_friend].number if self._active_friend + 1 else -1
 
     def get_active_name(self):
-        return self._friends[self._active_friend].name
+        return self._friends[self._active_friend].name  if self._active_friend + 1 else ''
 
     def is_active_online(self):
         return self._active_friend + 1 and self._friends[self._active_friend].status is not None
@@ -451,7 +451,7 @@ class Profile(Contact, Singleton):
             user_name = Profile.get_instance().get_active_name()
             self.create_message_item(message.decode('utf-8'), curr_time(), user_name, message_type)
             self._messages.scrollToBottom()
-            self._friends[self._active_friend].append_message((message,
+            self._friends[self._active_friend].append_message((message.decode('utf-8'),
                                                                MESSAGE_OWNER['FRIEND'],
                                                                time.time(),
                                                                message_type))

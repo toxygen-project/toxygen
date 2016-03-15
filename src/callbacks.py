@@ -89,9 +89,10 @@ def friend_status_message(tox, friend_num, status_message, size, user_data):
         invoke_in_main_thread(profile.set_active)
 
 
-def friend_message(window):
+def friend_message(window, tray):
     """
     :param window: main window
+    :param tray: tray
     :return: function for tox.callback_friend_message. Adds new message to list
     """
     def wrapped(tox, friend_number, message_type, message, size, user_data):
@@ -102,7 +103,7 @@ def friend_message(window):
         if not window.isActiveWindow():
             friend = profile.get_friend_by_number(friend_number)
             if settings['notifications']:
-                invoke_in_main_thread(tray_notification, friend.name, message.decode('utf8'))
+                invoke_in_main_thread(tray_notification, friend.name, message.decode('utf8'), tray)
             if settings['sound_notifications']:
                 sound_notification(SOUND_NOTIFICATION['MESSAGE'])
     return wrapped
@@ -117,14 +118,14 @@ def friend_request(tox, public_key, message, message_size, user_data):
     invoke_in_main_thread(profile.process_friend_request, tox_id, message.decode('utf-8'))
 
 
-def init_callbacks(tox, window):
+def init_callbacks(tox, window, tray):
     """
     Initialization of all callbacks.
     :param tox: tox instance
     :param window: main window
     """
     tox.callback_friend_status(friend_status, 0)
-    tox.callback_friend_message(friend_message(window), 0)
+    tox.callback_friend_message(friend_message(window, tray), 0)
     tox.callback_self_connection_status(self_connection_status(tox), 0)
     tox.callback_friend_connection_status(friend_connection_status, 0)
     tox.callback_friend_name(friend_name, 0)
