@@ -182,7 +182,7 @@ class Tox(object):
             savedata_size = self.get_savedata_size()
             savedata = create_string_buffer(savedata_size)
         Tox.libtoxcore.tox_get_savedata(self._tox_pointer, savedata)
-        return savedata
+        return savedata[:]
 
     # -----------------------------------------------------------------------------------------------------------------
     # Connection lifecycle and event loop
@@ -1410,7 +1410,7 @@ class Tox(object):
 
 if __name__ == '__main__':
     tox = Tox(Tox.options_new())
-    p = tox.self_get_secret_key()
+    p = tox.get_savedata()
     print type(p)
     print p
     del tox
