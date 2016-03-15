@@ -431,7 +431,7 @@ class Profile(Contact, Singleton):
         return self._friends[self._active_friend].number if self._active_friend + 1 else -1
 
     def get_active_name(self):
-        return self._friends[self._active_friend].name  if self._active_friend + 1 else ''
+        return self._friends[self._active_friend].name if self._active_friend + 1 else ''
 
     def is_active_online(self):
         return self._active_friend + 1 and self._friends[self._active_friend].status is not None
@@ -608,8 +608,10 @@ class Profile(Contact, Singleton):
             result = self.tox.friend_add(tox_id, message.encode('utf-8'))
             tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
             item = self.create_friend_item()
-            friend = Friend(result, tox_id, '', item, tox_id)
-            self.history.add_friend_to_db(tox_id)  # add friend to db
+            if not self.history.friend_exists_in_db(tox_id):
+                self.history.add_friend_to_db(tox_id)
+            message_getter = self.history.messages_getter(tox_id)
+            friend = Friend(message_getter, result, tox_id, '', item, tox_id)
             self._friends.append(friend)
             return True
         except Exception as ex:  # wrong data
@@ -628,8 +630,12 @@ class Profile(Contact, Singleton):
             if reply == QtGui.QMessageBox.Yes:  # accepted
                 num = self.tox.friend_add_norequest(tox_id)  # num - friend number
                 item = self.create_friend_item()
-                friend = Friend(num, tox_id, '', item, tox_id)
-                self.history.add_friend_to_db(tox_id)  # add friend to db
+                if not self.history.friend_exists_in_db(tox_id):
+                    self.history.add_friend_to_db(tox_id)
+                if not self.history.friend_exists_in_db(tox_id):
+                    self.history.add_friend_to_db(tox_id)
+                message_getter = self.history.messages_getter(tox_id)
+                friend = Friend(message_getter, num, tox_id, '', item, tox_id)
                 self._friends.append(friend)
         except Exception as ex:  # something is wrong
             log('Accept friend request failed! ' + str(ex))

@@ -85,8 +85,9 @@ class Toxygen(object):
         :return: tox instance
         """
         self.mainloop.stop = True
+        self.init.stop = True
         self.mainloop.wait()
-        self.init.terminate()
+        self.init.wait()
         data = self.tox.get_savedata()
         ProfileHelper.save_profile(data)
         del self.tox
@@ -110,6 +111,7 @@ class Toxygen(object):
         def __init__(self, tox, ms, tray):
             QtCore.QThread.__init__(self)
             self.tox, self.ms, self.tray = tox, ms, tray
+            self.stop = False
 
         def run(self):
             # initializing callbacks
@@ -118,7 +120,7 @@ class Toxygen(object):
             for data in node_generator():
                 self.tox.bootstrap(*data)
             self.msleep(10000)
-            while not self.tox.self_get_connection_status():
+            while not self.tox.self_get_connection_status() and not self.stop:
                 for data in node_generator():
                     self.tox.bootstrap(*data)
                 self.msleep(5000)
