@@ -186,6 +186,7 @@ class Friend(Contact):
     def __del__(self):
         self.set_visibility(False)
         del self._widget
+        del self._message_getter
 
     # -----------------------------------------------------------------------------------------------------------------
     # History support
@@ -210,6 +211,7 @@ class Friend(Contact):
         Get data to save in db
         :return: list of unsaved messages or []
         """
+        del self._message_getter
         return self._corr[-self._unsaved_messages:] if self._unsaved_messages else []
 
     def get_corr(self):
@@ -512,6 +514,9 @@ class Profile(Contact, Singleton):
                 self.history.delete_friend_from_db(friend.tox_id)
         if num is None or num == self.get_active_number():
             self._messages.clear()
+
+    def export_history(self, directory):
+        self.history.export(directory)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Factories for friend and message items

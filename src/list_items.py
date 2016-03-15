@@ -41,11 +41,11 @@ class MessageItem(QtGui.QListWidget):
     def __init__(self, text, time, user='', message_type=TOX_MESSAGE_TYPE['NORMAL'], parent=None):
         QtGui.QListWidget.__init__(self, parent)
         self.name = QtGui.QLabel(self)
-        self.name.setGeometry(QtCore.QRect(0, 0, 95, 40))
+        self.name.setGeometry(QtCore.QRect(0, 0, 95, 20))
         self.name.setTextFormat(QtCore.Qt.PlainText)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
-        font.setPointSize(12)
+        font.setPointSize(11)
         font.setBold(True)
         self.name.setFont(font)
         self.name.setObjectName("name")

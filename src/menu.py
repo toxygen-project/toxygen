@@ -178,6 +178,8 @@ class ProfileSettings(CenteredWidget):
         ProfileHelper.export_profile(directory)
         settings = Settings.get_instance()
         settings.export(directory)
+        profile = Profile.get_instance()
+        profile.export_history(directory)
 
     def closeEvent(self, event):
         profile = Profile.get_instance()

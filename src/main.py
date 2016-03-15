@@ -73,8 +73,10 @@ class Toxygen(object):
         self.mainloop.start()
         app.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app, QtCore.SLOT("quit()"))
         app.exec_()
+        self.init.stop = True
         self.mainloop.stop = True
         self.mainloop.wait()
+        self.init.wait()
         data = self.tox.get_savedata()
         ProfileHelper.save_profile(data)
         del self.tox

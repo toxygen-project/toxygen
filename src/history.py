@@ -21,6 +21,15 @@ class History(object):
                        ')')
         db.close()
 
+    def export(self, directory):
+        path = Settings.get_default_path() + self._name + '.hstr'
+        new_path = directory + self._name + '.hstr'
+        with open(path, 'rb') as fin:
+            data = fin.read()
+        with open(new_path, 'wb') as fout:
+            fout.write(data)
+        print 'History exported to: {}'.format(new_path)
+
     def add_friend_to_db(self, tox_id):
         chdir(Settings.get_default_path())
         db = connect(self._name + '.hstr')
