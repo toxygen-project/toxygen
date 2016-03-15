@@ -304,12 +304,12 @@ class Profile(Contact, Singleton):
         screen.online_contacts.setChecked(self.show_online)
         aliases = settings['friends_aliases']
         data = tox.self_get_friend_list()
-        self.history = History(tox.self_get_public_key())  # connection to db
+        self._history = History(tox.self_get_public_key())  # connection to db
         self._friends, self._active_friend = [], -1
         for i in data:  # creates list of friends
             tox_id = tox.friend_get_public_key(i)
-            if not self.history.friend_exists_in_db(tox_id):
-                self.history.add_friend_to_db(tox_id)
+            if not self._history.friend_exists_in_db(tox_id):
+                self._history.add_friend_to_db(tox_id)
             try:
                 alias = filter(lambda x: x[0] == tox_id, aliases)[0][1]
             except:
@@ -317,7 +317,7 @@ class Profile(Contact, Singleton):
             item = self.create_friend_item()
             name = alias or tox.friend_get_name(i) or tox_id
             status_message = tox.friend_get_status_message(i)
-            message_getter = self.history.messages_getter(tox_id)
+            message_getter = self._history.messages_getter(tox_id)
             friend = Friend(message_getter, i, name, status_message, item, tox_id)
             friend.set_alias(alias)
             self._friends.append(friend)
@@ -499,24 +499,24 @@ class Profile(Contact, Singleton):
         if Settings.get_instance()['save_history']:
             for friend in self._friends:
                 messages = friend.get_corr_for_saving()
-                self.history.save_messages_to_db(friend.tox_id, messages)
-        del self.history
+                self._history.save_messages_to_db(friend.tox_id, messages)
+        del self._history
 
     def clear_history(self, num=None):
         if num is not None:
             friend = self._friends[num]
             friend.clear_corr()
-            self.history.delete_messages(friend.tox_id)
+            self._history.delete_messages(friend.tox_id)
         else:  # clear all history
             for friend in self._friends:
                 friend.clear_corr()
-                self.history.delete_messages(friend.tox_id)
-                self.history.delete_friend_from_db(friend.tox_id)
+                self._history.delete_messages(friend.tox_id)
+                self._history.delete_friend_from_db(friend.tox_id)
         if num is None or num == self.get_active_number():
             self._messages.clear()
 
     def export_history(self, directory):
-        self.history.export(directory)
+        self._history.export(directory)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Factories for friend and message items
@@ -583,7 +583,7 @@ class Profile(Contact, Singleton):
         """
         friend = self._friends[num]
         self.clear_history(num)
-        self.history.delete_friend_from_db(friend.tox_id)
+        self._history.delete_friend_from_db(friend.tox_id)
         self.tox.friend_delete(friend.number)
         del self._friends[num]
         self.screen.friends_list.takeItem(num)
@@ -613,9 +613,9 @@ class Profile(Contact, Singleton):
             result = self.tox.friend_add(tox_id, message.encode('utf-8'))
             tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
             item = self.create_friend_item()
-            if not self.history.friend_exists_in_db(tox_id):
-                self.history.add_friend_to_db(tox_id)
-            message_getter = self.history.messages_getter(tox_id)
+            if not self._history.friend_exists_in_db(tox_id):
+                self._history.add_friend_to_db(tox_id)
+            message_getter = self._history.messages_getter(tox_id)
             friend = Friend(message_getter, result, tox_id, '', item, tox_id)
             self._friends.append(friend)
             return True
@@ -635,11 +635,11 @@ class Profile(Contact, Singleton):
             if reply == QtGui.QMessageBox.Yes:  # accepted
                 num = self.tox.friend_add_norequest(tox_id)  # num - friend number
                 item = self.create_friend_item()
-                if not self.history.friend_exists_in_db(tox_id):
-                    self.history.add_friend_to_db(tox_id)
-                if not self.history.friend_exists_in_db(tox_id):
-                    self.history.add_friend_to_db(tox_id)
-                message_getter = self.history.messages_getter(tox_id)
+                if not self._history.friend_exists_in_db(tox_id):
+                    self._history.add_friend_to_db(tox_id)
+                if not self._history.friend_exists_in_db(tox_id):
+                    self._history.add_friend_to_db(tox_id)
+                message_getter = self._history.messages_getter(tox_id)
                 friend = Friend(message_getter, num, tox_id, '', item, tox_id)
                 self._friends.append(friend)
         except Exception as ex:  # something is wrong

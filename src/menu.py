@@ -173,7 +173,6 @@ class ProfileSettings(CenteredWidget):
             Profile.get_instance().set_avatar(data)
 
     def export_profile(self):
-        # TODO: export history
         directory = QtGui.QFileDialog.getExistingDirectory() + '/'
         ProfileHelper.export_profile(directory)
         settings = Settings.get_instance()
@@ -189,7 +188,6 @@ class ProfileSettings(CenteredWidget):
 
 class NetworkSettings(CenteredWidget):
     """Network settings form: UDP, Ipv6 and proxy"""
-    # TODO: add possibility to change network settings
     def __init__(self, reset):
         super(NetworkSettings, self).__init__()
         self.reset = reset
