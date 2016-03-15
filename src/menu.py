@@ -188,8 +188,9 @@ class ProfileSettings(CenteredWidget):
 class NetworkSettings(CenteredWidget):
     """Network settings form: UDP, Ipv6 and proxy"""
     # TODO: add possibility to change network settings
-    def __init__(self):
+    def __init__(self, reset):
         super(NetworkSettings, self).__init__()
+        self.reset = reset
         self.initUI()
 
     def initUI(self):
@@ -248,10 +249,10 @@ class NetworkSettings(CenteredWidget):
             settings['udp_enabled'] = self.udp.isChecked()
             settings['proxy_type'] = int(self.proxy.isChecked())
             settings['proxy_host'] = self.proxyip.text()
-            settings['proxy_port'] = self.proxyport.text()
+            settings['proxy_port'] = int(self.proxyport.text())
             settings.save()
             # recreate tox instance
-            Profile.get_instance().reset()
+            Profile.get_instance().reset(self.reset)
 
 
 class PrivacySettings(CenteredWidget):

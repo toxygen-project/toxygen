@@ -393,7 +393,7 @@ class Profile(Contact, Singleton):
             self.screen.account_status.setText('')
             self._active_friend = -1
             self.screen.account_avatar.setHidden(True)
-            self.screen.messages.clear()
+            self._messages.clear()
             self.screen.messageEdit.clear()
             return
         try:
@@ -402,7 +402,7 @@ class Profile(Contact, Singleton):
                 friend = self._friends[value]
                 self._friends[self._active_friend].set_messages(False)
                 self.screen.messageEdit.clear()
-                self.screen.messages.clear()
+                self._messages.clear()
                 friend.load_corr()
                 messages = friend.get_corr()[-42:]
                 for message in messages:
@@ -410,6 +410,7 @@ class Profile(Contact, Singleton):
                                              convert_time(message[2]),
                                              friend.name if message[1] else self._name,
                                              message[3])
+                self._messages.scrollToBottom()
             else:
                 friend = self._friends[self._active_friend]
             self.screen.account_name.setText(friend.name)
@@ -637,14 +638,17 @@ class Profile(Contact, Singleton):
     # Reset
     # -----------------------------------------------------------------------------------------------------------------
 
-    def reset(self):
+    def reset(self, restart):
         """
         Recreate tox instance
+        :param restart: method which calls restart and returns new tox instance
         """
         print 'In reset'
-        data = self.tox.get_savedata()
-        ProfileHelper.save_profile(data)
-        # TODO: recreate tox
+        del self.tox
+        self.tox = restart()
+        self.status = None
+        for friend in self._friends:
+            friend.status = None
 
 
 def tox_factory(data=None, settings=None):

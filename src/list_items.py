@@ -5,7 +5,8 @@ from PySide import QtGui, QtCore
 class MessageEdit(QtGui.QPlainTextEdit):
     def __init__(self, text, width, parent=None):
         super(MessageEdit, self).__init__(parent)
-
+        self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setWordWrapMode(QtGui.QTextOption.WrapAtWordBoundaryOrAnywhere)
         self.setPlainText(text)
         self.document().setTextWidth(parent.width() - 100)

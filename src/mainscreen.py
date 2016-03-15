@@ -20,10 +20,10 @@ class MessageArea(QtGui.QPlainTextEdit):
 
 class MainWindow(QtGui.QMainWindow):
 
-    def __init__(self, tox):
+    def __init__(self, tox, reset):
         super(MainWindow, self).__init__()
-        self.tox = tox
-        self.initUI()
+        self.reset = reset
+        self.initUI(tox)
 
     def setup_menu(self, MainWindow):
         self.menubar = QtGui.QMenuBar(MainWindow)
@@ -194,7 +194,7 @@ class MainWindow(QtGui.QMainWindow):
         self.messages = QtGui.QListWidget(widget)
         self.messages.setGeometry(0, 0, 600, 250)
 
-    def initUI(self):
+    def initUI(self, tox):
         self.setMinimumSize(900, 550)
         self.setMaximumSize(900, 550)
         self.setGeometry(400, 400, 900, 550)
@@ -227,7 +227,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setup_menu(self)
         self.user_info = name
         self.friend_info = info
-        self.profile = Profile(self.tox, self)
+        self.profile = Profile(tox, self)
 
     def closeEvent(self, *args, **kwargs):
         self.profile.save_history()
@@ -244,7 +244,7 @@ class MainWindow(QtGui.QMainWindow):
         msgBox.exec_()
 
     def network_settings(self):
-        self.n_s = NetworkSettings()
+        self.n_s = NetworkSettings(self.reset)
         self.n_s.show()
 
     def add_contact(self):
