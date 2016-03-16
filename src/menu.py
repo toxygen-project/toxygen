@@ -165,7 +165,7 @@ class ProfileSettings(CenteredWidget):
         Profile.get_instance().reset_avatar()
 
     def set_avatar(self):
-        name = QtGui.QFileDialog.getOpenFileName(self, 'Open file', None, 'Image Files (*.png *.jpg *.bmp)')
+        name = QtGui.QFileDialog.getOpenFileName(self, 'Open file', None, 'Image Files (*.png)')
         print name
         if name[0]:
             with open(name[0], 'rb') as f:

@@ -170,7 +170,7 @@ class Contact(object):
     def get_avatar_hash(self):
         avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
         if not os.path.isfile(avatar_path):  # load default image
-            avatar_path = curr_directory() + '/images/avatar.png'
+            return 0
         with open(avatar_path, 'rb') as fl:
             data = fl.read()
         return Tox.hash(data)
@@ -705,6 +705,12 @@ class Profile(Contact, Singleton):
         pass
 
     def incoming_avatar(self, friend_number, file_number, size):
+        """
+        Friend changed avatar
+        :param friend_number: friend number
+        :param file_number: file number
+        :param size: size of avatar or 0 (default avatar)
+        """
         friend = self.get_friend_by_number(friend_number)
         if not size:
             friend.reset_avatar()
