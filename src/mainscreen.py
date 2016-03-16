@@ -102,6 +102,7 @@ class MainWindow(QtGui.QMainWindow):
         self.sendMessageButton.setGeometry(QtCore.QRect(550, 10, 60, 110))
         self.sendMessageButton.setObjectName("sendMessageButton")
         self.sendMessageButton.clicked.connect(self.send_message)
+        self.fileTransferButton.clicked.connect(self.send_file)
         self.screenshotButton.setText(QtGui.QApplication.translate("Form", "Screenshot", None, QtGui.QApplication.UnicodeUTF8))
         self.fileTransferButton.setText(QtGui.QApplication.translate("Form", "File", None, QtGui.QApplication.UnicodeUTF8))
         self.sendMessageButton.setText(QtGui.QApplication.translate("Form", "Send", None, QtGui.QApplication.UnicodeUTF8))
@@ -268,12 +269,18 @@ class MainWindow(QtGui.QMainWindow):
         self.int_s.show()
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Messages
+    # Messages and file transfers
     # -----------------------------------------------------------------------------------------------------------------
 
     def send_message(self):
         text = self.messageEdit.toPlainText()
         self.profile.send_message(text)
+
+    def send_file(self):
+        if self.profile.is_active_online():  # active friend exists and online
+            name = QtGui.QFileDialog.getOpenFileName(self, 'Choose file')
+            if name:
+                self.profile.send_file(name)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user open context menu in friends list

@@ -56,7 +56,7 @@ class ProfileHelper(object):
 
     @staticmethod
     def export_profile(new_path):
-        new_path += ProfileHelper._path.split('/')[-1]
+        new_path += os.path.basename(ProfileHelper._path)
         with open(ProfileHelper._path, 'rb') as fin:
             data = fin.read()
         with open(new_path, 'wb') as fout:
@@ -166,6 +166,14 @@ class Contact(object):
         with open(avatar_path, 'wb') as f:
             f.write(avatar)
         self.load_avatar()
+
+    def get_avatar_hash(self):
+        avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        if not os.path.isfile(avatar_path):  # load default image
+            avatar_path = curr_directory() + '/images/avatar.png'
+        with open(avatar_path, 'rb') as fl:
+            data = fl.read()
+        return Tox.hash(data)
 
 
 class Friend(Contact):
@@ -304,7 +312,7 @@ class Profile(Contact, Singleton):
         self._screen = screen
         self._messages = screen.messages
         self._tox = tox
-        self._file_transfers = [] # list of file transfers
+        self._file_transfers = []  # list of file transfers
         settings = Settings.get_instance()
         self._show_online = settings['show_online_friends']
         screen.online_contacts.setChecked(self._show_online)
@@ -696,7 +704,23 @@ class Profile(Contact, Singleton):
     def incoming_file_transfer(self, friend_number, file_number, size, file_name):
         pass
 
-    def incoming_avatar(self, friend_number, file_number):
+    def incoming_avatar(self, friend_number, file_number, size):
+        friend = self.get_friend_by_number(friend_number)
+        if not size:
+            friend.reset_avatar()
+            self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
+        else:
+            hash = friend.get_avatar_hash()
+            new_avatar_hash = self._tox.file_get_file_id(friend_number, file_number)
+            if hash == new_avatar_hash:  # avatar is the same
+                self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])  # ignore file
+            else:
+                pass
+
+    def send_avatar(self, friend_number):
+        pass
+
+    def send_file(self, path):
         pass
 
 
