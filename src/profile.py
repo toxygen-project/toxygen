@@ -304,6 +304,7 @@ class Profile(Contact, Singleton):
         self._screen = screen
         self._messages = screen.messages
         self._tox = tox
+        self._file_transfers = [] # list of file transfers
         settings = Settings.get_instance()
         self._show_online = settings['show_online_friends']
         screen.online_contacts.setChecked(self._show_online)
@@ -687,6 +688,16 @@ class Profile(Contact, Singleton):
         self.status = None
         for friend in self._friends:
             friend.status = None
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # File transfers support
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def incoming_file_transfer(self, friend_number, file_number, size, file_name):
+        pass
+
+    def incoming_avatar(self, friend_number, file_number):
+        pass
 
 
 def tox_factory(data=None, settings=None):

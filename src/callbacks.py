@@ -28,6 +28,10 @@ _invoker = Invoker()
 def invoke_in_main_thread(fn, *args, **kwargs):
     QtCore.QCoreApplication.postEvent(_invoker, InvokeEvent(fn, *args, **kwargs))
 
+# -----------------------------------------------------------------------------------------------------------------
+# Callbacks - current user
+# -----------------------------------------------------------------------------------------------------------------
+
 
 def self_connection_status(tox_link):
     """
@@ -43,6 +47,11 @@ def self_connection_status(tox_link):
         elif connection == TOX_CONNECTION['NONE']:
             invoke_in_main_thread(profile.set_status, None)
     return wrapped
+
+
+# -----------------------------------------------------------------------------------------------------------------
+# Callbacks - friends
+# -----------------------------------------------------------------------------------------------------------------
 
 
 def friend_status(tox, friend_num, new_status, user_data):
@@ -116,6 +125,40 @@ def friend_request(tox, public_key, message, message_size, user_data):
     tox_id = bin_to_string(public_key, TOX_PUBLIC_KEY_SIZE)
     invoke_in_main_thread(profile.process_friend_request, tox_id, message.decode('utf-8'))
 
+# -----------------------------------------------------------------------------------------------------------------
+# Callbacks - file transfers
+# -----------------------------------------------------------------------------------------------------------------
+
+
+def tox_file_recv(window, tray):
+    def wrapped(tox, friend_number, file_number, file_type, size, file_name, file_name_size, user_data):
+        profile = Profile.get_instance()
+        settings = Settings.get_instance()
+        if file_type == TOX_FILE_KIND['DATA']:
+            print 'file'
+            file_name = file_name[:].decode('utf8')
+            invoke_in_main_thread(profile.incoming_file_transfer,
+                                  friend_number,
+                                  file_number,
+                                  size,
+                                  file_name)
+            if not window.isActiveWindow():
+                friend = profile.get_friend_by_number(friend_number)
+                if settings['notifications']:
+                    invoke_in_main_thread(tray_notification, 'File from ' + friend.name, file_name, tray)
+                if settings['sound_notifications']:
+                    sound_notification(SOUND_NOTIFICATION['FILE_TRANSFER'])
+        else:  # AVATAR
+            print 'Avatar'
+            invoke_in_main_thread(profile.incoming_avatar,
+                                  friend_number,
+                                  file_number)
+    return wrapped
+
+# -----------------------------------------------------------------------------------------------------------------
+# Callbacks - initialization
+# -----------------------------------------------------------------------------------------------------------------
+
 
 def init_callbacks(tox, window, tray):
     """
@@ -124,10 +167,13 @@ def init_callbacks(tox, window, tray):
     :param window: main window
     :param tray: tray (for notifications)
     """
+    tox.callback_self_connection_status(self_connection_status(tox), 0)
+
     tox.callback_friend_status(friend_status, 0)
     tox.callback_friend_message(friend_message(window, tray), 0)
-    tox.callback_self_connection_status(self_connection_status(tox), 0)
     tox.callback_friend_connection_status(friend_connection_status, 0)
     tox.callback_friend_name(friend_name, 0)
     tox.callback_friend_status_message(friend_status_message, 0)
     tox.callback_friend_request(friend_request, 0)
+
+    tox.callback_file_recv(tox_file_recv(window, tray), 0)
