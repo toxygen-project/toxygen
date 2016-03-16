@@ -1,1 +1,2 @@
-# TODO: add support of file transfers and avatars
+# TODO: add support of file transfers
+# TODO: add support of avatars
