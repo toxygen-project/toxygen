@@ -37,6 +37,7 @@ class ProfileHelper(object):
     @staticmethod
     def open_profile(path, name):
         ProfileHelper._path = path + name + '.tox'
+        ProfileHelper._directory = path
         with open(ProfileHelper._path, 'rb') as fl:
             data = fl.read()
         if data:
@@ -61,6 +62,10 @@ class ProfileHelper(object):
         with open(new_path, 'wb') as fout:
             fout.write(data)
         print 'Data exported to: {}'.format(new_path)
+
+    @staticmethod
+    def get_path():
+        return ProfileHelper._directory
 
 
 class Contact(object):
@@ -296,12 +301,12 @@ class Profile(Contact, Singleton):
                                       tox.self_get_status_message(),
                                       screen.user_info,
                                       tox.self_get_address())
-        self.screen = screen
+        self._screen = screen
         self._messages = screen.messages
-        self.tox = tox
+        self._tox = tox
         settings = Settings.get_instance()
-        self.show_online = settings['show_online_friends']
-        screen.online_contacts.setChecked(self.show_online)
+        self._show_online = settings['show_online_friends']
+        screen.online_contacts.setChecked(self._show_online)
         aliases = settings['friends_aliases']
         data = tox.self_get_friend_list()
         self._history = History(tox.self_get_public_key())  # connection to db
@@ -321,7 +326,7 @@ class Profile(Contact, Singleton):
             friend = Friend(message_getter, i, name, status_message, item, tox_id)
             friend.set_alias(alias)
             self._friends.append(friend)
-        self.filtration(self.show_online)
+        self.filtration(self._show_online)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Edit current user's data
@@ -334,15 +339,15 @@ class Profile(Contact, Singleton):
         if self._status is not None:
             status = (self._status + 1) % 3
             super(self.__class__, self).set_status(status)
-            self.tox.self_set_status(status)
+            self._tox.self_set_status(status)
 
     def set_name(self, value):
         super(self.__class__, self).set_name(value)
-        self.tox.self_set_name(self._name.encode('utf-8'))
+        self._tox.self_set_name(self._name.encode('utf-8'))
 
     def set_status_message(self, value):
         super(self.__class__, self).set_status_message(value)
-        self.tox.self_set_status_message(self._status_message.encode('utf-8'))
+        self._tox.self_set_status_message(self._status_message.encode('utf-8'))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Filtration
@@ -358,19 +363,19 @@ class Profile(Contact, Singleton):
         for index, friend in enumerate(self._friends):
             friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name.lower())
             if friend.visibility:
-                self.screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 70))
+                self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 70))
             else:
-                self.screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 0))
-        self.show_online, self.filter_string = show_online, filter_str
+                self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 0))
+        self._show_online, self._filter_string = show_online, filter_str
         settings = Settings.get_instance()
-        settings['show_online_friends'] = self.show_online
+        settings['show_online_friends'] = self._show_online
         settings.save()
 
     def update_filtration(self):
         """
         Update list of contacts when 1 of friends change connection status
         """
-        self.filtration(self.show_online, self.filter_string)
+        self.filtration(self._show_online, self._filter_string)
 
     def get_friend_by_number(self, num):
         return filter(lambda x: x.number == num, self._friends)[0]
@@ -391,19 +396,19 @@ class Profile(Contact, Singleton):
         if value == self._active_friend:
             return
         if value == -1:  # all friends were deleted
-            self.screen.account_name.setText('')
-            self.screen.account_status.setText('')
+            self._screen.account_name.setText('')
+            self._screen.account_status.setText('')
             self._active_friend = -1
-            self.screen.account_avatar.setHidden(True)
+            self._screen.account_avatar.setHidden(True)
             self._messages.clear()
-            self.screen.messageEdit.clear()
+            self._screen.messageEdit.clear()
             return
         try:
             if value is not None:
                 self._active_friend = value
                 friend = self._friends[value]
                 self._friends[self._active_friend].set_messages(False)
-                self.screen.messageEdit.clear()
+                self._screen.messageEdit.clear()
                 self._messages.clear()
                 friend.load_corr()
                 messages = friend.get_corr()[-42:]
@@ -415,15 +420,15 @@ class Profile(Contact, Singleton):
                 self._messages.scrollToBottom()
             else:
                 friend = self._friends[self._active_friend]
-            self.screen.account_name.setText(friend.name)
-            self.screen.account_status.setText(friend.status_message)
+            self._screen.account_name.setText(friend.name)
+            self._screen.account_status.setText(friend.status_message)
             avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(friend.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
             if not os.path.isfile(avatar_path):  # load default image
                 avatar_path = curr_directory() + '/images/avatar.png'
             pixmap = QtGui.QPixmap(QtCore.QSize(64, 64))
             pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio)
-            self.screen.account_avatar.setPixmap(avatar_path)
-            self.screen.account_avatar.repaint()
+            self._screen.account_avatar.setPixmap(avatar_path)
+            self._screen.account_avatar.repaint()
         except:  # no friend found. ignore
             log('Incorrect friend value: ' + str(value))
 
@@ -478,9 +483,9 @@ class Profile(Contact, Singleton):
                 message_type = TOX_MESSAGE_TYPE['NORMAL']
             friend = self._friends[self._active_friend]
             # TODO: add message splitting
-            self.tox.friend_send_message(friend.number, message_type, text.encode('utf-8'))
+            self._tox.friend_send_message(friend.number, message_type, text.encode('utf-8'))
             self.create_message_item(text, curr_time(), self._name, message_type)
-            self.screen.messageEdit.clear()
+            self._screen.messageEdit.clear()
             self._messages.scrollToBottom()
             friend.append_message((text,
                                    MESSAGE_OWNER['ME'],
@@ -528,10 +533,10 @@ class Profile(Contact, Singleton):
         :return: new widget for friend instance
         """
         item = ContactItem()
-        elem = QtGui.QListWidgetItem(self.screen.friends_list)
+        elem = QtGui.QListWidgetItem(self._screen.friends_list)
         elem.setSizeHint(QtCore.QSize(250, 70))
-        self.screen.friends_list.addItem(elem)
-        self.screen.friends_list.setItemWidget(elem, item)
+        self._screen.friends_list.addItem(elem)
+        self._screen.friends_list.setItemWidget(elem, item)
         return item
 
     def create_message_item(self, text, time, name, message_type):
@@ -563,7 +568,7 @@ class Profile(Contact, Singleton):
                     aliases.append((friend.tox_id, text))
                 friend.set_alias(text)
             else:  # use default name
-                friend.name = self.tox.friend_get_name(friend.number)
+                friend.name = self._tox.friend_get_name(friend.number)
                 friend.set_alias('')
                 try:
                     index = map(lambda x: x[0], aliases).index(friend.tox_id)
@@ -584,9 +589,9 @@ class Profile(Contact, Singleton):
         friend = self._friends[num]
         self.clear_history(num)
         self._history.delete_friend_from_db(friend.tox_id)
-        self.tox.friend_delete(friend.number)
+        self._tox.friend_delete(friend.number)
         del self._friends[num]
-        self.screen.friends_list.takeItem(num)
+        self._screen.friends_list.takeItem(num)
         if num == self._active_friend:  # active friend was deleted
             if not len(self._friends):  # last friend was deleted
                 self.set_active(-1)
@@ -610,7 +615,7 @@ class Profile(Contact, Singleton):
                 tox_id = tox_dns(tox_id)
                 if tox_id is None:
                     raise Exception('TOX DNS lookup failed')
-            result = self.tox.friend_add(tox_id, message.encode('utf-8'))
+            result = self._tox.friend_add(tox_id, message.encode('utf-8'))
             tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
             item = self.create_friend_item()
             if not self._history.friend_exists_in_db(tox_id):
@@ -633,7 +638,7 @@ class Profile(Contact, Singleton):
             info = 'User {} wants to add you to contact list. Message:\n{}'.format(tox_id, message)
             reply = QtGui.QMessageBox.question(None, 'Friend request', info, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
             if reply == QtGui.QMessageBox.Yes:  # accepted
-                num = self.tox.friend_add_norequest(tox_id)  # num - friend number
+                num = self._tox.friend_add_norequest(tox_id)  # num - friend number
                 item = self.create_friend_item()
                 if not self._history.friend_exists_in_db(tox_id):
                     self._history.add_friend_to_db(tox_id)
@@ -655,8 +660,8 @@ class Profile(Contact, Singleton):
         :param restart: method which calls restart and returns new tox instance
         """
         print 'In reset'
-        del self.tox
-        self.tox = restart()
+        del self._tox
+        self._tox = restart()
         self.status = None
         for friend in self._friends:
             friend.status = None
