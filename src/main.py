@@ -119,13 +119,20 @@ class Toxygen(object):
             # initializing callbacks
             init_callbacks(self.tox, self.ms, self.tray)
             # bootstrap
-            for data in node_generator():
-                self.tox.bootstrap(*data)
-            self.msleep(10000)
-            while not self.tox.self_get_connection_status() and not self.stop:
+            try:
                 for data in node_generator():
                     self.tox.bootstrap(*data)
-                self.msleep(5000)
+            except:
+                pass
+            self.msleep(10000)
+            while not self.tox.self_get_connection_status() and not self.stop:
+                try:
+                    for data in node_generator():
+                        self.tox.bootstrap(*data)
+                except:
+                    pass
+                finally:
+                    self.msleep(5000)
 
     class ToxIterateThread(QtCore.QThread):
 

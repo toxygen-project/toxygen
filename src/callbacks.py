@@ -96,7 +96,6 @@ def friend_message(window, tray):
     :return: function for tox.callback_friend_message. Adds new message to list
     """
     def wrapped(tox, friend_number, message_type, message, size, user_data):
-        print 'Message: ', message.decode('utf8')
         profile = Profile.get_instance()
         settings = Settings.get_instance()
         invoke_in_main_thread(profile.new_message, friend_number, message_type, message)
@@ -123,6 +122,7 @@ def init_callbacks(tox, window, tray):
     Initialization of all callbacks.
     :param tox: tox instance
     :param window: main window
+    :param tray: tray (for notifications)
     """
     tox.callback_friend_status(friend_status, 0)
     tox.callback_friend_message(friend_message(window, tray), 0)

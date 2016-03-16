@@ -447,6 +447,29 @@ class Profile(Contact, Singleton):
     # Private messages
     # -----------------------------------------------------------------------------------------------------------------
 
+    def split_and_send(self, number, message_type, message):
+        """
+        Message splitting
+        :param number: friend's number
+        :param message_type: type of message
+        :param message: message text
+        """
+        while len(message) > TOX_MAX_MESSAGE_LENGTH:
+            size = TOX_MAX_MESSAGE_LENGTH * 4 / 5
+            last_part = message[size:]
+            if ' ' in last_part:
+                index = last_part.index(' ')
+            elif ',' in last_part:
+                index = last_part.index(',')
+            elif '.' in last_part:
+                index = last_part.index('.')
+            else:
+                index = TOX_MAX_MESSAGE_LENGTH - size
+            index += size
+            self._tox.friend_send_message(number, message_type, message[:index])
+            message = message[index:]
+        self._tox.friend_send_message(number, message_type, message)
+
     def new_message(self, friend_num, message_type, message):
         """
         Current user gets new message
@@ -482,8 +505,7 @@ class Profile(Contact, Singleton):
             else:
                 message_type = TOX_MESSAGE_TYPE['NORMAL']
             friend = self._friends[self._active_friend]
-            # TODO: add message splitting
-            self._tox.friend_send_message(friend.number, message_type, text.encode('utf-8'))
+            self.split_and_send(friend.number, message_type, text.encode('utf-8'))
             self.create_message_item(text, curr_time(), self._name, message_type)
             self._screen.messageEdit.clear()
             self._messages.scrollToBottom()
