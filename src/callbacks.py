@@ -152,7 +152,8 @@ def tox_file_recv(window, tray):
             print 'Avatar'
             invoke_in_main_thread(profile.incoming_avatar,
                                   friend_number,
-                                  file_number)
+                                  file_number,
+                                  size)
     return wrapped
 
 # -----------------------------------------------------------------------------------------------------------------
