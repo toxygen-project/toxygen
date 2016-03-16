@@ -136,7 +136,7 @@ def tox_file_recv(window, tray):
         settings = Settings.get_instance()
         if file_type == TOX_FILE_KIND['DATA']:
             print 'file'
-            file_name = file_name[:].decode('utf8')
+            file_name = file_name[:file_name_size].decode('utf8')
             invoke_in_main_thread(profile.incoming_file_transfer,
                                   friend_number,
                                   file_number,
@@ -156,6 +156,9 @@ def tox_file_recv(window, tray):
                                   size)
     return wrapped
 
+
+def file_recv_chunk(tox, friend_number, file_number, position, chunk, length, user_data):
+    Profile.get_instance().incoming_chunk(friend_number, file_number, position, chunk, length)
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
 # -----------------------------------------------------------------------------------------------------------------

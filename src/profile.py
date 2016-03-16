@@ -8,6 +8,7 @@ from ctypes import *
 from util import curr_time, log, Singleton, curr_directory, convert_time
 from tox_dns import tox_dns
 from history import *
+from file_transfers import *
 import time
 
 
@@ -696,13 +697,15 @@ class Profile(Contact, Singleton):
         self.status = None
         for friend in self._friends:
             friend.status = None
+        # TODO: FT reset
 
     # -----------------------------------------------------------------------------------------------------------------
     # File transfers support
     # -----------------------------------------------------------------------------------------------------------------
 
     def incoming_file_transfer(self, friend_number, file_number, size, file_name):
-        pass
+        rt = ReceiveTransfer(Settings.get_default_path() + file_name, self._tox, friend_number)
+        self._file_transfers.append(rt)
 
     def incoming_avatar(self, friend_number, file_number, size):
         """
@@ -722,6 +725,9 @@ class Profile(Contact, Singleton):
                 self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])  # ignore file
             else:
                 pass
+
+    def incoming_chunk(self, friend_number, file_number, position, chunk, length):
+        pass
 
     def send_avatar(self, friend_number):
         pass
