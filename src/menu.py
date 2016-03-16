@@ -242,7 +242,7 @@ class NetworkSettings(CenteredWidget):
         old_data = str(settings['ipv6_enabled']) + str(settings['udp_enabled']) + str(bool(settings['proxy_type']))
         new_data = str(self.ipv.isChecked()) + str(self.udp.isChecked()) + str(self.proxy.isChecked())
         changed = old_data != new_data
-        if self.proxy.isChecked() and (self.proxyip.text() != settings['proxy_host'] or self.proxyport.text() != settings['proxy_port']):
+        if self.proxy.isChecked() and (self.proxyip.text() != settings['proxy_host'] or self.proxyport.text() != unicode(settings['proxy_port'])):
             changed = True
         if changed:
             settings['ipv6_enabled'] = self.ipv.isChecked()

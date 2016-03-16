@@ -456,7 +456,7 @@ class Profile(Contact, Singleton):
         """
         while len(message) > TOX_MAX_MESSAGE_LENGTH:
             size = TOX_MAX_MESSAGE_LENGTH * 4 / 5
-            last_part = message[size:]
+            last_part = message[size:TOX_MAX_MESSAGE_LENGTH]
             if ' ' in last_part:
                 index = last_part.index(' ')
             elif ',' in last_part:
@@ -465,7 +465,7 @@ class Profile(Contact, Singleton):
                 index = last_part.index('.')
             else:
                 index = TOX_MAX_MESSAGE_LENGTH - size
-            index += size
+            index += size + 1
             self._tox.friend_send_message(number, message_type, message[:index])
             message = message[index:]
         self._tox.friend_send_message(number, message_type, message)
