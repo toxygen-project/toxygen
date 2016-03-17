@@ -706,6 +706,7 @@ class Profile(Contact, Singleton):
     def incoming_file_transfer(self, friend_number, file_number, size, file_name):
         rt = ReceiveTransfer(Settings.get_default_path() + file_name, self._tox, friend_number)
         self._file_transfers.append(rt)
+        self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
 
     def incoming_avatar(self, friend_number, file_number, size):
         """
@@ -726,8 +727,10 @@ class Profile(Contact, Singleton):
             else:
                 pass
 
-    def incoming_chunk(self, friend_number, file_number, position, chunk, length):
-        pass
+    def incoming_chunk(self, friend_number, file_number, position, data):
+        # TODO: better transfer filtering
+        transfer = filter(lambda x: x._friend_number == friend_number, self._file_transfers)[0]
+        transfer.write_chunk(position, data)
 
     def send_avatar(self, friend_number):
         pass

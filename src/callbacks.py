@@ -158,7 +158,7 @@ def tox_file_recv(window, tray):
 
 
 def file_recv_chunk(tox, friend_number, file_number, position, chunk, length, user_data):
-    Profile.get_instance().incoming_chunk(friend_number, file_number, position, chunk, length)
+    Profile.get_instance().incoming_chunk(friend_number, file_number, position, chunk if length else None)
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
 # -----------------------------------------------------------------------------------------------------------------
@@ -181,3 +181,4 @@ def init_callbacks(tox, window, tray):
     tox.callback_friend_request(friend_request, 0)
 
     tox.callback_file_recv(tox_file_recv(window, tray), 0)
+    tox.callback_file_recv_chunk(file_recv_chunk, 0)
