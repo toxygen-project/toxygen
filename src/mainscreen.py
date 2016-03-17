@@ -279,7 +279,7 @@ class MainWindow(QtGui.QMainWindow):
     def send_file(self):
         if self.profile.is_active_online():  # active friend exists and online
             name = QtGui.QFileDialog.getOpenFileName(self, 'Choose file')
-            if name:
+            if name[0]:
                 self.profile.send_file(name[0])
 
     # -----------------------------------------------------------------------------------------------------------------
