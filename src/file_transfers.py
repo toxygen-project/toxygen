@@ -33,6 +33,7 @@ class ReceiveTransfer(FileTransfer):
     def __init__(self, path, tox, friend_number):
         super(self.__class__, self).__init__(path, tox, friend_number)
         self._file = open(self._path, 'wb')
+        self._file.truncate(0)
 
     def write_chunk(self, position, data):
         if data is not None:
