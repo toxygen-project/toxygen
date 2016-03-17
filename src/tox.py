@@ -36,7 +36,7 @@ class LibToxCore(object):
 
 
 def string_to_bin(tox_id):
-    return c_char_p(tox_id.decode('hex'))
+    return c_char_p(tox_id.decode('hex')) if tox_id is not None else None
 
 
 def bin_to_string(raw_id, length):

@@ -2,6 +2,7 @@
 # TODO: add support of avatars
 from toxcore_enums_and_consts import TOX_FILE_KIND
 from os.path import basename, getsize
+from time import time
 
 
 TOX_FILE_TRANSFER_STATE = {
@@ -13,12 +14,13 @@ TOX_FILE_TRANSFER_STATE = {
 
 
 class FileTransfer(object):
-    def __init__(self, path, tox, friend_number, file_number = None):
+    def __init__(self, path, tox, friend_number, file_number=None):
         self._path = path
         self._tox = tox
         self._friend_number = friend_number
         self.state = TOX_FILE_TRANSFER_STATE['RUNNING']
         self._file_number = file_number
+        self._creation_time = time()
 
     def set_tox(self, tox):
         self._tox = tox
