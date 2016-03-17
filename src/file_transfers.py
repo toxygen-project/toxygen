@@ -35,13 +35,13 @@ class ReceiveTransfer(FileTransfer):
         self._file = open(self._path, 'wb')
 
     def write_chunk(self, position, data):
-        size = getsize(self._path)
-        if size < position + len(data):
-            self._file.write('\0' * (position + len(data) - size))
+        if data is not None:
+            size = getsize(self._path)
+            if size < position:
+                self._file.seek(0, 2)
+                self._file.write('\0' * (position - size))
             self._file.seek(position)
-            self._file.write(data)
+            self._file.write(''.join(chr(x) for x in data))
             self._file.flush()
         else:
-            self._file.seek(position)
-            self._file.write(data)
-            self._file.flush()
+            self._file.close()

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from ctypes import c_char_p, Structure, CDLL, c_bool, addressof, c_int, c_size_t, POINTER, c_uint16, c_void_p, c_uint64
-from ctypes import create_string_buffer, ArgumentError, CFUNCTYPE, c_uint32, sizeof
+from ctypes import create_string_buffer, ArgumentError, CFUNCTYPE, c_uint32, sizeof, c_uint8
 from platform import system
 from toxcore_enums_and_consts import *
 
@@ -1351,7 +1351,7 @@ class Tox(object):
         pointer (c_void_p) to user_data
         :param user_data: pointer (c_void_p) to user data
         """
-        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_uint64, c_char_p, c_size_t, c_void_p)
+        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_uint64, POINTER(c_uint8), c_size_t, c_void_p)
         self.file_recv_chunk_cb = c_callback(callback)
         self.libtoxcore.tox_callback_file_recv_chunk(self._tox_pointer, self.file_recv_chunk_cb, user_data)
 

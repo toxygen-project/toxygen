@@ -4,6 +4,7 @@ from settings import Settings
 from profile import Profile
 from toxcore_enums_and_consts import *
 from tox import bin_to_string
+from ctypes import c_char_p, cast, pointer
 
 
 class InvokeEvent(QtCore.QEvent):
@@ -158,7 +159,11 @@ def tox_file_recv(window, tray):
 
 
 def file_recv_chunk(tox, friend_number, file_number, position, chunk, length, user_data):
-    Profile.get_instance().incoming_chunk(friend_number, file_number, position, chunk if length else None)
+    print 'Len:', type(length)
+    print 'Chunk', type(chunk)
+    print 'Pos', type(position)
+    #chunk = cast(pointer(chunk), c_char_p)[0]
+    Profile.get_instance().incoming_chunk(friend_number, file_number, position, chunk[:length] if length else None)
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
 # -----------------------------------------------------------------------------------------------------------------
