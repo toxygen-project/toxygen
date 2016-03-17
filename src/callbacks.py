@@ -164,6 +164,19 @@ def file_recv_chunk(tox, friend_number, file_number, position, chunk, length, us
                           file_number,
                           position,
                           chunk[:length] if length else None)
+
+
+def file_chunk_request(tox, friend_number, file_number, position, size, user_data):
+    invoke_in_main_thread(Profile.get_instance().outgoing_chunck,
+                          friend_number,
+                          file_number,
+                          position,
+                          size)
+
+
+def file_recv_control(tox, friend_number, file_number, file_control, user_data):
+    pass
+
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
 # -----------------------------------------------------------------------------------------------------------------
@@ -187,3 +200,5 @@ def init_callbacks(tox, window, tray):
 
     tox.callback_file_recv(tox_file_recv(window, tray), 0)
     tox.callback_file_recv_chunk(file_recv_chunk, 0)
+    tox.callback_file_chunk_request(file_chunk_request, 0)
+    tox.callback_file_recv_control(file_recv_control, 0)

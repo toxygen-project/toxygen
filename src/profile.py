@@ -704,7 +704,7 @@ class Profile(Contact, Singleton):
     # -----------------------------------------------------------------------------------------------------------------
 
     def incoming_file_transfer(self, friend_number, file_number, size, file_name):
-        rt = ReceiveTransfer(Settings.get_default_path() + file_name, self._tox, friend_number)
+        rt = ReceiveTransfer(Settings.get_default_path() + file_name, self._tox, friend_number, file_number)
         self._file_transfers[(friend_number, file_number)] = rt
         self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
 
@@ -726,7 +726,7 @@ class Profile(Contact, Singleton):
                 self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])  # ignore file
             else:  # get new avatar
                 path = ProfileHelper.get_path() + '/avatars/{}.png'.format(friend.tox_id)
-                rt = ReceiveTransfer(path, self._tox, friend_number)
+                rt = ReceiveTransfer(path, self._tox, friend_number, file_number)
                 self._file_transfers[(friend_number, file_number)] = rt
                 self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
 
@@ -742,7 +742,13 @@ class Profile(Contact, Singleton):
         pass
 
     def send_file(self, path):
-        pass
+        friend_number = self.get_active_number()
+        st = SendTransfer(path, self._tox, friend_number)
+        self._file_transfers[(friend_number, st.get_file_number())] = st
+
+    def outgoing_chunk(self, friend_number, file_number, position, size):
+        transfer = self._file_transfers[(friend_number, file_number)]
+        transfer.send_chunk(position, size)
 
 
 def tox_factory(data=None, settings=None):

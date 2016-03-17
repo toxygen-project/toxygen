@@ -280,7 +280,7 @@ class MainWindow(QtGui.QMainWindow):
         if self.profile.is_active_online():  # active friend exists and online
             name = QtGui.QFileDialog.getOpenFileName(self, 'Choose file')
             if name:
-                self.profile.send_file(name)
+                self.profile.send_file(name[0])
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user open context menu in friends list
