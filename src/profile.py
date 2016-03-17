@@ -313,7 +313,7 @@ class Profile(Contact, Singleton):
         self._screen = screen
         self._messages = screen.messages
         self._tox = tox
-        self._file_transfers = []  # list of file transfers
+        self._file_transfers = {}  # dict of file transfers
         settings = Settings.get_instance()
         self._show_online = settings['show_online_friends']
         screen.online_contacts.setChecked(self._show_online)
@@ -705,7 +705,7 @@ class Profile(Contact, Singleton):
 
     def incoming_file_transfer(self, friend_number, file_number, size, file_name):
         rt = ReceiveTransfer(Settings.get_default_path() + file_name, self._tox, friend_number)
-        self._file_transfers.append(rt)
+        self._file_transfers[(friend_number, file_number)] = rt
         self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
 
     def incoming_avatar(self, friend_number, file_number, size):
@@ -724,13 +724,19 @@ class Profile(Contact, Singleton):
             new_avatar_hash = self._tox.file_get_file_id(friend_number, file_number)
             if hash == new_avatar_hash:  # avatar is the same
                 self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])  # ignore file
-            else:
-                pass
+            else:  # get new avatar
+                path = ProfileHelper.get_path() + '/avatars/{}.png'.format(friend.tox_id)
+                rt = ReceiveTransfer(path, self._tox, friend_number)
+                self._file_transfers[(friend_number, file_number)] = rt
+                self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
 
     def incoming_chunk(self, friend_number, file_number, position, data):
-        # TODO: better transfer filtering
-        transfer = filter(lambda x: x._friend_number == friend_number, self._file_transfers)[0]
+        transfer = self._file_transfers[(friend_number, file_number)]
         transfer.write_chunk(position, data)
+        if data is None:
+            del self._file_transfers[(friend_number, file_number)]
+            friend = self.get_friend_by_number(friend_number)
+            friend.load_avatar()
 
     def send_avatar(self, friend_number):
         pass
