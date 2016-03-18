@@ -705,9 +705,16 @@ class Profile(Contact, Singleton):
     # -----------------------------------------------------------------------------------------------------------------
 
     def incoming_file_transfer(self, friend_number, file_number, size, file_name):
-        rt = ReceiveTransfer(Settings.get_default_path() + file_name, self._tox, friend_number, file_number)
-        self._file_transfers[(friend_number, file_number)] = rt
-        self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
+        settings = Settings.get_instance()
+        friend = self.get_friend_by_number(friend_number)
+        if settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']:
+            path = settings['auto_accept_path'] or curr_directory()
+            rt = ReceiveTransfer(path + '/' + file_name, self._tox, friend_number, file_number)
+            self._file_transfers[(friend_number, file_number)] = rt
+            self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
+        else:
+            self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
+        # TODO: show info about incoming transfer
 
     def incoming_avatar(self, friend_number, file_number, size):
         """
@@ -747,6 +754,16 @@ class Profile(Contact, Singleton):
         transfer.send_chunk(position, size)
         if transfer.state:
             del self._file_transfers[(friend_number, file_number)]
+
+    def reset_avatar(self):
+        super(Profile, self).reset_avatar()
+        for friend in filter(lambda x: x.status is not None, self._friends):
+            self.send_avatar(friend.number)
+
+    def set_avatar(self, data):
+        super(Profile, self).set_avatar(data)
+        for friend in filter(lambda x: x.status is not None, self._friends):
+            self.send_avatar(friend.number)
 
 
 def tox_factory(data=None, settings=None):

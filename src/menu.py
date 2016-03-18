@@ -1,7 +1,7 @@
 from PySide import QtCore, QtGui
 from settings import Settings
 from profile import Profile, ProfileHelper
-from util import get_style
+from util import get_style, curr_directory
 
 
 class CenteredWidget(QtGui.QWidget):
@@ -174,11 +174,12 @@ class ProfileSettings(CenteredWidget):
 
     def export_profile(self):
         directory = QtGui.QFileDialog.getExistingDirectory() + '/'
-        ProfileHelper.export_profile(directory)
-        settings = Settings.get_instance()
-        settings.export(directory)
-        profile = Profile.get_instance()
-        profile.export_history(directory)
+        if directory != '/':
+            ProfileHelper.export_profile(directory)
+            settings = Settings.get_instance()
+            settings.export(directory)
+            profile = Profile.get_instance()
+            profile.export_history(directory)
 
     def closeEvent(self, event):
         profile = Profile.get_instance()
@@ -275,22 +276,30 @@ class PrivacySettings(CenteredWidget):
         self.fileautoaccept.setGeometry(QtCore.QRect(40, 60, 271, 22))
         self.fileautoaccept.setObjectName("fileautoaccept")
         self.typingNotifications = QtGui.QCheckBox(self)
-        self.typingNotifications.setGeometry(QtCore.QRect(40, 90, 350, 31))
-        self.typingNotifications.setBaseSize(QtCore.QSize(350, 200))
+        self.typingNotifications.setGeometry(QtCore.QRect(40, 90, 350, 30))
         self.typingNotifications.setObjectName("typingNotifications")
-
+        self.auto_path = QtGui.QLabel(self)
+        self.auto_path.setGeometry(QtCore.QRect(40, 120, 350, 30))
+        self.path = QtGui.QPlainTextEdit(self)
+        self.path.setGeometry(QtCore.QRect(10, 160, 330, 30))
+        self.change_path = QtGui.QPushButton(self)
+        self.change_path.setGeometry(QtCore.QRect(230, 120, 100, 30))
         self.retranslateUi()
         settings = Settings.get_instance()
         self.typingNotifications.setChecked(settings['typing_notifications'])
         self.fileautoaccept.setChecked(settings['allow_auto_accept'])
         self.saveHistory.setChecked(settings['save_history'])
+        self.path.setPlainText(settings['auto_accept_path'] or curr_directory())
+        self.change_path.clicked.connect(self.new_path)
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("privacySettings", "Privacy settings", None, QtGui.QApplication.UnicodeUTF8))
         self.saveHistory.setText(QtGui.QApplication.translate("privacySettings", "Save chat history", None, QtGui.QApplication.UnicodeUTF8))
-        self.fileautoaccept.setText(QtGui.QApplication.translate("privacySettings", "Allow file autoaccept", None, QtGui.QApplication.UnicodeUTF8))
+        self.fileautoaccept.setText(QtGui.QApplication.translate("privacySettings", "Allow file auto accept", None, QtGui.QApplication.UnicodeUTF8))
         self.typingNotifications.setText(QtGui.QApplication.translate("privacySettings", "Send typing notifications", None, QtGui.QApplication.UnicodeUTF8))
+        self.auto_path.setText(QtGui.QApplication.translate("privacySettings", "Auto accept default path:", None, QtGui.QApplication.UnicodeUTF8))
+        self.change_path.setText(QtGui.QApplication.translate("privacySettings", "Change", None, QtGui.QApplication.UnicodeUTF8))
 
     def closeEvent(self, event):
         settings = Settings.get_instance()
@@ -299,7 +308,13 @@ class PrivacySettings(CenteredWidget):
         if settings['save_history'] and not self.saveHistory.isChecked():  # clear history
             Profile.get_instance().clear_history()
         settings['save_history'] = self.saveHistory.isChecked()
+        settings['auto_accept_path'] = self.path.toPlainText()
         settings.save()
+
+    def new_path(self):
+        directory = QtGui.QFileDialog.getExistingDirectory() + '/'
+        if directory != '/':
+            self.path.setPlainText(directory)
 
 
 class NotificationsSettings(CenteredWidget):
