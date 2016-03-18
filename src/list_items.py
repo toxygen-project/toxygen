@@ -154,3 +154,39 @@ class StatusCircle(QtGui.QWidget):
             paint.setPen(color)
             paint.drawEllipse(center, rad_x + 3, rad_y + 3)
         paint.end()
+
+
+class FileTransferItem(QtGui.QListWidget):
+    def __init__(self, file_name, time, user, friend_number, file_number, parent=None):
+        QtGui.QListWidget.__init__(self, parent)
+        self.name = QtGui.QLabel(self)
+        self.name.setGeometry(QtCore.QRect(0, 2, 95, 20))
+        self.name.setTextFormat(QtCore.Qt.PlainText)
+        font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(11)
+        font.setBold(True)
+        self.name.setFont(font)
+        self.name.setObjectName("name")
+        self.name.setText(file_name)
+
+        self.time = QtGui.QLabel(self)
+        self.time.setGeometry(QtCore.QRect(500, 0, 50, 25))
+        font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(10)
+        font.setBold(False)
+        self.time.setFont(font)
+        self.time.setObjectName("time")
+        self.time.setText(time)
+
+        self.cancel = QtGui.QPushButton(self)
+        self.cancel.setGeometry(QtCore.QRect(100, 2, 200, 20))
+        self.cancel.setText("Cancel")
+        self.cancel.clicked.connect(lambda: self.click(friend_number, file_number))
+
+    def click(self, friend_number, file_number):
+        from profile import Profile
+        profile = Profile.get_instance()
+        profile.cancel_transfer(friend_number, file_number)
+        self.name.setText('Cancelled')

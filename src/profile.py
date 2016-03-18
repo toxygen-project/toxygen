@@ -1,4 +1,4 @@
-from list_items import MessageItem, ContactItem
+from list_items import MessageItem, ContactItem, FileTransferItem
 from PySide import QtCore, QtGui
 from tox import Tox
 import os
@@ -557,7 +557,7 @@ class Profile(Contact, Singleton):
         self._history.export(directory)
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Factories for friend and message items
+    # Factories for friend, message and file transfer items
     # -----------------------------------------------------------------------------------------------------------------
 
     def create_friend_item(self):
@@ -576,6 +576,14 @@ class Profile(Contact, Singleton):
         item = MessageItem(text, time, name, message_type, self._messages)
         elem = QtGui.QListWidgetItem(self._messages)
         elem.setSizeHint(QtCore.QSize(500, item.getHeight()))
+        self._messages.addItem(elem)
+        self._messages.setItemWidget(elem, item)
+        self._messages.repaint()
+
+    def create_file_transfer_item(self, file_name, friend_number, file_number):
+        item = FileTransferItem(file_name, curr_time(), '', friend_number, file_number)
+        elem = QtGui.QListWidgetItem(self._messages)
+        elem.setSizeHint(QtCore.QSize(500, 100))
         self._messages.addItem(elem)
         self._messages.setItemWidget(elem, item)
         self._messages.repaint()
@@ -713,8 +721,12 @@ class Profile(Contact, Singleton):
             self._file_transfers[(friend_number, file_number)] = rt
             self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
         else:
-            self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
+            self.create_file_transfer_item(file_name + ' ' + str(size), friend_number, file_number)
+            #self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
         # TODO: show info about incoming transfer
+
+    def cancel_transfer(self, friend_number, file_number):
+        self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
 
     def incoming_avatar(self, friend_number, file_number, size):
         """
