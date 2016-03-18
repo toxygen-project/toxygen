@@ -1,5 +1,3 @@
-# TODO: add support of file transfers
-# TODO: add support of avatars
 from toxcore_enums_and_consts import TOX_FILE_KIND, TOX_FILE_CONTROL
 from os.path import basename, getsize, exists
 from os import remove
@@ -58,9 +56,13 @@ class SendTransfer(FileTransfer):
             self._file = open(path, 'rb')
 
     def send_chunk(self, position, size):
-        self._file.seek(position)
-        data = self._file.read(size)
-        return self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
+        if size:
+            self._file.seek(position)
+            data = self._file.read(size)
+            return self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
+        else:
+            self._file.close()
+            self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
 
 
 class SendAvatar(SendTransfer):

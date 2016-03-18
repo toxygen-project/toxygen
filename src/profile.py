@@ -313,7 +313,7 @@ class Profile(Contact, Singleton):
         self._screen = screen
         self._messages = screen.messages
         self._tox = tox
-        self._file_transfers = {}  # dict of file transfers
+        self._file_transfers = {}  # dict of file transfers. key - tuple (friend_number, file_number)
         settings = Settings.get_instance()
         self._show_online = settings['show_online_friends']
         screen.online_contacts.setChecked(self._show_online)
@@ -533,11 +533,12 @@ class Profile(Contact, Singleton):
         Save history to db
         """
         print 'In save'
-        if Settings.get_instance()['save_history']:
-            for friend in self._friends:
-                messages = friend.get_corr_for_saving()
-                self._history.save_messages_to_db(friend.tox_id, messages)
-        del self._history
+        if hasattr(self, '_history'):
+            if Settings.get_instance()['save_history']:
+                for friend in self._friends:
+                    messages = friend.get_corr_for_saving()
+                    self._history.save_messages_to_db(friend.tox_id, messages)
+            del self._history
 
     def clear_history(self, num=None):
         if num is not None:
@@ -744,6 +745,8 @@ class Profile(Contact, Singleton):
     def outgoing_chunk(self, friend_number, file_number, position, size):
         transfer = self._file_transfers[(friend_number, file_number)]
         transfer.send_chunk(position, size)
+        if transfer.state:
+            del self._file_transfers[(friend_number, file_number)]
 
 
 def tox_factory(data=None, settings=None):
