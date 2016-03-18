@@ -148,7 +148,7 @@ class Contact(object):
         """
         Tries to load avatar of contact or uses default avatar
         """
-        avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
         if not os.path.isfile(avatar_path):  # load default image
             avatar_path = curr_directory() + '/images/avatar.png'
         pixmap = QtGui.QPixmap(QtCore.QSize(64, 64))
@@ -157,19 +157,19 @@ class Contact(object):
         self._widget.avatar_label.repaint()
 
     def reset_avatar(self):
-        avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
         if os.path.isfile(avatar_path):
             os.remove(avatar_path)
             self.load_avatar()
 
     def set_avatar(self, avatar):
-        avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
         with open(avatar_path, 'wb') as f:
             f.write(avatar)
         self.load_avatar()
 
     def get_avatar_hash(self):
-        avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
         if not os.path.isfile(avatar_path):  # load default image
             return 0
         with open(avatar_path, 'rb') as fl:
@@ -715,31 +715,26 @@ class Profile(Contact, Singleton):
         :param file_number: file number
         :param size: size of avatar or 0 (default avatar)
         """
-        friend = self.get_friend_by_number(friend_number)
-        if not size:
-            friend.reset_avatar()
-            self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
+        ra = ReceiveAvatar(self._tox, friend_number, file_number, size)
+        if ra.state != TOX_FILE_TRANSFER_STATE['CANCELED']:
+            self._file_transfers[(friend_number, file_number)] = ra
         else:
-            hash = friend.get_avatar_hash()
-            new_avatar_hash = self._tox.file_get_file_id(friend_number, file_number)
-            if hash == new_avatar_hash:  # avatar is the same
-                self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])  # ignore file
-            else:  # get new avatar
-                path = ProfileHelper.get_path() + '/avatars/{}.png'.format(friend.tox_id)
-                rt = ReceiveTransfer(path, self._tox, friend_number, file_number)
-                self._file_transfers[(friend_number, file_number)] = rt
-                self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
+            self.get_friend_by_number(friend_number).load_avatar()
 
     def incoming_chunk(self, friend_number, file_number, position, data):
         transfer = self._file_transfers[(friend_number, file_number)]
         transfer.write_chunk(position, data)
-        if data is None:
+        if transfer.state:
+            if type(transfer) is ReceiveAvatar:
+                self.get_friend_by_number(friend_number).load_avatar()
             del self._file_transfers[(friend_number, file_number)]
-            friend = self.get_friend_by_number(friend_number)
-            friend.load_avatar()
 
     def send_avatar(self, friend_number):
-        pass
+        avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        if not os.path.isfile(avatar_path):  # reset image
+            avatar_path = None
+        sa = SendAvatar(avatar_path, self._tox, friend_number)
+        self._file_transfers[(friend_number, sa.get_file_number())] = sa
 
     def send_file(self, path):
         friend_number = self.get_active_number()
