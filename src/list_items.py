@@ -1,5 +1,7 @@
 from toxcore_enums_and_consts import *
 from PySide import QtGui, QtCore
+import profile
+from util import curr_directory
 
 
 class MessageEdit(QtGui.QPlainTextEdit):
@@ -157,11 +159,13 @@ class StatusCircle(QtGui.QWidget):
 
 
 class FileTransferItem(QtGui.QListWidget):
-    # TODO: accept button
-    def __init__(self, file_name, time, user, friend_number, file_number, parent=None):
+    def __init__(self, file_name, size, time, user, friend_number, file_number, is_incoming_transfer, parent=None):
         QtGui.QListWidget.__init__(self, parent)
+        self.resize(QtCore.QSize(600, 50))
+        self.setStyleSheet('QListWidget { background-color: green; }')
+
         self.name = QtGui.QLabel(self)
-        self.name.setGeometry(QtCore.QRect(0, 2, 95, 20))
+        self.name.setGeometry(QtCore.QRect(0, 15, 95, 20))
         self.name.setTextFormat(QtCore.Qt.PlainText)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -169,28 +173,62 @@ class FileTransferItem(QtGui.QListWidget):
         font.setBold(True)
         self.name.setFont(font)
         self.name.setObjectName("name")
-        self.name.setText(file_name)
+        self.name.setText(user)
+        self.name.setStyleSheet('QLabel { color: black; }')
 
         self.time = QtGui.QLabel(self)
-        self.time.setGeometry(QtCore.QRect(500, 0, 50, 25))
-        font = QtGui.QFont()
-        font.setFamily("Times New Roman")
+        self.time.setGeometry(QtCore.QRect(550, 0, 50, 50))
         font.setPointSize(10)
         font.setBold(False)
         self.time.setFont(font)
         self.time.setObjectName("time")
         self.time.setText(time)
+        self.time.setStyleSheet('QLabel { color: black; }')
 
         self.cancel = QtGui.QPushButton(self)
-        self.cancel.setGeometry(QtCore.QRect(100, 2, 200, 20))
+        self.cancel.setGeometry(QtCore.QRect(500, 0, 50, 50))
         self.cancel.setText("Cancel")
-        self.cancel.clicked.connect(lambda: self.click(friend_number, file_number))
+        self.cancel.clicked.connect(lambda: self.cancel_transfer(friend_number, file_number))
 
-    def click(self, friend_number, file_number):
-        from profile import Profile
-        profile = Profile.get_instance()
-        profile.cancel_transfer(friend_number, file_number)
+        self.accept = QtGui.QPushButton(self)
+        self.accept.setGeometry(QtCore.QRect(450, 0, 50, 50))
+        self.accept.setText("Accept")
+        self.accept.clicked.connect(lambda: self.accept_transfer(friend_number, file_number))
+        self.accept.setVisible(is_incoming_transfer)
+
+        self.pb = QtGui.QProgressBar(self)
+        self.pb.setGeometry(QtCore.QRect(100, 15, 100, 20))
+        self.pb.setValue(0)
+
+        self.file_name = QtGui.QLabel(self)
+        self.file_name.setGeometry(QtCore.QRect(210, 0, 230, 50))
+        font.setPointSize(12)
+        self.file_name.setFont(font)
+        self.file_name.setObjectName("time")
+        size /= 1024
+        if not size:
+            size = '<1'
+        self.file_name.setText('{}KB {}'.format(size, file_name))
+        self.file_name.setStyleSheet('QLabel { color: black; }')
+        self.saved_name = file_name
+
+    def cancel_transfer(self, friend_number, file_number):
+        pr = profile.Profile.get_instance()
+        pr.cancel_transfer(friend_number, file_number)
         self.name.setText('Cancelled')
+        self.setStyleSheet('QListWidget { background-color: red; }')
+        self.cancel.setVisible(False)
+        self.accept.setVisible(False)
 
-    def update(self):
+    def accept_transfer(self, friend_number, file_number):
+        directory = QtGui.QFileDialog.getExistingDirectory()
+        if directory:
+            pr = profile.Profile.get_instance()
+            pr.accept_transfer(self, directory + '/' + self.saved_name, friend_number, file_number)
+            self.accept.setVisible(False)
+
+    @QtCore.Slot(str)
+    def update(self, data):
+        # TODO: add params - status and %
         self.name.setText('Finished')
+        print data

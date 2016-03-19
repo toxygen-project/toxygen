@@ -15,8 +15,11 @@ TOX_FILE_TRANSFER_STATE = {
 }
 
 
+class Signal(QtCore.QObject):
+    signal = QtCore.Signal(int)
+
+
 class FileTransfer(QtCore.QObject):
-    signal = QtCore.Signal()
 
     def __init__(self, path, tox, friend_number, file_number=None):
         QtCore.QObject.__init__(self)
@@ -26,18 +29,24 @@ class FileTransfer(QtCore.QObject):
         self.state = TOX_FILE_TRANSFER_STATE['RUNNING']
         self._file_number = file_number
         self._creation_time = time()
+        self._signal = Signal()
 
     def set_tox(self, tox):
         self._tox = tox
 
     def set_event_handler(self, handler):
-        self.signal.connect(handler)
+        self._signal.signal.connect(handler)
 
     def get_file_number(self):
         return self._file_number
 
     def get_friend_number(self):
         return self._friend_number
+
+    def cancel(self):
+        self.send_control(TOX_FILE_CONTROL['CANCEL'])
+        self._file.close()
+        self._signal.signal.emit(1)  # other signal params - status and %?
 
     def send_control(self, control):
         if self._tox.file_control(self._friend_number, self._file_number, control):
@@ -52,6 +61,7 @@ class FileTransfer(QtCore.QObject):
 
 
 class SendTransfer(FileTransfer):
+
     def __init__(self, path, tox, friend_number, kind=TOX_FILE_KIND['DATA'], file_id=None):
         super(SendTransfer, self).__init__(path, tox, friend_number)
         self._file_number = tox.file_send(friend_number,
@@ -70,10 +80,11 @@ class SendTransfer(FileTransfer):
         else:
             self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self.signal.emit()
+            self._signal.signal.emit(position)
 
 
 class SendAvatar(SendTransfer):
+
     def __init__(self, path, tox, friend_number):
         if path is None:
             super(SendAvatar, self).__init__(path, tox, friend_number, TOX_FILE_KIND['AVATAR'])
@@ -84,12 +95,16 @@ class SendAvatar(SendTransfer):
 
 
 class ReceiveTransfer(FileTransfer):
-    # TODO: remove file on cancel and close file
+
     def __init__(self, path, tox, friend_number, file_number):
         super(ReceiveTransfer, self).__init__(path, tox, friend_number, file_number)
         self._file = open(self._path, 'wb')
         self._file.truncate(0)
         self._size = 0
+
+    def cancel(self):
+        super(ReceiveTransfer, self).cancel()
+        remove(self._path)
 
     def write_chunk(self, position, data):
         if data is not None:
@@ -105,9 +120,11 @@ class ReceiveTransfer(FileTransfer):
         else:
             self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
+            self._signal.signal.emit(position)
 
 
 class ReceiveAvatar(ReceiveTransfer):
+
     def __init__(self, tox, friend_number, file_number, has_size=True):
         path = profile.ProfileHelper.get_path() + '/avatars/{}.png'.format(tox.friend_get_public_key(friend_number))
         super(ReceiveAvatar, self).__init__(path, tox, friend_number, file_number)
