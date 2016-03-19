@@ -587,6 +587,7 @@ class Profile(Contact, Singleton):
         self._messages.addItem(elem)
         self._messages.setItemWidget(elem, item)
         self._messages.repaint()
+        return item
 
     # -----------------------------------------------------------------------------------------------------------------
     # Work with friends (remove, set alias, get public key)
@@ -717,9 +718,7 @@ class Profile(Contact, Singleton):
         friend = self.get_friend_by_number(friend_number)
         if settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']:
             path = settings['auto_accept_path'] or curr_directory()
-            rt = ReceiveTransfer(path + '/' + file_name, self._tox, friend_number, file_number)
-            self._file_transfers[(friend_number, file_number)] = rt
-            self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
+            self.accept_transfer(path + '/' + file_name, friend_number, file_number)
         else:
             self.create_file_transfer_item(file_name + ' ' + str(size), friend_number, file_number)
             #self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
@@ -727,6 +726,14 @@ class Profile(Contact, Singleton):
 
     def cancel_transfer(self, friend_number, file_number):
         self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
+        if (friend_number, file_number) in self._file_transfers:
+            del self._file_transfers[(friend_number, file_number)]
+
+    def accept_transfer(self, path, friend_number, file_number):
+        rt = ReceiveTransfer(path + '/' + path, self._tox, friend_number, file_number)
+        self._file_transfers[(friend_number, file_number)] = rt
+        self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
+        # bind rt with widget
 
     def incoming_avatar(self, friend_number, file_number, size):
         """
@@ -760,6 +767,9 @@ class Profile(Contact, Singleton):
         friend_number = self.get_active_number()
         st = SendTransfer(path, self._tox, friend_number)
         self._file_transfers[(friend_number, st.get_file_number())] = st
+        item = self.create_file_transfer_item('Out file', friend_number, st.get_file_number())
+        st.set_event_handler(item.update)
+        # bind st with widget
 
     def outgoing_chunk(self, friend_number, file_number, position, size):
         transfer = self._file_transfers[(friend_number, file_number)]

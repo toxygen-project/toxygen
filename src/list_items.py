@@ -157,6 +157,7 @@ class StatusCircle(QtGui.QWidget):
 
 
 class FileTransferItem(QtGui.QListWidget):
+    # TODO: accept button
     def __init__(self, file_name, time, user, friend_number, file_number, parent=None):
         QtGui.QListWidget.__init__(self, parent)
         self.name = QtGui.QLabel(self)
@@ -190,3 +191,6 @@ class FileTransferItem(QtGui.QListWidget):
         profile = Profile.get_instance()
         profile.cancel_transfer(friend_number, file_number)
         self.name.setText('Cancelled')
+
+    def update(self):
+        self.name.setText('Finished')

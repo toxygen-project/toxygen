@@ -4,6 +4,7 @@ from os import remove
 from time import time
 from tox import Tox
 import profile
+from PySide import QtCore
 
 
 TOX_FILE_TRANSFER_STATE = {
@@ -14,8 +15,11 @@ TOX_FILE_TRANSFER_STATE = {
 }
 
 
-class FileTransfer(object):
+class FileTransfer(QtCore.QObject):
+    signal = QtCore.Signal()
+
     def __init__(self, path, tox, friend_number, file_number=None):
+        QtCore.QObject.__init__(self)
         self._path = path
         self._tox = tox
         self._friend_number = friend_number
@@ -25,6 +29,9 @@ class FileTransfer(object):
 
     def set_tox(self, tox):
         self._tox = tox
+
+    def set_event_handler(self, handler):
+        self.signal.connect(handler)
 
     def get_file_number(self):
         return self._file_number
@@ -51,7 +58,7 @@ class SendTransfer(FileTransfer):
                                           kind,
                                           getsize(path) if path else 0,
                                           file_id,
-                                          basename(path) if path else '')
+                                          basename(path).encode('utf-8') if path else '')
         if path is not None:
             self._file = open(path, 'rb')
 
@@ -63,6 +70,7 @@ class SendTransfer(FileTransfer):
         else:
             self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
+            self.signal.emit()
 
 
 class SendAvatar(SendTransfer):
@@ -76,6 +84,7 @@ class SendAvatar(SendTransfer):
 
 
 class ReceiveTransfer(FileTransfer):
+    # TODO: remove file on cancel and close file
     def __init__(self, path, tox, friend_number, file_number):
         super(ReceiveTransfer, self).__init__(path, tox, friend_number, file_number)
         self._file = open(self._path, 'wb')
