@@ -749,12 +749,13 @@ class Profile(Contact, Singleton):
             self.get_friend_by_number(friend_number).load_avatar()
 
     def incoming_chunk(self, friend_number, file_number, position, data):
-        transfer = self._file_transfers[(friend_number, file_number)]
-        transfer.write_chunk(position, data)
-        if transfer.state:
-            if type(transfer) is ReceiveAvatar:
-                self.get_friend_by_number(friend_number).load_avatar()
-            del self._file_transfers[(friend_number, file_number)]
+        if (friend_number, file_number) in self._file_transfers:
+            transfer = self._file_transfers[(friend_number, file_number)]
+            transfer.write_chunk(position, data)
+            if transfer.state:
+                if type(transfer) is ReceiveAvatar:
+                    self.get_friend_by_number(friend_number).load_avatar()
+                del self._file_transfers[(friend_number, file_number)]
 
     def send_avatar(self, friend_number):
         avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
@@ -767,14 +768,15 @@ class Profile(Contact, Singleton):
         friend_number = self.get_active_number()
         st = SendTransfer(path, self._tox, friend_number)
         self._file_transfers[(friend_number, st.get_file_number())] = st
-        item = self.create_file_transfer_item('Out file', friend_number, st.get_file_number(), False)
+        item = self.create_file_transfer_item(os.path.basename(path), os.path.getsize(path), friend_number, st.get_file_number(), False)
         st.set_event_handler(item.update)
 
     def outgoing_chunk(self, friend_number, file_number, position, size):
-        transfer = self._file_transfers[(friend_number, file_number)]
-        transfer.send_chunk(position, size)
-        if transfer.state:
-            del self._file_transfers[(friend_number, file_number)]
+        if (friend_number, file_number) in self._file_transfers:
+            transfer = self._file_transfers[(friend_number, file_number)]
+            transfer.send_chunk(position, size)
+            if transfer.state:
+                del self._file_transfers[(friend_number, file_number)]
 
     def reset_avatar(self):
         super(Profile, self).reset_avatar()

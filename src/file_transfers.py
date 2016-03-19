@@ -16,7 +16,7 @@ TOX_FILE_TRANSFER_STATE = {
 
 
 class Signal(QtCore.QObject):
-    signal = QtCore.Signal(int)
+    signal = QtCore.Signal(str)
 
 
 class FileTransfer(QtCore.QObject):
@@ -46,7 +46,7 @@ class FileTransfer(QtCore.QObject):
     def cancel(self):
         self.send_control(TOX_FILE_CONTROL['CANCEL'])
         self._file.close()
-        self._signal.signal.emit(1)  # other signal params - status and %?
+        self._signal.signal.emit('{} {}'.format(self.state, 0))
 
     def send_control(self, control):
         if self._tox.file_control(self._friend_number, self._file_number, control):
@@ -76,11 +76,12 @@ class SendTransfer(FileTransfer):
         if size:
             self._file.seek(position)
             data = self._file.read(size)
-            return self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
+            self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
+            self._signal.signal.emit('{} {}'.format(self.state, 0))
         else:
             self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self._signal.signal.emit(position)
+            self._signal.signal.emit('{} {}'.format(self.state, 100))
 
 
 class SendAvatar(SendTransfer):
@@ -117,10 +118,11 @@ class ReceiveTransfer(FileTransfer):
             self._file.flush()
             if position + len(data) > self._size:
                 self._size = position + len(data)
+            self._signal.signal.emit('{} {}'.format(self.state, 0))
         else:
             self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self._signal.signal.emit(position)
+            self._signal.signal.emit('{} {}'.format(self.state, 100))
 
 
 class ReceiveAvatar(ReceiveTransfer):

@@ -1,6 +1,7 @@
 from toxcore_enums_and_consts import *
 from PySide import QtGui, QtCore
 import profile
+from file_transfers import TOX_FILE_TRANSFER_STATE
 from util import curr_directory
 
 
@@ -215,10 +216,10 @@ class FileTransferItem(QtGui.QListWidget):
     def cancel_transfer(self, friend_number, file_number):
         pr = profile.Profile.get_instance()
         pr.cancel_transfer(friend_number, file_number)
-        self.name.setText('Cancelled')
         self.setStyleSheet('QListWidget { background-color: red; }')
         self.cancel.setVisible(False)
         self.accept.setVisible(False)
+        self.pb.setVisible(False)
 
     def accept_transfer(self, friend_number, file_number):
         directory = QtGui.QFileDialog.getExistingDirectory()
@@ -229,6 +230,14 @@ class FileTransferItem(QtGui.QListWidget):
 
     @QtCore.Slot(str)
     def update(self, data):
-        # TODO: add params - status and %
-        self.name.setText('Finished')
+        arr = data.split()
+        self.pb.setValue(int(arr[1]))
+        if int(arr[0]) == TOX_FILE_TRANSFER_STATE['CANCELED']:
+            self.setStyleSheet('QListWidget { background-color: red; }')
+            self.cancel.setVisible(False)
+            self.accept.setVisible(False)
+            self.pb.setVisible(False)
+        elif int(arr[0]) == TOX_FILE_TRANSFER_STATE['FINISHED']:
+            self.pb.setVisible(False)
+            self.cancel.setVisible(False)
         print data

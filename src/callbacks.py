@@ -177,6 +177,7 @@ def file_chunk_request(tox, friend_number, file_number, position, size, user_dat
 
 
 def file_recv_control(tox, friend_number, file_number, file_control, user_data):
+    # TODO: process
     pass
 
 # -----------------------------------------------------------------------------------------------------------------
