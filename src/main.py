@@ -22,6 +22,12 @@ class Toxygen(object):
         """
         app = QtGui.QApplication(sys.argv)
         app.setWindowIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
+
+        # application color scheme
+        with open(curr_directory() + '/styles/style.qss') as fl:
+            dark_style = fl.read()
+        app.setStyleSheet(dark_style)
+
         auto_profile = Settings.get_auto_profile()
         if not auto_profile:
             # show login screen if default profile not found
@@ -60,10 +66,6 @@ class Toxygen(object):
         self.tray = QtGui.QSystemTrayIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
         self.tray.setContextMenu(QtGui.QMenu())
         self.tray.show()
-        # application color scheme
-        with open(curr_directory() + '/styles/style.qss') as fl:
-            dark_style = fl.read()
-        app.setStyleSheet(dark_style)
 
         self.ms = MainWindow(self.tox, self.reset)
         self.ms.show()
