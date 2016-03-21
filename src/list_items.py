@@ -238,16 +238,15 @@ class FileTransferItem(QtGui.QListWidget):
             pr.accept_transfer(self, directory + '/' + self.saved_name, friend_number, file_number)
             self.accept.setVisible(False)
 
-    @QtCore.Slot(str)
-    def update(self, data):
-        arr = data.split()
-        self.pb.setValue(int(arr[1]))
-        if int(arr[0]) == TOX_FILE_TRANSFER_STATE['CANCELED']:
+    @QtCore.Slot(int, float)
+    def update(self, state, progress):
+        self.pb.setValue(int(progress * 100))
+        if state == TOX_FILE_TRANSFER_STATE['CANCELED']:
             self.setStyleSheet('QListWidget { background-color: red; }')
             self.cancel.setVisible(False)
             self.accept.setVisible(False)
             self.pb.setVisible(False)
-        elif int(arr[0]) == TOX_FILE_TRANSFER_STATE['FINISHED']:
+        elif state == TOX_FILE_TRANSFER_STATE['FINISHED']:
             self.pb.setVisible(False)
             self.cancel.setVisible(False)
 

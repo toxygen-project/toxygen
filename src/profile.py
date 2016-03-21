@@ -733,7 +733,7 @@ class Profile(Contact, Singleton):
         rt = ReceiveTransfer(path, self._tox, friend_number, file_number)
         self._file_transfers[(friend_number, file_number)] = rt
         self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
-        rt.set_event_handler(item.update)
+        rt.set_state_changed_handler(item.update)
 
     def incoming_avatar(self, friend_number, file_number, size):
         """
@@ -769,7 +769,7 @@ class Profile(Contact, Singleton):
         st = SendTransfer(path, self._tox, friend_number)
         self._file_transfers[(friend_number, st.get_file_number())] = st
         item = self.create_file_transfer_item(os.path.basename(path), os.path.getsize(path), friend_number, st.get_file_number(), False)
-        st.set_event_handler(item.update)
+        st.set_state_changed_handler(item.update)
 
     def outgoing_chunk(self, friend_number, file_number, position, size):
         if (friend_number, file_number) in self._file_transfers:
