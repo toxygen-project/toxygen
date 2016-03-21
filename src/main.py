@@ -7,6 +7,7 @@ from mainscreen import MainWindow
 from profile import ProfileHelper, tox_factory
 from callbacks import init_callbacks
 from util import curr_directory, get_style
+import styles.style
 
 
 class Toxygen(object):
@@ -59,6 +60,10 @@ class Toxygen(object):
         self.tray = QtGui.QSystemTrayIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
         self.tray.setContextMenu(QtGui.QMenu())
         self.tray.show()
+        # application color scheme
+        with open(curr_directory() + '/styles/style.qss') as fl:
+            dark_style = fl.read()
+        app.setStyleSheet(dark_style)
 
         self.ms = MainWindow(self.tox, self.reset)
         self.ms.show()
