@@ -46,6 +46,7 @@ class FileTransfer(QtCore.QObject):
     def cancel(self):
         self.send_control(TOX_FILE_CONTROL['CANCEL'])
         self._file.close()
+        print id(self._signal)
         self._signal.signal.emit('{} {}'.format(self.state, 0))
 
     def send_control(self, control):
@@ -76,8 +77,10 @@ class SendTransfer(FileTransfer):
         if size:
             self._file.seek(position)
             data = self._file.read(size)
+            # TODO: fix bug with wrong data for file_send_chunk
             self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
             self._signal.signal.emit('{} {}'.format(self.state, 0))
+            #print self._friend_number, self._file_number, position, data
         else:
             self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']

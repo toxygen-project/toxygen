@@ -719,9 +719,9 @@ class Profile(Contact, Singleton):
         friend = self.get_friend_by_number(friend_number)
         if settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']:
             path = settings['auto_accept_path'] or curr_directory()
-            self.accept_transfer(path + '/' + file_name, friend_number, file_number)
+            self.accept_transfer(path + '/' + file_name.decode('utf-8'), friend_number, file_number)
         else:
-            self.create_file_transfer_item(file_name, size, friend_number, file_number, True)
+            self.create_file_transfer_item(file_name.decode('utf-8'), size, friend_number, file_number, True)
 
     def cancel_transfer(self, friend_number, file_number):
         if (friend_number, file_number) in self._file_transfers:

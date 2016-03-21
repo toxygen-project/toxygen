@@ -209,7 +209,7 @@ class FileTransferItem(QtGui.QListWidget):
         size /= 1024
         if not size:
             size = '<1'
-        self.file_name.setText('{}KB {}'.format(size, file_name))
+        self.file_name.setText(u'{}KB {}'.format(size, file_name))
         self.file_name.setStyleSheet('QLabel { color: black; }')
         self.saved_name = file_name
 
