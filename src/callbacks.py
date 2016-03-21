@@ -169,7 +169,7 @@ def file_recv_chunk(tox, friend_number, file_number, position, chunk, length, us
 
 
 def file_chunk_request(tox, friend_number, file_number, position, size, user_data):
-    invoke_in_main_thread(Profile.get_instance().outgoing_chunk,
+    Profile.get_instance().outgoing_chunk(
                           friend_number,
                           file_number,
                           position,

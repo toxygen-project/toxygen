@@ -241,8 +241,6 @@ class FileTransferItem(QtGui.QListWidget):
     @QtCore.Slot(int, float)
     def update(self, state, progress):
         self.pb.setValue(int(progress * 100))
-        #self.pb.repaint()
-        print state, progress
         if state == TOX_FILE_TRANSFER_STATE['CANCELED']:
             self.setStyleSheet('QListWidget { background-color: red; }')
             self.cancel.setVisible(False)

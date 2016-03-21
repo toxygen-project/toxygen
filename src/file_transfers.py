@@ -79,10 +79,7 @@ class SendTransfer(FileTransfer):
         if size:
             self._file.seek(position)
             data = self._file.read(size)
-            try:
-                self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
-            except:
-                print self._friend_number, self._file_number, position, data
+            self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
             self._done += size
             self._state_changed.signal.emit(self.state, self._done / self._size)
         else:
