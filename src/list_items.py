@@ -188,12 +188,18 @@ class FileTransferItem(QtGui.QListWidget):
 
         self.cancel = QtGui.QPushButton(self)
         self.cancel.setGeometry(QtCore.QRect(500, 0, 50, 50))
-        self.cancel.setText("Cancel")
+        pixmap = QtGui.QPixmap(curr_directory() + '/images/decline.png')
+        icon = QtGui.QIcon(pixmap)
+        self.cancel.setIcon(icon)
+        self.cancel.setIconSize(QtCore.QSize(50, 50))
         self.cancel.clicked.connect(lambda: self.cancel_transfer(friend_number, file_number))
 
         self.accept = QtGui.QPushButton(self)
         self.accept.setGeometry(QtCore.QRect(450, 0, 50, 50))
-        self.accept.setText("Accept")
+        pixmap = QtGui.QPixmap(curr_directory() + '/images/accept.png')
+        icon = QtGui.QIcon(pixmap)
+        self.accept.setIcon(icon)
+        self.accept.setIconSize(QtCore.QSize(50, 50))
         self.accept.clicked.connect(lambda: self.accept_transfer(friend_number, file_number))
         self.accept.setVisible(is_incoming_transfer)
 
