@@ -161,15 +161,11 @@ def tox_file_recv(window, tray):
 
 
 def file_recv_chunk(tox, friend_number, file_number, position, chunk, length, user_data):
-    invoke_in_main_thread(Profile.get_instance().incoming_chunk,
-                          friend_number,
-                          file_number,
-                          position,
-                          chunk[:length] if length else None)
+    Profile.get_instance().incoming_chunk(friend_number, file_number, position, chunk[:length] if length else None)
 
 
 def file_chunk_request(tox, friend_number, file_number, position, size, user_data):
-    invoke_in_main_thread(Profile.get_instance().outgoing_chunk,
+    Profile.get_instance().outgoing_chunk(
                           friend_number,
                           file_number,
                           position,

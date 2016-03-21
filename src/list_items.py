@@ -206,10 +206,14 @@ class FileTransferItem(QtGui.QListWidget):
         font.setPointSize(12)
         self.file_name.setFont(font)
         self.file_name.setObjectName("time")
-        size /= 1024
-        if not size:
-            size = '<1'
-        self.file_name.setText(u'{}KB {}'.format(size, file_name))
+        file_size = size / 1024
+        if not file_size:
+            file_size = '<1KB'
+        elif file_size >= 1024:
+            file_size = '{}MB'.format(file_size / 1024)
+        else:
+            file_size = '{}KB'.format(file_size)
+        self.file_name.setText(u'{} {}'.format(file_size, file_name))
         self.file_name.setStyleSheet('QLabel { color: black; }')
         self.saved_name = file_name
 
@@ -240,4 +244,4 @@ class FileTransferItem(QtGui.QListWidget):
         elif int(arr[0]) == TOX_FILE_TRANSFER_STATE['FINISHED']:
             self.pb.setVisible(False)
             self.cancel.setVisible(False)
-        print data
+
