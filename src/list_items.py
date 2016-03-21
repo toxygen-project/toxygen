@@ -200,7 +200,7 @@ class FileTransferItem(QtGui.QListWidget):
         icon = QtGui.QIcon(pixmap)
         self.accept.setIcon(icon)
         self.accept.setIconSize(QtCore.QSize(50, 50))
-        self.accept.clicked.connect(lambda: self.accept_transfer(friend_number, file_number))
+        self.accept.clicked.connect(lambda: self.accept_transfer(friend_number, file_number, size))
         self.accept.setVisible(is_incoming_transfer)
 
         self.pb = QtGui.QProgressBar(self)
@@ -231,16 +231,18 @@ class FileTransferItem(QtGui.QListWidget):
         self.accept.setVisible(False)
         self.pb.setVisible(False)
 
-    def accept_transfer(self, friend_number, file_number):
+    def accept_transfer(self, friend_number, file_number, size):
         directory = QtGui.QFileDialog.getExistingDirectory()
         if directory:
             pr = profile.Profile.get_instance()
-            pr.accept_transfer(self, directory + '/' + self.saved_name, friend_number, file_number)
+            pr.accept_transfer(self, directory + '/' + self.saved_name, friend_number, file_number, size)
             self.accept.setVisible(False)
 
     @QtCore.Slot(int, float)
     def update(self, state, progress):
         self.pb.setValue(int(progress * 100))
+        #self.pb.repaint()
+        print state, progress
         if state == TOX_FILE_TRANSFER_STATE['CANCELED']:
             self.setStyleSheet('QListWidget { background-color: red; }')
             self.cancel.setVisible(False)

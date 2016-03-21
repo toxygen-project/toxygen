@@ -29,7 +29,7 @@ class FileTransfer(QtCore.QObject):
         self.state = TOX_FILE_TRANSFER_STATE['RUNNING']
         self._file_number = file_number
         self._creation_time = time()
-        self._size = size
+        self._size = float(size)
         self._done = 0
         self._state_changed = StateSignal()
 
@@ -53,7 +53,7 @@ class FileTransfer(QtCore.QObject):
     def send_control(self, control):
         if self._tox.file_control(self._friend_number, self._file_number, control):
             self.state = control
-            self._state_changed.signal.emit(self.state, self._done / self._size)
+            self._state_changed.signal.emit(self.state, self._done / self._size if self._size else 0)
 
     def get_file_id(self):
         return self._tox.file_get_file_id(self._friend_number, self._file_number)
@@ -79,13 +79,16 @@ class SendTransfer(FileTransfer):
         if size:
             self._file.seek(position)
             data = self._file.read(size)
-            self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
+            try:
+                self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
+            except:
+                print self._friend_number, self._file_number, position, data
             self._done += size
             self._state_changed.signal.emit(self.state, self._done / self._size)
         else:
             self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self._state_changed.signal.emit(self.state, self._done / self._size)
+            self._state_changed.signal.emit(self.state, 1)
 
 
 class SendAvatar(SendTransfer):
@@ -115,7 +118,7 @@ class ReceiveTransfer(FileTransfer):
         if data is None:
             self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self._state_changed.signal.emit(self.state, self._done / self._size)
+            self._state_changed.signal.emit(self.state, self._done / self._size if self._size else 0)
         else:
             data = ''.join(chr(x) for x in data)
             if self._file_size < position:
@@ -124,9 +127,10 @@ class ReceiveTransfer(FileTransfer):
             self._file.seek(position)
             self._file.write(data)
             self._file.flush()
-            if position + len(data) > self._file_size:
-                self._file_size = position + len(data)
-            self._done += len(data)
+            l = len(data)
+            if position + l > self._file_size:
+                self._file_size = position + l
+            self._done += l
             self._state_changed.signal.emit(self.state, self._done / self._size)
 
 

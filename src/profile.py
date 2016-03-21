@@ -729,8 +729,8 @@ class Profile(Contact, Singleton):
             tr.cancel()
             del self._file_transfers[(friend_number, file_number)]
 
-    def accept_transfer(self, item, path, friend_number, file_number):
-        rt = ReceiveTransfer(path, self._tox, friend_number, file_number)
+    def accept_transfer(self, item, path, friend_number, file_number, size):
+        rt = ReceiveTransfer(path, self._tox, friend_number, size, file_number)
         self._file_transfers[(friend_number, file_number)] = rt
         self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
         rt.set_state_changed_handler(item.update)
@@ -742,7 +742,7 @@ class Profile(Contact, Singleton):
         :param file_number: file number
         :param size: size of avatar or 0 (default avatar)
         """
-        ra = ReceiveAvatar(self._tox, friend_number, file_number, size)
+        ra = ReceiveAvatar(self._tox, friend_number, size, file_number)
         if ra.state != TOX_FILE_TRANSFER_STATE['CANCELED']:
             self._file_transfers[(friend_number, file_number)] = ra
         else:
