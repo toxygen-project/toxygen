@@ -51,7 +51,7 @@ class LoginScreen(QtGui.QWidget):
         self.load_profile.raise_()
         self.new_name.raise_()
         self.new_profile.raise_()
-        self.toxygen.setGeometry(QtCore.QRect(160, 10, 81, 21))
+        self.toxygen.setGeometry(QtCore.QRect(160, 10, 90, 21))
         font = QtGui.QFont()
         font.setFamily("Impact")
         font.setPointSize(16)

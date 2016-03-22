@@ -84,8 +84,15 @@ class Contact(object):
         """
         self._name, self._status_message = name, status_message
         self._status, self._widget = None, widget
-        widget.name.setText(name)
-        widget.status_message.setText(status_message)
+        if type(self) is Profile:
+            self._widget.name.setText(name if len(name) <= 14 else name[:11] + '...')
+        else:
+            self._widget.name.setText(name if len(name) <= 20 else name[:17] + '...')
+        if type(self) is Profile:
+            text = self._status_message if len(self._status_message) <= 20 else self._status_message[:17] + '...'
+        else:
+            text = self._status_message if len(self._status_message) <= 30 else self._status_message[:27] + '...'
+        self._widget.status_message.setText(text)
         self._tox_id = tox_id
         self.load_avatar()
 
@@ -98,7 +105,10 @@ class Contact(object):
 
     def set_name(self, value):
         self._name = value.decode('utf-8')
-        self._widget.name.setText(self._name)
+        if type(self) is Profile:
+            self._widget.name.setText(self._name if len(self._name) <= 14 else self._name[:11] + '...')
+        else:
+            self._widget.name.setText(self._name if len(self._name) <= 20 else self._name[:17] + '...')
         self._widget.name.repaint()
 
     name = property(get_name, set_name)
@@ -112,7 +122,11 @@ class Contact(object):
 
     def set_status_message(self, value):
         self._status_message = value.decode('utf-8')
-        self._widget.status_message.setText(self._status_message)
+        if type(self) is Profile:
+            text = self._status_message if len(self._status_message) <= 20 else self._status_message[:17] + '...'
+        else:
+            text = self._status_message if len(self._status_message) <= 30 else self._status_message[:27] + '...'
+        self._widget.status_message.setText(text)
         self._widget.status_message.repaint()
 
     status_message = property(get_status_message, set_status_message)
@@ -590,7 +604,7 @@ class Profile(Contact, Singleton):
                     aliases.append((friend.tox_id, text))
                 friend.set_alias(text)
             else:  # use default name
-                friend.name = self._tox.friend_get_name(friend.number)
+                friend.name = self._tox.friend_get_name(friend.number).encode('utf-8')
                 friend.set_alias('')
                 try:
                     index = map(lambda x: x[0], aliases).index(friend.tox_id)

@@ -49,7 +49,7 @@ class MessageItem(QtGui.QListWidget):
         font.setBold(True)
         self.name.setFont(font)
         self.name.setObjectName("name")
-        self.name.setText(user)
+        self.name.setText(user if len(user) <= 14 else user[:11] + '...')
 
         self.time = QtGui.QLabel(self)
         self.time.setGeometry(QtCore.QRect(parent.width() - 50, 0, 50, 25))
