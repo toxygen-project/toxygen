@@ -211,9 +211,9 @@ class MainWindow(QtGui.QMainWindow):
         self.messages.setGeometry(0, 0, 600, 250)
 
     def initUI(self, tox):
-        self.setMinimumSize(900, 520)
-        self.setMaximumSize(900, 520)
-        self.setGeometry(400, 400, 900, 520)
+        self.setMinimumSize(920, 520)
+        self.setMaximumSize(920, 520)
+        self.setGeometry(400, 400, 920, 520)
         self.setWindowTitle('Toxygen')
         main = QtGui.QWidget()
         grid = QtGui.QGridLayout()
@@ -267,7 +267,7 @@ class MainWindow(QtGui.QMainWindow):
         self.a_c = AddContact()
         self.a_c.show()
 
-    def profile_settings(self, *args):
+    def profile_settings(self):
         self.p_s = ProfileSettings()
         self.p_s.show()
 
@@ -358,7 +358,6 @@ class MainWindow(QtGui.QMainWindow):
     # -----------------------------------------------------------------------------------------------------------------
 
     def friend_click(self, index):
-        print 'row:', index.row()
         num = index.row()
         self.profile.set_active(num)
 
