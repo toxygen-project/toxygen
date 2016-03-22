@@ -160,7 +160,7 @@ class StatusCircle(QtGui.QWidget):
 
 
 class FileTransferItem(QtGui.QListWidget):
-    def __init__(self, file_name, size, time, user, friend_number, file_number, is_incoming_transfer, parent=None):
+    def __init__(self, file_name, size, time, user, friend_number, file_number, show_accept, parent=None):
         QtGui.QListWidget.__init__(self, parent)
         self.resize(QtCore.QSize(600, 50))
         self.setStyleSheet('QListWidget { background-color: green; }')
@@ -201,7 +201,7 @@ class FileTransferItem(QtGui.QListWidget):
         self.accept.setIcon(icon)
         self.accept.setIconSize(QtCore.QSize(50, 50))
         self.accept.clicked.connect(lambda: self.accept_transfer(friend_number, file_number, size))
-        self.accept.setVisible(is_incoming_transfer)
+        self.accept.setVisible(show_accept)
 
         self.pb = QtGui.QProgressBar(self)
         self.pb.setGeometry(QtCore.QRect(100, 15, 100, 20))

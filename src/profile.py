@@ -493,7 +493,7 @@ class Profile(Contact, Singleton):
             self._messages.scrollToBottom()
             self._friends[self._active_friend].append_message((message.decode('utf-8'),
                                                                MESSAGE_OWNER['FRIEND'],
-                                                               time.time(),
+                                                               int(time.time()),
                                                                message_type))
         else:
             friend = filter(lambda x: x.number == friend_num, self._friends)[0]
@@ -580,9 +580,9 @@ class Profile(Contact, Singleton):
         self._messages.setItemWidget(elem, item)
         self._messages.repaint()
 
-    def create_file_transfer_item(self, file_name, size, friend_number, file_number, is_incoming_transfer):
+    def create_file_transfer_item(self, file_name, size, friend_number, file_number, show_accept):
         friend = self.get_friend_by_number(friend_number)
-        item = FileTransferItem(file_name, size, curr_time(), friend.name, friend_number, file_number, is_incoming_transfer)
+        item = FileTransferItem(file_name, size, curr_time(), friend.name, friend_number, file_number, show_accept)
         elem = QtGui.QListWidgetItem(self._messages)
         elem.setSizeHint(QtCore.QSize(600, 50))
         self._messages.addItem(elem)
@@ -720,8 +720,10 @@ class Profile(Contact, Singleton):
         if settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']:
             path = settings['auto_accept_path'] or curr_directory()
             self.accept_transfer(path + '/' + file_name.decode('utf-8'), friend_number, file_number)
+            item = self.create_file_transfer_item(file_name.decode('utf-8'), size, friend_number, file_number, False)
         else:
-            self.create_file_transfer_item(file_name.decode('utf-8'), size, friend_number, file_number, True)
+            item = self.create_file_transfer_item(file_name.decode('utf-8'), size, friend_number, file_number, True)
+        friend.append_file_transfer((item, MESSAGE_OWNER['FRIEND'], int(time.time()), 2))
 
     def cancel_transfer(self, friend_number, file_number):
         if (friend_number, file_number) in self._file_transfers:
