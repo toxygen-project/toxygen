@@ -174,7 +174,7 @@ class FileTransferItem(QtGui.QListWidget):
         font.setBold(True)
         self.name.setFont(font)
         self.name.setObjectName("name")
-        self.name.setText(user)
+        self.name.setText(user if len(user) <= 14 else user[:11] + '...')
         self.name.setStyleSheet('QLabel { color: black; }')
 
         self.time = QtGui.QLabel(self)
@@ -219,7 +219,8 @@ class FileTransferItem(QtGui.QListWidget):
             file_size = '{}MB'.format(file_size / 1024)
         else:
             file_size = '{}KB'.format(file_size)
-        self.file_name.setText(u'{} {}'.format(file_size, file_name))
+        file_data = u'{} {}'.format(file_size, file_name)
+        self.file_name.setText(file_data if len(file_data) <= 27 else file_data[:24] + '...')
         self.file_name.setStyleSheet('QLabel { color: black; }')
         self.saved_name = file_name
 
