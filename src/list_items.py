@@ -25,15 +25,12 @@ class MessageEdit(QtGui.QPlainTextEdit):
                 block = self.document().findBlockByLineNumber(elem)
                 line_width = fm.width(block.text())
                 print 'Width: ', line_width
-                print 'Parent width', parent.width()
-                lines += line_width // width + 1
+                lines += line_width / float(width) + 1
         except:
             print 'updateSize failed'
         print 'lines ', lines
-        if self.document().blockCount() == 1:
-            lines += 1
-        size = lines * 21
-        self.setFixedHeight(max(size, 30))
+        size = int(lines + 0.5) * 21
+        self.setFixedHeight(max(size, 25))
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
 
 
@@ -70,11 +67,6 @@ class MessageItem(QtGui.QListWidget):
         print 'self.h ', self.h
         self.setFixedHeight(self.getHeight())
 
-        self.message.setFrameShape(QtGui.QFrame.NoFrame)
-        self.time.setFrameShape(QtGui.QFrame.NoFrame)
-        self.name.setFrameShape(QtGui.QFrame.NoFrame)
-        self.setFrameShape(QtGui.QFrame.NoFrame)
-
         if message_type == TOX_MESSAGE_TYPE['ACTION']:
             self.name.setStyleSheet("QLabel { color: #4169E1; }")
             self.message.setStyleSheet("QPlainTextEdit { color: #4169E1; }")
@@ -85,7 +77,7 @@ class MessageItem(QtGui.QListWidget):
                 self.message.setStyleSheet("QPlainTextEdit { color: red; }")
 
     def getHeight(self):
-        return max(self.h, 30)
+        return max(self.h, 25)
 
 
 class ContactItem(QtGui.QListWidget):
@@ -114,9 +106,6 @@ class ContactItem(QtGui.QListWidget):
         self.status_message.setObjectName("status_message")
         self.connection_status = StatusCircle(self)
         self.connection_status.setGeometry(QtCore.QRect(218, 5, 32, 32))
-        # self.connection_status.setMinimumSize(QtCore.QSize(32, 32))
-        # self.connection_status.setMaximumSize(QtCore.QSize(32, 32))
-        # self.connection_status.setBaseSize(QtCore.QSize(32, 32))
         self.connection_status.setObjectName("connection_status")
 
 
@@ -191,7 +180,7 @@ class FileTransferItem(QtGui.QListWidget):
         pixmap = QtGui.QPixmap(curr_directory() + '/images/decline.png')
         icon = QtGui.QIcon(pixmap)
         self.cancel.setIcon(icon)
-        self.cancel.setIconSize(QtCore.QSize(50, 50))
+        self.cancel.setIconSize(QtCore.QSize(30, 30))
         self.cancel.clicked.connect(lambda: self.cancel_transfer(friend_number, file_number))
 
         self.accept = QtGui.QPushButton(self)
@@ -199,7 +188,7 @@ class FileTransferItem(QtGui.QListWidget):
         pixmap = QtGui.QPixmap(curr_directory() + '/images/accept.png')
         icon = QtGui.QIcon(pixmap)
         self.accept.setIcon(icon)
-        self.accept.setIconSize(QtCore.QSize(50, 50))
+        self.accept.setIconSize(QtCore.QSize(30, 30))
         self.accept.clicked.connect(lambda: self.accept_transfer(friend_number, file_number, size))
         self.accept.setVisible(show_accept)
 

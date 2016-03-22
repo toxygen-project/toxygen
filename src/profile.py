@@ -548,11 +548,12 @@ class Profile(Contact, Singleton):
         """
         Save history to db
         """
-        print 'In save'
         if hasattr(self, '_history'):
             if Settings.get_instance()['save_history']:
                 for friend in self._friends:
                     messages = friend.get_corr_for_saving()
+                    if not self._history.friend_exists_in_db(friend.tox_id):
+                        self._history.add_friend_to_db(friend.tox_id)
                     self._history.save_messages_to_db(friend.tox_id, messages)
             del self._history
 
@@ -561,13 +562,13 @@ class Profile(Contact, Singleton):
             friend = self._friends[num]
             friend.clear_corr()
             self._history.delete_messages(friend.tox_id)
+            self._history.delete_friend_from_db(friend.tox_id)
         else:  # clear all history
-            for friend in self._friends:
-                friend.clear_corr()
-                self._history.delete_messages(friend.tox_id)
-                self._history.delete_friend_from_db(friend.tox_id)
+            for number in xrange(len(self._friends)):
+                self.clear_history(number)
         if num is None or num == self.get_active_number():
             self._messages.clear()
+            self._messages.repaint()
 
     def export_history(self, directory):
         self._history.export(directory)
@@ -745,8 +746,6 @@ class Profile(Contact, Singleton):
             tr = self._file_transfers[(friend_number, file_number)]
             tr.cancel()
             del self._file_transfers[(friend_number, file_number)]
-        else:
-            self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
 
     def accept_transfer(self, item, path, friend_number, file_number, size):
         rt = ReceiveTransfer(path, self._tox, friend_number, size, file_number)
