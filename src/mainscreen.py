@@ -102,6 +102,7 @@ class MainWindow(QtGui.QMainWindow):
         self.sendMessageButton.setGeometry(QtCore.QRect(550, 10, 60, 110))
         self.sendMessageButton.setObjectName("sendMessageButton")
         self.sendMessageButton.clicked.connect(self.send_message)
+
         pixmap = QtGui.QPixmap(curr_directory() + '/images/send.png')
         icon = QtGui.QIcon(pixmap)
         self.sendMessageButton.setIcon(icon)
@@ -114,6 +115,9 @@ class MainWindow(QtGui.QMainWindow):
         icon = QtGui.QIcon(pixmap)
         self.screenshotButton.setIcon(icon)
         self.screenshotButton.setIconSize(QtCore.QSize(90, 40))
+
+        self.fileTransferButton.clicked.connect(self.send_file)
+        self.screenshotButton.clicked.connect(self.send_screenshot)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def setup_left_bottom(self, Form):
@@ -277,12 +281,23 @@ class MainWindow(QtGui.QMainWindow):
         self.int_s.show()
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Messages
+    # Messages and file transfers
     # -----------------------------------------------------------------------------------------------------------------
 
     def send_message(self):
         text = self.messageEdit.toPlainText()
         self.profile.send_message(text)
+
+    def send_file(self):
+        if self.profile.is_active_online():  # active friend exists and online
+            name = QtGui.QFileDialog.getOpenFileName(self, 'Choose file')
+            if name[0]:
+                self.profile.send_file(name[0])
+
+    def send_screenshot(self):
+        # TODO: add screenshots support
+        if self.profile.is_active_online():  # active friend exists and online
+            pass
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user open context menu in friends list
@@ -290,37 +305,50 @@ class MainWindow(QtGui.QMainWindow):
 
     def friend_right_click(self, pos):
         item = self.friends_list.itemAt(pos)
+        num = self.friends_list.indexFromItem(item).row()
+        friend = Profile.get_instance().get_friend_by_number(num)
+        settings = Settings.get_instance()
+        allowed = friend.tox_id in settings['auto_accept_from_friends']
+        auto = 'Disallow auto accept' if allowed else 'Allow auto accept'
         if item is not None:
             self.listMenu = QtGui.QMenu()
             set_alias_item = self.listMenu.addAction('Set alias')
             clear_history_item = self.listMenu.addAction('Clear history')
             copy_key_item = self.listMenu.addAction('Copy public key')
+            auto_accept_item = self.listMenu.addAction(auto)
             remove_item = self.listMenu.addAction('Remove friend')
-            self.connect(set_alias_item, QtCore.SIGNAL("triggered()"), lambda: self.set_alias(item))
-            self.connect(remove_item, QtCore.SIGNAL("triggered()"), lambda: self.remove_friend(item))
-            self.connect(copy_key_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_friend_key(item))
-            self.connect(clear_history_item, QtCore.SIGNAL("triggered()"), lambda: self.clear_history(item))
+            self.connect(set_alias_item, QtCore.SIGNAL("triggered()"), lambda: self.set_alias(num))
+            self.connect(remove_item, QtCore.SIGNAL("triggered()"), lambda: self.remove_friend(num))
+            self.connect(copy_key_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_friend_key(num))
+            self.connect(clear_history_item, QtCore.SIGNAL("triggered()"), lambda: self.clear_history(num))
+            self.connect(auto_accept_item, QtCore.SIGNAL("triggered()"), lambda: self.auto_accept(num, not allowed))
             parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
             self.listMenu.move(parent_position + pos)
             self.listMenu.show()
 
-    def set_alias(self, item):
-        num = self.friends_list.indexFromItem(item).row()
+    def set_alias(self, num):
         self.profile.set_alias(num)
 
-    def remove_friend(self, item):
-        num = self.friends_list.indexFromItem(item).row()
+    def remove_friend(self, num):
         self.profile.delete_friend(num)
 
-    def copy_friend_key(self, item):
-        num = self.friends_list.indexFromItem(item).row()
+    def copy_friend_key(self, num):
         tox_id = self.profile.friend_public_key(num)
         clipboard = QtGui.QApplication.clipboard()
         clipboard.setText(tox_id)
 
-    def clear_history(self, item):
-        num = self.friends_list.indexFromItem(item).row()
+    def clear_history(self, num):
         self.profile.clear_history(num)
+
+    def auto_accept(self, num, value):
+        settings = Settings.get_instance()
+        tox_id = self.profile.friend_public_key(num)
+        if value:
+            settings['auto_accept_from_friends'].append(tox_id)
+        else:
+            index = settings['auto_accept_from_friends'].index(tox_id)
+            del settings['auto_accept_from_friends'][index]
+        settings.save()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click somewhere else

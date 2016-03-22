@@ -1,4 +1,4 @@
-from list_items import MessageItem, ContactItem
+from list_items import MessageItem, ContactItem, FileTransferItem
 from PySide import QtCore, QtGui
 from tox import Tox
 import os
@@ -8,6 +8,7 @@ from ctypes import *
 from util import curr_time, log, Singleton, curr_directory, convert_time
 from tox_dns import tox_dns
 from history import *
+from file_transfers import *
 import time
 
 
@@ -56,7 +57,7 @@ class ProfileHelper(object):
 
     @staticmethod
     def export_profile(new_path):
-        new_path += ProfileHelper._path.split('/')[-1]
+        new_path += os.path.basename(ProfileHelper._path)
         with open(ProfileHelper._path, 'rb') as fin:
             data = fin.read()
         with open(new_path, 'wb') as fout:
@@ -161,7 +162,7 @@ class Contact(object):
         """
         Tries to load avatar of contact or uses default avatar
         """
-        avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
         if not os.path.isfile(avatar_path):  # load default image
             avatar_path = curr_directory() + '/images/avatar.png'
         pixmap = QtGui.QPixmap(QtCore.QSize(64, 64))
@@ -170,16 +171,24 @@ class Contact(object):
         self._widget.avatar_label.repaint()
 
     def reset_avatar(self):
-        avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
         if os.path.isfile(avatar_path):
             os.remove(avatar_path)
             self.load_avatar()
 
     def set_avatar(self, avatar):
-        avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
         with open(avatar_path, 'wb') as f:
             f.write(avatar)
         self.load_avatar()
+
+    # def get_avatar_hash(self):
+    #     avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+    #     if not os.path.isfile(avatar_path):  # load default image
+    #         return 0
+    #     with open(avatar_path, 'rb') as fl:
+    #         data = fl.read()
+    #     return Tox.hash(data)
 
 
 class Friend(Contact):
@@ -318,6 +327,7 @@ class Profile(Contact, Singleton):
         self._screen = screen
         self._messages = screen.messages
         self._tox = tox
+        self._file_transfers = {}  # dict of file transfers. key - tuple (friend_number, file_number)
         settings = Settings.get_instance()
         self._show_online = settings['show_online_friends']
         screen.online_contacts.setChecked(self._show_online)
@@ -497,7 +507,7 @@ class Profile(Contact, Singleton):
             self._messages.scrollToBottom()
             self._friends[self._active_friend].append_message((message.decode('utf-8'),
                                                                MESSAGE_OWNER['FRIEND'],
-                                                               time.time(),
+                                                               int(time.time()),
                                                                message_type))
         else:
             friend = filter(lambda x: x.number == friend_num, self._friends)[0]
@@ -537,11 +547,12 @@ class Profile(Contact, Singleton):
         Save history to db
         """
         print 'In save'
-        if Settings.get_instance()['save_history']:
-            for friend in self._friends:
-                messages = friend.get_corr_for_saving()
-                self._history.save_messages_to_db(friend.tox_id, messages)
-        del self._history
+        if hasattr(self, '_history'):
+            if Settings.get_instance()['save_history']:
+                for friend in self._friends:
+                    messages = friend.get_corr_for_saving()
+                    self._history.save_messages_to_db(friend.tox_id, messages)
+            del self._history
 
     def clear_history(self, num=None):
         if num is not None:
@@ -560,7 +571,7 @@ class Profile(Contact, Singleton):
         self._history.export(directory)
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Factories for friend and message items
+    # Factories for friend, message and file transfer items
     # -----------------------------------------------------------------------------------------------------------------
 
     def create_friend_item(self):
@@ -578,10 +589,20 @@ class Profile(Contact, Singleton):
     def create_message_item(self, text, time, name, message_type):
         item = MessageItem(text, time, name, message_type, self._messages)
         elem = QtGui.QListWidgetItem(self._messages)
-        elem.setSizeHint(QtCore.QSize(500, item.getHeight()))
+        elem.setSizeHint(QtCore.QSize(600, item.getHeight()))
         self._messages.addItem(elem)
         self._messages.setItemWidget(elem, item)
         self._messages.repaint()
+
+    def create_file_transfer_item(self, file_name, size, friend_number, file_number, show_accept):
+        friend = self.get_friend_by_number(friend_number)
+        item = FileTransferItem(file_name, size, curr_time(), friend.name, friend_number, file_number, show_accept)
+        elem = QtGui.QListWidgetItem(self._messages)
+        elem.setSizeHint(QtCore.QSize(600, 50))
+        self._messages.addItem(elem)
+        self._messages.setItemWidget(elem, item)
+        self._messages.repaint()
+        return item
 
     # -----------------------------------------------------------------------------------------------------------------
     # Work with friends (remove, set alias, get public key)
@@ -701,6 +722,86 @@ class Profile(Contact, Singleton):
         self.status = None
         for friend in self._friends:
             friend.status = None
+        # TODO: FT reset
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # File transfers support
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def incoming_file_transfer(self, friend_number, file_number, size, file_name):
+        settings = Settings.get_instance()
+        friend = self.get_friend_by_number(friend_number)
+        if settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']:
+            path = settings['auto_accept_path'] or curr_directory()
+            self.accept_transfer(path + '/' + file_name.decode('utf-8'), friend_number, file_number)
+            self.create_file_transfer_item(file_name.decode('utf-8'), size, friend_number, file_number, False)
+        else:
+            self.create_file_transfer_item(file_name.decode('utf-8'), size, friend_number, file_number, True)
+
+    def cancel_transfer(self, friend_number, file_number):
+        if (friend_number, file_number) in self._file_transfers:
+            tr = self._file_transfers[(friend_number, file_number)]
+            tr.cancel()
+            del self._file_transfers[(friend_number, file_number)]
+
+    def accept_transfer(self, item, path, friend_number, file_number, size):
+        rt = ReceiveTransfer(path, self._tox, friend_number, size, file_number)
+        self._file_transfers[(friend_number, file_number)] = rt
+        self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
+        rt.set_state_changed_handler(item.update)
+
+    def incoming_avatar(self, friend_number, file_number, size):
+        """
+        Friend changed avatar
+        :param friend_number: friend number
+        :param file_number: file number
+        :param size: size of avatar or 0 (default avatar)
+        """
+        ra = ReceiveAvatar(self._tox, friend_number, size, file_number)
+        if ra.state != TOX_FILE_TRANSFER_STATE['CANCELED']:
+            self._file_transfers[(friend_number, file_number)] = ra
+        else:
+            self.get_friend_by_number(friend_number).load_avatar()
+
+    def incoming_chunk(self, friend_number, file_number, position, data):
+        if (friend_number, file_number) in self._file_transfers:
+            transfer = self._file_transfers[(friend_number, file_number)]
+            transfer.write_chunk(position, data)
+            if transfer.state:
+                if type(transfer) is ReceiveAvatar:
+                    self.get_friend_by_number(friend_number).load_avatar()
+                del self._file_transfers[(friend_number, file_number)]
+
+    def send_avatar(self, friend_number):
+        avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        if not os.path.isfile(avatar_path):  # reset image
+            avatar_path = None
+        sa = SendAvatar(avatar_path, self._tox, friend_number)
+        self._file_transfers[(friend_number, sa.get_file_number())] = sa
+
+    def send_file(self, path):
+        friend_number = self.get_active_number()
+        st = SendTransfer(path, self._tox, friend_number)
+        self._file_transfers[(friend_number, st.get_file_number())] = st
+        item = self.create_file_transfer_item(os.path.basename(path), os.path.getsize(path), friend_number, st.get_file_number(), False)
+        st.set_state_changed_handler(item.update)
+
+    def outgoing_chunk(self, friend_number, file_number, position, size):
+        if (friend_number, file_number) in self._file_transfers:
+            transfer = self._file_transfers[(friend_number, file_number)]
+            transfer.send_chunk(position, size)
+            if transfer.state:
+                del self._file_transfers[(friend_number, file_number)]
+
+    def reset_avatar(self):
+        super(Profile, self).reset_avatar()
+        for friend in filter(lambda x: x.status is not None, self._friends):
+            self.send_avatar(friend.number)
+
+    def set_avatar(self, data):
+        super(Profile, self).set_avatar(data)
+        for friend in filter(lambda x: x.status is not None, self._friends):
+            self.send_avatar(friend.number)
 
 
 def tox_factory(data=None, settings=None):

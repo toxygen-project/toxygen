@@ -2,6 +2,7 @@ from PySide import QtGui
 from PySide.phonon import Phonon
 from util import curr_directory
 # TODO: make app icon active
+# TODO: add all sound notifications
 
 
 SOUND_NOTIFICATION = {
@@ -19,9 +20,10 @@ def tray_notification(title, text, tray):
 
 
 def sound_notification(t):
-    # TODO: add other sound notifications
     if t == SOUND_NOTIFICATION['MESSAGE']:
         f = curr_directory() + '/sounds/message.wav'
+    elif t == SOUND_NOTIFICATION['FILE_TRANSFER']:
+        f = curr_directory() + '/sounds/file.wav'
     else:
         return
     m = Phonon.MediaSource(f)

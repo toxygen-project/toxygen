@@ -53,6 +53,7 @@ class Settings(Singleton, dict):
             'save_history': False,
             'allow_inline': True,
             'allow_auto_accept': False,
+            'auto_accept_path': None,
             'show_online_friends': False,
             'auto_accept_from_friends': [],
             'friends_aliases': [],
