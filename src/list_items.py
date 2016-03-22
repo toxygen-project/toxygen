@@ -227,7 +227,7 @@ class FileTransferItem(QtGui.QListWidget):
     def cancel_transfer(self, friend_number, file_number):
         pr = profile.Profile.get_instance()
         pr.cancel_transfer(friend_number, file_number)
-        self.setStyleSheet('QListWidget { background-color: red; }')
+        self.setStyleSheet('QListWidget { background-color: #B40404; }')
         self.cancel.setVisible(False)
         self.accept.setVisible(False)
         self.pb.setVisible(False)
@@ -243,7 +243,7 @@ class FileTransferItem(QtGui.QListWidget):
     def update(self, state, progress):
         self.pb.setValue(int(progress * 100))
         if state == TOX_FILE_TRANSFER_STATE['CANCELED']:
-            self.setStyleSheet('QListWidget { background-color: red; }')
+            self.setStyleSheet('QListWidget { background-color: #B40404; }')
             self.cancel.setVisible(False)
             self.accept.setVisible(False)
             self.pb.setVisible(False)

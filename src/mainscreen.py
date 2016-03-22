@@ -190,9 +190,12 @@ class MainWindow(QtGui.QMainWindow):
         self.account_status.setFont(font)
         self.account_status.setObjectName("account_status")
         self.callButton = QtGui.QPushButton(Form)
-        self.callButton.setGeometry(QtCore.QRect(550, 30, 75, 30))
+        self.callButton.setGeometry(QtCore.QRect(550, 30, 50, 50))
         self.callButton.setObjectName("callButton")
-        self.callButton.setText(QtGui.QApplication.translate("Form", "Start call", None, QtGui.QApplication.UnicodeUTF8))
+        pixmap = QtGui.QPixmap(curr_directory() + '/images/call.png')
+        icon = QtGui.QIcon(pixmap)
+        self.callButton.setIcon(icon)
+        self.callButton.setIconSize(QtCore.QSize(50, 50))
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def setup_left_center(self, widget):

@@ -733,8 +733,8 @@ class Profile(Contact, Singleton):
         friend = self.get_friend_by_number(friend_number)
         if settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']:
             path = settings['auto_accept_path'] or curr_directory()
-            self.accept_transfer(path + '/' + file_name.decode('utf-8'), friend_number, file_number)
-            self.create_file_transfer_item(file_name.decode('utf-8'), size, friend_number, file_number, False)
+            item = self.create_file_transfer_item(file_name.decode('utf-8'), size, friend_number, file_number, False)
+            self.accept_transfer(item, path + '/' + file_name.decode('utf-8'), friend_number, file_number)
         else:
             self.create_file_transfer_item(file_name.decode('utf-8'), size, friend_number, file_number, True)
 
@@ -743,6 +743,8 @@ class Profile(Contact, Singleton):
             tr = self._file_transfers[(friend_number, file_number)]
             tr.cancel()
             del self._file_transfers[(friend_number, file_number)]
+        else:
+            self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
 
     def accept_transfer(self, item, path, friend_number, file_number, size):
         rt = ReceiveTransfer(path, self._tox, friend_number, size, file_number)

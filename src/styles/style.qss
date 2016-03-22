@@ -1244,4 +1244,5 @@ MessageEdit:hover
 QListWidget QPushButton 
 {
     background-color: transparent;
+    border: none;
 }
