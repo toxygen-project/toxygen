@@ -444,8 +444,10 @@ class Profile(Contact, Singleton):
                 self._messages.scrollToBottom()
             else:
                 friend = self._friends[self._active_friend]
-            self._screen.account_name.setText(friend.name)
-            self._screen.account_status.setText(friend.status_message)
+            name = friend.name if len(friend.name) < 50 else friend.name[:47] + '...'
+            status_message = friend.status_message if len(friend.status_message) < 66 else friend.status_message[:63] + '...'
+            self._screen.account_name.setText(name)
+            self._screen.account_status.setText(status_message)
             avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(friend.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
             if not os.path.isfile(avatar_path):  # load default image
                 avatar_path = curr_directory() + '/images/avatar.png'

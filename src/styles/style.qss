@@ -1246,3 +1246,8 @@ QListWidget QPushButton
     background-color: transparent;
     border: none;
 }
+
+QPushButton:hover 
+{
+    background-color: #4A4949;
+}
