@@ -200,7 +200,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def setup_left_center(self, widget):
         self.friends_list = QtGui.QListWidget(widget)
-        self.friends_list.setGeometry(0, 0, 250, 250)
+        self.friends_list.setGeometry(0, 0, 270, 250)
         self.friends_list.clicked.connect(self.friend_click)
         self.friends_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.friends_list.connect(self.friends_list, QtCore.SIGNAL("customContextMenuRequested(QPoint)"),
@@ -236,7 +236,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setup_left_center(main_list)
         grid.addWidget(main_list, 1, 0)
         grid.setColumnMinimumWidth(1, 500)
-        grid.setColumnMinimumWidth(0, 250)
+        grid.setColumnMinimumWidth(0, 270)
         grid.setRowMinimumHeight(1, 250)
         main.setLayout(grid)
         self.setCentralWidget(main)

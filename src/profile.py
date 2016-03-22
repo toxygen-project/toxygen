@@ -774,6 +774,7 @@ class Profile(Contact, Singleton):
             if transfer.state:
                 if type(transfer) is ReceiveAvatar:
                     self.get_friend_by_number(friend_number).load_avatar()
+                    self.set_active(None)
                 del self._file_transfers[(friend_number, file_number)]
 
     def send_avatar(self, friend_number):

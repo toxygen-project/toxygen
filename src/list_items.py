@@ -76,8 +76,8 @@ class MessageItem(QtGui.QListWidget):
         self.setFrameShape(QtGui.QFrame.NoFrame)
 
         if message_type == TOX_MESSAGE_TYPE['ACTION']:
-            self.name.setStyleSheet("QLabel { color: blue; }")
-            self.message.setStyleSheet("QPlainTextEdit { color: blue; }")
+            self.name.setStyleSheet("QLabel { color: #4169E1; }")
+            self.message.setStyleSheet("QPlainTextEdit { color: #4169E1; }")
         else:
             if text[0] == '>':
                 self.message.setStyleSheet("QPlainTextEdit { color: green; }")
