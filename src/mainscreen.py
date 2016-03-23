@@ -267,7 +267,7 @@ class MainWindow(QtGui.QMainWindow):
         self.a_c = AddContact()
         self.a_c.show()
 
-    def profile_settings(self):
+    def profile_settings(self, *args):
         self.p_s = ProfileSettings()
         self.p_s.show()
 
@@ -377,12 +377,12 @@ class ScreenShotWindow(QtGui.QWidget):
     # TODO: make window semi-transparent
     def __init__(self):
         super(ScreenShotWindow, self).__init__()
-        self.rubberband = QtGui.QRubberBand(QtGui.QRubberBand.Rectangle, self)
         self.setMouseTracking(True)
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
-        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
         self.showFullScreen()
-        self.setStyleSheet('QWidget { background-color: rgba(255, 255, 255, 190); }')
+        self.setWindowOpacity(0.01)
+        self.rubberband = QtGui.QRubberBand(QtGui.QRubberBand.Rectangle, self)
+        self.rubberband.setWindowOpacity(1)
 
     def mousePressEvent(self, event):
         self.origin = event.pos()
