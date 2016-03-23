@@ -99,7 +99,7 @@ class MainWindow(QtGui.QMainWindow):
         self.fileTransferButton.setGeometry(QtCore.QRect(460, 65, 90, 55))
         self.fileTransferButton.setObjectName("fileTransferButton")
         self.sendMessageButton = QtGui.QPushButton(Form)
-        self.sendMessageButton.setGeometry(QtCore.QRect(550, 10, 60, 110))
+        self.sendMessageButton.setGeometry(QtCore.QRect(550, 10, 70, 110))
         self.sendMessageButton.setObjectName("sendMessageButton")
         self.sendMessageButton.clicked.connect(self.send_message)
 
@@ -208,7 +208,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def setup_right_center(self, widget):
         self.messages = QtGui.QListWidget(widget)
-        self.messages.setGeometry(0, 0, 600, 250)
+        self.messages.setGeometry(0, 0, 620, 250)
 
     def initUI(self, tox):
         self.setMinimumSize(920, 520)

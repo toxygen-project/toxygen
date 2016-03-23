@@ -55,7 +55,7 @@ class FileTransfer(QtCore.QObject):
     def cancelled(self):
         if hasattr(self, '_file'):
             self._file.close()
-        self._state_changed.signal.emit(TOX_FILE_CONTROL['CANCEL'], self._done / self._size)
+        self._state_changed.signal.emit(TOX_FILE_CONTROL['CANCEL'], self._done / self._size if self._size else 0)
 
     def send_control(self, control):
         if self._tox.file_control(self._friend_number, self._file_number, control):
