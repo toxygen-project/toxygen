@@ -50,6 +50,10 @@ class FileTransfer(QtCore.QObject):
         self._file.close()
         self._state_changed.signal.emit(self.state, self._done / self._size)
 
+    def cancelled(self):
+        self._file.close()
+        self._state_changed.signal.emit(TOX_FILE_CONTROL['CANCEL'], self._done / self._size)
+
     def send_control(self, control):
         if self._tox.file_control(self._friend_number, self._file_number, control):
             self.state = control
@@ -61,6 +65,10 @@ class FileTransfer(QtCore.QObject):
     def file_seek(self):
         # TODO implement or not implement
         pass
+
+# -----------------------------------------------------------------------------------------------------------------
+# Send file
+# -----------------------------------------------------------------------------------------------------------------
 
 
 class SendTransfer(FileTransfer):
@@ -97,6 +105,28 @@ class SendAvatar(SendTransfer):
             with open(path, 'rb') as fl:
                 hash = Tox.hash(fl.read())
         super(SendAvatar, self).__init__(path, tox, friend_number, TOX_FILE_KIND['AVATAR'], hash)
+
+
+class SendFromBuffer(FileTransfer):
+
+    def __init__(self, tox, friend_number, data, file_name):
+        super(SendFromBuffer, self).__init__(None, tox, friend_number, len(data))
+        self._data = data
+        self._file_number = tox.file_send(friend_number, TOX_FILE_KIND['DATA'], len(data), None, file_name)
+
+    def send_chunk(self, position, size):
+        if size:
+            data = self._data[position:position + size]
+            self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
+            self._done += size
+            self._state_changed.signal.emit(self.state, self._done / self._size)
+        else:
+            self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
+            self._state_changed.signal.emit(self.state, 1)
+
+# -----------------------------------------------------------------------------------------------------------------
+# Receive file
+# -----------------------------------------------------------------------------------------------------------------
 
 
 class ReceiveTransfer(FileTransfer):

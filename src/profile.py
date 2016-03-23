@@ -736,15 +736,19 @@ class Profile(Contact, Singleton):
         friend = self.get_friend_by_number(friend_number)
         if settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']:
             path = settings['auto_accept_path'] or curr_directory()
+            # TODO: check if file exists
             item = self.create_file_transfer_item(file_name.decode('utf-8'), size, friend_number, file_number, False)
             self.accept_transfer(item, path + '/' + file_name.decode('utf-8'), friend_number, file_number)
         else:
             self.create_file_transfer_item(file_name.decode('utf-8'), size, friend_number, file_number, True)
 
-    def cancel_transfer(self, friend_number, file_number):
+    def cancel_transfer(self, friend_number, file_number, already_cancelled=False):
         if (friend_number, file_number) in self._file_transfers:
             tr = self._file_transfers[(friend_number, file_number)]
-            tr.cancel()
+            if not already_cancelled:
+                tr.cancel()
+            else:
+                tr.cancelled()
             del self._file_transfers[(friend_number, file_number)]
 
     def accept_transfer(self, item, path, friend_number, file_number, size):
@@ -782,6 +786,13 @@ class Profile(Contact, Singleton):
             avatar_path = None
         sa = SendAvatar(avatar_path, self._tox, friend_number)
         self._file_transfers[(friend_number, sa.get_file_number())] = sa
+
+    def send_screenshot(self, data):
+        friend_number = self.get_active_number()
+        st = SendFromBuffer(self._tox, friend_number, data, 'toxygen_inline.png')
+        self._file_transfers[(friend_number, st.get_file_number())] = st
+        item = self.create_file_transfer_item('toxygen_inline.png', len(data), friend_number, st.get_file_number(), False)
+        st.set_state_changed_handler(item.update)
 
     def send_file(self, path):
         friend_number = self.get_active_number()

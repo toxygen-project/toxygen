@@ -298,7 +298,6 @@ class MainWindow(QtGui.QMainWindow):
                 self.profile.send_file(name[0])
 
     def send_screenshot(self):
-        # TODO: add screenshots support
         if self.profile.is_active_online():  # active friend exists and online
             self.sw = ScreenShotWindow()
             self.sw.show()
@@ -375,7 +374,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
 class ScreenShotWindow(QtGui.QWidget):
-    # TODO: send raw data and make window semi-transparent
+    # TODO: make window semi-transparent
     def __init__(self):
         super(ScreenShotWindow, self).__init__()
         self.rubberband = QtGui.QRubberBand(QtGui.QRubberBand.Rectangle, self)
@@ -407,8 +406,11 @@ class ScreenShotWindow(QtGui.QWidget):
                                          rect.y(),
                                          rect.width(),
                                          rect.height())
-            image = p.toImage()
-            print len(image.bits())
+            byte_array = QtCore.QByteArray()
+            buffer = QtCore.QBuffer(byte_array)
+            buffer.open(QtCore.QIODevice.WriteOnly)
+            p.save(buffer, 'PNG')
+            Profile.get_instance().send_screenshot(''.join(byte_array[i] for i in xrange(byte_array.length())))
             self.close()
 
 

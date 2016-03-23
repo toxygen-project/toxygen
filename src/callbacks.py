@@ -177,8 +177,8 @@ def file_chunk_request(tox, friend_number, file_number, position, size, user_dat
 
 
 def file_recv_control(tox, friend_number, file_number, file_control, user_data):
-    # TODO: process
-    pass
+    if file_control == TOX_FILE_CONTROL['CANCEL']:
+        Profile.get_instance().cancel_transfer(friend_number, file_number, True)
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
