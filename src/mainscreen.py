@@ -380,7 +380,7 @@ class ScreenShotWindow(QtGui.QWidget):
         self.setMouseTracking(True)
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
         self.showFullScreen()
-        self.setWindowOpacity(0.001)
+        self.setWindowOpacity(0.01)
         self.rubberband = QtGui.QRubberBand(QtGui.QRubberBand.Rectangle, None)
 
     def mousePressEvent(self, event):
@@ -402,10 +402,10 @@ class ScreenShotWindow(QtGui.QWidget):
             rect = self.rubberband.geometry()
             print rect
             p = QtGui.QPixmap.grabWindow(QtGui.QApplication.desktop().winId(),
-                                         rect.x(),
-                                         rect.y(),
-                                         rect.width(),
-                                         rect.height())
+                                         rect.x() + 3,
+                                         rect.y() + 3,
+                                         rect.width() - 6,
+                                         rect.height() - 6)
             byte_array = QtCore.QByteArray()
             buffer = QtCore.QBuffer(byte_array)
             buffer.open(QtCore.QIODevice.WriteOnly)
