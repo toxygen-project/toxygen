@@ -378,11 +378,10 @@ class ScreenShotWindow(QtGui.QWidget):
     def __init__(self):
         super(ScreenShotWindow, self).__init__()
         self.setMouseTracking(True)
-        self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
         self.showFullScreen()
-        self.setWindowOpacity(0.01)
-        self.rubberband = QtGui.QRubberBand(QtGui.QRubberBand.Rectangle, self)
-        self.rubberband.setWindowOpacity(1)
+        self.setWindowOpacity(0.001)
+        self.rubberband = QtGui.QRubberBand(QtGui.QRubberBand.Rectangle, None)
 
     def mousePressEvent(self, event):
         self.origin = event.pos()
