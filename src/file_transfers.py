@@ -48,6 +48,7 @@ class FileTransfer(QtCore.QObject):
     def cancel(self):
         self.send_control(TOX_FILE_CONTROL['CANCEL'])
         if hasattr(self, '_file'):
+            print 'closing'
             self._file.close()
         self._state_changed.signal.emit(self.state, self._done / self._size)
 
@@ -170,9 +171,10 @@ class ReceiveAvatar(ReceiveTransfer):
         super(ReceiveAvatar, self).__init__(path, tox, friend_number, size, file_number)
         if exists(path):
             if not size:
-                remove(path)
                 self.send_control(TOX_FILE_CONTROL['CANCEL'])
                 self.state = TOX_FILE_TRANSFER_STATE['CANCELED']
+                self._file.close()
+                remove(path)
             else:
                 hash = self.get_file_id()
                 with open(path, 'rb') as fl:
