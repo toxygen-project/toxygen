@@ -300,7 +300,8 @@ class MainWindow(QtGui.QMainWindow):
     def send_screenshot(self):
         # TODO: add screenshots support
         if self.profile.is_active_online():  # active friend exists and online
-            pass
+            self.sw = ScreenShotWindow()
+            self.sw.show()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user open context menu in friends list
@@ -371,5 +372,44 @@ class MainWindow(QtGui.QMainWindow):
 
     def filtering(self):
         self.profile.filtration(self.online_contacts.isChecked(), self.contact_name.text())
+
+
+class ScreenShotWindow(QtGui.QWidget):
+    # TODO: send raw data and make window semi-transparent
+    def __init__(self):
+        super(ScreenShotWindow, self).__init__()
+        self.rubberband = QtGui.QRubberBand(QtGui.QRubberBand.Rectangle, self)
+        self.setMouseTracking(True)
+        self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint | QtCore.Qt.FramelessWindowHint)
+        self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+        self.showFullScreen()
+
+    def mousePressEvent(self, event):
+        self.origin = event.pos()
+        self.rubberband.setGeometry(
+            QtCore.QRect(self.origin, QtCore.QSize()))
+        self.rubberband.show()
+        QtGui.QWidget.mousePressEvent(self, event)
+
+    def mouseMoveEvent(self, event):
+        if self.rubberband.isVisible():
+            self.rubberband.setGeometry(
+                QtCore.QRect(self.origin, event.pos()).normalized())
+        QtGui.QWidget.mouseMoveEvent(self, event)
+
+    def mouseReleaseEvent(self, event):
+        if self.rubberband.isVisible():
+            self.rubberband.hide()
+            rect = self.rubberband.geometry()
+            print rect
+            p = QtGui.QPixmap.grabWindow(QtGui.QApplication.desktop().winId(),
+                                         rect.x(),
+                                         rect.y(),
+                                         rect.width(),
+                                         rect.height())
+            image = p.toImage()
+            print len(image.bits())
+            self.close()
+
 
 
