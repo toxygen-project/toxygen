@@ -182,14 +182,6 @@ class Contact(object):
             f.write(avatar)
         self.load_avatar()
 
-    # def get_avatar_hash(self):
-    #     avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
-    #     if not os.path.isfile(avatar_path):  # load default image
-    #         return 0
-    #     with open(avatar_path, 'rb') as fl:
-    #         data = fl.read()
-    #     return Tox.hash(data)
-
 
 class Friend(Contact):
     """
@@ -771,6 +763,8 @@ class Profile(Contact, Singleton):
             self._file_transfers[(friend_number, file_number)] = ra
         else:
             self.get_friend_by_number(friend_number).load_avatar()
+            if self.get_active_number() == friend_number:
+                self.set_active(None)
 
     def incoming_chunk(self, friend_number, file_number, position, data):
         if (friend_number, file_number) in self._file_transfers:
