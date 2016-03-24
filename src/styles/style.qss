@@ -1259,10 +1259,8 @@ QListWidget QListWidgetItem:selected
 
 #friends_list:item:selected
 {
-    background-color: #A9A9A9;
+    border: 2px solid;
+    background-color: transparent;
+    border-color: green;
 }
 
-#toxygen
-{
-    color:  #006400;
-}

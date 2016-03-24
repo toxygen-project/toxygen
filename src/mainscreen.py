@@ -211,6 +211,12 @@ class MainWindow(QtGui.QMainWindow):
     def setup_right_center(self, widget):
         self.messages = QtGui.QListWidget(widget)
         self.messages.setGeometry(0, 0, 620, 250)
+
+        def load(pos):
+            if not pos:
+                self.profile.load_history()
+                self.messages.verticalScrollBar().setValue(1)
+        self.messages.verticalScrollBar().valueChanged.connect(load)
         self.messages.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
 
     def initUI(self, tox):

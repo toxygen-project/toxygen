@@ -217,6 +217,7 @@ class Friend(Contact):
     def load_corr(self, first_time=True):
         """
         :param first_time: friend became active, load first part of messages
+        :return: list ol loaded messages
         """
         if (first_time and self._history_loaded) or (not hasattr(self, '_message_getter')):
             return
@@ -224,9 +225,10 @@ class Friend(Contact):
         if data is not None and len(data):
             data.reverse()
         else:
-            return
+            return []
         self._corr = data + self._corr
         self._history_loaded = True
+        return data
 
     def get_corr_for_saving(self):
         """
@@ -454,6 +456,7 @@ class Profile(Contact, Singleton):
             self._screen.account_avatar.repaint()
         except:  # no friend found. ignore
             log('Incorrect friend value: ' + str(value))
+            raise
 
     active_friend = property(get_active, set_active)
 
@@ -568,6 +571,21 @@ class Profile(Contact, Singleton):
             self._messages.clear()
             self._messages.repaint()
 
+    def load_history(self):
+        """
+        Tries to load next part of messages
+        """
+        friend = self._friends[self._active_friend]
+        data = friend.load_corr(False)
+        if not data:
+            return
+        for message in data:
+            self.create_message_item(message[0],
+                                     convert_time(message[2]),
+                                     friend.name if message[1] else self._name,
+                                     message[3],
+                                     False)
+
     def export_history(self, directory):
         self._history.export(directory)
 
@@ -587,12 +605,15 @@ class Profile(Contact, Singleton):
         self._screen.friends_list.setItemWidget(elem, item)
         return item
 
-    def create_message_item(self, text, time, name, message_type):
+    def create_message_item(self, text, time, name, message_type, append=True):
         item = MessageItem(text, time, name, message_type, self._messages)
         elem = QtGui.QListWidgetItem(self._messages)
         elem.setSizeHint(QtCore.QSize(600, item.getHeight()))
-        self._messages.addItem(elem)
         self._messages.setItemWidget(elem, item)
+        if append:
+            self._messages.addItem(elem)
+        else:
+            self._messages.insertItem(3, elem)
         self._messages.repaint()
 
     def create_file_transfer_item(self, file_name, size, friend_number, file_number, show_accept):
