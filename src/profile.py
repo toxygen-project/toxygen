@@ -217,8 +217,9 @@ class Friend(Contact):
     def load_corr(self, first_time=True):
         """
         :param first_time: friend became active, load first part of messages
-        :return: list ol loaded messages
+        :return: list of loaded messages
         """
+        # TODO: fix bug with message order
         if (first_time and self._history_loaded) or (not hasattr(self, '_message_getter')):
             return
         data = self._message_getter.get(42)
@@ -434,7 +435,7 @@ class Profile(Contact, Singleton):
                 self._screen.messageEdit.clear()
                 self._messages.clear()
                 friend.load_corr()
-                messages = friend.get_corr()[-42:]
+                messages = friend.get_corr()
                 for message in messages:
                     self.create_message_item(message[0],
                                              convert_time(message[2]),
@@ -607,13 +608,13 @@ class Profile(Contact, Singleton):
 
     def create_message_item(self, text, time, name, message_type, append=True):
         item = MessageItem(text, time, name, message_type, self._messages)
-        elem = QtGui.QListWidgetItem(self._messages)
+        elem = QtGui.QListWidgetItem()
         elem.setSizeHint(QtCore.QSize(600, item.getHeight()))
-        self._messages.setItemWidget(elem, item)
         if append:
             self._messages.addItem(elem)
         else:
-            self._messages.insertItem(3, elem)
+            self._messages.insertItem(0, elem)
+        self._messages.setItemWidget(elem, item)
         self._messages.repaint()
 
     def create_file_transfer_item(self, file_name, size, friend_number, file_number, show_accept):
