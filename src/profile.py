@@ -216,7 +216,7 @@ class Friend(Contact):
         """
         :param first_time: friend became active, load first part of messages
         """
-        if first_time and self._history_loaded:
+        if (first_time and self._history_loaded) or (not hasattr(self, '_message_getter')):
             return
         data = self._message_getter.get(42)
         if data is not None and len(data):
@@ -231,7 +231,8 @@ class Friend(Contact):
         Get data to save in db
         :return: list of unsaved messages or []
         """
-        del self._message_getter
+        if hasattr(self, '_message_getter'):
+            del self._message_getter
         return self._corr[-self._unsaved_messages:] if self._unsaved_messages else []
 
     def get_corr(self):
@@ -248,6 +249,8 @@ class Friend(Contact):
         """
         Clear messages list
         """
+        if hasattr(self, '_message_getter'):
+            del self._message_getter
         self._corr = []
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -726,6 +729,13 @@ class Profile(Contact, Singleton):
     # -----------------------------------------------------------------------------------------------------------------
 
     def incoming_file_transfer(self, friend_number, file_number, size, file_name):
+        """
+        New transfer
+        :param friend_number: number of friend who sent file
+        :param file_number: file number
+        :param size: file size in bytes
+        :param file_name: file name without path
+        """
         settings = Settings.get_instance()
         friend = self.get_friend_by_number(friend_number)
         if settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']:
@@ -751,6 +761,59 @@ class Profile(Contact, Singleton):
         self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
         rt.set_state_changed_handler(item.update)
 
+    def incoming_chunk(self, friend_number, file_number, position, data):
+        if (friend_number, file_number) in self._file_transfers:
+            transfer = self._file_transfers[(friend_number, file_number)]
+            transfer.write_chunk(position, data)
+            if transfer.state:
+                if type(transfer) is ReceiveAvatar:
+                    self.get_friend_by_number(friend_number).load_avatar()
+                    self.set_active(None)
+                del self._file_transfers[(friend_number, file_number)]
+
+    def send_screenshot(self, data):
+        """
+        Sen screenshot to current active friend
+        :param data: raw data
+        """
+        friend_number = self.get_active_number()
+        st = SendFromBuffer(self._tox, friend_number, data, 'toxygen_inline.png')
+        self._file_transfers[(friend_number, st.get_file_number())] = st
+        item = self.create_file_transfer_item('toxygen_inline.png', len(data), friend_number, st.get_file_number(), False)
+        st.set_state_changed_handler(item.update)
+
+    def send_file(self, path):
+        """
+        Send file to current active friend
+        :param path: file path
+        """
+        friend_number = self.get_active_number()
+        st = SendTransfer(path, self._tox, friend_number)
+        self._file_transfers[(friend_number, st.get_file_number())] = st
+        item = self.create_file_transfer_item(os.path.basename(path), os.path.getsize(path), friend_number, st.get_file_number(), False)
+        st.set_state_changed_handler(item.update)
+
+    def outgoing_chunk(self, friend_number, file_number, position, size):
+        if (friend_number, file_number) in self._file_transfers:
+            transfer = self._file_transfers[(friend_number, file_number)]
+            transfer.send_chunk(position, size)
+            if transfer.state:
+                del self._file_transfers[(friend_number, file_number)]
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Avatars support
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def send_avatar(self, friend_number):
+        """
+        :param friend_number: number of friend who should get new avatar
+        """
+        avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        if not os.path.isfile(avatar_path):  # reset image
+            avatar_path = None
+        sa = SendAvatar(avatar_path, self._tox, friend_number)
+        self._file_transfers[(friend_number, sa.get_file_number())] = sa
+
     def incoming_avatar(self, friend_number, file_number, size):
         """
         Friend changed avatar
@@ -765,44 +828,6 @@ class Profile(Contact, Singleton):
             self.get_friend_by_number(friend_number).load_avatar()
             if self.get_active_number() == friend_number:
                 self.set_active(None)
-
-    def incoming_chunk(self, friend_number, file_number, position, data):
-        if (friend_number, file_number) in self._file_transfers:
-            transfer = self._file_transfers[(friend_number, file_number)]
-            transfer.write_chunk(position, data)
-            if transfer.state:
-                if type(transfer) is ReceiveAvatar:
-                    self.get_friend_by_number(friend_number).load_avatar()
-                    self.set_active(None)
-                del self._file_transfers[(friend_number, file_number)]
-
-    def send_avatar(self, friend_number):
-        avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
-        if not os.path.isfile(avatar_path):  # reset image
-            avatar_path = None
-        sa = SendAvatar(avatar_path, self._tox, friend_number)
-        self._file_transfers[(friend_number, sa.get_file_number())] = sa
-
-    def send_screenshot(self, data):
-        friend_number = self.get_active_number()
-        st = SendFromBuffer(self._tox, friend_number, data, 'toxygen_inline.png')
-        self._file_transfers[(friend_number, st.get_file_number())] = st
-        item = self.create_file_transfer_item('toxygen_inline.png', len(data), friend_number, st.get_file_number(), False)
-        st.set_state_changed_handler(item.update)
-
-    def send_file(self, path):
-        friend_number = self.get_active_number()
-        st = SendTransfer(path, self._tox, friend_number)
-        self._file_transfers[(friend_number, st.get_file_number())] = st
-        item = self.create_file_transfer_item(os.path.basename(path), os.path.getsize(path), friend_number, st.get_file_number(), False)
-        st.set_state_changed_handler(item.update)
-
-    def outgoing_chunk(self, friend_number, file_number, position, size):
-        if (friend_number, file_number) in self._file_transfers:
-            transfer = self._file_transfers[(friend_number, file_number)]
-            transfer.send_chunk(position, size)
-            if transfer.state:
-                del self._file_transfers[(friend_number, file_number)]
 
     def reset_avatar(self):
         super(Profile, self).reset_avatar()
