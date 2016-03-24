@@ -561,8 +561,9 @@ class Profile(Contact, Singleton):
         if num is not None:
             friend = self._friends[num]
             friend.clear_corr()
-            self._history.delete_messages(friend.tox_id)
-            self._history.delete_friend_from_db(friend.tox_id)
+            if self._history.friend_exists_in_db(friend.tox_id):
+                self._history.delete_messages(friend.tox_id)
+                self._history.delete_friend_from_db(friend.tox_id)
         else:  # clear all history
             for number in xrange(len(self._friends)):
                 self.clear_history(number)
@@ -648,7 +649,8 @@ class Profile(Contact, Singleton):
         """
         friend = self._friends[num]
         self.clear_history(num)
-        self._history.delete_friend_from_db(friend.tox_id)
+        if self._history.friend_exists_in_db(friend.tox_id):
+            self._history.delete_friend_from_db(friend.tox_id)
         self._tox.friend_delete(friend.number)
         del self._friends[num]
         self._screen.friends_list.takeItem(num)
