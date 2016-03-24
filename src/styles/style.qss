@@ -1251,3 +1251,18 @@ QPushButton:hover
 {
     background-color: #4A4949;
 }
+
+QListWidget QListWidgetItem:selected
+{
+    background-color: #4A4949;
+}
+
+#friends_list:item:selected
+{
+    background-color: #A9A9A9;
+}
+
+#toxygen
+{
+    color:  #006400;
+}

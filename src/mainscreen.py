@@ -200,15 +200,18 @@ class MainWindow(QtGui.QMainWindow):
 
     def setup_left_center(self, widget):
         self.friends_list = QtGui.QListWidget(widget)
+        self.friends_list.setObjectName("friends_list")
         self.friends_list.setGeometry(0, 0, 270, 250)
         self.friends_list.clicked.connect(self.friend_click)
         self.friends_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.friends_list.connect(self.friends_list, QtCore.SIGNAL("customContextMenuRequested(QPoint)"),
                                   self.friend_right_click)
+        self.friends_list.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
 
     def setup_right_center(self, widget):
         self.messages = QtGui.QListWidget(widget)
         self.messages.setGeometry(0, 0, 620, 250)
+        self.messages.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
 
     def initUI(self, tox):
         self.setMinimumSize(920, 520)

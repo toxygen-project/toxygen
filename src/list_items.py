@@ -6,6 +6,7 @@ from util import curr_directory
 
 
 class MessageEdit(QtGui.QPlainTextEdit):
+
     def __init__(self, text, width, parent=None):
         super(MessageEdit, self).__init__(parent)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -34,12 +35,12 @@ class MessageEdit(QtGui.QPlainTextEdit):
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
 
 
-class MessageItem(QtGui.QListWidget):
+class MessageItem(QtGui.QWidget):
     """
     Message in messages list
     """
     def __init__(self, text, time, user='', message_type=TOX_MESSAGE_TYPE['NORMAL'], parent=None):
-        QtGui.QListWidget.__init__(self, parent)
+        QtGui.QWidget.__init__(self, parent)
         self.name = QtGui.QLabel(self)
         self.name.setGeometry(QtCore.QRect(0, 2, 95, 20))
         self.name.setTextFormat(QtCore.Qt.PlainText)
@@ -80,12 +81,12 @@ class MessageItem(QtGui.QListWidget):
         return max(self.h, 25)
 
 
-class ContactItem(QtGui.QListWidget):
+class ContactItem(QtGui.QWidget):
     """
     Contact in friends list
     """
     def __init__(self, parent=None):
-        QtGui.QListWidget.__init__(self, parent)
+        QtGui.QWidget.__init__(self, parent)
         self.setBaseSize(QtCore.QSize(250, 70))
         self.avatar_label = QtGui.QLabel(self)
         self.avatar_label.setGeometry(QtCore.QRect(3, 3, 64, 64))
@@ -148,11 +149,12 @@ class StatusCircle(QtGui.QWidget):
         paint.end()
 
 
-class FileTransferItem(QtGui.QListWidget):
+class FileTransferItem(QtGui.QWidget):
+
     def __init__(self, file_name, size, time, user, friend_number, file_number, show_accept, parent=None):
-        QtGui.QListWidget.__init__(self, parent)
+        QtGui.QWidget.__init__(self, parent)
         self.resize(QtCore.QSize(600, 50))
-        self.setStyleSheet('QListWidget { background-color: green; }')
+        self.setStyleSheet('QWidget { background-color: green; }')
 
         self.name = QtGui.QLabel(self)
         self.name.setGeometry(QtCore.QRect(0, 15, 95, 20))
