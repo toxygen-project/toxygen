@@ -162,9 +162,11 @@ class Contact(object):
         """
         Tries to load avatar of contact or uses default avatar
         """
-        avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        avatar_path = '{}.png'.format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        os.chdir(ProfileHelper.get_path() + 'avatars/')
         if not os.path.isfile(avatar_path):  # load default image
-            avatar_path = curr_directory() + '/images/avatar.png'
+            avatar_path = 'avatar.png'
+            os.chdir(curr_directory() + '/images/')
         pixmap = QtGui.QPixmap(QtCore.QSize(64, 64))
         pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio)
         self._widget.avatar_label.setPixmap(avatar_path)
