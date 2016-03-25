@@ -40,7 +40,7 @@ class History(object):
                            '    id INTEGER PRIMARY KEY,'
                            '    message TEXT,'
                            '    owner INTEGER,'
-                           '    unix_time INTEGER,'
+                           '    unix_time REAL,'
                            '    message_type INTEGER'
                            ')')
             db.commit()

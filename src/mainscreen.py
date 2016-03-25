@@ -211,6 +211,7 @@ class MainWindow(QtGui.QMainWindow):
     def setup_right_center(self, widget):
         self.messages = QtGui.QListWidget(widget)
         self.messages.setGeometry(0, 0, 620, 250)
+        self.messages.setObjectName("messages")
 
         def load(pos):
             if not pos:

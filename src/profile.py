@@ -219,7 +219,6 @@ class Friend(Contact):
         :param first_time: friend became active, load first part of messages
         :return: list of loaded messages
         """
-        # TODO: fix bug with message order
         if (first_time and self._history_loaded) or (not hasattr(self, '_message_getter')):
             return
         data = self._message_getter.get(42)
@@ -510,7 +509,7 @@ class Profile(Contact, Singleton):
             self._messages.scrollToBottom()
             self._friends[self._active_friend].append_message((message.decode('utf-8'),
                                                                MESSAGE_OWNER['FRIEND'],
-                                                               int(time.time()),
+                                                               time.time(),
                                                                message_type))
         else:
             friend = filter(lambda x: x.number == friend_num, self._friends)[0]
@@ -538,7 +537,7 @@ class Profile(Contact, Singleton):
             self._messages.scrollToBottom()
             friend.append_message((text,
                                    MESSAGE_OWNER['ME'],
-                                   int(time.time()),
+                                   time.time(),
                                    message_type))
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -580,6 +579,7 @@ class Profile(Contact, Singleton):
         data = friend.load_corr(False)
         if not data:
             return
+        data.reverse()
         for message in data:
             self.create_message_item(message[0],
                                      convert_time(message[2]),
@@ -609,7 +609,7 @@ class Profile(Contact, Singleton):
     def create_message_item(self, text, time, name, message_type, append=True):
         item = MessageItem(text, time, name, message_type, self._messages)
         elem = QtGui.QListWidgetItem()
-        elem.setSizeHint(QtCore.QSize(600, item.getHeight()))
+        elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
         if append:
             self._messages.addItem(elem)
         else:

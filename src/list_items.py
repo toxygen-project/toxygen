@@ -5,33 +5,21 @@ from file_transfers import TOX_FILE_TRANSFER_STATE
 from util import curr_directory
 
 
-class MessageEdit(QtGui.QPlainTextEdit):
+class MessageEdit(QtGui.QTextEdit):
 
     def __init__(self, text, width, parent=None):
         super(MessageEdit, self).__init__(parent)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setWordWrapMode(QtGui.QTextOption.WrapAtWordBoundaryOrAnywhere)
+        self.document().setTextWidth(width)
         self.setPlainText(text)
-        self.document().setTextWidth(parent.width() - 100)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPixelSize(14)
         font.setBold(False)
         self.setFont(font)
-        lines = 0
-        fm = QtGui.QFontMetrics(font)
-        try:
-            for elem in xrange(self.document().blockCount()):
-                block = self.document().findBlockByLineNumber(elem)
-                line_width = fm.width(block.text())
-                print 'Width: ', line_width
-                lines += line_width / float(width) + 1
-        except:
-            print 'updateSize failed'
-        print 'lines ', lines
-        size = int(lines + 0.5) * 21
-        self.setFixedHeight(max(size, 25))
+        self.setFixedHeight(self.document().size().height())
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
 
 
@@ -64,9 +52,7 @@ class MessageItem(QtGui.QWidget):
 
         self.message = MessageEdit(text, parent.width() - 150, self)
         self.message.setGeometry(QtCore.QRect(100, 0, parent.width() - 150, self.message.height()))
-        self.h = self.message.height()
-        print 'self.h ', self.h
-        self.setFixedHeight(self.getHeight())
+        self.setFixedHeight(self.message.height())
 
         if message_type == TOX_MESSAGE_TYPE['ACTION']:
             self.name.setStyleSheet("QLabel { color: #4169E1; }")
@@ -76,9 +62,6 @@ class MessageItem(QtGui.QWidget):
                 self.message.setStyleSheet("QPlainTextEdit { color: green; }")
             if text[-1] == '<':
                 self.message.setStyleSheet("QPlainTextEdit { color: red; }")
-
-    def getHeight(self):
-        return max(self.h, 25)
 
 
 class ContactItem(QtGui.QWidget):
@@ -205,7 +188,7 @@ class FileTransferItem(QtGui.QWidget):
         self.file_name.setObjectName("time")
         file_size = size / 1024
         if not file_size:
-            file_size = '<1KB'
+            file_size = '<{}B'.format(size)
         elif file_size >= 1024:
             file_size = '{}MB'.format(file_size / 1024)
         else:
