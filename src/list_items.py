@@ -188,7 +188,7 @@ class FileTransferItem(QtGui.QWidget):
         self.file_name.setObjectName("time")
         file_size = size / 1024
         if not file_size:
-            file_size = '<{}B'.format(size)
+            file_size = '{}B'.format(size)
         elif file_size >= 1024:
             file_size = '{}MB'.format(file_size / 1024)
         else:

@@ -740,13 +740,14 @@ class Profile(Contact, Singleton):
         Recreate tox instance
         :param restart: method which calls restart and returns new tox instance
         """
-        print 'In reset'
+        for key in self._file_transfers.keys():
+            self._file_transfers[key].cancel()
+            del self._file_transfers[key]
         del self._tox
         self._tox = restart()
         self.status = None
         for friend in self._friends:
             friend.status = None
-        # TODO: FT reset
 
     # -----------------------------------------------------------------------------------------------------------------
     # File transfers support
@@ -762,15 +763,29 @@ class Profile(Contact, Singleton):
         """
         settings = Settings.get_instance()
         friend = self.get_friend_by_number(friend_number)
+        file_name = file_name.decode('utf-8')
         if settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']:
             path = settings['auto_accept_path'] or curr_directory()
-            # TODO: check if file exists
-            item = self.create_file_transfer_item(file_name.decode('utf-8'), size, friend_number, file_number, False)
-            self.accept_transfer(item, path + '/' + file_name.decode('utf-8'), friend_number, file_number)
+            new_file_name, i = file_name, 1
+            while os.path.isfile(path + '/' + new_file_name):  # file with same name already exists
+                if '.' in file_name:  # has extension
+                    d = file_name.rindex('.')
+                else:  # no extension
+                    d = len(file_name)
+                new_file_name = file_name[:d] + '({})'.format(i) + file_name[d:]
+                i += 1
+            item = self.create_file_transfer_item(new_file_name, size, friend_number, file_number, False)
+            self.accept_transfer(item, path + '/' + new_file_name, friend_number, file_number)
         else:
-            self.create_file_transfer_item(file_name.decode('utf-8'), size, friend_number, file_number, True)
+            self.create_file_transfer_item(file_name, size, friend_number, file_number, True)
 
     def cancel_transfer(self, friend_number, file_number, already_cancelled=False):
+        """
+        Stop transfer
+        :param friend_number: number of friend
+        :param file_number: file number
+        :param already_cancelled: was cancelled by friend
+        """
         if (friend_number, file_number) in self._file_transfers:
             tr = self._file_transfers[(friend_number, file_number)]
             if not already_cancelled:
@@ -780,20 +795,17 @@ class Profile(Contact, Singleton):
             del self._file_transfers[(friend_number, file_number)]
 
     def accept_transfer(self, item, path, friend_number, file_number, size):
+        """
+        :param item: transfer item
+        :param path: path for saving
+        :param friend_number: friend number
+        :param file_number: file number
+        :param size: file size
+        """
         rt = ReceiveTransfer(path, self._tox, friend_number, size, file_number)
         self._file_transfers[(friend_number, file_number)] = rt
         self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
         rt.set_state_changed_handler(item.update)
-
-    def incoming_chunk(self, friend_number, file_number, position, data):
-        if (friend_number, file_number) in self._file_transfers:
-            transfer = self._file_transfers[(friend_number, file_number)]
-            transfer.write_chunk(position, data)
-            if transfer.state:
-                if type(transfer) is ReceiveAvatar:
-                    self.get_friend_by_number(friend_number).load_avatar()
-                    self.set_active(None)
-                del self._file_transfers[(friend_number, file_number)]
 
     def send_screenshot(self, data):
         """
@@ -816,6 +828,16 @@ class Profile(Contact, Singleton):
         self._file_transfers[(friend_number, st.get_file_number())] = st
         item = self.create_file_transfer_item(os.path.basename(path), os.path.getsize(path), friend_number, st.get_file_number(), False)
         st.set_state_changed_handler(item.update)
+
+    def incoming_chunk(self, friend_number, file_number, position, data):
+        if (friend_number, file_number) in self._file_transfers:
+            transfer = self._file_transfers[(friend_number, file_number)]
+            transfer.write_chunk(position, data)
+            if transfer.state:
+                if type(transfer) is ReceiveAvatar:
+                    self.get_friend_by_number(friend_number).load_avatar()
+                    self.set_active(None)
+                del self._file_transfers[(friend_number, file_number)]
 
     def outgoing_chunk(self, friend_number, file_number, position, size):
         if (friend_number, file_number) in self._file_transfers:
