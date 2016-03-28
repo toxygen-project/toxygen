@@ -512,7 +512,7 @@ class Profile(Contact, Singleton):
                                                                time.time(),
                                                                message_type))
         else:
-            friend = filter(lambda x: x.number == friend_num, self._friends)[0]
+            friend = self.get_friend_by_number(friend_num)
             friend.set_messages(True)
             friend.append_message((message.decode('utf-8'),
                                    MESSAGE_OWNER['FRIEND'],
@@ -761,6 +761,7 @@ class Profile(Contact, Singleton):
         :param size: file size in bytes
         :param file_name: file name without path
         """
+        # TODO: save transfer data in message list
         settings = Settings.get_instance()
         friend = self.get_friend_by_number(friend_number)
         file_name = file_name.decode('utf-8')
@@ -777,6 +778,9 @@ class Profile(Contact, Singleton):
             item = self.create_file_transfer_item(new_file_name, size, friend_number, file_number, False)
             self.accept_transfer(item, path + '/' + new_file_name, friend_number, file_number)
         else:
+            if self.get_active_number() != friend_number:
+                friend = self.get_friend_by_number(friend_number)
+                friend.set_messages(True)
             self.create_file_transfer_item(file_name, size, friend_number, file_number, True)
 
     def cancel_transfer(self, friend_number, file_number, already_cancelled=False):

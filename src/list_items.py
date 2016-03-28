@@ -132,10 +132,10 @@ class StatusCircle(QtGui.QWidget):
         paint.end()
 
 
-class FileTransferItem(QtGui.QWidget):
+class FileTransferItem(QtGui.QListWidget):
 
     def __init__(self, file_name, size, time, user, friend_number, file_number, show_accept, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtGui.QListWidget.__init__(self, parent)
         self.resize(QtCore.QSize(600, 50))
         self.setStyleSheet('QWidget { background-color: green; }')
 
