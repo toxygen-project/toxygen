@@ -5,6 +5,7 @@ Toxygen is [Tox](https://tox.chat/) client written on pure Python 2.7
 # Supported OS:
 - Windows
 - Linux
+
 ###Features
 - [x] 1v1 messages
 - [x] Contact aliases
@@ -23,6 +24,9 @@ Toxygen is [Tox](https://tox.chat/) client written on pure Python 2.7
 
 ###Downloads
 [Download last stable version](https://github.com/xveduk/toxygen/archive/master.zip)
+
+###Screenshots
+*Coming soon*
 
 ###Docs
 [Check /docs/ for more info](/docs/)
