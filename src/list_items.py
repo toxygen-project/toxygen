@@ -60,9 +60,9 @@ class MessageItem(QtGui.QWidget):
             self.message.setStyleSheet("QTextEdit { color: #4169E1; }")
         else:
             if text[0] == '>':
-                self.message.setStyleSheet("QPlainTextEdit { color: green; }")
+                self.message.setStyleSheet("QTextEdit { color: green; }")
             if text[-1] == '<':
-                self.message.setStyleSheet("QPlainTextEdit { color: red; }")
+                self.message.setStyleSheet("QTextEdit { color: red; }")
 
 
 class ContactItem(QtGui.QWidget):

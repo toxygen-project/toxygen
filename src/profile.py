@@ -227,7 +227,8 @@ class Friend(Contact):
             data.reverse()
         else:
             return []
-        self._corr = map(lambda tupl: TextMessage(*tupl), data) + self._corr
+        data = map(lambda tupl: TextMessage(*tupl), data)
+        self._corr = data + self._corr
         self._history_loaded = True
         return data
 
@@ -258,7 +259,7 @@ class Friend(Contact):
         """
         if hasattr(self, '_message_getter'):
             del self._message_getter
-        self._corr = []
+        self._corr = filter(lambda x: x.get_type() > 1, self._corr)
         self._unsaved_messages = 0
 
     def update_transfer_data(self, file_number, status):
@@ -595,12 +596,18 @@ class Profile(Contact, Singleton):
             return
         data.reverse()
         for message in data:
-            data = message.get_data()
-            self.create_message_item(data[0],
-                                     convert_time(data[2]),
-                                     friend.name if data[1] else self._name,
-                                     data[3],
-                                     False)
+            if message.get_type() <= 1:
+                data = message.get_data()
+                self.create_message_item(data[0],
+                                         convert_time(data[2]),
+                                         friend.name if data[1] else self._name,
+                                         data[3],
+                                         False)
+            elif message.get_type() == 2:
+                item = self.create_file_transfer_item(message, False)
+                if message.get_status() in (2, 4):
+                    ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
+                    ft.set_state_changed_handler(item.update)
 
     def export_history(self, directory):
         self._history.export(directory)
@@ -811,6 +818,7 @@ class Profile(Contact, Singleton):
                                  file_number)
         if friend_number == self.get_active_number():
             self.create_file_transfer_item(tm)
+            self._messages.scrollToBottom()
         else:
             friend.set_messages(True)
         friend.append_message(tm)
@@ -867,6 +875,7 @@ class Profile(Contact, Singleton):
         item = self.create_file_transfer_item(tm)
         friend.append_message(tm)
         st.set_state_changed_handler(item.update)
+        self._messages.scrollToBottom()
 
     def send_file(self, path):
         """
@@ -886,6 +895,7 @@ class Profile(Contact, Singleton):
         item = self.create_file_transfer_item(tm)
         st.set_state_changed_handler(item.update)
         self._friends[self._active_friend].append_message(tm)
+        self._messages.scrollToBottom()
 
     def incoming_chunk(self, friend_number, file_number, position, data):
         if (friend_number, file_number) in self._file_transfers:

@@ -13,7 +13,11 @@ class MessageArea(QtGui.QPlainTextEdit):
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return:
-            self.parent.send_message()
+            modifiers = event.modifiers()
+            if modifiers & QtCore.Qt.ControlModifier or modifiers & QtCore.Qt.ShiftModifier:
+                self.appendPlainText('')
+            else:
+                self.parent.send_message()
         else:
             super(self.__class__, self).keyPressEvent(event)
 
@@ -384,7 +388,7 @@ class MainWindow(QtGui.QMainWindow):
 
 
 class ScreenShotWindow(QtGui.QWidget):
-    # TODO: make window semi-transparent
+    # TODO: make selected area transparent
     def __init__(self):
         super(ScreenShotWindow, self).__init__()
         self.setMouseTracking(True)
@@ -405,6 +409,7 @@ class ScreenShotWindow(QtGui.QWidget):
             self.rubberband.setGeometry(
                 QtCore.QRect(self.origin, event.pos()).normalized())
         QtGui.QWidget.mouseMoveEvent(self, event)
+        self.repaint()
 
     def mouseReleaseEvent(self, event):
         if self.rubberband.isVisible():
@@ -422,6 +427,7 @@ class ScreenShotWindow(QtGui.QWidget):
             p.save(buffer, 'PNG')
             Profile.get_instance().send_screenshot(''.join(byte_array[i] for i in xrange(byte_array.length())))
             self.close()
+
 
 
 

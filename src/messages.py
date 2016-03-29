@@ -1,5 +1,4 @@
 
-PAGE_SIZE = 42
 
 MESSAGE_TYPE = {
     'TEXT': 0,
