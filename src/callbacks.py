@@ -63,6 +63,7 @@ def friend_status(tox, friend_num, new_status, user_data):
     profile = Profile.get_instance()
     friend = profile.get_friend_by_number(friend_num)
     invoke_in_main_thread(friend.set_status, new_status)
+    invoke_in_main_thread(profile.update_filtration)
 
 
 def friend_connection_status(tox, friend_num, new_status, user_data):
@@ -74,9 +75,9 @@ def friend_connection_status(tox, friend_num, new_status, user_data):
     friend = profile.get_friend_by_number(friend_num)
     if new_status == TOX_CONNECTION['NONE']:
         invoke_in_main_thread(friend.set_status, None)
+        invoke_in_main_thread(profile.update_filtration)
     elif friend.status is None:
         invoke_in_main_thread(profile.send_avatar, friend_num)
-    invoke_in_main_thread(profile.update_filtration)
 
 
 def friend_name(tox, friend_num, name, size, user_data):
