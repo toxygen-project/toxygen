@@ -2,6 +2,7 @@ from list_items import MessageItem, ContactItem, FileTransferItem
 from PySide import QtCore, QtGui
 from tox import Tox
 import os
+from messages import *
 from settings import Settings
 from toxcore_enums_and_consts import *
 from ctypes import *
@@ -221,12 +222,12 @@ class Friend(Contact):
         """
         if (first_time and self._history_loaded) or (not hasattr(self, '_message_getter')):
             return
-        data = self._message_getter.get(42)
+        data = self._message_getter.get(PAGE_SIZE)
         if data is not None and len(data):
             data.reverse()
         else:
             return []
-        self._corr = data + self._corr
+        self._corr = map(lambda tupl: TextMessage(*tupl), data) + self._corr
         self._history_loaded = True
         return data
 
@@ -237,7 +238,8 @@ class Friend(Contact):
         """
         if hasattr(self, '_message_getter'):
             del self._message_getter
-        return self._corr[-self._unsaved_messages:] if self._unsaved_messages else []
+        messages = filter(lambda x: x.get_type() <= 1, self._corr)
+        return map(lambda x: x.get_data(), messages[-self._unsaved_messages:]) if self._unsaved_messages else []
 
     def get_corr(self):
         return self._corr
@@ -247,7 +249,8 @@ class Friend(Contact):
         :param message: tuple (message, owner, unix_time, message_type)
         """
         self._corr.append(message)
-        self._unsaved_messages += 1
+        if message.get_type() <= 1:
+            self._unsaved_messages += 1
 
     def clear_corr(self):
         """
@@ -256,6 +259,17 @@ class Friend(Contact):
         if hasattr(self, '_message_getter'):
             del self._message_getter
         self._corr = []
+        self._unsaved_messages = 0
+
+    def update_transfer_data(self, file_number, status):
+        """
+        Update status of active transfer
+        """
+        try:
+            tr = filter(lambda x: x.get_type() == 2 and x.is_active(file_number), self._corr)[0]
+            tr.set_status(status)
+        except:
+            pass
 
     # -----------------------------------------------------------------------------------------------------------------
     # Alias support
@@ -436,10 +450,17 @@ class Profile(Contact, Singleton):
                 friend.load_corr()
                 messages = friend.get_corr()
                 for message in messages:
-                    self.create_message_item(message[0],
-                                             convert_time(message[2]),
-                                             friend.name if message[1] else self._name,
-                                             message[3])
+                    if message.get_type() <= 1:
+                        data = message.get_data()
+                        self.create_message_item(data[0],
+                                                 convert_time(data[2]),
+                                                 friend.name if data[1] else self._name,
+                                                 data[3])
+                    elif message.get_type() == 2:
+                        item = self.create_file_transfer_item(message)
+                        if message.get_status() in (2, 4):
+                            ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
+                            ft.set_state_changed_handler(item.update)
                 self._messages.scrollToBottom()
             else:
                 friend = self._friends[self._active_friend]
@@ -507,17 +528,13 @@ class Profile(Contact, Singleton):
             user_name = Profile.get_instance().get_active_name()
             self.create_message_item(message.decode('utf-8'), curr_time(), user_name, message_type)
             self._messages.scrollToBottom()
-            self._friends[self._active_friend].append_message((message.decode('utf-8'),
-                                                               MESSAGE_OWNER['FRIEND'],
-                                                               time.time(),
-                                                               message_type))
+            self._friends[self._active_friend].append_message(
+                TextMessage(message.decode('utf-8'), MESSAGE_OWNER['FRIEND'], time.time(), message_type))
         else:
             friend = self.get_friend_by_number(friend_num)
             friend.set_messages(True)
-            friend.append_message((message.decode('utf-8'),
-                                   MESSAGE_OWNER['FRIEND'],
-                                   int(time.time()),
-                                   message_type))
+            friend.append_message(
+                TextMessage(message.decode('utf-8'), MESSAGE_OWNER['FRIEND'], time.time(), message_type))
 
     def send_message(self, text):
         """
@@ -535,10 +552,7 @@ class Profile(Contact, Singleton):
             self.create_message_item(text, curr_time(), self._name, message_type)
             self._screen.messageEdit.clear()
             self._messages.scrollToBottom()
-            friend.append_message((text,
-                                   MESSAGE_OWNER['ME'],
-                                   time.time(),
-                                   message_type))
+            friend.append_message(TextMessage(text, MESSAGE_OWNER['ME'], time.time(), message_type))
 
     # -----------------------------------------------------------------------------------------------------------------
     # History support
@@ -581,10 +595,11 @@ class Profile(Contact, Singleton):
             return
         data.reverse()
         for message in data:
-            self.create_message_item(message[0],
-                                     convert_time(message[2]),
-                                     friend.name if message[1] else self._name,
-                                     message[3],
+            data = message.get_data()
+            self.create_message_item(data[0],
+                                     convert_time(data[2]),
+                                     friend.name if data[1] else self._name,
+                                     data[3],
                                      False)
 
     def export_history(self, directory):
@@ -617,12 +632,16 @@ class Profile(Contact, Singleton):
         self._messages.setItemWidget(elem, item)
         self._messages.repaint()
 
-    def create_file_transfer_item(self, file_name, size, friend_number, file_number, show_accept):
-        friend = self.get_friend_by_number(friend_number)
-        item = FileTransferItem(file_name, size, curr_time(), friend.name, friend_number, file_number, show_accept)
-        elem = QtGui.QListWidgetItem(self._messages)
+    def create_file_transfer_item(self, tm, append=True):
+        data = list(tm.get_data())
+        data[3] = self.get_friend_by_number(data[4]).name if data[3] else self._name
+        item = FileTransferItem(*data)
+        elem = QtGui.QListWidgetItem()
         elem.setSizeHint(QtCore.QSize(600, 50))
-        self._messages.addItem(elem)
+        if append:
+            self._messages.addItem(elem)
+        else:
+            self._messages.insertItem(0, elem)
         self._messages.setItemWidget(elem, item)
         self._messages.repaint()
         return item
@@ -761,7 +780,6 @@ class Profile(Contact, Singleton):
         :param size: file size in bytes
         :param file_name: file name without path
         """
-        # TODO: save transfer data in message list
         settings = Settings.get_instance()
         friend = self.get_friend_by_number(friend_number)
         file_name = file_name.decode('utf-8')
@@ -773,15 +791,29 @@ class Profile(Contact, Singleton):
                     d = file_name.rindex('.')
                 else:  # no extension
                     d = len(file_name)
-                new_file_name = file_name[:d] + '({})'.format(i) + file_name[d:]
+                new_file_name = file_name[:d] + ' ({})'.format(i) + file_name[d:]
                 i += 1
-            item = self.create_file_transfer_item(new_file_name, size, friend_number, file_number, False)
-            self.accept_transfer(item, path + '/' + new_file_name, friend_number, file_number)
+            self.accept_transfer(None, path + '/' + new_file_name, friend_number, file_number)
+            tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
+                                 time.time(),
+                                 FILE_TRANSFER_MESSAGE_STATUS['INCOMING_STARTED'],
+                                 size,
+                                 new_file_name,
+                                 friend_number,
+                                 file_number)
         else:
-            if self.get_active_number() != friend_number:
-                friend = self.get_friend_by_number(friend_number)
-                friend.set_messages(True)
-            self.create_file_transfer_item(file_name, size, friend_number, file_number, True)
+            tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
+                                 time.time(),
+                                 FILE_TRANSFER_MESSAGE_STATUS['INCOMING_NOT_STARTED'],
+                                 size,
+                                 file_name,
+                                 friend_number,
+                                 file_number)
+        if friend_number == self.get_active_number():
+            self.create_file_transfer_item(tm)
+        else:
+            friend.set_messages(True)
+        friend.append_message(tm)
 
     def cancel_transfer(self, friend_number, file_number, already_cancelled=False):
         """
@@ -797,6 +829,10 @@ class Profile(Contact, Singleton):
             else:
                 tr.cancelled()
             del self._file_transfers[(friend_number, file_number)]
+        else:
+            self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
+        self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+                                                                      FILE_TRANSFER_MESSAGE_STATUS['CANCELLED'])
 
     def accept_transfer(self, item, path, friend_number, file_number, size):
         """
@@ -809,17 +845,27 @@ class Profile(Contact, Singleton):
         rt = ReceiveTransfer(path, self._tox, friend_number, size, file_number)
         self._file_transfers[(friend_number, file_number)] = rt
         self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
-        rt.set_state_changed_handler(item.update)
+        if item is not None:
+            rt.set_state_changed_handler(item.update)
+        self.get_friend_by_number(friend_number).update_transfer_data(file_number, FILE_TRANSFER_MESSAGE_STATUS['INCOMING_STARTED'])
 
     def send_screenshot(self, data):
         """
         Sen screenshot to current active friend
-        :param data: raw data
+        :param data: raw data - png
         """
-        friend_number = self.get_active_number()
-        st = SendFromBuffer(self._tox, friend_number, data, 'toxygen_inline.png')
-        self._file_transfers[(friend_number, st.get_file_number())] = st
-        item = self.create_file_transfer_item('toxygen_inline.png', len(data), friend_number, st.get_file_number(), False)
+        friend = self._friends[self._active_friend]
+        st = SendFromBuffer(self._tox, friend.number, data, 'toxygen_inline.png')
+        self._file_transfers[(friend.number, st.get_file_number())] = st
+        tm = TransferMessage(MESSAGE_OWNER['ME'],
+                             time.time(),
+                             FILE_TRANSFER_MESSAGE_STATUS['OUTGOING'],
+                             len(data),
+                             'toxygen_inline.png',
+                             friend.number,
+                             st.get_file_number())
+        item = self.create_file_transfer_item(tm)
+        friend.append_message(tm)
         st.set_state_changed_handler(item.update)
 
     def send_file(self, path):
@@ -830,8 +876,16 @@ class Profile(Contact, Singleton):
         friend_number = self.get_active_number()
         st = SendTransfer(path, self._tox, friend_number)
         self._file_transfers[(friend_number, st.get_file_number())] = st
-        item = self.create_file_transfer_item(os.path.basename(path), os.path.getsize(path), friend_number, st.get_file_number(), False)
+        tm = TransferMessage(MESSAGE_OWNER['ME'],
+                             time.time(),
+                             FILE_TRANSFER_MESSAGE_STATUS['OUTGOING'],
+                             os.path.getsize(path),
+                             os.path.basename(path),
+                             friend_number,
+                             st.get_file_number())
+        item = self.create_file_transfer_item(tm)
         st.set_state_changed_handler(item.update)
+        self._friends[self._active_friend].append_message(tm)
 
     def incoming_chunk(self, friend_number, file_number, position, data):
         if (friend_number, file_number) in self._file_transfers:
@@ -841,6 +895,8 @@ class Profile(Contact, Singleton):
                 if type(transfer) is ReceiveAvatar:
                     self.get_friend_by_number(friend_number).load_avatar()
                     self.set_active(None)
+                else:
+                    self.get_friend_by_number(friend_number).update_transfer_data(file_number, FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])
                 del self._file_transfers[(friend_number, file_number)]
 
     def outgoing_chunk(self, friend_number, file_number, position, size):
@@ -849,6 +905,8 @@ class Profile(Contact, Singleton):
             transfer.send_chunk(position, size)
             if transfer.state:
                 del self._file_transfers[(friend_number, file_number)]
+                if type(transfer) is not SendAvatar:
+                    self.get_friend_by_number(friend_number).update_transfer_data(file_number, FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])
 
     # -----------------------------------------------------------------------------------------------------------------
     # Avatars support

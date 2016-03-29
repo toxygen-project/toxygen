@@ -2,7 +2,8 @@ from toxcore_enums_and_consts import *
 from PySide import QtGui, QtCore
 import profile
 from file_transfers import TOX_FILE_TRANSFER_STATE
-from util import curr_directory
+from util import curr_directory, convert_time
+from messages import FILE_TRANSFER_MESSAGE_STATUS
 
 
 class MessageEdit(QtGui.QTextEdit):
@@ -56,7 +57,7 @@ class MessageItem(QtGui.QWidget):
 
         if message_type == TOX_MESSAGE_TYPE['ACTION']:
             self.name.setStyleSheet("QLabel { color: #4169E1; }")
-            self.message.setStyleSheet("QPlainTextEdit { color: #4169E1; }")
+            self.message.setStyleSheet("QTextEdit { color: #4169E1; }")
         else:
             if text[0] == '>':
                 self.message.setStyleSheet("QPlainTextEdit { color: green; }")
@@ -134,13 +135,17 @@ class StatusCircle(QtGui.QWidget):
 
 class FileTransferItem(QtGui.QListWidget):
 
-    def __init__(self, file_name, size, time, user, friend_number, file_number, show_accept, parent=None):
+    def __init__(self, file_name, size, time, user, friend_number, file_number, state, parent=None):
+
         QtGui.QListWidget.__init__(self, parent)
         self.resize(QtCore.QSize(600, 50))
-        self.setStyleSheet('QWidget { background-color: green; }')
+        if state != FILE_TRANSFER_MESSAGE_STATUS['CANCELLED']:
+            self.setStyleSheet('QWidget { background-color: green; }')
+        else:
+            self.setStyleSheet('QWidget { background-color: #B40404; }')
 
         self.name = QtGui.QLabel(self)
-        self.name.setGeometry(QtCore.QRect(0, 15, 95, 20))
+        self.name.setGeometry(QtCore.QRect(1, 15, 95, 20))
         self.name.setTextFormat(QtCore.Qt.PlainText)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -152,37 +157,40 @@ class FileTransferItem(QtGui.QListWidget):
         self.name.setStyleSheet('QLabel { color: black; }')
 
         self.time = QtGui.QLabel(self)
-        self.time.setGeometry(QtCore.QRect(550, 0, 50, 50))
+        self.time.setGeometry(QtCore.QRect(550, 2, 50, 46))
         font.setPointSize(10)
         font.setBold(False)
         self.time.setFont(font)
         self.time.setObjectName("time")
-        self.time.setText(time)
+        self.time.setText(convert_time(time))
         self.time.setStyleSheet('QLabel { color: black; }')
 
         self.cancel = QtGui.QPushButton(self)
-        self.cancel.setGeometry(QtCore.QRect(500, 0, 50, 50))
+        self.cancel.setGeometry(QtCore.QRect(500, 2, 46, 46))
         pixmap = QtGui.QPixmap(curr_directory() + '/images/decline.png')
         icon = QtGui.QIcon(pixmap)
         self.cancel.setIcon(icon)
         self.cancel.setIconSize(QtCore.QSize(30, 30))
+        self.cancel.setVisible(state > 1)
         self.cancel.clicked.connect(lambda: self.cancel_transfer(friend_number, file_number))
 
         self.accept = QtGui.QPushButton(self)
-        self.accept.setGeometry(QtCore.QRect(450, 0, 50, 50))
+        self.accept.setGeometry(QtCore.QRect(450, 2, 46, 46))
         pixmap = QtGui.QPixmap(curr_directory() + '/images/accept.png')
         icon = QtGui.QIcon(pixmap)
         self.accept.setIcon(icon)
         self.accept.setIconSize(QtCore.QSize(30, 30))
         self.accept.clicked.connect(lambda: self.accept_transfer(friend_number, file_number, size))
-        self.accept.setVisible(show_accept)
+        self.accept.setVisible(state == FILE_TRANSFER_MESSAGE_STATUS['INCOMING_NOT_STARTED'])
 
         self.pb = QtGui.QProgressBar(self)
         self.pb.setGeometry(QtCore.QRect(100, 15, 100, 20))
         self.pb.setValue(0)
+        if state < 2:
+            self.pb.setVisible(False)
 
         self.file_name = QtGui.QLabel(self)
-        self.file_name.setGeometry(QtCore.QRect(210, 0, 230, 50))
+        self.file_name.setGeometry(QtCore.QRect(210, 2, 230, 46))
         font.setPointSize(12)
         self.file_name.setFont(font)
         self.file_name.setObjectName("time")
