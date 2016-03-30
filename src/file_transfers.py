@@ -48,7 +48,6 @@ class FileTransfer(QtCore.QObject):
     def cancel(self):
         self.send_control(TOX_FILE_CONTROL['CANCEL'])
         if hasattr(self, '_file'):
-            print 'closing'
             self._file.close()
         self._state_changed.signal.emit(self.state, self._done / self._size)
 
@@ -64,10 +63,6 @@ class FileTransfer(QtCore.QObject):
 
     def get_file_id(self):
         return self._tox.file_get_file_id(self._friend_number, self._file_number)
-
-    def file_seek(self):
-        # TODO implement or not implement
-        pass
 
 # -----------------------------------------------------------------------------------------------------------------
 # Send file

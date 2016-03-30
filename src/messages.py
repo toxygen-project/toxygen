@@ -28,6 +28,9 @@ class Message(object):
 
 
 class TextMessage(Message):
+    """
+    Plain text or action message
+    """
 
     def __init__(self, message, owner, time, message_type):
         super(TextMessage, self).__init__(message_type, owner, time)
@@ -38,6 +41,9 @@ class TextMessage(Message):
 
 
 class TransferMessage(Message):
+    """
+    Message with info about file transfer
+    """
 
     def __init__(self, owner, time, status, size, name, friend_number, file_number):
         super(TransferMessage, self).__init__(MESSAGE_TYPE['FILE_TRANSFER'], owner, time)
@@ -66,6 +72,9 @@ class TransferMessage(Message):
 
 
 class InlineImage(Message):
+    """
+    Inline image
+    """
 
     def __init__(self, owner, time, data):
         super(InlineImage, self).__init__(MESSAGE_TYPE['INLINE'], owner, time)

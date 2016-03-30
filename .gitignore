@@ -12,3 +12,6 @@ src/libs
 *.iml
 *.so
 *.log
+src/build
+src/dist
+*.spec

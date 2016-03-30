@@ -7,7 +7,7 @@ program_version = '0.0.3'
 
 
 def log(data):
-    with open('logs.log', 'a') as fl:
+    with open(curr_directory() + '/logs.log', 'a') as fl:
         fl.write(str(data) + '\n')
 
 
