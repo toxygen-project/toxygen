@@ -1,5 +1,5 @@
 # Toxygen 
-Toxygen is [Tox](https://tox.chat/) client written on pure Python 2.7
+Toxygen is simple [Tox](https://tox.chat/) client written on pure Python 2.7
 ### [How to install](/docs/install.md)
 
 # Supported OS:
@@ -26,7 +26,9 @@ Toxygen is [Tox](https://tox.chat/) client written on pure Python 2.7
 [Download last stable version](https://github.com/xveduk/toxygen/archive/master.zip)
 
 ###Screenshots
-*Coming soon*
+*Toxygen running on Ubuntu and Windows*
+![Ubuntu](/docs/ubuntu.png)
+![Windows](/docs/windows.png)
 
 ###Docs
 [Check /docs/ for more info](/docs/)
