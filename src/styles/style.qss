@@ -45,7 +45,7 @@ QWidget
 {
     color: silver;
     background-color: #302F2F;
-    selection-background-color:#008B8B;
+    selection-background-color: #A9A9A9;
     selection-color: black;
     background-clip: border;
     border-image: none;
@@ -60,7 +60,7 @@ QWidget:item:hover
 
 QWidget:item:selected
 {
-    background-color: #008B8B;
+    background-color: #A9A9A9;
 }
 
 QCheckBox
@@ -229,13 +229,13 @@ QMenuBar::item
 QMenuBar::item:selected
 {
     background: transparent;
-    border: 1px solid #008B8B;
+    border: 1px solid #A9A9A9;
 }
 
 QMenuBar::item:pressed
 {
     border: 1px solid #3A3939;
-    background-color: #008B8B;
+    background-color: #A9A9A9;
     color: black;
     margin-bottom:-1px;
     padding-bottom:1px;
@@ -1266,6 +1266,6 @@ QPushButton:hover
 
 #toxygen
 {
-    color: white;
+    color: #A9A9A9;
 }
 

@@ -87,7 +87,7 @@ class Contact(object):
         self._name, self._status_message = name, status_message
         self._status, self._widget = None, widget
         if type(self) is Profile:
-            self._widget.name.setText(name if len(name) <= 14 else name[:11] + '...')
+            self._widget.name.setText(name if len(name) <= 12 else name[:9] + '...')
         else:
             self._widget.name.setText(name if len(name) <= 20 else name[:17] + '...')
         if type(self) is Profile:
@@ -108,7 +108,7 @@ class Contact(object):
     def set_name(self, value):
         self._name = value.decode('utf-8')
         if type(self) is Profile:
-            self._widget.name.setText(self._name if len(self._name) <= 14 else self._name[:11] + '...')
+            self._widget.name.setText(self._name if len(self._name) <= 12 else self._name[:9] + '...')
         else:
             self._widget.name.setText(self._name if len(self._name) <= 20 else self._name[:17] + '...')
         self._widget.name.repaint()
