@@ -119,7 +119,7 @@ def friend_message(window, tray):
         if not window.isActiveWindow():
             friend = profile.get_friend_by_number(friend_number)
             if settings['notifications']:
-                invoke_in_main_thread(tray_notification, friend.name, message.decode('utf8'), tray)
+                invoke_in_main_thread(tray_notification, friend.name, message.decode('utf8'), tray, window)
             if settings['sound_notifications']:
                 sound_notification(SOUND_NOTIFICATION['MESSAGE'])
     return wrapped

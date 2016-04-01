@@ -1,4 +1,4 @@
-from PySide import QtGui
+from PySide import QtGui, QtCore
 from PySide.phonon import Phonon
 from util import curr_directory
 # TODO: make app icon active
@@ -12,11 +12,22 @@ SOUND_NOTIFICATION = {
 }
 
 
-def tray_notification(title, text, tray):
+def tray_notification(title, text, tray, window):
+    """
+    :param title: Name of user who sent message or file
+    :param text: text of message or file info
+    :param tray: ref to tray icon
+    :param window: main window
+    """
     if QtGui.QSystemTrayIcon.isSystemTrayAvailable():
         if len(text) > 30:
             text = text[:27] + '...'
         tray.showMessage(title, text, QtGui.QSystemTrayIcon.NoIcon, 3000)
+
+        def message_clicked():
+            window.setWindowState(window.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
+            window.activateWindow()
+        tray.connect(tray, QtCore.SIGNAL("messageClicked()"), message_clicked)
 
 
 def sound_notification(t):
