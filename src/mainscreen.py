@@ -18,6 +18,8 @@ class MessageArea(QtGui.QPlainTextEdit):
                 self.appendPlainText('')
             else:
                 self.parent.send_message()
+        elif event.key() == QtCore.Qt.Key_Up and not self.toPlainText():
+            self.appendPlainText(Profile.get_instance().get_last_message())
         else:
             super(self.__class__, self).keyPressEvent(event)
 
@@ -148,7 +150,7 @@ class MainWindow(QtGui.QMainWindow):
         self.avatar_label = Form.avatar_label = QtGui.QLabel(Form)
         self.avatar_label.setGeometry(QtCore.QRect(10, 20, 64, 64))
         self.avatar_label.setScaledContents(True)
-        self.name = Form.name = QtGui.QLabel(Form)
+        self.name = Form.name = DataLabel(Form)
         Form.name.setGeometry(QtCore.QRect(80, 30, 150, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -156,8 +158,8 @@ class MainWindow(QtGui.QMainWindow):
         font.setBold(True)
         Form.name.setFont(font)
         Form.name.setObjectName("name")
-        self.status_message = Form.status_message = QtGui.QLabel(Form)
-        Form.status_message.setGeometry(QtCore.QRect(80, 60, 190, 20))
+        self.status_message = Form.status_message = DataLabel(Form)
+        Form.status_message.setGeometry(QtCore.QRect(80, 60, 170, 20))
         font.setPointSize(12)
         font.setBold(False)
         Form.status_message.setFont(font)
@@ -179,7 +181,7 @@ class MainWindow(QtGui.QMainWindow):
         self.account_avatar = QtGui.QLabel(Form)
         self.account_avatar.setGeometry(QtCore.QRect(10, 20, 64, 64))
         self.account_avatar.setScaledContents(True)
-        self.account_name = QtGui.QLabel(Form)
+        self.account_name = DataLabel(Form)
         self.account_name.setGeometry(QtCore.QRect(100, 30, 400, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -187,7 +189,7 @@ class MainWindow(QtGui.QMainWindow):
         font.setBold(True)
         self.account_name.setFont(font)
         self.account_name.setObjectName("account_name")
-        self.account_status = QtGui.QLabel(Form)
+        self.account_status = DataLabel(Form)
         self.account_status.setGeometry(QtCore.QRect(100, 50, 400, 25))
         font.setPointSize(12)
         font.setBold(False)

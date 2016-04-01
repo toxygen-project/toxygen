@@ -26,6 +26,9 @@ class Message(object):
     def get_type(self):
         return self._type
 
+    def get_owner(self):
+        return self._owner
+
 
 class TextMessage(Message):
     """

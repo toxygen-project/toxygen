@@ -30,7 +30,7 @@ class MessageItem(QtGui.QWidget):
     """
     def __init__(self, text, time, user='', message_type=TOX_MESSAGE_TYPE['NORMAL'], parent=None):
         QtGui.QWidget.__init__(self, parent)
-        self.name = QtGui.QLabel(self)
+        self.name = DataLabel(self)
         self.name.setGeometry(QtCore.QRect(0, 2, 95, 20))
         self.name.setTextFormat(QtCore.Qt.PlainText)
         font = QtGui.QFont()
@@ -39,7 +39,7 @@ class MessageItem(QtGui.QWidget):
         font.setBold(True)
         self.name.setFont(font)
         self.name.setObjectName("name")
-        self.name.setText(user if len(user) <= 14 else user[:11] + '...')
+        self.name.setText(user)
 
         self.time = QtGui.QLabel(self)
         self.time.setGeometry(QtCore.QRect(parent.width() - 50, 0, 50, 25))
@@ -65,6 +65,15 @@ class MessageItem(QtGui.QWidget):
                 self.message.setStyleSheet("QTextEdit { color: red; }")
 
 
+class DataLabel(QtGui.QLabel):
+
+    def paintEvent(self, event):
+        painter = QtGui.QPainter(self)
+        metrics = QtGui.QFontMetrics(self.font())
+        text = metrics.elidedText(self.text(), QtCore.Qt.ElideRight, self.width())
+        painter.drawText(self.rect(), self.alignment(), text)
+
+
 class ContactItem(QtGui.QWidget):
     """
     Contact in friends list
@@ -75,7 +84,7 @@ class ContactItem(QtGui.QWidget):
         self.avatar_label = QtGui.QLabel(self)
         self.avatar_label.setGeometry(QtCore.QRect(3, 3, 64, 64))
         self.avatar_label.setScaledContents(True)
-        self.name = QtGui.QLabel(self)
+        self.name = DataLabel(self)
         self.name.setGeometry(QtCore.QRect(70, 10, 170, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -83,14 +92,14 @@ class ContactItem(QtGui.QWidget):
         font.setBold(True)
         self.name.setFont(font)
         self.name.setObjectName("name")
-        self.status_message = QtGui.QLabel(self)
+        self.status_message = DataLabel(self)
         self.status_message.setGeometry(QtCore.QRect(70, 30, 180, 20))
         font.setPointSize(10)
         font.setBold(False)
         self.status_message.setFont(font)
         self.status_message.setObjectName("status_message")
         self.connection_status = StatusCircle(self)
-        self.connection_status.setGeometry(QtCore.QRect(218, 5, 32, 32))
+        self.connection_status.setGeometry(QtCore.QRect(230, 5, 32, 32))
         self.connection_status.setObjectName("connection_status")
 
 
@@ -144,7 +153,7 @@ class FileTransferItem(QtGui.QListWidget):
         else:
             self.setStyleSheet('QWidget { background-color: #B40404; }')
 
-        self.name = QtGui.QLabel(self)
+        self.name = DataLabel(self)
         self.name.setGeometry(QtCore.QRect(1, 15, 95, 20))
         self.name.setTextFormat(QtCore.Qt.PlainText)
         font = QtGui.QFont()
@@ -152,7 +161,7 @@ class FileTransferItem(QtGui.QListWidget):
         font.setPointSize(11)
         font.setBold(True)
         self.name.setFont(font)
-        self.name.setText(user if len(user) <= 14 else user[:11] + '...')
+        self.name.setText(user)
         self.name.setStyleSheet('QLabel { color: black; }')
 
         self.time = QtGui.QLabel(self)
@@ -190,7 +199,7 @@ class FileTransferItem(QtGui.QListWidget):
         if state < 2:
             self.pb.setVisible(False)
 
-        self.file_name = QtGui.QLabel(self)
+        self.file_name = DataLabel(self)
         self.file_name.setGeometry(QtCore.QRect(210, 2, 230, 46))
         font.setPointSize(12)
         self.file_name.setFont(font)
@@ -202,7 +211,7 @@ class FileTransferItem(QtGui.QListWidget):
         else:
             file_size = '{}KB'.format(file_size)
         file_data = u'{} {}'.format(file_size, file_name)
-        self.file_name.setText(file_data if len(file_data) <= 27 else file_data[:24] + '...')
+        self.file_name.setText(file_data)
         self.file_name.setStyleSheet('QLabel { color: black; }')
         self.saved_name = file_name
 

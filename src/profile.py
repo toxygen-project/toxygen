@@ -86,15 +86,8 @@ class Contact(object):
         """
         self._name, self._status_message = name, status_message
         self._status, self._widget = None, widget
-        if type(self) is Profile:
-            self._widget.name.setText(name if len(name) <= 12 else name[:9] + '...')
-        else:
-            self._widget.name.setText(name if len(name) <= 20 else name[:17] + '...')
-        if type(self) is Profile:
-            text = self._status_message if len(self._status_message) <= 20 else self._status_message[:17] + '...'
-        else:
-            text = self._status_message if len(self._status_message) <= 30 else self._status_message[:27] + '...'
-        self._widget.status_message.setText(text)
+        self._widget.name.setText(name)
+        self._widget.status_message.setText(status_message)
         self._tox_id = tox_id
         self.load_avatar()
 
@@ -107,10 +100,7 @@ class Contact(object):
 
     def set_name(self, value):
         self._name = value.decode('utf-8')
-        if type(self) is Profile:
-            self._widget.name.setText(self._name if len(self._name) <= 12 else self._name[:9] + '...')
-        else:
-            self._widget.name.setText(self._name if len(self._name) <= 20 else self._name[:17] + '...')
+        self._widget.name.setText(self._name)
         self._widget.name.repaint()
 
     name = property(get_name, set_name)
@@ -124,11 +114,7 @@ class Contact(object):
 
     def set_status_message(self, value):
         self._status_message = value.decode('utf-8')
-        if type(self) is Profile:
-            text = self._status_message if len(self._status_message) <= 20 else self._status_message[:17] + '...'
-        else:
-            text = self._status_message if len(self._status_message) <= 30 else self._status_message[:27] + '...'
-        self._widget.status_message.setText(text)
+        self._widget.status_message.setText(self._status_message)
         self._widget.status_message.repaint()
 
     status_message = property(get_status_message, set_status_message)
@@ -253,6 +239,13 @@ class Friend(Contact):
         self._corr.append(message)
         if message.get_type() <= 1:
             self._unsaved_messages += 1
+
+    def get_last_message(self):
+        messages = filter(lambda x: x.get_type() <= 1 and not x.get_owner(), self._corr)
+        if messages:
+            return messages[-1].get_data()[0]
+        else:
+            return ''
 
     def clear_corr(self):
         """
@@ -466,10 +459,9 @@ class Profile(Contact, Singleton):
                 self._messages.scrollToBottom()
             else:
                 friend = self._friends[self._active_friend]
-            name = friend.name if len(friend.name) < 50 else friend.name[:47] + '...'
-            status_message = friend.status_message if len(friend.status_message) < 66 else friend.status_message[:63] + '...'
-            self._screen.account_name.setText(name)
-            self._screen.account_status.setText(status_message)
+
+            self._screen.account_name.setText(friend.name)
+            self._screen.account_status.setText(friend.status_message)
             avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(friend.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
             if not os.path.isfile(avatar_path):  # load default image
                 avatar_path = curr_directory() + '/images/avatar.png'
@@ -483,6 +475,9 @@ class Profile(Contact, Singleton):
             raise
 
     active_friend = property(get_active, set_active)
+
+    def get_last_message(self):
+        return self._friends[self._active_friend].get_last_message()
 
     def get_active_number(self):
         return self._friends[self._active_friend].number if self._active_friend + 1 else -1
