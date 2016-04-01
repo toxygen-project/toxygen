@@ -22,16 +22,6 @@
  * THE SOFTWARE.
  */
 
-QProgressBar:horizontal {
-    border: 1px solid #3A3939;
-    text-align: center;
-    padding: 1px;
-    background: #201F1F;
-}
-QProgressBar::chunk:horizontal {
-    background-color: qlineargradient(spread:reflect, x1:1, y1:0.545, x2:1, y2:0, stop:0 rgba(28, 66, 111, 255), stop:1 rgba(37, 87, 146, 255));
-}
-
 QToolTip
 {
     border: 1px solid #3A3939;
@@ -61,6 +51,16 @@ QWidget:item:hover
 QWidget:item:selected
 {
     background-color: #A9A9A9;
+}
+
+QProgressBar:horizontal {
+    border: 1px solid #3A3939;
+    text-align: center;
+    padding: 1px;
+    background: #201F1F;
+}
+QProgressBar::chunk:horizontal {
+    background-color: qlineargradient(spread:reflect, x1:1, y1:0.545, x2:1, y2:0, stop:0 rgba(28, 66, 111, 255), stop:1 rgba(37, 87, 146, 255));
 }
 
 QCheckBox
@@ -1268,4 +1268,3 @@ QPushButton:hover
 {
     color: #A9A9A9;
 }
-

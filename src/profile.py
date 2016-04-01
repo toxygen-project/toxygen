@@ -169,8 +169,9 @@ class Contact(object):
             avatar_path = 'avatar.png'
             os.chdir(curr_directory() + '/images/')
         pixmap = QtGui.QPixmap(QtCore.QSize(64, 64))
-        pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio)
-        self._widget.avatar_label.setPixmap(avatar_path)
+        pixmap.load(avatar_path)
+        self._widget.avatar_label.setScaledContents(False)
+        self._widget.avatar_label.setPixmap(pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio))
         self._widget.avatar_label.repaint()
 
     def reset_avatar(self):
@@ -473,8 +474,9 @@ class Profile(Contact, Singleton):
             if not os.path.isfile(avatar_path):  # load default image
                 avatar_path = curr_directory() + '/images/avatar.png'
             pixmap = QtGui.QPixmap(QtCore.QSize(64, 64))
-            pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio)
-            self._screen.account_avatar.setPixmap(avatar_path)
+            pixmap.load(avatar_path)
+            self._screen.account_avatar.setScaledContents(False)
+            self._screen.account_avatar.setPixmap(pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio))
             self._screen.account_avatar.repaint()
         except:  # no friend found. ignore
             log('Incorrect friend value: ' + str(value))

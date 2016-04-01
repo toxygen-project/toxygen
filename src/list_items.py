@@ -138,7 +138,7 @@ class FileTransferItem(QtGui.QListWidget):
     def __init__(self, file_name, size, time, user, friend_number, file_number, state, parent=None):
 
         QtGui.QListWidget.__init__(self, parent)
-        self.resize(QtCore.QSize(600, 50))
+        self.resize(QtCore.QSize(620, 50))
         if state != FILE_TRANSFER_MESSAGE_STATUS['CANCELLED']:
             self.setStyleSheet('QWidget { background-color: green; }')
         else:
@@ -152,16 +152,14 @@ class FileTransferItem(QtGui.QListWidget):
         font.setPointSize(11)
         font.setBold(True)
         self.name.setFont(font)
-        self.name.setObjectName("name")
         self.name.setText(user if len(user) <= 14 else user[:11] + '...')
         self.name.setStyleSheet('QLabel { color: black; }')
 
         self.time = QtGui.QLabel(self)
-        self.time.setGeometry(QtCore.QRect(550, 2, 50, 46))
+        self.time.setGeometry(QtCore.QRect(570, 2, 50, 46))
         font.setPointSize(10)
         font.setBold(False)
         self.time.setFont(font)
-        self.time.setObjectName("time")
         self.time.setText(convert_time(time))
         self.time.setStyleSheet('QLabel { color: black; }')
 
@@ -173,6 +171,7 @@ class FileTransferItem(QtGui.QListWidget):
         self.cancel.setIconSize(QtCore.QSize(30, 30))
         self.cancel.setVisible(state > 1)
         self.cancel.clicked.connect(lambda: self.cancel_transfer(friend_number, file_number))
+        self.cancel.setStyleSheet('QPushButton:hover { border: 1px solid #3A3939; }')
 
         self.accept = QtGui.QPushButton(self)
         self.accept.setGeometry(QtCore.QRect(450, 2, 46, 46))
@@ -182,10 +181,12 @@ class FileTransferItem(QtGui.QListWidget):
         self.accept.setIconSize(QtCore.QSize(30, 30))
         self.accept.clicked.connect(lambda: self.accept_transfer(friend_number, file_number, size))
         self.accept.setVisible(state == FILE_TRANSFER_MESSAGE_STATUS['INCOMING_NOT_STARTED'])
+        self.accept.setStyleSheet('QPushButton:hover { border: 1px solid #3A3939; }')
 
         self.pb = QtGui.QProgressBar(self)
         self.pb.setGeometry(QtCore.QRect(100, 15, 100, 20))
         self.pb.setValue(0)
+        self.pb.setStyleSheet('QProgressBar { background-color: #302F2F; }')
         if state < 2:
             self.pb.setVisible(False)
 
@@ -193,7 +194,6 @@ class FileTransferItem(QtGui.QListWidget):
         self.file_name.setGeometry(QtCore.QRect(210, 2, 230, 46))
         font.setPointSize(12)
         self.file_name.setFont(font)
-        self.file_name.setObjectName("time")
         file_size = size / 1024
         if not file_size:
             file_size = '{}B'.format(size)
