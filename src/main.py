@@ -69,7 +69,12 @@ class Toxygen(object):
         m = QtGui.QMenu()
         show = m.addAction('Open Toxygen')
         exit = m.addAction('Exit')
-        m.connect(show, QtCore.SIGNAL("triggered()"), lambda: self.ms.activateWindow())
+
+        def show_window():
+            self.ms.setWindowState(self.ms.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
+            self.ms.activateWindow()
+
+        m.connect(show, QtCore.SIGNAL("triggered()"), show_window)
         m.connect(exit, QtCore.SIGNAL("triggered()"), lambda: app.exit())
         self.tray.setContextMenu(m)
         self.tray.show()

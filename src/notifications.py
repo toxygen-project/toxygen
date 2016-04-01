@@ -25,7 +25,7 @@ def sound_notification(t):
     elif t == SOUND_NOTIFICATION['FILE_TRANSFER']:
         f = curr_directory() + '/sounds/file.wav'
     else:
-        return
+        f = curr_directory() + '/sounds/contact.wav'
     m = Phonon.MediaSource(f)
     player = Phonon.createPlayer(Phonon.MusicCategory, m)
     player.play()
