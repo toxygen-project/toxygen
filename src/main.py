@@ -62,12 +62,18 @@ class Toxygen(object):
             data = ProfileHelper.open_profile(path, name)
             self.tox = tox_factory(data, settings)
 
+        self.ms = MainWindow(self.tox, self.reset)
+
         # tray icon
         self.tray = QtGui.QSystemTrayIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
-        self.tray.setContextMenu(QtGui.QMenu())
+        m = QtGui.QMenu()
+        show = m.addAction('Open Toxygen')
+        exit = m.addAction('Exit')
+        m.connect(show, QtCore.SIGNAL("triggered()"), lambda: self.ms.activateWindow())
+        m.connect(exit, QtCore.SIGNAL("triggered()"), lambda: app.exit())
+        self.tray.setContextMenu(m)
         self.tray.show()
 
-        self.ms = MainWindow(self.tox, self.reset)
         self.ms.show()
         QtGui.QApplication.setStyle(get_style(settings['theme']))  # set application style
 
