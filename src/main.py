@@ -71,8 +71,9 @@ class Toxygen(object):
         exit = m.addAction('Exit')
 
         def show_window():
-            self.ms.setWindowState(self.ms.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
-            self.ms.activateWindow()
+            if not self.ms.isActiveWindow():
+                self.ms.setWindowState(self.ms.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
+                self.ms.activateWindow()
 
         m.connect(show, QtCore.SIGNAL("triggered()"), show_window)
         m.connect(exit, QtCore.SIGNAL("triggered()"), lambda: app.exit())

@@ -205,7 +205,6 @@ class Friend(Contact):
     def load_corr(self, first_time=True):
         """
         :param first_time: friend became active, load first part of messages
-        :return: list of loaded messages
         """
         if (first_time and self._history_loaded) or (not hasattr(self, '_message_getter')):
             return
@@ -213,11 +212,10 @@ class Friend(Contact):
         if data is not None and len(data):
             data.reverse()
         else:
-            return []
+            return
         data = map(lambda tupl: TextMessage(*tupl), data)
         self._corr = data + self._corr
         self._history_loaded = True
-        return data
 
     def get_corr_for_saving(self):
         """
@@ -230,7 +228,7 @@ class Friend(Contact):
         return map(lambda x: x.get_data(), messages[-self._unsaved_messages:]) if self._unsaved_messages else []
 
     def get_corr(self):
-        return self._corr
+        return self._corr[:]
 
     def append_message(self, message):
         """
@@ -443,7 +441,7 @@ class Profile(Contact, Singleton):
                 self._screen.messageEdit.clear()
                 self._messages.clear()
                 friend.load_corr()
-                messages = friend.get_corr()
+                messages = friend.get_corr()[-PAGE_SIZE:]
                 for message in messages:
                     if message.get_type() <= 1:
                         data = message.get_data()
@@ -453,7 +451,7 @@ class Profile(Contact, Singleton):
                                                  data[3])
                     elif message.get_type() == 2:
                         item = self.create_file_transfer_item(message)
-                        if message.get_status() in (2, 4):
+                        if message.get_status() in (2, 4):  # active file transfer
                             ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
                             ft.set_state_changed_handler(item.update)
                 self._messages.scrollToBottom()
@@ -588,10 +586,12 @@ class Profile(Contact, Singleton):
         Tries to load next part of messages
         """
         friend = self._friends[self._active_friend]
-        data = friend.load_corr(False)
+        friend.load_corr(False)
+        data = friend.get_corr()
         if not data:
             return
         data.reverse()
+        data = data[self._messages.count():self._messages.count() + PAGE_SIZE]
         for message in data:
             if message.get_type() <= 1:
                 data = message.get_data()
@@ -856,7 +856,7 @@ class Profile(Contact, Singleton):
 
     def send_screenshot(self, data):
         """
-        Sen screenshot to current active friend
+        Send screenshot to current active friend
         :param data: raw data - png
         """
         friend = self._friends[self._active_friend]
