@@ -85,7 +85,7 @@ class ContactItem(QtGui.QWidget):
         self.avatar_label.setGeometry(QtCore.QRect(3, 3, 64, 64))
         self.avatar_label.setScaledContents(True)
         self.name = DataLabel(self)
-        self.name.setGeometry(QtCore.QRect(70, 10, 170, 25))
+        self.name.setGeometry(QtCore.QRect(70, 10, 160, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(12)
@@ -99,7 +99,7 @@ class ContactItem(QtGui.QWidget):
         self.status_message.setFont(font)
         self.status_message.setObjectName("status_message")
         self.connection_status = StatusCircle(self)
-        self.connection_status.setGeometry(QtCore.QRect(230, 5, 32, 32))
+        self.connection_status.setGeometry(QtCore.QRect(220, 5, 32, 32))
         self.connection_status.setObjectName("connection_status")
 
 

@@ -36,8 +36,7 @@ def invoke_in_main_thread(fn, *args, **kwargs):
 
 def self_connection_status(tox_link):
     """
-    :param tox_link: tox instance
-    :return: function for tox.callback_self_connection_status
+    Current user changed connection status (offline, UDP, TCP)
     """
     def wrapped(tox, connection, user_data):
         print 'Connection status: ', str(connection)
@@ -85,6 +84,9 @@ def friend_connection_status(tox, friend_num, new_status, user_data):
 
 
 def friend_name(tox, friend_num, name, size, user_data):
+    """
+    Friend changed his name
+    """
     profile = Profile.get_instance()
     friend = profile.get_friend_by_number(friend_num)
     print 'New name: ', str(friend_num), str(name)
@@ -108,9 +110,7 @@ def friend_status_message(tox, friend_num, status_message, size, user_data):
 
 def friend_message(window, tray):
     """
-    :param window: main window
-    :param tray: tray
-    :return: function for tox.callback_friend_message. Adds new message to list
+    New message from friend
     """
     def wrapped(tox, friend_number, message_type, message, size, user_data):
         profile = Profile.get_instance()
@@ -139,6 +139,9 @@ def friend_request(tox, public_key, message, message_size, user_data):
 
 
 def tox_file_recv(window, tray):
+    """
+    New incoming file
+    """
     def wrapped(tox, friend_number, file_number, file_type, size, file_name, file_name_size, user_data):
         profile = Profile.get_instance()
         settings = Settings.get_instance()
@@ -166,6 +169,9 @@ def tox_file_recv(window, tray):
 
 
 def file_recv_chunk(tox, friend_number, file_number, position, chunk, length, user_data):
+    """
+    Incoming chunk
+    """
     invoke_in_main_thread(Profile.get_instance().incoming_chunk,
                           friend_number,
                           file_number,
@@ -174,6 +180,9 @@ def file_recv_chunk(tox, friend_number, file_number, position, chunk, length, us
 
 
 def file_chunk_request(tox, friend_number, file_number, position, size, user_data):
+    """
+    Outgoing chunk
+    """
     Profile.get_instance().outgoing_chunk(
                           friend_number,
                           file_number,
@@ -182,6 +191,9 @@ def file_chunk_request(tox, friend_number, file_number, position, size, user_dat
 
 
 def file_recv_control(tox, friend_number, file_number, file_control, user_data):
+    """
+    Friend cancelled, paused or resumed file transfer
+    """
     if file_control == TOX_FILE_CONTROL['CANCEL']:
         Profile.get_instance().cancel_transfer(friend_number, file_number, True)
 

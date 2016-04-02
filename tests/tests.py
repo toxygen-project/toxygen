@@ -2,13 +2,6 @@ from src.bootstrap import node_generator
 from src.profile import *
 from src.tox_dns import tox_dns
 
-class TestSettings():
-
-    def test_creation(self):
-        s = Settings()
-        assert s['ipv6_enabled'] is not None
-        assert s['notifications'] is not None
-
 
 class TestProfile():
 

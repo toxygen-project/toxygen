@@ -1,7 +1,6 @@
 from PySide import QtGui, QtCore
 from PySide.phonon import Phonon
 from util import curr_directory
-# TODO: make app icon active
 # TODO: rewrite sound notifications
 
 
@@ -14,6 +13,8 @@ SOUND_NOTIFICATION = {
 
 def tray_notification(title, text, tray, window):
     """
+    Show tray notification and activate window icon
+    NOTE: different behaviour on different OS
     :param title: Name of user who sent message or file
     :param text: text of message or file info
     :param tray: ref to tray icon
@@ -23,6 +24,7 @@ def tray_notification(title, text, tray, window):
         if len(text) > 30:
             text = text[:27] + '...'
         tray.showMessage(title, text, QtGui.QSystemTrayIcon.NoIcon, 3000)
+        QtGui.QApplication.alert(window, 0)
 
         def message_clicked():
             window.setWindowState(window.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
@@ -31,6 +33,10 @@ def tray_notification(title, text, tray, window):
 
 
 def sound_notification(t):
+    """
+    Plays sound notification
+    :param t: type of notification
+    """
     if t == SOUND_NOTIFICATION['MESSAGE']:
         f = curr_directory() + '/sounds/message.wav'
     elif t == SOUND_NOTIFICATION['FILE_TRANSFER']:
