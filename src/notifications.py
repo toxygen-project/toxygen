@@ -2,7 +2,7 @@ from PySide import QtGui, QtCore
 from PySide.phonon import Phonon
 from util import curr_directory
 # TODO: make app icon active
-# TODO: add all sound notifications
+# TODO: rewrite sound notifications
 
 
 SOUND_NOTIFICATION = {

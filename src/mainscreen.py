@@ -21,7 +21,7 @@ class MessageArea(QtGui.QPlainTextEdit):
         elif event.key() == QtCore.Qt.Key_Up and not self.toPlainText():
             self.appendPlainText(Profile.get_instance().get_last_message())
         else:
-            super(self.__class__, self).keyPressEvent(event)
+            super(MessageArea, self).keyPressEvent(event)
 
 
 class MainWindow(QtGui.QMainWindow):
@@ -391,28 +391,29 @@ class MainWindow(QtGui.QMainWindow):
 
 
 class ScreenShotWindow(QtGui.QWidget):
-    # TODO: make selected area transparent
+
     def __init__(self):
         super(ScreenShotWindow, self).__init__()
         self.setMouseTracking(True)
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
         self.showFullScreen()
-        self.setWindowOpacity(0.01)
+        self.setWindowOpacity(0.4)
         self.rubberband = QtGui.QRubberBand(QtGui.QRubberBand.Rectangle, None)
 
     def mousePressEvent(self, event):
         self.origin = event.pos()
-        self.rubberband.setGeometry(
-            QtCore.QRect(self.origin, QtCore.QSize()))
+        self.rubberband.setGeometry(QtCore.QRect(self.origin, QtCore.QSize()))
         self.rubberband.show()
         QtGui.QWidget.mousePressEvent(self, event)
 
     def mouseMoveEvent(self, event):
         if self.rubberband.isVisible():
-            self.rubberband.setGeometry(
-                QtCore.QRect(self.origin, event.pos()).normalized())
-        QtGui.QWidget.mouseMoveEvent(self, event)
-        self.repaint()
+            self.rubberband.setGeometry(QtCore.QRect(self.origin, event.pos()).normalized())
+            left = QtGui.QRegion(QtCore.QRect(0, 0, self.rubberband.x(), self.height()))
+            right = QtGui.QRegion(QtCore.QRect(self.rubberband.x() + self.rubberband.width(), 0, self.width(), self.height()))
+            top = QtGui.QRegion(0, 0, self.width(), self.rubberband.y())
+            bottom = QtGui.QRegion(0, self.rubberband.y() + self.rubberband.height(), self.width(), self.height())
+            self.setMask(left + right + top + bottom)
 
     def mouseReleaseEvent(self, event):
         if self.rubberband.isVisible():
@@ -420,17 +421,23 @@ class ScreenShotWindow(QtGui.QWidget):
             rect = self.rubberband.geometry()
             print rect
             p = QtGui.QPixmap.grabWindow(QtGui.QApplication.desktop().winId(),
-                                         rect.x() + 3,
-                                         rect.y() + 3,
-                                         rect.width() - 6,
-                                         rect.height() - 6)
+                                         rect.x() + 4,
+                                         rect.y() + 4,
+                                         rect.width() - 8,
+                                         rect.height() - 8)
             byte_array = QtCore.QByteArray()
             buffer = QtCore.QBuffer(byte_array)
             buffer.open(QtCore.QIODevice.WriteOnly)
             p.save(buffer, 'PNG')
-            Profile.get_instance().send_screenshot(''.join(byte_array[i] for i in xrange(byte_array.length())))
+            Profile.get_instance().send_screenshot(str(byte_array.data()))
             self.close()
 
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            self.rubberband.setHidden(True)
+            self.close()
+        else:
+            super(ScreenShotWindow, self).keyPressEvent(event)
 
 
 

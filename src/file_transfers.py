@@ -160,11 +160,14 @@ class ReceiveTransfer(FileTransfer):
 
 
 class ReceiveAvatar(ReceiveTransfer):
+    MAX_AVATAR_SIZE = 512 * 1024
 
     def __init__(self, tox, friend_number, size, file_number):
         path = profile.ProfileHelper.get_path() + '/avatars/{}.png'.format(tox.friend_get_public_key(friend_number))
         super(ReceiveAvatar, self).__init__(path, tox, friend_number, size, file_number)
-        if exists(path):
+        if size > self.MAX_AVATAR_SIZE:
+            self.send_control(TOX_FILE_CONTROL['CANCEL'])
+        elif exists(path):
             if not size:
                 self.send_control(TOX_FILE_CONTROL['CANCEL'])
                 self.state = TOX_FILE_TRANSFER_STATE['CANCELED']
