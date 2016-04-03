@@ -3,7 +3,7 @@ from PySide import QtCore, QtGui
 from tox import Tox
 import os
 from messages import *
-from settings import Settings
+from settings import *
 from toxcore_enums_and_consts import *
 from ctypes import *
 from util import curr_time, log, Singleton, curr_directory, convert_time
@@ -11,63 +11,6 @@ from tox_dns import tox_dns
 from history import *
 from file_transfers import *
 import time
-
-
-class ProfileHelper(object):
-    """
-    Class with static methods for search, load and save profiles
-    """
-    @staticmethod
-    def find_profiles():
-        path = Settings.get_default_path()
-        result = []
-        # check default path
-        if not os.path.exists(path):
-            os.makedirs(path)
-        for fl in os.listdir(path):
-            if fl.endswith('.tox'):
-                name = fl[:-4]
-                result.append((path, name))
-        path = curr_directory()
-        # check current directory
-        for fl in os.listdir(path):
-            if fl.endswith('.tox'):
-                name = fl[:-4]
-                result.append((path + '/', name))
-        return result
-
-    @staticmethod
-    def open_profile(path, name):
-        ProfileHelper._path = path + name + '.tox'
-        ProfileHelper._directory = path
-        with open(ProfileHelper._path, 'rb') as fl:
-            data = fl.read()
-        if data:
-            print 'Data loaded from: {}'.format(ProfileHelper._path)
-            return data
-        else:
-            raise IOError('Save file not found. Path: {}'.format(ProfileHelper._path))
-
-    @staticmethod
-    def save_profile(data, name=None):
-        if name is not None:
-            ProfileHelper._path = Settings.get_default_path() + name + '.tox'
-        with open(ProfileHelper._path, 'wb') as fl:
-            fl.write(data)
-        print 'Data saved to: {}'.format(ProfileHelper._path)
-
-    @staticmethod
-    def export_profile(new_path):
-        new_path += os.path.basename(ProfileHelper._path)
-        with open(ProfileHelper._path, 'rb') as fin:
-            data = fin.read()
-        with open(new_path, 'wb') as fout:
-            fout.write(data)
-        print 'Data exported to: {}'.format(new_path)
-
-    @staticmethod
-    def get_path():
-        return ProfileHelper._directory
 
 
 class Contact(object):

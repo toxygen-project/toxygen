@@ -1,10 +1,11 @@
 from PySide import QtCore, QtGui
-from settings import Settings
-from profile import Profile, ProfileHelper
+from settings import *
+from profile import Profile
 from util import get_style, curr_directory
 
 
 class CenteredWidget(QtGui.QWidget):
+    
     def __init__(self):
         super(CenteredWidget, self).__init__()
         self.center()

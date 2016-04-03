@@ -1,5 +1,6 @@
 from src.bootstrap import node_generator
 from src.profile import *
+from src.settings import ProfileHelper
 from src.tox_dns import tox_dns
 
 

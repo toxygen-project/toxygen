@@ -1,10 +1,10 @@
 import sys
 from loginscreen import LoginScreen
-from settings import Settings
+from settings import *
 from PySide import QtCore, QtGui
 from bootstrap import node_generator
 from mainscreen import MainWindow
-from profile import ProfileHelper, tox_factory
+from profile import tox_factory
 from callbacks import init_callbacks
 from util import curr_directory, get_style
 import styles.style
@@ -18,7 +18,7 @@ class Toxygen(object):
 
     def main(self):
         """
-            main function of app. loads login screen if needed and starts main screen
+        Main function of app. loads login screen if needed and starts main screen
         """
         app = QtGui.QApplication(sys.argv)
         app.setWindowIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
@@ -44,23 +44,37 @@ class Toxygen(object):
                 return
             elif _login.t == 1:  # create new profile
                 name = _login.name if _login.name else 'toxygen_user'
-                settings = Settings(name)
                 self.tox = tox_factory()
                 self.tox.self_set_name(_login.name if _login.name else 'Toxygen User')
                 self.tox.self_set_status_message('Toxing on Toxygen')
                 ProfileHelper.save_profile(self.tox.get_savedata(), name)
+                path = Settings.get_default_path()
+                settings = Settings(name)
             else:  # load existing profile
                 path, name = _login.get_data()
-                settings = Settings(name)
                 if _login.default:
                     Settings.set_auto_profile(path, name)
                 data = ProfileHelper.open_profile(path, name)
+                settings = Settings(name)
                 self.tox = tox_factory(data, settings)
         else:
             path, name = auto_profile
-            settings = Settings(name)
             data = ProfileHelper.open_profile(path, name)
+            settings = Settings(name)
             self.tox = tox_factory(data, settings)
+
+        if ProfileHelper.is_active_profile(path, name):  # profile is in use
+            deactivate = False
+            reply = QtGui.QMessageBox.question(None,
+                                               'Profile {}'.format(name),
+                                               'Looks like other instance of Toxygen uses this profile! Continue?',
+                                               QtGui.QMessageBox.Yes,
+                                               QtGui.QMessageBox.No)
+            if reply != QtGui.QMessageBox.Yes:
+                return
+        else:
+            settings.set_active_profile()
+            deactivate = True
 
         self.ms = MainWindow(self.tox, self.reset)
 
@@ -98,6 +112,8 @@ class Toxygen(object):
         self.init.wait()
         data = self.tox.get_savedata()
         ProfileHelper.save_profile(data)
+        if deactivate:
+            settings.close()
         del self.tox
 
     def reset(self):
@@ -140,13 +156,20 @@ class Toxygen(object):
             # bootstrap
             try:
                 for data in node_generator():
+                    if self.stop:
+                        return
                     self.tox.bootstrap(*data)
             except:
                 pass
-            self.msleep(10000)
-            while not self.tox.self_get_connection_status() and not self.stop:
+            for _ in xrange(10):
+                if self.stop:
+                    return
+                self.msleep(1000)
+            while not self.tox.self_get_connection_status():
                 try:
                     for data in node_generator():
+                        if self.stop:
+                            return
                         self.tox.bootstrap(*data)
                 except:
                     pass

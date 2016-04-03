@@ -1,13 +1,13 @@
 from platform import system
 import json
 import os
-from util import Singleton
+from util import Singleton, curr_directory
 
 
 class Settings(Singleton, dict):
 
     def __init__(self, name=''):
-        self.path = Settings.get_default_path() + str(name) + '.json'
+        self.path = ProfileHelper.get_path() + str(name) + '.json'
         self.name = name
         if os.path.isfile(self.path):
             with open(self.path) as fl:
@@ -24,9 +24,8 @@ class Settings(Singleton, dict):
             with open(path) as fl:
                 data = fl.read()
             auto = json.loads(data)
-            return auto['path'], auto['name']
-        else:
-            return None
+            if 'path' in auto and 'name' in auto:
+                return auto['path'], auto['name']
 
     @staticmethod
     def set_auto_profile(path, name):
@@ -66,6 +65,32 @@ class Settings(Singleton, dict):
         with open(self.path, 'w') as fl:
             fl.write(text)
 
+    def close(self):
+        path = Settings.get_default_path() + 'toxygen.json'
+        if os.path.isfile(path):
+            with open(path) as fl:
+                data = fl.read()
+            app_settings = json.loads(data)
+            app_settings['active_profile'].remove(ProfileHelper.get_path() + self.name + '.tox')
+            data = json.dumps(app_settings)
+            with open(path, 'w') as fl:
+                    fl.write(data)
+
+    def set_active_profile(self):
+        path = Settings.get_default_path() + 'toxygen.json'
+        if os.path.isfile(path):
+            with open(path) as fl:
+                data = fl.read()
+            app_settings = json.loads(data)
+        else:
+            app_settings = {}
+        if 'active_profile' not in app_settings:
+            app_settings['active_profile'] = []
+        app_settings['active_profile'].append(ProfileHelper.get_path() + str(self.name) + '.tox')
+        data = json.dumps(app_settings)
+        with open(path, 'w') as fl:
+            fl.write(data)
+
     def export(self, path):
         text = json.dumps(self)
         with open(path + str(self.name) + '.json', 'w') as fl:
@@ -77,3 +102,75 @@ class Settings(Singleton, dict):
             return os.getenv('HOME') + '/.config/tox/'
         elif system() == 'Windows':
             return os.getenv('APPDATA') + '/Tox/'
+
+
+class ProfileHelper(object):
+    """
+    Class with static methods for search, load and save profiles
+    """
+    @staticmethod
+    def find_profiles():
+        path = Settings.get_default_path()
+        result = []
+        # check default path
+        if not os.path.exists(path):
+            os.makedirs(path)
+        for fl in os.listdir(path):
+            if fl.endswith('.tox'):
+                name = fl[:-4]
+                result.append((path, name))
+        path = curr_directory()
+        # check current directory
+        for fl in os.listdir(path):
+            if fl.endswith('.tox'):
+                name = fl[:-4]
+                result.append((path + '/', name))
+        return result
+
+    @staticmethod
+    def is_active_profile(path, name):
+        path = path + name + '.tox'
+        settings = Settings.get_default_path() + 'toxygen.json'
+        if os.path.isfile(settings):
+            with open(settings) as fl:
+                data = fl.read()
+            data = json.loads(data)
+            if 'active_profile' in data:
+                return path in data['active_profile']
+        else:
+            return False
+
+    @staticmethod
+    def open_profile(path, name):
+        ProfileHelper._path = path + name + '.tox'
+        ProfileHelper._directory = path
+        with open(ProfileHelper._path, 'rb') as fl:
+            data = fl.read()
+        if data:
+            print 'Data loaded from: {}'.format(ProfileHelper._path)
+            return data
+        else:
+            raise IOError('Save file not found. Path: {}'.format(ProfileHelper._path))
+
+    @staticmethod
+    def save_profile(data, name=None):
+        if name is not None:
+            ProfileHelper._path = Settings.get_default_path() + name + '.tox'
+            ProfileHelper._directory = Settings.get_default_path()
+        with open(ProfileHelper._path, 'wb') as fl:
+            fl.write(data)
+        print 'Data saved to: {}'.format(ProfileHelper._path)
+
+    @staticmethod
+    def export_profile(new_path):
+        new_path += os.path.basename(ProfileHelper._path)
+        with open(ProfileHelper._path, 'rb') as fin:
+            data = fin.read()
+        with open(new_path, 'wb') as fout:
+            fout.write(data)
+        print 'Data exported to: {}'.format(new_path)
+
+    @staticmethod
+    def get_path():
+        return ProfileHelper._directory
+

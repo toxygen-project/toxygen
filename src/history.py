@@ -1,6 +1,6 @@
 # coding=utf-8
 from sqlite3 import connect
-import profile as pr
+import settings
 from os import chdir
 
 
@@ -13,9 +13,10 @@ MESSAGE_OWNER = {
 
 
 class History(object):
+
     def __init__(self, name):
         self._name = name
-        chdir(pr.ProfileHelper.get_path())
+        chdir(settings.ProfileHelper.get_path())
         db = connect(name + '.hstr')
         cursor = db.cursor()
         cursor.execute('CREATE TABLE IF NOT EXISTS friends('
@@ -24,7 +25,7 @@ class History(object):
         db.close()
 
     def export(self, directory):
-        path = pr.ProfileHelper.get_path() + self._name + '.hstr'
+        path = settings.ProfileHelper.get_path() + self._name + '.hstr'
         new_path = directory + self._name + '.hstr'
         with open(path, 'rb') as fin:
             data = fin.read()
@@ -33,7 +34,7 @@ class History(object):
         print 'History exported to: {}'.format(new_path)
 
     def add_friend_to_db(self, tox_id):
-        chdir(pr.ProfileHelper.get_path())
+        chdir(settings.ProfileHelper.get_path())
         db = connect(self._name + '.hstr')
         try:
             cursor = db.cursor()
@@ -53,7 +54,7 @@ class History(object):
             db.close()
 
     def delete_friend_from_db(self, tox_id):
-        chdir(pr.ProfileHelper.get_path())
+        chdir(settings.ProfileHelper.get_path())
         db = connect(self._name + '.hstr')
         try:
             cursor = db.cursor()
@@ -67,7 +68,7 @@ class History(object):
             db.close()
 
     def friend_exists_in_db(self, tox_id):
-        chdir(pr.ProfileHelper.get_path())
+        chdir(settings.ProfileHelper.get_path())
         db = connect(self._name + '.hstr')
         cursor = db.cursor()
         cursor.execute('SELECT 0 FROM friends WHERE tox_id=?', (tox_id, ))
@@ -76,7 +77,7 @@ class History(object):
         return result is not None
 
     def save_messages_to_db(self, tox_id, messages_iter):
-        chdir(pr.ProfileHelper.get_path())
+        chdir(settings.ProfileHelper.get_path())
         db = connect(self._name + '.hstr')
         try:
             cursor = db.cursor()
@@ -90,7 +91,7 @@ class History(object):
             db.close()
 
     def delete_messages(self, tox_id):
-        chdir(pr.ProfileHelper.get_path())
+        chdir(settings.ProfileHelper.get_path())
         db = connect(self._name + '.hstr')
         try:
             cursor = db.cursor()
@@ -107,7 +108,7 @@ class History(object):
 
     class MessageGetter(object):
         def __init__(self, name, tox_id):
-            chdir(pr.ProfileHelper.get_path())
+            chdir(settings.ProfileHelper.get_path())
             self._db = connect(name + '.hstr')
             self._cursor = self._db.cursor()
             self._cursor.execute('SELECT message, owner, unix_time, message_type FROM id' + tox_id +
