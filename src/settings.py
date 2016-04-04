@@ -81,7 +81,7 @@ class Settings(Singleton, dict):
             app_settings['active_profile'].remove(ProfileHelper.get_path() + self.name + '.tox')
             data = json.dumps(app_settings)
             with open(path, 'w') as fl:
-                    fl.write(data)
+                fl.write(data)
 
     def set_active_profile(self):
         path = Settings.get_default_path() + 'toxygen.json'

@@ -156,7 +156,7 @@ def tox_file_recv(window, tray):
             if not window.isActiveWindow():
                 friend = profile.get_friend_by_number(friend_number)
                 if settings['notifications']:
-                    invoke_in_main_thread(tray_notification, 'File from ' + friend.name, file_name, tray)
+                    invoke_in_main_thread(tray_notification, 'File from ' + friend.name, file_name, tray, window)
                 if settings['sound_notifications']:
                     sound_notification(SOUND_NOTIFICATION['FILE_TRANSFER'])
         else:  # AVATAR
