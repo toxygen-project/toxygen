@@ -3,7 +3,7 @@ import time
 from platform import system
 
 
-program_version = '0.0.3'
+program_version = '0.0.4'
 
 
 def log(data):

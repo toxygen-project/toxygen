@@ -16,10 +16,10 @@ Toxygen is simple [Tox](https://tox.chat/) client written on pure Python 2.7
 - [x] Proxy support
 - [x] File transfers
 - [x] Avatars
+- [x] Multiprofile
+- [x] Multilingual
 - [ ] Inline images
 - [ ] Sound notifications
-- [ ] Multiprofile
-- [ ] Multilingual
 - [ ] Audio
 
 ###Downloads
