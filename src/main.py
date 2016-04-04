@@ -31,6 +31,15 @@ class Toxygen(object):
         auto_profile = Settings.get_auto_profile()
         if not auto_profile:
             # show login screen if default profile not found
+            current_locale = QtCore.QLocale()
+            curr_lang = current_locale.languageToString(current_locale.language())
+            langs = Settings.supported_languages()
+            if curr_lang in map(lambda x: x[0], langs):
+                lang_path = filter(lambda x: x[0] == curr_lang, langs)[0][1]
+                translator = QtCore.QTranslator()
+                translator.load('translations/' + lang_path)
+                app.installTranslator(translator)
+                app.translator = translator
             ls = LoginScreen()
             ls.setWindowIconText("Toxygen")
             profiles = ProfileHelper.find_profiles()
@@ -67,7 +76,7 @@ class Toxygen(object):
             deactivate = False
             reply = QtGui.QMessageBox.question(None,
                                                'Profile {}'.format(name),
-                                               'Looks like other instance of Toxygen uses this profile! Continue?',
+                                               QtGui.QApplication.translate("login", 'Looks like other instance of Toxygen uses this profile! Continue?', None, QtGui.QApplication.UnicodeUTF8),
                                                QtGui.QMessageBox.Yes,
                                                QtGui.QMessageBox.No)
             if reply != QtGui.QMessageBox.Yes:
@@ -76,13 +85,20 @@ class Toxygen(object):
             settings.set_active_profile()
             deactivate = True
 
+        lang = filter(lambda x: x[0] == settings['language'], Settings.supported_languages())[0]
+        translator = QtCore.QTranslator()
+        translator.load('translations/' + lang[1])
+        app.installTranslator(translator)
+        app.translator = translator
+
         self.ms = MainWindow(self.tox, self.reset)
 
         # tray icon
         self.tray = QtGui.QSystemTrayIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
+        self.tray.setObjectName('tray')
         m = QtGui.QMenu()
-        show = m.addAction('Open Toxygen')
-        exit = m.addAction('Exit')
+        show = m.addAction(QtGui.QApplication.translate('tray', 'Open Toxygen', None, QtGui.QApplication.UnicodeUTF8))
+        exit = m.addAction(QtGui.QApplication.translate('tray', 'Exit', None, QtGui.QApplication.UnicodeUTF8))
 
         def show_window():
             if not self.ms.isActiveWindow():

@@ -78,7 +78,13 @@ class MainWindow(QtGui.QMainWindow):
         self.actionPrivacy_settings.triggered.connect(self.privacy_settings)
         self.actionInterface_settings.triggered.connect(self.interface_settings)
         self.actionNotifications.triggered.connect(self.notification_settings)
+        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
+    def languageChange(self, *args, **kwargs):
+        self.retranslateUi()
+
+    def retranslateUi(self):
+        self.online_contacts.setText(QtGui.QApplication.translate("Form", "Online contacts", None, QtGui.QApplication.UnicodeUTF8))
         self.menuProfile.setTitle(QtGui.QApplication.translate("MainWindow", "Profile", None, QtGui.QApplication.UnicodeUTF8))
         self.menuSettings.setTitle(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.menuAbout.setTitle(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
@@ -90,7 +96,6 @@ class MainWindow(QtGui.QMainWindow):
         self.actionNetwork.setText(QtGui.QApplication.translate("MainWindow", "Network", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAbout_program.setText(QtGui.QApplication.translate("MainWindow", "About program", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSettings.setText(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
-        QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def setup_right_bottom(self, Form):
         Form.setObjectName("right_bottom")
@@ -137,7 +142,6 @@ class MainWindow(QtGui.QMainWindow):
         self.contact_name.setGeometry(QtCore.QRect(0, 27, 270, 30))
         self.contact_name.setObjectName("contact_name")
         self.contact_name.textChanged.connect(self.filtering)
-        self.online_contacts.setText(QtGui.QApplication.translate("Form", "Online contacts", None, QtGui.QApplication.UnicodeUTF8))
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def setup_left_top(self, Form):
@@ -261,6 +265,7 @@ class MainWindow(QtGui.QMainWindow):
         self.user_info = name
         self.friend_info = info
         self.profile = Profile(tox, self)
+        self.retranslateUi()
 
     def closeEvent(self, *args, **kwargs):
         self.profile.save_history()
@@ -272,8 +277,8 @@ class MainWindow(QtGui.QMainWindow):
     def about_program(self):
         import util
         msgBox = QtGui.QMessageBox()
-        msgBox.setWindowTitle('About')
-        msgBox.setText('Toxygen is Tox client written on Python 2.7. Version: ' + util.program_version)
+        msgBox.setWindowTitle(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
+        msgBox.setText(QtGui.QApplication.translate("MainWindow", 'Toxygen is Tox client written on Python 2.7. Version: ', None, QtGui.QApplication.UnicodeUTF8) + util.program_version)
         msgBox.exec_()
 
     def network_settings(self):
@@ -310,7 +315,8 @@ class MainWindow(QtGui.QMainWindow):
 
     def send_file(self):
         if self.profile.is_active_online():  # active friend exists and online
-            name = QtGui.QFileDialog.getOpenFileName(self, 'Choose file')
+            choose = QtGui.QApplication.translate("MainWindow", "Choose file", None, QtGui.QApplication.UnicodeUTF8)
+            name = QtGui.QFileDialog.getOpenFileName(self, choose)
             if name[0]:
                 self.profile.send_file(name[0])
 
@@ -329,14 +335,14 @@ class MainWindow(QtGui.QMainWindow):
         friend = Profile.get_instance().get_friend_by_number(num)
         settings = Settings.get_instance()
         allowed = friend.tox_id in settings['auto_accept_from_friends']
-        auto = 'Disallow auto accept' if allowed else 'Allow auto accept'
+        auto = QtGui.QApplication.translate("MainWindow", 'Disallow auto accept', None, QtGui.QApplication.UnicodeUTF8) if allowed else QtGui.QApplication.translate("MainWindow", 'Allow auto accept', None, QtGui.QApplication.UnicodeUTF8)
         if item is not None:
             self.listMenu = QtGui.QMenu()
-            set_alias_item = self.listMenu.addAction('Set alias')
-            clear_history_item = self.listMenu.addAction('Clear history')
-            copy_key_item = self.listMenu.addAction('Copy public key')
+            set_alias_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Set alias', None, QtGui.QApplication.UnicodeUTF8))
+            clear_history_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Clear history', None, QtGui.QApplication.UnicodeUTF8))
+            copy_key_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Copy public key', None, QtGui.QApplication.UnicodeUTF8))
             auto_accept_item = self.listMenu.addAction(auto)
-            remove_item = self.listMenu.addAction('Remove friend')
+            remove_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Remove friend', None, QtGui.QApplication.UnicodeUTF8))
             self.connect(set_alias_item, QtCore.SIGNAL("triggered()"), lambda: self.set_alias(num))
             self.connect(remove_item, QtCore.SIGNAL("triggered()"), lambda: self.remove_friend(num))
             self.connect(copy_key_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_friend_key(num))

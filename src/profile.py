@@ -682,8 +682,10 @@ class Profile(Contact, Singleton):
         :param message: message
         """
         try:
-            info = 'User {} wants to add you to contact list. Message:\n{}'.format(tox_id, message)
-            reply = QtGui.QMessageBox.question(None, 'Friend request', info, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            text = QtGui.QApplication.translate('MainWindow', 'User {} wants to add you to contact list. Message:\n{}', None, QtGui.QApplication.UnicodeUTF8)
+            info = text.format(tox_id, message)
+            fr_req = QtGui.QApplication.translate('MainWindow', 'Friend request', None, QtGui.QApplication.UnicodeUTF8)
+            reply = QtGui.QMessageBox.question(None, fr_req, info, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
             if reply == QtGui.QMessageBox.Yes:  # accepted
                 num = self._tox.friend_add_norequest(tox_id)  # num - friend number
                 item = self.create_friend_item()

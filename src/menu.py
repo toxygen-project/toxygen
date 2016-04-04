@@ -87,15 +87,15 @@ class ProfileSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("ProfileSettingsForm")
-        self.setMinimumSize(QtCore.QSize(650, 400))
-        self.setMaximumSize(QtCore.QSize(650, 400))
+        self.setMinimumSize(QtCore.QSize(650, 370))
+        self.setMaximumSize(QtCore.QSize(650, 370))
         self.nick = QtGui.QLineEdit(self)
-        self.nick.setGeometry(QtCore.QRect(30, 60, 351, 27))
+        self.nick.setGeometry(QtCore.QRect(30, 60, 350, 27))
         self.nick.setObjectName("nick")
         profile = Profile.get_instance()
         self.nick.setText(profile.name)
         self.status = QtGui.QLineEdit(self)
-        self.status.setGeometry(QtCore.QRect(30, 130, 351, 27))
+        self.status.setGeometry(QtCore.QRect(30, 130, 350, 27))
         self.status.setObjectName("status")
         self.status.setText(profile.status_message)
         self.label = QtGui.QLabel(self)
@@ -129,14 +129,6 @@ class ProfileSettings(CenteredWidget):
         self.export.setGeometry(QtCore.QRect(200, 250, 150, 30))
         self.export.setObjectName("export")
         self.export.clicked.connect(self.export_profile)
-        self.lang_choose = QtGui.QComboBox(self)
-        self.lang_choose.setGeometry(QtCore.QRect(30, 350, 211, 27))
-        self.lang_choose.setObjectName("comboBox")
-        self.lang_choose.addItem('English')
-        self.lang = QtGui.QLabel(self)
-        self.lang.setGeometry(QtCore.QRect(40, 310, 121, 31))
-        font.setPointSize(18)
-        self.lang.setFont(font)
         self.new_avatar = QtGui.QPushButton(self)
         self.new_avatar.setGeometry(QtCore.QRect(400, 50, 200, 50))
         self.delete_avatar = QtGui.QPushButton(self)
@@ -153,7 +145,6 @@ class ProfileSettings(CenteredWidget):
         self.label_2.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Status:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_3.setText(QtGui.QApplication.translate("ProfileSettingsForm", "TOX ID:", None, QtGui.QApplication.UnicodeUTF8))
         self.copyId.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Copy TOX ID", None, QtGui.QApplication.UnicodeUTF8))
-        self.lang.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Language:", None, QtGui.QApplication.UnicodeUTF8))
         self.new_avatar.setText(QtGui.QApplication.translate("ProfileSettingsForm", "New avatar", None, QtGui.QApplication.UnicodeUTF8))
         self.delete_avatar.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Reset avatar", None, QtGui.QApplication.UnicodeUTF8))
 
@@ -384,25 +375,46 @@ class InterfaceSettings(CenteredWidget):
         self.label.setObjectName("label")
         self.themeSelect = QtGui.QComboBox(self)
         self.themeSelect.setGeometry(QtCore.QRect(30, 60, 161, 31))
-        font = QtGui.QFont()
-        font.setPointSize(17)
-        self.themeSelect.setFont(font)
         self.themeSelect.setObjectName("themeSelect")
         list_of_themes = ['default', 'windows', 'gtk', 'cde', 'plastique', 'motif']
         self.themeSelect.addItems(list_of_themes)
-        theme = Settings.get_instance()['theme']
+        settings = Settings.get_instance()
+        theme = settings['theme']
         index = list_of_themes.index(theme)
         self.themeSelect.setCurrentIndex(index)
+        self.lang_choose = QtGui.QComboBox(self)
+        self.lang_choose.setGeometry(QtCore.QRect(30, 150, 211, 27))
+        self.lang_choose.setObjectName("comboBox")
+        supported = Settings.supported_languages()
+        for elem in supported:
+            self.lang_choose.addItem(elem[0])
+        lang = settings['language']
+        index = map(lambda x: x[0], supported).index(lang)
+        self.lang_choose.setCurrentIndex(index)
+        self.lang = QtGui.QLabel(self)
+        self.lang.setGeometry(QtCore.QRect(30, 110, 121, 31))
+        self.lang.setFont(font)
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("interfaceForm", "Interface settings", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("interfaceForm", "Theme:", None, QtGui.QApplication.UnicodeUTF8))
+        self.lang.setText(QtGui.QApplication.translate("interfaceForm", "Language:", None, QtGui.QApplication.UnicodeUTF8))
 
     def closeEvent(self, event):
         settings = Settings.get_instance()
         style = str(self.themeSelect.currentText())
         settings['theme'] = style
-        settings.save()
         QtGui.QApplication.setStyle(get_style(style))
+        language = self.lang_choose.currentText()
+        if settings['language'] != language:
+            settings['language'] = language
+            index = self.lang_choose.currentIndex()
+            path = Settings.supported_languages()[index][1]
+            app = QtGui.QApplication.instance()
+            app.removeTranslator(app.translator)
+            app.translator.load(curr_directory() + '/translations/' + path)
+            app.installTranslator(app.translator)
+        settings.save()
+

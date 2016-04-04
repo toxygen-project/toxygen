@@ -48,7 +48,7 @@ class Settings(Singleton, dict):
             'tcp_port': 0,
             'notifications': True,
             'sound_notifications': False,
-            'language': 'en-en',
+            'language': 'English',
             'save_history': False,
             'allow_inline': True,
             'allow_auto_accept': False,
@@ -59,6 +59,13 @@ class Settings(Singleton, dict):
             'typing_notifications': True,
             'calls_sound': True
         }
+
+    @staticmethod
+    def supported_languages():
+        return [
+            ('English', 'en_EN'),
+            ('Russian', 'ru_RU')
+        ]
 
     def save(self):
         text = json.dumps(self)
