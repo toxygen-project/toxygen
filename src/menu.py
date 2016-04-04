@@ -374,7 +374,7 @@ class InterfaceSettings(CenteredWidget):
         self.label.setFont(font)
         self.label.setObjectName("label")
         self.themeSelect = QtGui.QComboBox(self)
-        self.themeSelect.setGeometry(QtCore.QRect(30, 60, 161, 31))
+        self.themeSelect.setGeometry(QtCore.QRect(30, 60, 160, 30))
         self.themeSelect.setObjectName("themeSelect")
         list_of_themes = ['default', 'windows', 'gtk', 'cde', 'plastique', 'motif']
         self.themeSelect.addItems(list_of_themes)
@@ -383,7 +383,7 @@ class InterfaceSettings(CenteredWidget):
         index = list_of_themes.index(theme)
         self.themeSelect.setCurrentIndex(index)
         self.lang_choose = QtGui.QComboBox(self)
-        self.lang_choose.setGeometry(QtCore.QRect(30, 150, 211, 27))
+        self.lang_choose.setGeometry(QtCore.QRect(30, 150, 160, 30))
         self.lang_choose.setObjectName("comboBox")
         supported = Settings.supported_languages()
         for elem in supported:

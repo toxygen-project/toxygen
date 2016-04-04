@@ -96,7 +96,13 @@ class Toxygen(object):
         # tray icon
         self.tray = QtGui.QSystemTrayIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
         self.tray.setObjectName('tray')
-        m = QtGui.QMenu()
+
+        class Menu(QtGui.QMenu):
+            def languageChange(self, *args, **kwargs):
+                self.actions()[0].setText(QtGui.QApplication.translate('tray', 'Open Toxygen', None, QtGui.QApplication.UnicodeUTF8))
+                self.actions()[1].setText(QtGui.QApplication.translate('tray', 'Exit', None, QtGui.QApplication.UnicodeUTF8))
+
+        m = Menu()
         show = m.addAction(QtGui.QApplication.translate('tray', 'Open Toxygen', None, QtGui.QApplication.UnicodeUTF8))
         exit = m.addAction(QtGui.QApplication.translate('tray', 'Exit', None, QtGui.QApplication.UnicodeUTF8))
 
