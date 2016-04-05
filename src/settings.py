@@ -1,6 +1,7 @@
 from platform import system
 import json
 import os
+import locale
 from util import Singleton, curr_directory
 
 
@@ -25,14 +26,14 @@ class Settings(Singleton, dict):
                 data = fl.read()
             auto = json.loads(data)
             if 'path' in auto and 'name' in auto:
-                return auto['path'], auto['name']
+                return unicode(auto['path']), unicode(auto['name'])
 
     @staticmethod
     def set_auto_profile(path, name):
         p = Settings.get_default_path() + 'toxygen.json'
-        data = json.dumps({'path': path, 'name': name})
+        data = json.dumps({'path': unicode(path.decode(locale.getpreferredencoding())), 'name': unicode(name)})
         with open(p, 'w') as fl:
-                fl.write(data)
+               fl.write(data)
 
     @staticmethod
     def get_default_settings():
@@ -78,7 +79,7 @@ class Settings(Singleton, dict):
             with open(path) as fl:
                 data = fl.read()
             app_settings = json.loads(data)
-            app_settings['active_profile'].remove(ProfileHelper.get_path() + self.name + '.tox')
+            app_settings['active_profile'].remove(unicode(ProfileHelper.get_path() + self.name + '.tox'))
             data = json.dumps(app_settings)
             with open(path, 'w') as fl:
                 fl.write(data)
@@ -93,7 +94,8 @@ class Settings(Singleton, dict):
             app_settings = {}
         if 'active_profile' not in app_settings:
             app_settings['active_profile'] = []
-        app_settings['active_profile'].append(ProfileHelper.get_path() + str(self.name) + '.tox')
+        profile_path = ProfileHelper.get_path()
+        app_settings['active_profile'].append(unicode(profile_path + str(self.name) + '.tox'))
         data = json.dumps(app_settings)
         with open(path, 'w') as fl:
             fl.write(data)
@@ -136,7 +138,7 @@ class ProfileHelper(object):
 
     @staticmethod
     def is_active_profile(path, name):
-        path = path + name + '.tox'
+        path = path.decode(locale.getpreferredencoding()) + name + '.tox'
         settings = Settings.get_default_path() + 'toxygen.json'
         if os.path.isfile(settings):
             with open(settings) as fl:
@@ -149,15 +151,15 @@ class ProfileHelper(object):
 
     @staticmethod
     def open_profile(path, name):
+        path = path.decode(locale.getpreferredencoding())
         ProfileHelper._path = path + name + '.tox'
         ProfileHelper._directory = path
         with open(ProfileHelper._path, 'rb') as fl:
             data = fl.read()
         if data:
-            print 'Data loaded from: {}'.format(ProfileHelper._path)
             return data
         else:
-            raise IOError('Save file not found. Path: {}'.format(ProfileHelper._path))
+            raise IOError('Save file has zero size!')
 
     @staticmethod
     def save_profile(data, name=None):
@@ -166,7 +168,6 @@ class ProfileHelper(object):
             ProfileHelper._directory = Settings.get_default_path()
         with open(ProfileHelper._path, 'wb') as fl:
             fl.write(data)
-        print 'Data saved to: {}'.format(ProfileHelper._path)
 
     @staticmethod
     def export_profile(new_path):
@@ -180,4 +181,3 @@ class ProfileHelper(object):
     @staticmethod
     def get_path():
         return ProfileHelper._directory
-

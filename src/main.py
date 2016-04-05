@@ -8,6 +8,7 @@ from profile import tox_factory
 from callbacks import init_callbacks
 from util import curr_directory, get_style
 import styles.style
+import locale
 
 
 class Toxygen(object):
@@ -68,6 +69,7 @@ class Toxygen(object):
                 self.tox = tox_factory(data, settings)
         else:
             path, name = auto_profile
+            path = path.encode(locale.getpreferredencoding())
             data = ProfileHelper.open_profile(path, name)
             settings = Settings(name)
             self.tox = tox_factory(data, settings)
