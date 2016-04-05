@@ -19,7 +19,7 @@
 3. Unpack archive 
 4. Install [toxcore](https://github.com/irungentoo/toxcore/blob/master/INSTALL.md) in your system
 5. Run app:
-``python src/main.py``
+``python main.py``
 
 ## Use precompiled binary:
 [Check our releases page](https://github.com/xveduk/toxygen/releases)
@@ -33,4 +33,6 @@ On Linux:
 
 On Windows:
 
-``pyinstaller --windowed --icon images/icon.ico src/main.py``
+``pyinstaller --windowed --icon images/icon.ico main.py``
+
+Don't forget to copy /images/, /sounds/, /translations/, /styles/, to /dist/main/
