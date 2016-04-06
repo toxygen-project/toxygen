@@ -51,7 +51,7 @@
         <translation type="unfinished">Port:</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="140"/>
+        <location filename="mainscreen.py" line="87"/>
         <source>Online contacts</source>
         <translation type="unfinished">Online contacts</translation>
     </message>
@@ -59,47 +59,47 @@
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="mainscreen.py" line="86"/>
+        <location filename="mainscreen.py" line="92"/>
         <source>Profile</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="92"/>
+        <location filename="mainscreen.py" line="98"/>
         <source>Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="275"/>
+        <location filename="mainscreen.py" line="280"/>
         <source>About</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="85"/>
+        <location filename="mainscreen.py" line="91"/>
         <source>Add contact</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="87"/>
+        <location filename="mainscreen.py" line="93"/>
         <source>Privacy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="88"/>
+        <location filename="mainscreen.py" line="94"/>
         <source>Interface</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="89"/>
+        <location filename="mainscreen.py" line="95"/>
         <source>Notifications</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="90"/>
+        <location filename="mainscreen.py" line="96"/>
         <source>Network</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="91"/>
+        <location filename="mainscreen.py" line="97"/>
         <source>About program</source>
         <translation type="unfinished"></translation>
     </message>
@@ -115,42 +115,42 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="276"/>
+        <location filename="mainscreen.py" line="281"/>
         <source>Toxygen is Tox client written on Python 2.7. Version: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="314"/>
+        <location filename="mainscreen.py" line="319"/>
         <source>Choose file</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="333"/>
+        <location filename="mainscreen.py" line="338"/>
         <source>Disallow auto accept</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="334"/>
+        <location filename="mainscreen.py" line="339"/>
         <source>Allow auto accept</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="336"/>
+        <location filename="mainscreen.py" line="341"/>
         <source>Set alias</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="337"/>
+        <location filename="mainscreen.py" line="342"/>
         <source>Clear history</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="338"/>
+        <location filename="mainscreen.py" line="343"/>
         <source>Copy public key</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="340"/>
+        <location filename="mainscreen.py" line="345"/>
         <source>Remove friend</source>
         <translation type="unfinished"></translation>
     </message>
@@ -209,17 +209,17 @@
 <context>
     <name>interfaceForm</name>
     <message>
-        <location filename="menu.py" line="402"/>
+        <location filename="menu.py" line="401"/>
         <source>Interface settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="403"/>
+        <location filename="menu.py" line="402"/>
         <source>Theme:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="404"/>
+        <location filename="menu.py" line="403"/>
         <source>Language:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -267,7 +267,7 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="70"/>
+        <location filename="main.py" line="81"/>
         <source>Looks like other instance of Toxygen uses this profile! Continue?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -331,12 +331,12 @@
 <context>
     <name>tray</name>
     <message>
-        <location filename="main.py" line="85"/>
+        <location filename="main.py" line="108"/>
         <source>Open Toxygen</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="86"/>
+        <location filename="main.py" line="109"/>
         <source>Exit</source>
         <translation type="unfinished"></translation>
     </message>
