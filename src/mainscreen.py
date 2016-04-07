@@ -135,7 +135,7 @@ class MainWindow(QtGui.QMainWindow):
         Form.setObjectName("left_bottom")
         Form.resize(500, 60)
         self.online_contacts = QtGui.QCheckBox(Form)
-        self.online_contacts.setGeometry(QtCore.QRect(0, 0, 140, 20))
+        self.online_contacts.setGeometry(QtCore.QRect(0, 0, 250, 20))
         self.online_contacts.setObjectName("online_contacts")
         self.online_contacts.clicked.connect(self.filtering)
         self.contact_name = QtGui.QLineEdit(Form)

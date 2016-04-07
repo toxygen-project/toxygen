@@ -65,7 +65,8 @@ class Settings(Singleton, dict):
     def supported_languages():
         return [
             ('English', 'en_EN'),
-            ('Russian', 'ru_RU')
+            ('Russian', 'ru_RU'),
+            ('French', 'fr_FR')
         ]
 
     def save(self):
