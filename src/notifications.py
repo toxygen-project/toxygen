@@ -1,7 +1,7 @@
 from PySide import QtGui, QtCore
-from PySide.phonon import Phonon
 from util import curr_directory
-# TODO: rewrite sound notifications
+import wave
+import pyaudio
 
 
 SOUND_NOTIFICATION = {
@@ -32,6 +32,30 @@ def tray_notification(title, text, tray, window):
         tray.connect(tray, QtCore.SIGNAL("messageClicked()"), message_clicked)
 
 
+class AudioFile(object):
+    chunk = 1024
+
+    def __init__(self, fl):
+        self.wf = wave.open(fl, 'rb')
+        self.p = pyaudio.PyAudio()
+        self.stream = self.p.open(
+            format=self.p.get_format_from_width(self.wf.getsampwidth()),
+            channels=self.wf.getnchannels(),
+            rate=self.wf.getframerate(),
+            output=True
+        )
+
+    def play(self):
+        data = self.wf.readframes(self.chunk)
+        while data:
+            self.stream.write(data)
+            data = self.wf.readframes(self.chunk)
+
+    def close(self):
+        self.stream.close()
+        self.p.terminate()
+
+
 def sound_notification(t):
     """
     Plays sound notification
@@ -43,6 +67,6 @@ def sound_notification(t):
         f = curr_directory() + '/sounds/file.wav'
     else:
         f = curr_directory() + '/sounds/contact.wav'
-    m = Phonon.MediaSource(f)
-    player = Phonon.createPlayer(Phonon.MusicCategory, m)
-    player.play()
+    a = AudioFile(f)
+    a.play()
+    a.close()

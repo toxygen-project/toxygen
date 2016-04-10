@@ -18,11 +18,12 @@ Toxygen is simple [Tox](https://tox.chat/) client written on pure Python 2.7
 - [x] Avatars
 - [x] Multiprofile
 - [x] Multilingual
+- [x] Sound notifications
 - [ ] Inline images
-- [ ] Sound notifications
 - [ ] Audio
 - [ ] Video
 - [ ] Save file encryption
+- [ ] File resuming
 - [ ] Typing notifications
 - [ ] Changing nospam
 - [ ] Group chats
