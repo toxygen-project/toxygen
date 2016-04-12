@@ -143,7 +143,7 @@ class ReceiveTransfer(FileTransfer):
         if data is None:
             self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self._state_changed.signal.emit(self.state, self._done / self._size if self._size else 0)
+            self._state_changed.signal.emit(self.state, 1)
         else:
             data = ''.join(chr(x) for x in data)
             if self._file_size < position:
@@ -155,6 +155,32 @@ class ReceiveTransfer(FileTransfer):
             l = len(data)
             if position + l > self._file_size:
                 self._file_size = position + l
+            self._done += l
+            self._state_changed.signal.emit(self.state, self._done / self._size)
+
+
+class ReceiveToBuffer(FileTransfer):
+
+    def __init__(self, tox, friend_number, size, file_number):
+        super(ReceiveToBuffer, self).__init__(None, tox, friend_number, size, file_number)
+        self._data = ''
+        self._data_size = 0
+
+    def get_data(self):
+        return self._data
+
+    def write_chunk(self, position, data):
+        if data is None:
+            self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
+            self._state_changed.signal.emit(self.state, 1)
+        else:
+            data = ''.join(chr(x) for x in data)
+            l = len(data)
+            if self._data_size < position:
+                self._data += ('\0' * (position - self._data_size))
+            self._data = self._data[:position] + data + self._data[position + l:]
+            if position + l > self._data_size:
+                self._data_size = position + l
             self._done += l
             self._state_changed.signal.emit(self.state, self._done / self._size)
 

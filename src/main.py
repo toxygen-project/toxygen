@@ -75,7 +75,6 @@ class Toxygen(object):
             self.tox = tox_factory(data, settings)
 
         if ProfileHelper.is_active_profile(path, name):  # profile is in use
-            deactivate = False
             reply = QtGui.QMessageBox.question(None,
                                                'Profile {}'.format(name),
                                                QtGui.QApplication.translate("login", 'Looks like other instance of Toxygen uses this profile! Continue?', None, QtGui.QApplication.UnicodeUTF8),
@@ -85,7 +84,6 @@ class Toxygen(object):
                 return
         else:
             settings.set_active_profile()
-            deactivate = True
 
         lang = filter(lambda x: x[0] == settings['language'], Settings.supported_languages())[0]
         translator = QtCore.QTranslator()
@@ -136,8 +134,7 @@ class Toxygen(object):
         self.init.wait()
         data = self.tox.get_savedata()
         ProfileHelper.save_profile(data)
-        if deactivate:
-            settings.close()
+        settings.close()
         del self.tox
 
     def reset(self):

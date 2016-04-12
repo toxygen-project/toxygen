@@ -242,3 +242,40 @@ class FileTransferItem(QtGui.QListWidget):
             self.pb.setVisible(False)
             self.cancel.setVisible(False)
 
+
+class InlineImageItem(QtGui.QWidget):
+
+    def __init__(self, time, user, data, parent=None):
+
+        QtGui.QWidget.__init__(self, parent)
+        self.resize(QtCore.QSize(620, 500))
+        # self.name = DataLabel(self)
+        # self.name.setGeometry(QtCore.QRect(1, 15, 95, 20))
+        # self.name.setTextFormat(QtCore.Qt.PlainText)
+        # font = QtGui.QFont()
+        # font.setFamily("Times New Roman")
+        # font.setPointSize(11)
+        # font.setBold(True)
+        # self.name.setFont(font)
+        # self.name.setText(user)
+        # self.name.setStyleSheet('QLabel { color: black; }')
+        #
+        # self.time = QtGui.QLabel(self)
+        # self.time.setGeometry(QtCore.QRect(570, 2, 50, 46))
+        # font.setPointSize(10)
+        # font.setBold(False)
+        # self.time.setFont(font)
+        # self.time.setText(convert_time(time))
+        # self.time.setStyleSheet('QLabel { color: black; }')
+        # TODO: resize widget to picture size or resize picture
+        self._image_label = QtGui.QLabel(self)
+        self._image_label.raise_()
+        self._image_label.setGeometry(QtCore.QRect(0, 0, 600, 600))
+        self._image_label.setScaledContents(False)
+        self.pixmap = QtGui.QPixmap()
+        print self.pixmap.loadFromData(QtCore.QByteArray(data), "PNG")
+        self._image_label.setPixmap(self.pixmap)
+
+
+
+
