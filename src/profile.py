@@ -199,16 +199,16 @@ class Friend(Contact):
 
     def update_transfer_data(self, file_number, status, inline=None):
         """
-        Update status of active transfer
+        Update status of active transfer and load inline if needed
         """
         try:
-            tr = filter(lambda x: x.get_type() >= 2 and x.is_active(file_number), self._corr)[0]
+            tr = filter(lambda x: x.get_type() == 2 and x.is_active(file_number), self._corr)[0]
             tr.set_status(status)
             if inline:  # inline was loaded
                 i = self._corr.index(tr)
                 self._corr.insert(i, inline)
-        except:
-            pass
+        except Exception as ex:
+            log('Update transfer data failed:' + str(ex))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Alias support
@@ -368,8 +368,6 @@ class Profile(Contact, Singleton):
         :param value: number of new active friend in friend's list or None to update active user's data
         """
         if value is None and self._active_friend == -1:  # nothing to update
-            return
-        if value == self._active_friend:
             return
         if value == -1:  # all friends were deleted
             self._screen.account_name.setText('')
@@ -599,9 +597,9 @@ class Profile(Contact, Singleton):
         return item
 
     def create_inline_item(self, data, append=True):
-        item = InlineImageItem(0, '', data)
+        item = InlineImageItem(data)
         elem = QtGui.QListWidgetItem()
-        elem.setSizeHint(QtCore.QSize(600, 600))
+        elem.setSizeHint(QtCore.QSize(600, item.height()))
         if append:
             self._messages.addItem(elem)
         else:
@@ -705,11 +703,12 @@ class Profile(Contact, Singleton):
             if reply == QtGui.QMessageBox.Yes:  # accepted
                 num = self._tox.friend_add_norequest(tox_id)  # num - friend number
                 item = self.create_friend_item()
-                if not self._history.friend_exists_in_db(tox_id):
-                    self._history.add_friend_to_db(tox_id)
-                if not self._history.friend_exists_in_db(tox_id):
-                    self._history.add_friend_to_db(tox_id)
-                message_getter = self._history.messages_getter(tox_id)
+                try:
+                    if not self._history.friend_exists_in_db(tox_id):
+                        self._history.add_friend_to_db(tox_id)
+                    message_getter = self._history.messages_getter(tox_id)
+                except Exception as ex:  # something is wrong
+                    log('Accept friend request failed! ' + str(ex))
                 friend = Friend(message_getter, num, tox_id, '', item, tox_id)
                 self._friends.append(friend)
         except Exception as ex:  # something is wrong
@@ -818,6 +817,7 @@ class Profile(Contact, Singleton):
         :param friend_number: friend number
         :param file_number: file number
         :param size: file size
+        :param inline: is inline image
         """
         if not inline:
             rt = ReceiveTransfer(path, self._tox, friend_number, size, file_number)
@@ -879,12 +879,12 @@ class Profile(Contact, Singleton):
                     self.get_friend_by_number(friend_number).load_avatar()
                     self.set_active(None)
                 elif type(transfer) is ReceiveToBuffer:
-                    inline = InlineImage(0, '', transfer.get_data())
+                    inline = InlineImage(transfer.get_data())
                     self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                   FILE_TRANSFER_MESSAGE_STATUS['FINISHED'],
                                                                                   inline
                                                                                   )
-                    self.set_active(None)
+                    self.set_active(self._active_friend)
                 else:
                     self.get_friend_by_number(friend_number).update_transfer_data(file_number, FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])
                 del self._file_transfers[(friend_number, file_number)]
@@ -896,7 +896,15 @@ class Profile(Contact, Singleton):
             if transfer.state:
                 del self._file_transfers[(friend_number, file_number)]
                 if type(transfer) is not SendAvatar:
-                    self.get_friend_by_number(friend_number).update_transfer_data(file_number, FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])
+                    if type(transfer) is SendFromBuffer:  # inline
+                        inline = InlineImage(transfer.get_data())
+                        self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+                                                                                      FILE_TRANSFER_MESSAGE_STATUS['FINISHED'],
+                                                                                      inline)
+                        self.set_active(self._active_friend)
+                    else:
+                        self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+                                                                                      FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])
 
     # -----------------------------------------------------------------------------------------------------------------
     # Avatars support

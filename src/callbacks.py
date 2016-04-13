@@ -183,7 +183,7 @@ def file_chunk_request(tox, friend_number, file_number, position, size, user_dat
     """
     Outgoing chunk
     """
-    Profile.get_instance().outgoing_chunk(
+    invoke_in_main_thread(Profile.get_instance().outgoing_chunk,
                           friend_number,
                           file_number,
                           position,

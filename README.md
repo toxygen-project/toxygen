@@ -19,7 +19,7 @@ Toxygen is simple [Tox](https://tox.chat/) client written on pure Python 2.7
 - [x] Multiprofile
 - [x] Multilingual
 - [x] Sound notifications
-- [ ] Inline images
+- [x] Inline images
 - [ ] Audio
 - [ ] Video
 - [ ] Save file encryption
@@ -33,6 +33,7 @@ Toxygen is simple [Tox](https://tox.chat/) client written on pure Python 2.7
 
 ###Downloads
 [Download last stable version](https://github.com/xveduk/toxygen/archive/master.zip)
+
 [Download develop version](https://github.com/xveduk/toxygen/archive/develop.zip)
 
 ###Screenshots

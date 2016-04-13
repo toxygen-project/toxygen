@@ -79,8 +79,8 @@ class InlineImage(Message):
     Inline image
     """
 
-    def __init__(self, owner, time, data):
-        super(InlineImage, self).__init__(MESSAGE_TYPE['INLINE'], owner, time)
+    def __init__(self, data):
+        super(InlineImage, self).__init__(MESSAGE_TYPE['INLINE'], None, None)
         self._data = data
 
     def get_data(self):

@@ -403,7 +403,7 @@ class ScreenShotWindow(QtGui.QWidget):
         self.setMouseTracking(True)
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
         self.showFullScreen()
-        self.setWindowOpacity(0.4)
+        self.setWindowOpacity(0.5)
         self.rubberband = QtGui.QRubberBand(QtGui.QRubberBand.Rectangle, None)
 
     def mousePressEvent(self, event):

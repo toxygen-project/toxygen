@@ -112,6 +112,9 @@ class SendFromBuffer(FileTransfer):
         self._data = data
         self._file_number = tox.file_send(friend_number, TOX_FILE_KIND['DATA'], len(data), None, file_name)
 
+    def get_data(self):
+        return self._data
+
     def send_chunk(self, position, size):
         if size:
             data = self._data[position:position + size]
