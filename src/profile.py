@@ -896,7 +896,7 @@ class Profile(Contact, Singleton):
             if transfer.state:
                 del self._file_transfers[(friend_number, file_number)]
                 if type(transfer) is not SendAvatar:
-                    if type(transfer) is SendFromBuffer:  # inline
+                    if type(transfer) is SendFromBuffer and Settings.get_instance()['allow_inline']:  # inline
                         inline = InlineImage(transfer.get_data())
                         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                       FILE_TRANSFER_MESSAGE_STATUS['FINISHED'],

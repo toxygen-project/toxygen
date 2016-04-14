@@ -257,10 +257,9 @@ class PrivacySettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("privacySettings")
-        self.resize(350, 200)
-        self.setMinimumSize(QtCore.QSize(350, 200))
-        self.setMaximumSize(QtCore.QSize(350, 200))
-        self.setBaseSize(QtCore.QSize(350, 200))
+        self.resize(350, 400)
+        self.setMinimumSize(QtCore.QSize(350, 400))
+        self.setMaximumSize(QtCore.QSize(350, 400))
         self.saveHistory = QtGui.QCheckBox(self)
         self.saveHistory.setGeometry(QtCore.QRect(40, 20, 291, 22))
         self.saveHistory.setObjectName("saveHistory")
@@ -268,19 +267,25 @@ class PrivacySettings(CenteredWidget):
         self.fileautoaccept.setGeometry(QtCore.QRect(40, 60, 271, 22))
         self.fileautoaccept.setObjectName("fileautoaccept")
         self.typingNotifications = QtGui.QCheckBox(self)
-        self.typingNotifications.setGeometry(QtCore.QRect(40, 90, 350, 30))
+        self.typingNotifications.setGeometry(QtCore.QRect(40, 100, 350, 30))
         self.typingNotifications.setObjectName("typingNotifications")
+        self.inlines = QtGui.QCheckBox(self)
+        self.inlines.setGeometry(QtCore.QRect(40, 140, 350, 30))
+        self.inlines.setObjectName("inlines")
+
+
         self.auto_path = QtGui.QLabel(self)
-        self.auto_path.setGeometry(QtCore.QRect(40, 120, 350, 30))
+        self.auto_path.setGeometry(QtCore.QRect(40, 190, 350, 30))
         self.path = QtGui.QPlainTextEdit(self)
-        self.path.setGeometry(QtCore.QRect(10, 160, 330, 30))
+        self.path.setGeometry(QtCore.QRect(10, 240, 330, 30))
         self.change_path = QtGui.QPushButton(self)
-        self.change_path.setGeometry(QtCore.QRect(230, 120, 100, 30))
+        self.change_path.setGeometry(QtCore.QRect(125, 280, 100, 30))
         self.retranslateUi()
         settings = Settings.get_instance()
         self.typingNotifications.setChecked(settings['typing_notifications'])
         self.fileautoaccept.setChecked(settings['allow_auto_accept'])
         self.saveHistory.setChecked(settings['save_history'])
+        self.inlines.setChecked(settings['allow_inline'])
         self.path.setPlainText(settings['auto_accept_path'] or curr_directory())
         self.change_path.clicked.connect(self.new_path)
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -292,15 +297,29 @@ class PrivacySettings(CenteredWidget):
         self.typingNotifications.setText(QtGui.QApplication.translate("privacySettings", "Send typing notifications", None, QtGui.QApplication.UnicodeUTF8))
         self.auto_path.setText(QtGui.QApplication.translate("privacySettings", "Auto accept default path:", None, QtGui.QApplication.UnicodeUTF8))
         self.change_path.setText(QtGui.QApplication.translate("privacySettings", "Change", None, QtGui.QApplication.UnicodeUTF8))
+        self.inlines.setText(QtGui.QApplication.translate("privacySettings", "Allow inlines", None, QtGui.QApplication.UnicodeUTF8))
 
     def closeEvent(self, event):
         settings = Settings.get_instance()
         settings['typing_notifications'] = self.typingNotifications.isChecked()
         settings['allow_auto_accept'] = self.fileautoaccept.isChecked()
         if settings['save_history'] and not self.saveHistory.isChecked():  # clear history
-            Profile.get_instance().clear_history()
-        settings['save_history'] = self.saveHistory.isChecked()
+            reply = QtGui.QMessageBox.question(None,
+                                               QtGui.QApplication.translate("privacySettings",
+                                                                            'Chat history',
+                                                                            None, QtGui.QApplication.UnicodeUTF8),
+                                               QtGui.QApplication.translate("privacySettings",
+                                                                            'History will be cleaned! Continue?',
+                                                                            None, QtGui.QApplication.UnicodeUTF8),
+                                               QtGui.QMessageBox.Yes,
+                                               QtGui.QMessageBox.No)
+            if reply == QtGui.QMessageBox.Yes:
+                Profile.get_instance().clear_history()
+                settings['save_history'] = self.saveHistory.isChecked()
+        else:
+            settings['save_history'] = self.saveHistory.isChecked()
         settings['auto_accept_path'] = self.path.toPlainText()
+        settings['allow_inline'] = self.inlines.isChecked()
         settings.save()
 
     def new_path(self):
