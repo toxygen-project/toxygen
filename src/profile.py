@@ -201,7 +201,7 @@ class Friend(Contact):
         """
         if hasattr(self, '_message_getter'):
             del self._message_getter
-        self._corr = filter(lambda x: x.get_type() == 2, self._corr)
+        self._corr = filter(lambda x: x.get_type() == 2 and x.get_status() in (2, 4), self._corr)
         self._unsaved_messages = 0
 
     def update_transfer_data(self, file_number, status, inline=None):
@@ -388,7 +388,7 @@ class Profile(Contact, Singleton):
             if value is not None:
                 self._active_friend = value
                 friend = self._friends[value]
-                self._friends[self._active_friend].set_messages(False)
+                self._friends[value].set_messages(False)
                 self._screen.messageEdit.clear()
                 self._messages.clear()
                 friend.load_corr()
@@ -587,7 +587,6 @@ class Profile(Contact, Singleton):
         else:
             self._messages.insertItem(0, elem)
         self._messages.setItemWidget(elem, item)
-        self._messages.repaint()
 
     def create_file_transfer_item(self, tm, append=True):
         data = list(tm.get_data())
@@ -600,7 +599,6 @@ class Profile(Contact, Singleton):
         else:
             self._messages.insertItem(0, elem)
         self._messages.setItemWidget(elem, item)
-        self._messages.repaint()
         return item
 
     def create_inline_item(self, data, append=True):
@@ -612,7 +610,6 @@ class Profile(Contact, Singleton):
         else:
             self._messages.insertItem(0, elem)
         self._messages.setItemWidget(elem, item)
-        self._messages.repaint()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Work with friends (remove, set alias, get public key)
@@ -621,8 +618,17 @@ class Profile(Contact, Singleton):
     def set_alias(self, num):
         friend = self._friends[num]
         name = friend.name.encode('utf-8')
-        dialog = "Enter new alias for friend " + name.decode('utf-8') + "  or leave empty to use friend's name:"
-        text, ok = QtGui.QInputDialog.getText(None, 'Set alias', dialog)
+        dialog = QtGui.QApplication.translate('MainWindow',
+                                              "Enter new alias for friend {} or leave empty to use friend's name:",
+                                              None, QtGui.QApplication.UnicodeUTF8)
+        dialog = dialog.format(name.decode('utf-8'))
+        title = QtGui.QApplication.translate('MainWindow',
+                                             'Set alias',
+                                             None, QtGui.QApplication.UnicodeUTF8)
+
+        text, ok = QtGui.QInputDialog.getText(None,
+                                              title,
+                                              dialog)
         if ok:
             settings = Settings.get_instance()
             aliases = settings['friends_aliases']
@@ -889,8 +895,7 @@ class Profile(Contact, Singleton):
                     inline = InlineImage(transfer.get_data())
                     self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                   FILE_TRANSFER_MESSAGE_STATUS['FINISHED'],
-                                                                                  inline
-                                                                                  )
+                                                                                  inline)
                     self.set_active(self._active_friend)
                 else:
                     self.get_friend_by_number(friend_number).update_transfer_data(file_number, FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])

@@ -105,13 +105,13 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="profile.py" line="700"/>
+        <location filename="profile.py" line="713"/>
         <source>User {} wants to add you to contact list. Message:
 {}</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="profile.py" line="702"/>
+        <location filename="profile.py" line="715"/>
         <source>Friend request</source>
         <translation></translation>
     </message>
@@ -154,6 +154,11 @@
         <location filename="mainscreen.py" line="345"/>
         <source>Remove friend</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="profile.py" line="624"/>
+        <source>Enter new alias for friend {} or leave empty to use friend&apos;s name:</source>
+        <translation>Enter new alias for friend {} or leave empty to use friend&apos;s name:</translation>
     </message>
 </context>
 <context>

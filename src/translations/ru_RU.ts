@@ -105,14 +105,14 @@
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="profile.py" line="700"/>
+        <location filename="profile.py" line="713"/>
         <source>User {} wants to add you to contact list. Message:
 {}</source>
         <translation>Пользователь {} хочет добавить Вас в список контактов. Сообщение:
 {}</translation>
     </message>
     <message>
-        <location filename="profile.py" line="702"/>
+        <location filename="profile.py" line="715"/>
         <source>Friend request</source>
         <translation>Запрос на добавление в друзья</translation>
     </message>
@@ -155,6 +155,11 @@
         <location filename="mainscreen.py" line="345"/>
         <source>Remove friend</source>
         <translation>Удалить друга</translation>
+    </message>
+    <message>
+        <location filename="profile.py" line="624"/>
+        <source>Enter new alias for friend {} or leave empty to use friend&apos;s name:</source>
+        <translation>Введите новый псевдоним для друга {} или оставьте пустым для использования его имени:</translation>
     </message>
 </context>
 <context>
