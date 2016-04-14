@@ -181,12 +181,19 @@ class Friend(Contact):
         if message.get_type() <= 1:
             self._unsaved_messages += 1
 
-    def get_last_message(self):
+    def get_last_message_text(self):
         messages = filter(lambda x: x.get_type() <= 1 and not x.get_owner(), self._corr)
         if messages:
             return messages[-1].get_data()[0]
         else:
             return ''
+
+    def last_message_owner(self):
+        messages = filter(lambda x: x.get_type() <= 1, self._corr)
+        if messages:
+            return messages[-1].get_owner()
+        else:
+            return -1
 
     def clear_corr(self):
         """
@@ -208,7 +215,7 @@ class Friend(Contact):
                 i = self._corr.index(tr)
                 self._corr.insert(i, inline)
         except Exception as ex:
-            log('Update transfer data failed:' + str(ex))
+            log('Update transfer data failed: ' + str(ex))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Alias support
@@ -421,7 +428,7 @@ class Profile(Contact, Singleton):
     active_friend = property(get_active, set_active)
 
     def get_last_message(self):
-        return self._friends[self._active_friend].get_last_message()
+        return self._friends[self._active_friend].get_last_message_text()
 
     def get_active_number(self):
         return self._friends[self._active_friend].number if self._active_friend + 1 else -1
@@ -949,7 +956,7 @@ class Profile(Contact, Singleton):
 def tox_factory(data=None, settings=None):
     """
     :param data: user data from .tox file. None = no saved data, create new profile
-    :param settings: current application settings. None = defaults settings will be used
+    :param settings: current profile settings. None = default settings will be used
     :return: new tox instance
     """
     if settings is None:

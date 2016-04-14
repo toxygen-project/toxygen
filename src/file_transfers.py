@@ -20,6 +20,9 @@ class StateSignal(QtCore.QObject):
 
 
 class FileTransfer(QtCore.QObject):
+    """
+    Superclass for file transfers
+    """
 
     def __init__(self, path, tox, friend_number, size, file_number=None):
         QtCore.QObject.__init__(self)
@@ -49,12 +52,12 @@ class FileTransfer(QtCore.QObject):
         self.send_control(TOX_FILE_CONTROL['CANCEL'])
         if hasattr(self, '_file'):
             self._file.close()
-        self._state_changed.signal.emit(self.state, self._done / self._size)
+        self._state_changed.signal.emit(self.state, 1)
 
     def cancelled(self):
         if hasattr(self, '_file'):
             self._file.close()
-        self._state_changed.signal.emit(TOX_FILE_CONTROL['CANCEL'], self._done / self._size if self._size else 0)
+        self._state_changed.signal.emit(TOX_FILE_CONTROL['CANCEL'], 1)
 
     def send_control(self, control):
         if self._tox.file_control(self._friend_number, self._file_number, control):
@@ -82,6 +85,11 @@ class SendTransfer(FileTransfer):
                                           basename(path).encode('utf-8') if path else '')
 
     def send_chunk(self, position, size):
+        """
+        Send chunk
+        :param position: start position in file
+        :param size: chunk max size
+        """
         if size:
             self._file.seek(position)
             data = self._file.read(size)
@@ -95,6 +103,9 @@ class SendTransfer(FileTransfer):
 
 
 class SendAvatar(SendTransfer):
+    """
+    Send avatar to friend. Doesn't need file transfer item
+    """
 
     def __init__(self, path, tox, friend_number):
         if path is None:
@@ -106,6 +117,9 @@ class SendAvatar(SendTransfer):
 
 
 class SendFromBuffer(FileTransfer):
+    """
+    Send inline image
+    """
 
     def __init__(self, tox, friend_number, data, file_name):
         super(SendFromBuffer, self).__init__(None, tox, friend_number, len(data))
@@ -143,6 +157,11 @@ class ReceiveTransfer(FileTransfer):
         remove(self._path)
 
     def write_chunk(self, position, data):
+        """
+        Incoming chunk
+        :param position: position in file to save data
+        :param data: raw data (string)
+        """
         if data is None:
             self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
@@ -163,6 +182,9 @@ class ReceiveTransfer(FileTransfer):
 
 
 class ReceiveToBuffer(FileTransfer):
+    """
+    Inline image - save in buffer not in file system
+    """
 
     def __init__(self, tox, friend_number, size, file_number):
         super(ReceiveToBuffer, self).__init__(None, tox, friend_number, size, file_number)
@@ -189,6 +211,9 @@ class ReceiveToBuffer(FileTransfer):
 
 
 class ReceiveAvatar(ReceiveTransfer):
+    """
+    Get friend's avatar. Doesn't need file transfer item
+    """
     MAX_AVATAR_SIZE = 512 * 1024
 
     def __init__(self, tox, friend_number, size, file_number):

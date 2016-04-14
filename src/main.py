@@ -38,7 +38,7 @@ class Toxygen(object):
             if curr_lang in map(lambda x: x[0], langs):
                 lang_path = filter(lambda x: x[0] == curr_lang, langs)[0][1]
                 translator = QtCore.QTranslator()
-                translator.load('translations/' + lang_path)
+                translator.load(curr_directory() + '/translations/' + lang_path)
                 app.installTranslator(translator)
                 app.translator = translator
             ls = LoginScreen()
@@ -87,7 +87,7 @@ class Toxygen(object):
 
         lang = filter(lambda x: x[0] == settings['language'], Settings.supported_languages())[0]
         translator = QtCore.QTranslator()
-        translator.load('translations/' + lang[1])
+        translator.load(curr_directory() + '/translations/' + lang[1])
         app.installTranslator(translator)
         app.translator = translator
 
@@ -217,11 +217,10 @@ class Toxygen(object):
         def login_screen_close(self, t, number=-1, default=False, name=None):
             """ Function which processes data from login screen
             :param t: 0 - window was closed, 1 - new profile was created, 2 - profile loaded
-            :param number: num of choosen profile in list (-1 by default)
-            :param default: was or not choosen profile marked as default
+            :param number: num of chosen profile in list (-1 by default)
+            :param default: was or not chosen profile marked as default
             :param name: name of new profile
             """
-            print str(t), str(number), str(default), str(name)
             self.t = t
             self.num = number
             self.default = default
