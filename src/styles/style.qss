@@ -63,14 +63,6 @@ QProgressBar::chunk:horizontal {
     background-color: qlineargradient(spread:reflect, x1:1, y1:0.545, x2:1, y2:0, stop:0 rgba(28, 66, 111, 255), stop:1 rgba(37, 87, 146, 255));
 }
 
-QCheckBox
-{
-    spacing: 5px;
-    outline: none;
-    color: #bbb;
-    margin-bottom: 2px;
-}
-
 QCheckBox:disabled
 {
     color: #777777;
@@ -1267,4 +1259,13 @@ QPushButton:hover
 #toxygen
 {
     color: #A9A9A9;
+}
+
+QCheckBox
+{
+    spacing: 5px;
+    outline: none;
+    color: #bbb;
+    margin-bottom: 2px;
+    text-align: center;
 }

@@ -61,7 +61,7 @@ def friend_status(tox, friend_num, new_status, user_data):
     print "Friend's #{} status changed! New status: {}".format(friend_num, new_status)
     profile = Profile.get_instance()
     friend = profile.get_friend_by_number(friend_num)
-    if friend.status is None and Settings.get_instance()['sound_notifications']:
+    if friend.status is None and Settings.get_instance()['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
         sound_notification(SOUND_NOTIFICATION['FRIEND_CONNECTION_STATUS'])
     invoke_in_main_thread(friend.set_status, new_status)
     invoke_in_main_thread(profile.update_filtration)
@@ -77,7 +77,7 @@ def friend_connection_status(tox, friend_num, new_status, user_data):
     if new_status == TOX_CONNECTION['NONE']:
         invoke_in_main_thread(friend.set_status, None)
         invoke_in_main_thread(profile.update_filtration)
-        if Settings.get_instance()['sound_notifications']:
+        if Settings.get_instance()['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['FRIEND_CONNECTION_STATUS'])
     elif friend.status is None:
         invoke_in_main_thread(profile.send_avatar, friend_num)
@@ -118,9 +118,9 @@ def friend_message(window, tray):
         invoke_in_main_thread(profile.new_message, friend_number, message_type, message)
         if not window.isActiveWindow():
             friend = profile.get_friend_by_number(friend_number)
-            if settings['notifications']:
+            if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                 invoke_in_main_thread(tray_notification, friend.name, message.decode('utf8'), tray, window)
-            if settings['sound_notifications']:
+            if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                 sound_notification(SOUND_NOTIFICATION['MESSAGE'])
     return wrapped
 
@@ -155,9 +155,9 @@ def tox_file_recv(window, tray):
                                   file_name)
             if not window.isActiveWindow():
                 friend = profile.get_friend_by_number(friend_number)
-                if settings['notifications']:
+                if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                     invoke_in_main_thread(tray_notification, 'File from ' + friend.name, file_name, tray, window)
-                if settings['sound_notifications']:
+                if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                     sound_notification(SOUND_NOTIFICATION['FILE_TRANSFER'])
         else:  # AVATAR
             print 'Avatar'
