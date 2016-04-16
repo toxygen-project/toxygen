@@ -184,6 +184,7 @@ class NetworkSettings(CenteredWidget):
     def __init__(self, reset):
         super(NetworkSettings, self).__init__()
         self.reset = reset
+        self.reconnect = False
         self.initUI()
 
     def initUI(self):
@@ -213,6 +214,9 @@ class NetworkSettings(CenteredWidget):
         self.label_2 = QtGui.QLabel(self)
         self.label_2.setGeometry(QtCore.QRect(40, 190, 66, 17))
         self.label_2.setObjectName("label_2")
+        self.reconnect = QtGui.QPushButton(self)
+        self.reconnect.setGeometry(QtCore.QRect(40, 260, 200, 30))
+        self.reconnect.clicked.connect(self.restart_core)
         settings = Settings.get_instance()
         self.ipv.setChecked(settings['ipv6_enabled'])
         self.udp.setChecked(settings['udp_enabled'])
@@ -229,6 +233,7 @@ class NetworkSettings(CenteredWidget):
         self.proxy.setText(QtGui.QApplication.translate("Form", "Proxy", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("Form", "IP:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("Form", "Port:", None, QtGui.QApplication.UnicodeUTF8))
+        self.reconnect.setText(QtGui.QApplication.translate("NetworkSettings", "Restart TOX core", None, QtGui.QApplication.UnicodeUTF8))
 
     def closeEvent(self, *args, **kwargs):
         settings = Settings.get_instance()
@@ -237,7 +242,7 @@ class NetworkSettings(CenteredWidget):
         changed = old_data != new_data
         if self.proxy.isChecked() and (self.proxyip.text() != settings['proxy_host'] or self.proxyport.text() != unicode(settings['proxy_port'])):
             changed = True
-        if changed:
+        if changed or self.reconnect:
             settings['ipv6_enabled'] = self.ipv.isChecked()
             settings['udp_enabled'] = self.udp.isChecked()
             settings['proxy_type'] = int(self.proxy.isChecked())
@@ -246,6 +251,10 @@ class NetworkSettings(CenteredWidget):
             settings.save()
             # recreate tox instance
             Profile.get_instance().reset(self.reset)
+
+    def restart_core(self):
+        self.reconnect = True
+        self.close()
 
 
 class PrivacySettings(CenteredWidget):

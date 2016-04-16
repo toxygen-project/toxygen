@@ -80,7 +80,10 @@ class Settings(Singleton, dict):
             with open(path) as fl:
                 data = fl.read()
             app_settings = json.loads(data)
-            app_settings['active_profile'].remove(unicode(ProfileHelper.get_path() + self.name + '.tox'))
+            try:
+                app_settings['active_profile'].remove(unicode(ProfileHelper.get_path() + self.name + '.tox'))
+            except:
+                pass
             data = json.dumps(app_settings)
             with open(path, 'w') as fl:
                 fl.write(data)
