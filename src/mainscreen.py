@@ -222,6 +222,8 @@ class MainWindow(QtGui.QMainWindow):
         self.messages = QtGui.QListWidget(widget)
         self.messages.setGeometry(0, 0, 620, 250)
         self.messages.setObjectName("messages")
+        self.messages.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.messages.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
         def load(pos):
             if not pos:

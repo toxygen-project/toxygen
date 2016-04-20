@@ -1,7 +1,7 @@
 from toxcore_enums_and_consts import TOX_FILE_KIND, TOX_FILE_CONTROL
 from os.path import basename, getsize, exists
 from os import remove
-from time import time
+from time import time, sleep
 from tox import Tox
 import settings
 from PySide import QtCore
@@ -56,6 +56,7 @@ class FileTransfer(QtCore.QObject):
 
     def cancelled(self):
         if hasattr(self, '_file'):
+            sleep(0.1)
             self._file.close()
         self._state_changed.signal.emit(TOX_FILE_CONTROL['CANCEL'], 1)
 

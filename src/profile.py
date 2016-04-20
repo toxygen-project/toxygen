@@ -759,7 +759,6 @@ class Profile(Contact, Singleton):
         """
         settings = Settings.get_instance()
         friend = self.get_friend_by_number(friend_number)
-        file_name = file_name.decode('utf-8')
         auto = settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']
         inline = (file_name == 'toxygen_inline.png' or file_name == 'utox-inline.png') and settings['allow_inline']
         if inline and size < 1024 * 1024:

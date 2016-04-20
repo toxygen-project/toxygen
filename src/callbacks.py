@@ -147,7 +147,10 @@ def tox_file_recv(window, tray):
         settings = Settings.get_instance()
         if file_type == TOX_FILE_KIND['DATA']:
             print 'file'
-            file_name = file_name[:file_name_size]
+            try:
+                file_name = unicode(file_name[:file_name_size].decode('utf-8'))
+            except:
+                file_name = u'toxygen_file'
             invoke_in_main_thread(profile.incoming_file_transfer,
                                   friend_number,
                                   file_number,

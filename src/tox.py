@@ -573,7 +573,7 @@ class Tox(object):
         :return: friend number
         """
         tox_err_friend_by_public_key = c_int()
-        result = Tox.libtoxcore.tox_friend_by_public_key(self._tox_pointer, c_char_p(public_key),
+        result = Tox.libtoxcore.tox_friend_by_public_key(self._tox_pointer, string_to_bin(public_key),
                                                          addressof(tox_err_friend_by_public_key))
         tox_err_friend_by_public_key = tox_err_friend_by_public_key.value
         if tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['OK']:
