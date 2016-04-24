@@ -11,6 +11,8 @@ from tox_dns import tox_dns
 from history import *
 from file_transfers import *
 import time
+import calls
+import avwidgets
 
 
 class Contact(object):
@@ -114,6 +116,9 @@ class Contact(object):
         with open(avatar_path, 'wb') as f:
             f.write(avatar)
         self.load_avatar()
+
+    def get_pixmap(self):
+        return self._widget.avatar_label.pixmap()
 
 
 class Friend(Contact):
@@ -287,6 +292,7 @@ class Profile(Contact, Singleton):
         self._messages = screen.messages
         self._tox = tox
         self._file_transfers = {}  # dict of file transfers. key - tuple (friend_number, file_number)
+        self._call = calls.AV(tox.AV)  # object with data about calls
         settings = Settings.get_instance()
         self._show_online = settings['show_online_friends']
         screen.online_contacts.setChecked(self._show_online)
@@ -374,6 +380,7 @@ class Profile(Contact, Singleton):
         """
         :param value: number of new active friend in friend's list or None to update active user's data
         """
+        # TODO: check if there is incoming call with friend
         if value is None and self._active_friend == -1:  # nothing to update
             return
         if value == -1:  # all friends were deleted
@@ -408,6 +415,10 @@ class Profile(Contact, Singleton):
                     else:  # inline
                         self.create_inline_item(message.get_data())
                 self._messages.scrollToBottom()
+                if value in self._call:
+                    self._screen.active_call()
+                else:
+                    self._screen.call_finished()
             else:
                 friend = self._friends[self._active_friend]
 
@@ -745,6 +756,10 @@ class Profile(Contact, Singleton):
         for friend in self._friends:
             friend.status = None
 
+    def close(self):
+        self._call.stop()
+        del self._call
+
     # -----------------------------------------------------------------------------------------------------------------
     # File transfers support
     # -----------------------------------------------------------------------------------------------------------------
@@ -955,6 +970,51 @@ class Profile(Contact, Singleton):
         super(Profile, self).set_avatar(data)
         for friend in filter(lambda x: x.status is not None, self._friends):
             self.send_avatar(friend.number)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # AV support
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def get_call(self):
+        return self._call
+
+    call = property(get_call)
+
+    def call_click(self, audio=True, video=False):
+        """User clicked audio button in main window"""
+        num = self.get_active_number()
+        if num not in self._call and self.is_active_online():  # start call
+            self._call(num, audio, video)
+            self._screen.active_call()
+        elif num in self._call:  # finish or cancel call if you call with active friend
+            self.stop_call(num, False)
+
+    def incoming_call(self, audio, video, friend_number):
+        friend = self.get_friend_by_number(friend_number)
+        if friend_number == self.get_active_number():
+            self._screen.incoming_call()
+            # self.accept_call(friend_number, audio, video)
+        else:
+            friend.set_messages(True)
+        if video:
+            text = QtGui.QApplication.translate("incoming_call", "Incoming video call", None, QtGui.QApplication.UnicodeUTF8)
+        else:
+            text = QtGui.QApplication.translate("incoming_call", "Incoming audio call", None, QtGui.QApplication.UnicodeUTF8)
+        self._call_widget = avwidgets.IncomingCallWidget(friend_number, text, friend.name)
+        self._call_widget.set_pixmap(friend.get_pixmap())
+        self._call_widget.show()
+
+    def accept_call(self, friend_number, audio, video):
+        self._call.accept_call(friend_number, audio, video)
+        self._screen.active_call()
+        if hasattr(self, '_call_widget'):
+            del self._call_widget
+
+    def stop_call(self, friend_number, by_friend):
+        self._screen.call_finished()
+        self._call.finish_call(friend_number, by_friend)  # finish or decline call
+        if hasattr(self, '_call_widget'):
+            del self._call_widget
 
 
 def tox_factory(data=None, settings=None):

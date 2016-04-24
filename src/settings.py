@@ -3,6 +3,7 @@ import json
 import os
 import locale
 from util import Singleton, curr_directory
+import pyaudio
 
 
 class Settings(Singleton, dict):
@@ -17,6 +18,9 @@ class Settings(Singleton, dict):
         else:
             super(self.__class__, self).__init__(Settings.get_default_settings())
             self.save()
+        p = pyaudio.PyAudio()
+        self.audio = {'input': p.get_default_input_device_info()['index'],
+                      'output': p.get_default_output_device_info()['index']}
 
     @staticmethod
     def get_auto_profile():

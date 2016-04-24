@@ -60,12 +60,14 @@ class MainWindow(QtGui.QMainWindow):
         self.actionAbout_program.setObjectName("actionAbout_program")
         self.actionSettings = QtGui.QAction(MainWindow)
         self.actionSettings.setObjectName("actionSettings")
+        self.audioSettings = QtGui.QAction(MainWindow)
         self.menuProfile.addAction(self.actionAdd_friend)
         self.menuProfile.addAction(self.actionSettings)
         self.menuSettings.addAction(self.actionPrivacy_settings)
         self.menuSettings.addAction(self.actionInterface_settings)
         self.menuSettings.addAction(self.actionNotifications)
         self.menuSettings.addAction(self.actionNetwork)
+        self.menuSettings.addAction(self.audioSettings)
         self.menuAbout.addAction(self.actionAbout_program)
         self.menubar.addAction(self.menuProfile.menuAction())
         self.menubar.addAction(self.menuSettings.menuAction())
@@ -78,6 +80,7 @@ class MainWindow(QtGui.QMainWindow):
         self.actionPrivacy_settings.triggered.connect(self.privacy_settings)
         self.actionInterface_settings.triggered.connect(self.interface_settings)
         self.actionNotifications.triggered.connect(self.notification_settings)
+        self.audioSettings.triggered.connect(self.audio_settings)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def languageChange(self, *args, **kwargs):
@@ -96,6 +99,7 @@ class MainWindow(QtGui.QMainWindow):
         self.actionNetwork.setText(QtGui.QApplication.translate("MainWindow", "Network", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAbout_program.setText(QtGui.QApplication.translate("MainWindow", "About program", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSettings.setText(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
+        self.audioSettings.setText(QtGui.QApplication.translate("MainWindow", "Audio", None, QtGui.QApplication.UnicodeUTF8))
 
     def setup_right_bottom(self, Form):
         Form.setObjectName("right_bottom")
@@ -202,10 +206,8 @@ class MainWindow(QtGui.QMainWindow):
         self.callButton = QtGui.QPushButton(Form)
         self.callButton.setGeometry(QtCore.QRect(550, 30, 50, 50))
         self.callButton.setObjectName("callButton")
-        pixmap = QtGui.QPixmap(curr_directory() + '/images/call.png')
-        icon = QtGui.QIcon(pixmap)
-        self.callButton.setIcon(icon)
-        self.callButton.setIconSize(QtCore.QSize(50, 50))
+        self.callButton.clicked.connect(self.call)
+        self.update_call_state('call')
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def setup_left_center(self, widget):
@@ -271,6 +273,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def closeEvent(self, *args, **kwargs):
         self.profile.save_history()
+        self.profile.close()
         QtGui.QApplication.closeAllWindows()
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -308,8 +311,12 @@ class MainWindow(QtGui.QMainWindow):
         self.int_s = InterfaceSettings()
         self.int_s.show()
 
+    def audio_settings(self):
+        self.audio_s = AudioSettings()
+        self.audio_s.show()
+
     # -----------------------------------------------------------------------------------------------------------------
-    # Messages and file transfers
+    # Messages, calls and file transfers
     # -----------------------------------------------------------------------------------------------------------------
 
     def send_message(self):
@@ -327,6 +334,25 @@ class MainWindow(QtGui.QMainWindow):
         if self.profile.is_active_online():  # active friend exists and online
             self.sw = ScreenShotWindow()
             self.sw.show()
+
+    def call(self):
+        if self.profile.is_active_online():  # active friend exists and online
+            self.profile.call_click(True)
+
+    def active_call(self):
+        self.update_call_state('finish_call')
+
+    def incoming_call(self):
+        self.update_call_state('incoming_call')
+
+    def call_finished(self):
+        self.update_call_state('call')
+
+    def update_call_state(self, fl):
+        pixmap = QtGui.QPixmap(curr_directory() + '/images/{}.png'.format(fl))
+        icon = QtGui.QIcon(pixmap)
+        self.callButton.setIcon(icon)
+        self.callButton.setIconSize(QtCore.QSize(50, 50))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user open context menu in friends list

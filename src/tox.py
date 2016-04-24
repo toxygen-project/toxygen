@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from ctypes import c_char_p, Structure, CDLL, c_bool, addressof, c_int, c_size_t, POINTER, c_uint16, c_void_p, c_uint64
+from ctypes import c_char_p, Structure, c_bool, addressof, c_int, c_size_t, POINTER, c_uint16, c_void_p, c_uint64
 from ctypes import create_string_buffer, ArgumentError, CFUNCTYPE, c_uint32, sizeof, c_uint8
-from platform import system
 from toxcore_enums_and_consts import *
+from toxav import ToxAV
+from libtox import LibToxCore
 
 
 class ToxOptions(Structure):
@@ -19,20 +20,6 @@ class ToxOptions(Structure):
         ('savedata_data', c_char_p),
         ('savedata_length', c_size_t)
     ]
-
-
-class LibToxCore(object):
-    def __init__(self):
-        if system() == 'Linux':
-            # be sure that libtoxcore and libsodium are installed in your os
-            self._libtoxcore = CDLL('libtoxcore.so')
-        elif system() == 'Windows':
-            self._libtoxcore = CDLL('libs/libtox.dll')
-        else:
-            raise OSError('Unknown system.')
-        
-    def __getattr__(self, item):
-        return self._libtoxcore.__getattr__(item)
 
 
 def string_to_bin(tox_id):
@@ -103,7 +90,10 @@ class Tox(object):
             self.file_recv_cb = None
             self.file_recv_chunk_cb = None
 
+            self.AV = ToxAV(self._tox_pointer)
+
     def __del__(self):
+        del self.AV
         Tox.libtoxcore.tox_kill(self._tox_pointer)
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -1406,11 +1396,3 @@ class Tox(object):
             return result
         elif tox_err_get_port == TOX_ERR_GET_PORT['NOT_BOUND']:
             raise RuntimeError('The instance was not bound to any port.')
-
-
-if __name__ == '__main__':
-    tox = Tox(Tox.options_new())
-    p = tox.get_savedata()
-    print type(p)
-    print p
-    del tox

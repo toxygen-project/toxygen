@@ -3,6 +3,7 @@ from notifications import *
 from settings import Settings
 from profile import Profile
 from toxcore_enums_and_consts import *
+from toxav_enums import *
 from tox import bin_to_string
 from ctypes import c_char_p, cast, pointer
 
@@ -200,6 +201,35 @@ def file_recv_control(tox, friend_number, file_number, file_control, user_data):
     if file_control == TOX_FILE_CONTROL['CANCEL']:
         Profile.get_instance().cancel_transfer(friend_number, file_number, True)
 
+
+# -----------------------------------------------------------------------------------------------------------------
+# Callbacks - audio
+# -----------------------------------------------------------------------------------------------------------------
+
+def call_state(toxav, friend_number, mask, user_data):
+    """New call state"""
+    print friend_number, mask
+    if mask == TOXAV_FRIEND_CALL_STATE['FINISHED'] or mask == TOXAV_FRIEND_CALL_STATE['ERROR']:
+        invoke_in_main_thread(Profile.get_instance().stop_call, friend_number, True)
+    else:
+        Profile.get_instance().call.toxav_call_state_cb(friend_number, mask)
+
+
+def call(toxav, friend_number, audio, video, user_data):
+    """Incoming call from friend"""
+    print friend_number, audio, video
+    invoke_in_main_thread(Profile.get_instance().incoming_call, audio, video, friend_number)
+
+
+def callback_audio(toxav, friend_number, samples, audio_samples_per_channel, audio_channels_count, rate, user_data):
+    """New audio chunk"""
+    print audio_samples_per_channel, audio_channels_count, rate
+    Profile.get_instance().call.chunk(
+        ''.join(chr(x) for x in samples[:audio_samples_per_channel * 2 * audio_channels_count]),
+        audio_channels_count,
+        rate)
+
+
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
 # -----------------------------------------------------------------------------------------------------------------
@@ -225,3 +255,9 @@ def init_callbacks(tox, window, tray):
     tox.callback_file_recv_chunk(file_recv_chunk, 0)
     tox.callback_file_chunk_request(file_chunk_request, 0)
     tox.callback_file_recv_control(file_recv_control, 0)
+
+    toxav = tox.AV
+    toxav.callback_call_state(call_state, 0)
+    toxav.callback_call(call, 0)
+    toxav.callback_audio_receive_frame(callback_audio, 0)
+

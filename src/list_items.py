@@ -4,6 +4,7 @@ import profile
 from file_transfers import TOX_FILE_TRANSFER_STATE
 from util import curr_directory, convert_time
 from messages import FILE_TRANSFER_MESSAGE_STATUS
+from widgets import DataLabel
 
 
 class MessageEdit(QtGui.QTextEdit):
@@ -63,15 +64,6 @@ class MessageItem(QtGui.QWidget):
                 self.message.setStyleSheet("QTextEdit { color: green; }")
             if text[-1] == '<':
                 self.message.setStyleSheet("QTextEdit { color: red; }")
-
-
-class DataLabel(QtGui.QLabel):
-
-    def paintEvent(self, event):
-        painter = QtGui.QPainter(self)
-        metrics = QtGui.QFontMetrics(self.font())
-        text = metrics.elidedText(self.text(), QtCore.Qt.ElideRight, self.width())
-        painter.drawText(self.rect(), self.alignment(), text)
 
 
 class ContactItem(QtGui.QWidget):

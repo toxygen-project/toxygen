@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 from PySide import QtCore, QtGui
-import sys
-import os
+from widgets import *
 
 
-class LoginScreen(QtGui.QWidget):
+class LoginScreen(CenteredWidget):
 
     def __init__(self):
         super(LoginScreen, self).__init__()
@@ -15,7 +14,6 @@ class LoginScreen(QtGui.QWidget):
         self.resize(400, 200)
         self.setMinimumSize(QtCore.QSize(400, 200))
         self.setMaximumSize(QtCore.QSize(400, 200))
-        self.setBaseSize(QtCore.QSize(400, 200))
         self.new_profile = QtGui.QPushButton(self)
         self.new_profile.setGeometry(QtCore.QRect(20, 150, 171, 27))
         self.new_profile.clicked.connect(self.create_profile)
@@ -54,13 +52,6 @@ class LoginScreen(QtGui.QWidget):
         self.name = None
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
-        self.center()
-
-    def center(self):
-        qr = self.frameGeometry()
-        cp = QtGui.QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("login", "Log in", None, QtGui.QApplication.UnicodeUTF8))
