@@ -1,5 +1,5 @@
 # Toxygen 
-Toxygen is simple [Tox](https://tox.chat/) client written on pure Python 2.7
+Toxygen is simple [Tox](https://tox.chat/) client written on pure Python
 ### [How to install](/docs/install.md)
 
 # Supported OS:
@@ -20,12 +20,13 @@ Toxygen is simple [Tox](https://tox.chat/) client written on pure Python 2.7
 - [x] Multilingual
 - [x] Sound notifications
 - [x] Inline images
-- [ ] Audio
+- [x] Audio
 - [ ] Video
 - [ ] Save file encryption
 - [ ] File resuming
 - [ ] Typing notifications
 - [ ] Changing nospam
+- [ ] Plugins support
 - [ ] Group chats
 - [ ] Read receipts
 - [ ] Faux offline messaging
@@ -35,6 +36,8 @@ Toxygen is simple [Tox](https://tox.chat/) client written on pure Python 2.7
 [Download last stable version](https://github.com/xveduk/toxygen/archive/master.zip)
 
 [Download develop version](https://github.com/xveduk/toxygen/archive/develop.zip)
+
+[Releases](https://github.com/xveduk/toxygen/releases)
 
 ###Screenshots
 *Toxygen running on Ubuntu and Windows*

@@ -293,6 +293,7 @@ class Profile(Contact, Singleton):
         self._tox = tox
         self._file_transfers = {}  # dict of file transfers. key - tuple (friend_number, file_number)
         self._call = calls.AV(tox.AV)  # object with data about calls
+        self._incoming_calls = set()
         settings = Settings.get_instance()
         self._show_online = settings['show_online_friends']
         screen.online_contacts.setChecked(self._show_online)
@@ -380,7 +381,6 @@ class Profile(Contact, Singleton):
         """
         :param value: number of new active friend in friend's list or None to update active user's data
         """
-        # TODO: check if there is incoming call with friend
         if value is None and self._active_friend == -1:  # nothing to update
             return
         if value == -1:  # all friends were deleted
@@ -417,6 +417,8 @@ class Profile(Contact, Singleton):
                 self._messages.scrollToBottom()
                 if value in self._call:
                     self._screen.active_call()
+                elif value in self._incoming_calls:
+                    self._screen.incoming_call()
                 else:
                     self._screen.call_finished()
             else:
@@ -991,9 +993,9 @@ class Profile(Contact, Singleton):
 
     def incoming_call(self, audio, video, friend_number):
         friend = self.get_friend_by_number(friend_number)
+        self._incoming_calls.add(friend_number)
         if friend_number == self.get_active_number():
             self._screen.incoming_call()
-            # self.accept_call(friend_number, audio, video)
         else:
             friend.set_messages(True)
         if video:
@@ -1007,10 +1009,13 @@ class Profile(Contact, Singleton):
     def accept_call(self, friend_number, audio, video):
         self._call.accept_call(friend_number, audio, video)
         self._screen.active_call()
+        self._incoming_calls.remove(friend_number)
         if hasattr(self, '_call_widget'):
             del self._call_widget
 
     def stop_call(self, friend_number, by_friend):
+        if friend_number in self._incoming_calls:
+            self._incoming_calls.remove(friend_number)
         self._screen.call_finished()
         self._call.finish_call(friend_number, by_friend)  # finish or decline call
         if hasattr(self, '_call_widget'):

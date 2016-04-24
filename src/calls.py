@@ -3,7 +3,7 @@ import time
 import threading
 import settings
 from toxav_enums import *
-# TODO: play sound until outgoing call will be started or cancelled
+# TODO: play sound until outgoing call will be started or cancelled and add timeout
 
 CALL_TYPE = {
     'NONE': 0,
