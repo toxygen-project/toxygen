@@ -219,6 +219,7 @@ class Friend(Contact):
             if inline:  # inline was loaded
                 i = self._corr.index(tr)
                 self._corr.insert(i, inline)
+                return i - len(self._corr)
         except Exception as ex:
             log('Update transfer data failed: ' + str(ex))
 
@@ -787,6 +788,7 @@ class Profile(Contact, Singleton):
                                  file_name,
                                  friend_number,
                                  file_number)
+
         elif auto:
             path = settings['auto_accept_path'] or curr_directory()
             new_file_name, i = file_name, 1
@@ -797,7 +799,7 @@ class Profile(Contact, Singleton):
                     d = len(file_name)
                 new_file_name = file_name[:d] + ' ({})'.format(i) + file_name[d:]
                 i += 1
-            self.accept_transfer(None, path + '/' + new_file_name, friend_number, file_number)
+            self.accept_transfer(None, path + '/' + new_file_name, friend_number, file_number, size)
             tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
                                  time.time(),
                                  FILE_TRANSFER_MESSAGE_STATUS['INCOMING_STARTED'],
@@ -814,10 +816,13 @@ class Profile(Contact, Singleton):
                                  friend_number,
                                  file_number)
         if friend_number == self.get_active_number():
-            self.create_file_transfer_item(tm)
+            item = self.create_file_transfer_item(tm)
+            if (inline and size < 1024 * 1024) or auto:
+                self._file_transfers[(friend_number, file_number)].set_state_changed_handler(item.update)
             self._messages.scrollToBottom()
         else:
             friend.set_messages(True)
+
         friend.append_message(tm)
 
     def cancel_transfer(self, friend_number, file_number, already_cancelled=False):
@@ -841,7 +846,7 @@ class Profile(Contact, Singleton):
 
     def accept_transfer(self, item, path, friend_number, file_number, size, inline=False):
         """
-        :param item: transfer item. None if auto accept
+        :param item: transfer item.
         :param path: path for saving
         :param friend_number: friend number
         :param file_number: file number
@@ -909,12 +914,19 @@ class Profile(Contact, Singleton):
                     self.set_active(None)
                 elif type(transfer) is ReceiveToBuffer:
                     inline = InlineImage(transfer.get_data())
-                    self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                                  FILE_TRANSFER_MESSAGE_STATUS['FINISHED'],
-                                                                                  inline)
-                    self.set_active(self._active_friend)
+                    i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+                                                                                      FILE_TRANSFER_MESSAGE_STATUS['FINISHED'],
+                                                                                      inline)
+                    if friend_number == self.get_active_number():
+                        count = self._messages.count()
+                        item = InlineImageItem(transfer.get_data())
+                        elem = QtGui.QListWidgetItem()
+                        elem.setSizeHint(QtCore.QSize(600, item.height()))
+                        self._messages.insertItem(count + i + 1, elem)
+                        self._messages.setItemWidget(elem, item)
                 else:
-                    self.get_friend_by_number(friend_number).update_transfer_data(file_number, FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])
+                    self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+                                                                                  FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])
                 del self._file_transfers[(friend_number, file_number)]
 
     def outgoing_chunk(self, friend_number, file_number, position, size):
