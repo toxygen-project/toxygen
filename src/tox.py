@@ -984,13 +984,13 @@ class Tox(object):
         This event is triggered when a friend request is received.
 
         :param callback: Python function. Should take pointer (c_void_p) to Tox object,
-        The Public Key (c_char_p) of the user who sent the friend request,
+        The Public Key (c_uint8 array) of the user who sent the friend request,
         The message (c_char_p) they sent along with the request,
         The size (c_size_t) of the message byte array,
         pointer (c_void_p) to user_data
         :param user_data: pointer (c_void_p) to user data
         """
-        c_callback = CFUNCTYPE(None, c_void_p, c_char_p, c_char_p, c_size_t, c_void_p)
+        c_callback = CFUNCTYPE(None, c_void_p, POINTER(c_uint8), c_char_p, c_size_t, c_void_p)
         self.friend_request_cb = c_callback(callback)
         Tox.libtoxcore.tox_callback_friend_request(self._tox_pointer, self.friend_request_cb, c_void_p(user_data))
 

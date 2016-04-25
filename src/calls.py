@@ -67,7 +67,7 @@ class AV(object):
                                               rate=self._audio_rate,
                                               channels=self._audio_channels,
                                               input=True,
-                                              input_device_index=settings.Settings().get_instance().audio['input'],
+                                              input_device_index=settings.Settings.get_instance().audio['input'],
                                               frames_per_buffer=self._audio_sample_count * 10)
 
         self._audio_thread = threading.Thread(target=self.send_audio)
@@ -100,7 +100,7 @@ class AV(object):
             self._out_stream = self._audio.open(format=pyaudio.paInt16,
                                                 channels=channels_count,
                                                 rate=rate,
-                                                output_device_index=settings.Settings().get_instance().audio['output'],
+                                                output_device_index=settings.Settings.get_instance().audio['output'],
                                                 output=True)
         self._out_stream.write(samples)
 

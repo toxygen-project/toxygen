@@ -105,13 +105,13 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="profile.py" line="724"/>
+        <location filename="profile.py" line="762"/>
         <source>User {} wants to add you to contact list. Message:
 {}</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="profile.py" line="726"/>
+        <location filename="profile.py" line="764"/>
         <source>Friend request</source>
         <translation></translation>
     </message>
@@ -156,7 +156,7 @@
         <translation></translation>
     </message>
     <message>
-        <location filename="profile.py" line="635"/>
+        <location filename="profile.py" line="639"/>
         <source>Enter new alias for friend {} or leave empty to use friend&apos;s name:</source>
         <translation>Enter new alias for friend {} or leave empty to use friend&apos;s name:</translation>
     </message>
@@ -225,17 +225,17 @@
 <context>
     <name>audioSettingsForm</name>
     <message>
-        <location filename="menu.py" line="476"/>
+        <location filename="menu.py" line="504"/>
         <source>Audio settings</source>
         <translation>Audio settings</translation>
     </message>
     <message>
-        <location filename="menu.py" line="477"/>
+        <location filename="menu.py" line="505"/>
         <source>Input device:</source>
         <translation>Input device:</translation>
     </message>
     <message>
-        <location filename="menu.py" line="478"/>
+        <location filename="menu.py" line="506"/>
         <source>Output device:</source>
         <translation>Output device:</translation>
     </message>
@@ -243,12 +243,12 @@
 <context>
     <name>incoming_call</name>
     <message>
-        <location filename="profile.py" line="1001"/>
+        <location filename="profile.py" line="1041"/>
         <source>Incoming video call</source>
         <translation>Incoming video call</translation>
     </message>
     <message>
-        <location filename="profile.py" line="1003"/>
+        <location filename="profile.py" line="1043"/>
         <source>Incoming audio call</source>
         <translation>Incoming audio call</translation>
     </message>
@@ -256,17 +256,17 @@
 <context>
     <name>interfaceForm</name>
     <message>
-        <location filename="menu.py" line="414"/>
+        <location filename="menu.py" line="442"/>
         <source>Interface settings</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="menu.py" line="415"/>
+        <location filename="menu.py" line="443"/>
         <source>Theme:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="menu.py" line="416"/>
+        <location filename="menu.py" line="444"/>
         <source>Language:</source>
         <translation></translation>
     </message>
@@ -322,22 +322,22 @@
 <context>
     <name>notificationsForm</name>
     <message>
-        <location filename="menu.py" line="355"/>
+        <location filename="menu.py" line="383"/>
         <source>Notification settings</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="menu.py" line="356"/>
+        <location filename="menu.py" line="384"/>
         <source>Enable notifications</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="menu.py" line="357"/>
+        <location filename="menu.py" line="385"/>
         <source>Enable call&apos;s sound</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="menu.py" line="358"/>
+        <location filename="menu.py" line="386"/>
         <source>Enable sound notifications</source>
         <translation></translation>
     </message>
@@ -345,49 +345,79 @@
 <context>
     <name>privacySettings</name>
     <message>
-        <location filename="menu.py" line="292"/>
+        <location filename="menu.py" line="307"/>
         <source>Privacy settings</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="menu.py" line="293"/>
+        <location filename="menu.py" line="308"/>
         <source>Save chat history</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="menu.py" line="294"/>
+        <location filename="menu.py" line="309"/>
         <source>Allow file auto accept</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="menu.py" line="295"/>
+        <location filename="menu.py" line="310"/>
         <source>Send typing notifications</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="menu.py" line="296"/>
+        <location filename="menu.py" line="311"/>
         <source>Auto accept default path:</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="menu.py" line="297"/>
+        <location filename="menu.py" line="312"/>
         <source>Change</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="menu.py" line="298"/>
+        <location filename="menu.py" line="313"/>
         <source>Allow inlines</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="menu.py" line="308"/>
+        <location filename="menu.py" line="336"/>
         <source>Chat history</source>
         <translation></translation>
     </message>
     <message>
-        <location filename="menu.py" line="311"/>
+        <location filename="menu.py" line="339"/>
         <source>History will be cleaned! Continue?</source>
         <translation></translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="315"/>
+        <source>Blocked users:</source>
+        <translation>Blocked users:</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="316"/>
+        <source>Unblock</source>
+        <translation>Unblock</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="317"/>
+        <source>Block user</source>
+        <translation>Block user</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="323"/>
+        <source>Add to friend list</source>
+        <translation>Add to friend list</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="324"/>
+        <source>Do you want to add this user to friend list?</source>
+        <translation>Do you want to add this user to friend list?</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="314"/>
+        <source>Block by TOX ID:</source>
+        <translation>Block by TOX ID:</translation>
     </message>
 </context>
 <context>

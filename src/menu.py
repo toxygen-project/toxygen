@@ -255,9 +255,9 @@ class PrivacySettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("privacySettings")
-        self.resize(350, 400)
-        self.setMinimumSize(QtCore.QSize(350, 400))
-        self.setMaximumSize(QtCore.QSize(350, 400))
+        self.resize(350, 550)
+        self.setMinimumSize(QtCore.QSize(350, 550))
+        self.setMaximumSize(QtCore.QSize(350, 550))
         self.saveHistory = QtGui.QCheckBox(self)
         self.saveHistory.setGeometry(QtCore.QRect(40, 20, 291, 22))
         self.saveHistory.setObjectName("saveHistory")
@@ -275,10 +275,9 @@ class PrivacySettings(CenteredWidget):
         self.auto_path = QtGui.QLabel(self)
         self.auto_path.setGeometry(QtCore.QRect(40, 190, 350, 30))
         self.path = QtGui.QPlainTextEdit(self)
-        self.path.setGeometry(QtCore.QRect(10, 240, 330, 30))
+        self.path.setGeometry(QtCore.QRect(10, 225, 330, 45))
         self.change_path = QtGui.QPushButton(self)
-        self.change_path.setGeometry(QtCore.QRect(125, 280, 100, 30))
-        self.retranslateUi()
+        self.change_path.setGeometry(QtCore.QRect(10, 280, 330, 30))
         settings = Settings.get_instance()
         self.typingNotifications.setChecked(settings['typing_notifications'])
         self.fileautoaccept.setChecked(settings['allow_auto_accept'])
@@ -286,6 +285,22 @@ class PrivacySettings(CenteredWidget):
         self.inlines.setChecked(settings['allow_inline'])
         self.path.setPlainText(settings['auto_accept_path'] or curr_directory())
         self.change_path.clicked.connect(self.new_path)
+        self.block_user_label = QtGui.QLabel(self)
+        self.block_user_label.setGeometry(QtCore.QRect(10, 320, 330, 30))
+        self.block_id = QtGui.QPlainTextEdit(self)
+        self.block_id.setGeometry(QtCore.QRect(10, 350, 330, 30))
+        self.block = QtGui.QPushButton(self)
+        self.block.setGeometry(QtCore.QRect(10, 390, 330, 30))
+        self.block.clicked.connect(lambda: Profile.get_instance().block_user(self.block_id.toPlainText()) or self.close())
+        self.blocked_users_label = QtGui.QLabel(self)
+        self.blocked_users_label.setGeometry(QtCore.QRect(10, 430, 330, 30))
+        self.comboBox = QtGui.QComboBox(self)
+        self.comboBox.setGeometry(QtCore.QRect(10, 460, 330, 30))
+        self.comboBox.addItems(settings['blocked'])
+        self.unblock = QtGui.QPushButton(self)
+        self.unblock.setGeometry(QtCore.QRect(10, 500, 330, 30))
+        self.unblock.clicked.connect(lambda: self.unblock_user())
+        self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
@@ -296,6 +311,19 @@ class PrivacySettings(CenteredWidget):
         self.auto_path.setText(QtGui.QApplication.translate("privacySettings", "Auto accept default path:", None, QtGui.QApplication.UnicodeUTF8))
         self.change_path.setText(QtGui.QApplication.translate("privacySettings", "Change", None, QtGui.QApplication.UnicodeUTF8))
         self.inlines.setText(QtGui.QApplication.translate("privacySettings", "Allow inlines", None, QtGui.QApplication.UnicodeUTF8))
+        self.block_user_label.setText(QtGui.QApplication.translate("privacySettings", "Block by TOX ID:", None, QtGui.QApplication.UnicodeUTF8))
+        self.blocked_users_label.setText(QtGui.QApplication.translate("privacySettings", "Blocked users:", None, QtGui.QApplication.UnicodeUTF8))
+        self.unblock.setText(QtGui.QApplication.translate("privacySettings", "Unblock", None, QtGui.QApplication.UnicodeUTF8))
+        self.block.setText(QtGui.QApplication.translate("privacySettings", "Block user", None, QtGui.QApplication.UnicodeUTF8))
+
+    def unblock_user(self):
+        if not self.comboBox.count():
+            return
+        title = QtGui.QApplication.translate("privacySettings", "Add to friend list", None, QtGui.QApplication.UnicodeUTF8)
+        info = QtGui.QApplication.translate("privacySettings", "Do you want to add this user to friend list?", None, QtGui.QApplication.UnicodeUTF8)
+        reply = QtGui.QMessageBox.question(None, title, info, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+        Profile.get_instance().unblock_user(self.comboBox.currentText(), reply == QtGui.QMessageBox.Yes)
+        self.close()
 
     def closeEvent(self, event):
         settings = Settings.get_instance()

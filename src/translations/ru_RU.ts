@@ -105,14 +105,14 @@
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="profile.py" line="724"/>
+        <location filename="profile.py" line="762"/>
         <source>User {} wants to add you to contact list. Message:
 {}</source>
         <translation>Пользователь {} хочет добавить Вас в список контактов. Сообщение:
 {}</translation>
     </message>
     <message>
-        <location filename="profile.py" line="726"/>
+        <location filename="profile.py" line="764"/>
         <source>Friend request</source>
         <translation>Запрос на добавление в друзья</translation>
     </message>
@@ -157,7 +157,7 @@
         <translation>Удалить друга</translation>
     </message>
     <message>
-        <location filename="profile.py" line="635"/>
+        <location filename="profile.py" line="639"/>
         <source>Enter new alias for friend {} or leave empty to use friend&apos;s name:</source>
         <translation>Введите новый псевдоним для друга {} или оставьте пустым для использования его имени:</translation>
     </message>
@@ -231,17 +231,17 @@
 <context>
     <name>audioSettingsForm</name>
     <message>
-        <location filename="menu.py" line="476"/>
+        <location filename="menu.py" line="504"/>
         <source>Audio settings</source>
         <translation>Настройки аудио</translation>
     </message>
     <message>
-        <location filename="menu.py" line="477"/>
+        <location filename="menu.py" line="505"/>
         <source>Input device:</source>
         <translation>Устройство ввода:</translation>
     </message>
     <message>
-        <location filename="menu.py" line="478"/>
+        <location filename="menu.py" line="506"/>
         <source>Output device:</source>
         <translation>Устройство вывода:</translation>
     </message>
@@ -249,12 +249,12 @@
 <context>
     <name>incoming_call</name>
     <message>
-        <location filename="profile.py" line="1001"/>
+        <location filename="profile.py" line="1041"/>
         <source>Incoming video call</source>
         <translation>Входящий видеозвонок</translation>
     </message>
     <message>
-        <location filename="profile.py" line="1003"/>
+        <location filename="profile.py" line="1043"/>
         <source>Incoming audio call</source>
         <translation>Входящий аудиозвонок</translation>
     </message>
@@ -262,17 +262,17 @@
 <context>
     <name>interfaceForm</name>
     <message>
-        <location filename="menu.py" line="414"/>
+        <location filename="menu.py" line="442"/>
         <source>Interface settings</source>
         <translation>Настройки интерфейса</translation>
     </message>
     <message>
-        <location filename="menu.py" line="415"/>
+        <location filename="menu.py" line="443"/>
         <source>Theme:</source>
         <translation>Тема:</translation>
     </message>
     <message>
-        <location filename="menu.py" line="416"/>
+        <location filename="menu.py" line="444"/>
         <source>Language:</source>
         <translation>Язык:</translation>
     </message>
@@ -328,22 +328,22 @@
 <context>
     <name>notificationsForm</name>
     <message>
-        <location filename="menu.py" line="355"/>
+        <location filename="menu.py" line="383"/>
         <source>Notification settings</source>
         <translation>Настройки уведомлений</translation>
     </message>
     <message>
-        <location filename="menu.py" line="356"/>
+        <location filename="menu.py" line="384"/>
         <source>Enable notifications</source>
         <translation>Включить уведомления</translation>
     </message>
     <message>
-        <location filename="menu.py" line="357"/>
+        <location filename="menu.py" line="385"/>
         <source>Enable call&apos;s sound</source>
         <translation>Включить звук звонка</translation>
     </message>
     <message>
-        <location filename="menu.py" line="358"/>
+        <location filename="menu.py" line="386"/>
         <source>Enable sound notifications</source>
         <translation>Включить звуковые уведомления
 </translation>
@@ -352,49 +352,79 @@
 <context>
     <name>privacySettings</name>
     <message>
-        <location filename="menu.py" line="292"/>
+        <location filename="menu.py" line="307"/>
         <source>Privacy settings</source>
         <translation>Настройки приватности</translation>
     </message>
     <message>
-        <location filename="menu.py" line="293"/>
+        <location filename="menu.py" line="308"/>
         <source>Save chat history</source>
         <translation>Сохранять историю переписки</translation>
     </message>
     <message>
-        <location filename="menu.py" line="294"/>
+        <location filename="menu.py" line="309"/>
         <source>Allow file auto accept</source>
         <translation>Разрешить автополучение файлов</translation>
     </message>
     <message>
-        <location filename="menu.py" line="295"/>
+        <location filename="menu.py" line="310"/>
         <source>Send typing notifications</source>
         <translation>Посылать уведомления о наборе текста</translation>
     </message>
     <message>
-        <location filename="menu.py" line="296"/>
+        <location filename="menu.py" line="311"/>
         <source>Auto accept default path:</source>
         <translation>Путь автоприема файлов:</translation>
     </message>
     <message>
-        <location filename="menu.py" line="297"/>
+        <location filename="menu.py" line="312"/>
         <source>Change</source>
         <translation>Изменить</translation>
     </message>
     <message>
-        <location filename="menu.py" line="298"/>
+        <location filename="menu.py" line="313"/>
         <source>Allow inlines</source>
         <translation>Разрешать инлайны</translation>
     </message>
     <message>
-        <location filename="menu.py" line="308"/>
+        <location filename="menu.py" line="336"/>
         <source>Chat history</source>
         <translation>История чата</translation>
     </message>
     <message>
-        <location filename="menu.py" line="311"/>
+        <location filename="menu.py" line="339"/>
         <source>History will be cleaned! Continue?</source>
         <translation>История переписки будет очищена! Продолжить?</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="315"/>
+        <source>Blocked users:</source>
+        <translation>Заблокированные пользователи:</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="316"/>
+        <source>Unblock</source>
+        <translation>Разблокировать</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="317"/>
+        <source>Block user</source>
+        <translation>Заблокировать пользователя</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="323"/>
+        <source>Add to friend list</source>
+        <translation>Добавить в список друзей</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="324"/>
+        <source>Do you want to add this user to friend list?</source>
+        <translation>Добавить этого пользователя в список друзей?</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="314"/>
+        <source>Block by TOX ID:</source>
+        <translation>Блокировать по TOX ID:</translation>
     </message>
 </context>
 <context>

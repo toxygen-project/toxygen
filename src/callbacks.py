@@ -130,9 +130,12 @@ def friend_request(tox, public_key, message, message_size, user_data):
     """
     Called when user get new friend request
     """
+    print 'Friend request'
     profile = Profile.get_instance()
-    tox_id = bin_to_string(public_key, TOX_PUBLIC_KEY_SIZE)
-    invoke_in_main_thread(profile.process_friend_request, tox_id, message.decode('utf-8'))
+    key = ''.join(chr(x) for x in public_key[:TOX_PUBLIC_KEY_SIZE])
+    tox_id = bin_to_string(key, TOX_PUBLIC_KEY_SIZE)
+    if tox_id not in Settings.get_instance()['blocked']:
+        invoke_in_main_thread(profile.process_friend_request, tox_id, message.decode('utf-8'))
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - file transfers

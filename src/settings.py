@@ -8,7 +8,7 @@ import pyaudio
 
 class Settings(Singleton, dict):
 
-    def __init__(self, name=''):
+    def __init__(self, name):
         self.path = ProfileHelper.get_path() + str(name) + '.json'
         self.name = name
         if os.path.isfile(self.path):
@@ -79,6 +79,7 @@ class Settings(Singleton, dict):
         default = Settings.get_default_settings()
         for key in default:
             if key not in self:
+                print key
                 self[key] = default[key]
         self.save()
 

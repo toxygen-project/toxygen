@@ -144,7 +144,8 @@ class Friend(Contact):
     def __del__(self):
         self.set_visibility(False)
         del self._widget
-        del self._message_getter
+        if hasattr(self, '_message_getter'):
+            del self._message_getter
 
     # -----------------------------------------------------------------------------------------------------------------
     # History support
@@ -626,7 +627,7 @@ class Profile(Contact, Singleton):
         self._messages.setItemWidget(elem, item)
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Work with friends (remove, set alias, get public key)
+    # Work with friends (remove, block, set alias, get public key)
     # -----------------------------------------------------------------------------------------------------------------
 
     def set_alias(self, num):
@@ -686,6 +687,40 @@ class Profile(Contact, Singleton):
             else:
                 self.set_active(0)
 
+    def add_friend(self, tox_id):
+        num = self._tox.friend_add_norequest(tox_id)  # num - friend number
+        item = self.create_friend_item()
+        try:
+            if not self._history.friend_exists_in_db(tox_id):
+                self._history.add_friend_to_db(tox_id)
+            message_getter = self._history.messages_getter(tox_id)
+        except Exception as ex:  # something is wrong
+            log('Accept friend request failed! ' + str(ex))
+            message_getter = None
+        friend = Friend(message_getter, num, tox_id, '', item, tox_id)
+        self._friends.append(friend)
+
+    def block_user(self, tox_id):
+        tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
+        if tox_id == self.tox_id[:TOX_PUBLIC_KEY_SIZE * 2]:
+            return
+        settings = Settings.get_instance()
+        if tox_id not in settings['blocked']:
+            settings['blocked'].append(tox_id)
+            settings.save()
+        try:
+            num = self._tox.friend_by_public_key(tox_id)
+            self.delete_friend(num)
+        except:  # not in friend list
+            pass
+
+    def unblock_user(self, tox_id, add_to_friend_list):
+        s = Settings.get_instance()
+        s['blocked'].remove(tox_id)
+        s.save()
+        if add_to_friend_list:
+            self.add_friend(tox_id)
+
     # -----------------------------------------------------------------------------------------------------------------
     # Friend requests
     # -----------------------------------------------------------------------------------------------------------------
@@ -728,16 +763,7 @@ class Profile(Contact, Singleton):
             fr_req = QtGui.QApplication.translate('MainWindow', 'Friend request', None, QtGui.QApplication.UnicodeUTF8)
             reply = QtGui.QMessageBox.question(None, fr_req, info, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
             if reply == QtGui.QMessageBox.Yes:  # accepted
-                num = self._tox.friend_add_norequest(tox_id)  # num - friend number
-                item = self.create_friend_item()
-                try:
-                    if not self._history.friend_exists_in_db(tox_id):
-                        self._history.add_friend_to_db(tox_id)
-                    message_getter = self._history.messages_getter(tox_id)
-                except Exception as ex:  # something is wrong
-                    log('Accept friend request failed! ' + str(ex))
-                friend = Friend(message_getter, num, tox_id, '', item, tox_id)
-                self._friends.append(friend)
+                self.add_friend(tox_id)
         except Exception as ex:  # something is wrong
             log('Accept friend request failed! ' + str(ex))
 
