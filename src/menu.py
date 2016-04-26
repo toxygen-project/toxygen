@@ -173,7 +173,7 @@ class NetworkSettings(CenteredWidget):
     def __init__(self, reset):
         super(NetworkSettings, self).__init__()
         self.reset = reset
-        self.reconnect = False
+        self.reconn = False
         self.initUI()
 
     def initUI(self):
@@ -186,25 +186,25 @@ class NetworkSettings(CenteredWidget):
         self.ipv.setGeometry(QtCore.QRect(20, 10, 97, 22))
         self.ipv.setObjectName("ipv")
         self.udp = QtGui.QCheckBox(self)
-        self.udp.setGeometry(QtCore.QRect(20, 50, 97, 22))
+        self.udp.setGeometry(QtCore.QRect(150, 10, 97, 22))
         self.udp.setObjectName("udp")
         self.proxy = QtGui.QCheckBox(self)
-        self.proxy.setGeometry(QtCore.QRect(20, 90, 97, 22))
+        self.proxy.setGeometry(QtCore.QRect(20, 40, 97, 22))
+        self.http = QtGui.QCheckBox(self)
+        self.http.setGeometry(QtCore.QRect(20, 70, 97, 22))
         self.proxy.setObjectName("proxy")
         self.proxyip = QtGui.QLineEdit(self)
-        self.proxyip.setGeometry(QtCore.QRect(40, 160, 231, 27))
+        self.proxyip.setGeometry(QtCore.QRect(40, 130, 231, 27))
         self.proxyip.setObjectName("proxyip")
         self.proxyport = QtGui.QLineEdit(self)
-        self.proxyport.setGeometry(QtCore.QRect(40, 220, 231, 27))
+        self.proxyport.setGeometry(QtCore.QRect(40, 190, 231, 27))
         self.proxyport.setObjectName("proxyport")
         self.label = QtGui.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(40, 130, 66, 17))
-        self.label.setObjectName("label")
+        self.label.setGeometry(QtCore.QRect(40, 100, 66, 17))
         self.label_2 = QtGui.QLabel(self)
-        self.label_2.setGeometry(QtCore.QRect(40, 190, 66, 17))
-        self.label_2.setObjectName("label_2")
+        self.label_2.setGeometry(QtCore.QRect(40, 165, 66, 17))
         self.reconnect = QtGui.QPushButton(self)
-        self.reconnect.setGeometry(QtCore.QRect(40, 260, 200, 30))
+        self.reconnect.setGeometry(QtCore.QRect(40, 230, 200, 30))
         self.reconnect.clicked.connect(self.restart_core)
         settings = Settings.get_instance()
         self.ipv.setChecked(settings['ipv6_enabled'])
@@ -213,6 +213,8 @@ class NetworkSettings(CenteredWidget):
         self.proxyip.setText(settings['proxy_host'])
         self.proxyport.setText(unicode(settings['proxy_port']))
         self.retranslateUi()
+        self.proxy.stateChanged.connect(lambda x: self.activate())
+        self.activate()
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
@@ -223,6 +225,13 @@ class NetworkSettings(CenteredWidget):
         self.label.setText(QtGui.QApplication.translate("Form", "IP:", None, QtGui.QApplication.UnicodeUTF8))
         self.label_2.setText(QtGui.QApplication.translate("Form", "Port:", None, QtGui.QApplication.UnicodeUTF8))
         self.reconnect.setText(QtGui.QApplication.translate("NetworkSettings", "Restart TOX core", None, QtGui.QApplication.UnicodeUTF8))
+        self.http.setText(QtGui.QApplication.translate("Form", "HTTP", None, QtGui.QApplication.UnicodeUTF8))
+
+    def activate(self):
+        bl = self.proxy.isChecked()
+        self.proxyip.setEnabled(bl)
+        self.http.setEnabled(bl)
+        self.proxyport.setEnabled(bl)
 
     def closeEvent(self, *args, **kwargs):
         settings = Settings.get_instance()
@@ -231,10 +240,10 @@ class NetworkSettings(CenteredWidget):
         changed = old_data != new_data
         if self.proxy.isChecked() and (self.proxyip.text() != settings['proxy_host'] or self.proxyport.text() != unicode(settings['proxy_port'])):
             changed = True
-        if changed or self.reconnect:
+        if changed or self.reconn:
             settings['ipv6_enabled'] = self.ipv.isChecked()
             settings['udp_enabled'] = self.udp.isChecked()
-            settings['proxy_type'] = int(self.proxy.isChecked())
+            settings['proxy_type'] = 2 - int(self.http.isChecked())
             settings['proxy_host'] = self.proxyip.text()
             settings['proxy_port'] = int(self.proxyport.text())
             settings.save()
@@ -242,7 +251,7 @@ class NetworkSettings(CenteredWidget):
             Profile.get_instance().reset(self.reset)
 
     def restart_core(self):
-        self.reconnect = True
+        self.reconn = True
         self.close()
 
 
