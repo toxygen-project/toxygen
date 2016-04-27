@@ -2,29 +2,32 @@
 Toxygen is simple [Tox](https://tox.chat/) client written on pure Python
 ### [How to install](/docs/install.md)
 
+### [Contributing](/docs/contributing.md)
+
 # Supported OS:
 - Windows
 - Linux
 
 ###Features
 - [x] 1v1 messages
-- [x] Contact aliases
+- [x] File transfers
+- [x] Audio
 - [x] Chat history
 - [x] Name lookups (TOX DNS 4 support)
 - [x] Profile import/export
+- [x] Inline images
 - [x] Message splitting
 - [x] Proxy support
-- [x] File transfers
 - [x] Avatars
 - [x] Multiprofile
 - [x] Multilingual
 - [x] Sound notifications
-- [x] Inline images
-- [x] Audio
+- [x] Contact aliases
+- [x] Contact blocking
+- [x] Typing notifications
 - [ ] Video
 - [ ] Save file encryption
 - [ ] File resuming
-- [ ] Typing notifications
 - [ ] Changing nospam
 - [ ] Plugins support
 - [ ] Group chats

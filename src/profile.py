@@ -394,6 +394,8 @@ class Profile(Contact, Singleton):
             self._screen.messageEdit.clear()
             return
         try:
+            self.send_typing(False)
+            self._screen.typing.setVisible(False)
             if value is not None:
                 self._active_friend = value
                 friend = self._friends[value]
@@ -453,6 +455,20 @@ class Profile(Contact, Singleton):
 
     def is_active_online(self):
         return self._active_friend + 1 and self._friends[self._active_friend].status is not None
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Typing notifications
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def send_typing(self, typing):
+        if Settings.get_instance()['typing_notifications']:
+            friend = self._friends[self._active_friend]
+            if friend.status is not None:
+                self._tox.self_set_typing(friend.number, typing)
+
+    def friend_typing(self, friend_number, typing):
+        if friend_number == self.get_active_number():
+            self._screen.typing.setVisible(typing)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private messages

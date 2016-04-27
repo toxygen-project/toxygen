@@ -137,6 +137,10 @@ def friend_request(tox, public_key, message, message_size, user_data):
     if tox_id not in Settings.get_instance()['blocked']:
         invoke_in_main_thread(profile.process_friend_request, tox_id, message.decode('utf-8'))
 
+
+def friend_typing(tox, friend_number, typing, user_data):
+    invoke_in_main_thread(Profile.get_instance().friend_typing, friend_number, typing)
+
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - file transfers
 # -----------------------------------------------------------------------------------------------------------------
@@ -253,6 +257,7 @@ def init_callbacks(tox, window, tray):
     tox.callback_friend_name(friend_name, 0)
     tox.callback_friend_status_message(friend_status_message, 0)
     tox.callback_friend_request(friend_request, 0)
+    tox.callback_friend_typing(friend_typing, 0)
 
     tox.callback_file_recv(tox_file_recv(window, tray), 0)
     tox.callback_file_recv_chunk(file_recv_chunk, 0)

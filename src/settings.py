@@ -62,7 +62,7 @@ class Settings(Singleton, dict):
             'show_online_friends': False,
             'auto_accept_from_friends': [],
             'friends_aliases': [],
-            'typing_notifications': True,
+            'typing_notifications': False,
             'calls_sound': True,
             'blocked': []
         }

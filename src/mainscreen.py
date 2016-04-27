@@ -10,6 +10,8 @@ class MessageArea(QtGui.QPlainTextEdit):
     def __init__(self, parent, form):
         super(MessageArea, self).__init__(parent)
         self.parent = form
+        self.timer = QtCore.QTimer(self)
+        self.timer.timeout.connect(lambda: self.parent.profile.send_typing(False))
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return:
@@ -21,6 +23,10 @@ class MessageArea(QtGui.QPlainTextEdit):
         elif event.key() == QtCore.Qt.Key_Up and not self.toPlainText():
             self.appendPlainText(Profile.get_instance().get_last_message())
         else:
+            self.parent.profile.send_typing(True)
+            if self.timer.isActive():
+                self.timer.stop()
+            self.timer.start(5000)
             super(MessageArea, self).keyPressEvent(event)
 
 
@@ -208,6 +214,13 @@ class MainWindow(QtGui.QMainWindow):
         self.callButton.setObjectName("callButton")
         self.callButton.clicked.connect(self.call)
         self.update_call_state('call')
+        self.typing = QtGui.QLabel(Form)
+        self.typing.setGeometry(QtCore.QRect(500, 40, 50, 30))
+        pixmap = QtGui.QPixmap(QtCore.QSize(50, 30))
+        pixmap.load(curr_directory() + '/images/typing.png')
+        self.typing.setScaledContents(False)
+        self.typing.setPixmap(pixmap.scaled(50, 30, QtCore.Qt.KeepAspectRatio))
+        self.typing.setVisible(False)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def setup_left_center(self, widget):
