@@ -428,14 +428,14 @@ class Profile(Contact, Singleton):
 
             self._screen.account_name.setText(friend.name)
             self._screen.account_status.setText(friend.status_message)
-            avatar_path = (Settings.get_default_path() + 'avatars/{}.png').format(friend.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+            avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(friend.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
             if not os.path.isfile(avatar_path):  # load default image
                 avatar_path = curr_directory() + '/images/avatar.png'
             pixmap = QtGui.QPixmap(QtCore.QSize(64, 64))
             pixmap.load(avatar_path)
             self._screen.account_avatar.setScaledContents(False)
             self._screen.account_avatar.setPixmap(pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio))
-            self._screen.account_avatar.repaint()
+            self._screen.account_avatar.repaint()  # comment?
         except:  # no friend found. ignore
             log('Incorrect friend value: ' + str(value))
             raise
