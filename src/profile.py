@@ -876,6 +876,8 @@ class Profile(Contact, Singleton):
         :param file_number: file number
         :param already_cancelled: was cancelled by friend
         """
+        self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+                                                                      FILE_TRANSFER_MESSAGE_STATUS['CANCELLED'])
         if (friend_number, file_number) in self._file_transfers:
             tr = self._file_transfers[(friend_number, file_number)]
             if not already_cancelled:
@@ -885,8 +887,6 @@ class Profile(Contact, Singleton):
             del self._file_transfers[(friend_number, file_number)]
         else:
             self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
-        self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                      FILE_TRANSFER_MESSAGE_STATUS['CANCELLED'])
 
     def accept_transfer(self, item, path, friend_number, file_number, size, inline=False):
         """

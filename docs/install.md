@@ -32,7 +32,7 @@ You can compile Toxygen using [PyInstaller](http://www.pyinstaller.org/):
 
 On Linux:
 
-``pyinstaller --windowed src/main.py``
+``pyinstaller --windowed main.py``
 
 On Windows:
 

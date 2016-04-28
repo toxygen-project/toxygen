@@ -20,6 +20,9 @@ class MessageArea(QtGui.QPlainTextEdit):
                 self.appendPlainText('')
             else:
                 self.parent.send_message()
+                if self.timer.isActive():
+                    self.timer.stop()
+                self.parent.profile.send_typing(False)
         elif event.key() == QtCore.Qt.Key_Up and not self.toPlainText():
             self.appendPlainText(Profile.get_instance().get_last_message())
         else:
@@ -197,6 +200,7 @@ class MainWindow(QtGui.QMainWindow):
         self.account_avatar.setScaledContents(True)
         self.account_name = DataLabel(Form)
         self.account_name.setGeometry(QtCore.QRect(100, 30, 400, 25))
+        self.account_name.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(14)
@@ -205,6 +209,7 @@ class MainWindow(QtGui.QMainWindow):
         self.account_name.setObjectName("account_name")
         self.account_status = DataLabel(Form)
         self.account_status.setGeometry(QtCore.QRect(100, 50, 400, 25))
+        self.account_status.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse)
         font.setPointSize(12)
         font.setBold(False)
         self.account_status.setFont(font)
