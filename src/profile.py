@@ -833,6 +833,8 @@ class Profile(Contact, Singleton):
 
         elif auto:
             path = settings['auto_accept_path'] or curr_directory()
+            if not os.path.isdir(path):
+                path = curr_directory()
             new_file_name, i = file_name, 1
             while os.path.isfile(path + '/' + new_file_name):  # file with same name already exists
                 if '.' in file_name:  # has extension
@@ -1046,6 +1048,9 @@ class Profile(Contact, Singleton):
             self.stop_call(num, False)
 
     def incoming_call(self, audio, video, friend_number):
+        """
+        Incoming call from friend. Only audio is supported now
+        """
         friend = self.get_friend_by_number(friend_number)
         self._incoming_calls.add(friend_number)
         if friend_number == self.get_active_number():
@@ -1061,6 +1066,9 @@ class Profile(Contact, Singleton):
         self._call_widget.show()
 
     def accept_call(self, friend_number, audio, video):
+        """
+        Accept incoming call with audio or video
+        """
         self._call.accept_call(friend_number, audio, video)
         self._screen.active_call()
         self._incoming_calls.remove(friend_number)
@@ -1068,6 +1076,9 @@ class Profile(Contact, Singleton):
             del self._call_widget
 
     def stop_call(self, friend_number, by_friend):
+        """
+        Stop call with friend
+        """
         if friend_number in self._incoming_calls:
             self._incoming_calls.remove(friend_number)
         self._screen.call_finished()
