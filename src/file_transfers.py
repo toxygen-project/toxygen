@@ -1,6 +1,6 @@
 from toxcore_enums_and_consts import TOX_FILE_KIND, TOX_FILE_CONTROL
 from os.path import basename, getsize, exists
-from os import remove, chdir
+from os import remove, rename
 from time import time, sleep
 from tox import Tox
 import settings
@@ -149,9 +149,8 @@ class ReceiveTransfer(FileTransfer):
 
     def __init__(self, path, tox, friend_number, size, file_number):
         super(ReceiveTransfer, self).__init__(path, tox, friend_number, size, file_number)
-        if type(self) is not ReceiveAvatar:
-            self._file = open(self._path, 'wb')
-            self._file.truncate(0)
+        self._file = open(self._path, 'wb')
+        self._file.truncate(0)
         self._file_size = 0
 
     def cancel(self):
@@ -220,15 +219,17 @@ class ReceiveAvatar(ReceiveTransfer):
 
     def __init__(self, tox, friend_number, size, file_number):
         path = settings.ProfileHelper.get_path() + 'avatars/{}.png'.format(tox.friend_get_public_key(friend_number))
-        super(ReceiveAvatar, self).__init__(path, tox, friend_number, size, file_number)
+        super(ReceiveAvatar, self).__init__(path + '.tmp', tox, friend_number, size, file_number)
         if size > self.MAX_AVATAR_SIZE:
             self.send_control(TOX_FILE_CONTROL['CANCEL'])
+            remove(path + '.tmp')
         elif exists(path):
             if not size:
                 self.send_control(TOX_FILE_CONTROL['CANCEL'])
                 self.state = TOX_FILE_TRANSFER_STATE['CANCELED']
                 self._file.close()
                 remove(path)
+                remove(path + '.tmp')
             else:
                 hash = self.get_file_id()
                 with open(path) as fl:
@@ -237,11 +238,18 @@ class ReceiveAvatar(ReceiveTransfer):
                 if hash == existing_hash:
                     self.send_control(TOX_FILE_CONTROL['CANCEL'])
                     self.state = TOX_FILE_TRANSFER_STATE['CANCELED']
+                    remove(path + '.tmp')
                 else:
-                    self._file = open(self._path, 'wb')
-                    self._file.truncate(0)
                     self.send_control(TOX_FILE_CONTROL['RESUME'])
         else:
-            self._file = open(self._path, 'wb')
-            self._file.truncate(0)
             self.send_control(TOX_FILE_CONTROL['RESUME'])
+
+    def write_chunk(self, position, data):
+        super(ReceiveAvatar, self).write_chunk(position, data)
+        if self.state:
+            avatar_path = self._path[:-4]
+            if exists(avatar_path):
+                remove(avatar_path)
+            rename(self._path, avatar_path)
+
+
