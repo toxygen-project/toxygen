@@ -150,7 +150,8 @@ class ReceiveTransfer(FileTransfer):
     def __init__(self, path, tox, friend_number, size, file_number):
         super(ReceiveTransfer, self).__init__(path, tox, friend_number, size, file_number)
         self._file = open(self._path, 'wb')
-        self._file.truncate(0)
+        if type(self) is not ReceiveAvatar:
+            self._file.truncate(0)
         self._file_size = 0
 
     def cancel(self):
@@ -236,6 +237,8 @@ class ReceiveAvatar(ReceiveTransfer):
                     self.send_control(TOX_FILE_CONTROL['CANCEL'])
                     self.state = TOX_FILE_TRANSFER_STATE['CANCELED']
                 else:
+                    self._file.truncate(0)
                     self.send_control(TOX_FILE_CONTROL['RESUME'])
         else:
+            self._file.truncate(0)
             self.send_control(TOX_FILE_CONTROL['RESUME'])

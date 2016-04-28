@@ -1133,8 +1133,8 @@ class Tox(object):
         if file_id is None:
             file_id = create_string_buffer(TOX_FILE_ID_LENGTH)
         tox_err_file_get = c_int()
-        Tox.libtoxcore.tox_file_control(self._tox_pointer, c_uint32(friend_number), c_uint32(file_number), file_id,
-                                        addressof(tox_err_file_get))
+        Tox.libtoxcore.tox_file_get_file_id(self._tox_pointer, c_uint32(friend_number), c_uint32(file_number), file_id,
+                                            addressof(tox_err_file_get))
         tox_err_file_get = tox_err_file_get.value
         if tox_err_file_get == TOX_ERR_FILE_GET['OK']:
             return bin_to_string(file_id, TOX_FILE_ID_LENGTH)
