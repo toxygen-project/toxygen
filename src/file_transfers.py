@@ -1,6 +1,6 @@
 from toxcore_enums_and_consts import TOX_FILE_KIND, TOX_FILE_CONTROL
 from os.path import basename, getsize, exists
-from os import remove
+from os import remove, chdir
 from time import time, sleep
 from tox import Tox
 import settings
@@ -149,8 +149,8 @@ class ReceiveTransfer(FileTransfer):
 
     def __init__(self, path, tox, friend_number, size, file_number):
         super(ReceiveTransfer, self).__init__(path, tox, friend_number, size, file_number)
-        self._file = open(self._path, 'wb')
         if type(self) is not ReceiveAvatar:
+            self._file = open(self._path, 'wb')
             self._file.truncate(0)
         self._file_size = 0
 
@@ -219,7 +219,7 @@ class ReceiveAvatar(ReceiveTransfer):
     MAX_AVATAR_SIZE = 512 * 1024
 
     def __init__(self, tox, friend_number, size, file_number):
-        path = settings.ProfileHelper.get_path() + '/avatars/{}.png'.format(tox.friend_get_public_key(friend_number))
+        path = settings.ProfileHelper.get_path() + 'avatars/{}.png'.format(tox.friend_get_public_key(friend_number))
         super(ReceiveAvatar, self).__init__(path, tox, friend_number, size, file_number)
         if size > self.MAX_AVATAR_SIZE:
             self.send_control(TOX_FILE_CONTROL['CANCEL'])
@@ -231,14 +231,17 @@ class ReceiveAvatar(ReceiveTransfer):
                 remove(path)
             else:
                 hash = self.get_file_id()
-                with open(path, 'rb') as fl:
-                    existing_hash = Tox.hash(fl.read())
+                with open(path) as fl:
+                    data = fl.read()
+                existing_hash = Tox.hash(data)
                 if hash == existing_hash:
                     self.send_control(TOX_FILE_CONTROL['CANCEL'])
                     self.state = TOX_FILE_TRANSFER_STATE['CANCELED']
                 else:
+                    self._file = open(self._path, 'wb')
                     self._file.truncate(0)
                     self.send_control(TOX_FILE_CONTROL['RESUME'])
         else:
+            self._file = open(self._path, 'wb')
             self._file.truncate(0)
             self.send_control(TOX_FILE_CONTROL['RESUME'])

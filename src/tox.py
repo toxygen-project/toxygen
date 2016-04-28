@@ -1017,7 +1017,7 @@ class Tox(object):
     # -----------------------------------------------------------------------------------------------------------------
 
     @staticmethod
-    def hash(data, size, hash=None):
+    def hash(data, hash=None):
         """
         Generates a cryptographic hash of the given data.
 
@@ -1034,7 +1034,7 @@ class Tox(object):
         """
         if hash is None:
             hash = create_string_buffer(TOX_HASH_LENGTH)
-        Tox.libtoxcore.tox_hash(hash, c_void_p(data), c_size_t(size))
+        Tox.libtoxcore.tox_hash(hash, c_char_p(data), len(data))
         return bin_to_string(hash, TOX_HASH_LENGTH)
 
     def file_control(self, friend_number, file_number, control):
