@@ -88,7 +88,3 @@ class LoginScreen(CenteredWidget):
     def closeEvent(self, event):
         self.onclose(self.type, self.number, self.load_as_default, self.name)
         event.accept()
-
-
-if __name__ == '__main__':
-    pass

@@ -240,13 +240,14 @@ class NetworkSettings(CenteredWidget):
         changed = old_data != new_data
         if self.proxy.isChecked() and (self.proxyip.text() != settings['proxy_host'] or self.proxyport.text() != unicode(settings['proxy_port'])):
             changed = True
-        if changed or self.reconn:
+        if changed:
             settings['ipv6_enabled'] = self.ipv.isChecked()
             settings['udp_enabled'] = self.udp.isChecked()
             settings['proxy_type'] = 2 - int(self.http.isChecked())
             settings['proxy_host'] = self.proxyip.text()
             settings['proxy_port'] = int(self.proxyport.text())
             settings.save()
+        if changed or self.reconnect:
             # recreate tox instance
             Profile.get_instance().reset(self.reset)
 

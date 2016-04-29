@@ -172,6 +172,10 @@ class ProfileHelper(object):
         path = path.decode(locale.getpreferredencoding())
         ProfileHelper._path = path + name + '.tox'
         ProfileHelper._directory = path
+        # create /avatars if not exists:
+        directory = path + 'avatars'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
         with open(ProfileHelper._path, 'rb') as fl:
             data = fl.read()
         if data:
