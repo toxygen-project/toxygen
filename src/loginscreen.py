@@ -4,6 +4,19 @@ from PySide import QtCore, QtGui
 from widgets import *
 
 
+class NickEdit(QtGui.QPlainTextEdit):
+
+    def __init__(self, parent):
+        super(NickEdit, self).__init__(parent)
+        self.parent = parent
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Return:
+            self.parent.create_profile()
+        else:
+            super(NickEdit, self).keyPressEvent(event)
+
+
 class LoginScreen(CenteredWidget):
 
     def __init__(self):
@@ -19,7 +32,7 @@ class LoginScreen(CenteredWidget):
         self.new_profile.clicked.connect(self.create_profile)
         self.label = QtGui.QLabel(self)
         self.label.setGeometry(QtCore.QRect(20, 70, 101, 17))
-        self.new_name = QtGui.QPlainTextEdit(self)
+        self.new_name = NickEdit(self)
         self.new_name.setGeometry(QtCore.QRect(20, 100, 171, 31))
         self.load_profile = QtGui.QPushButton(self)
         self.load_profile.setGeometry(QtCore.QRect(220, 150, 161, 27))

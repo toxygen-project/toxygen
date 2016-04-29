@@ -194,11 +194,14 @@ def file_chunk_request(tox, friend_number, file_number, position, size, user_dat
     """
     Outgoing chunk
     """
-    invoke_in_main_thread(Profile.get_instance().outgoing_chunk,
-                          friend_number,
-                          file_number,
-                          position,
-                          size)
+    if size:
+        Profile.get_instance().outgoing_chunk(friend_number, file_number, position, size)
+    else:
+        invoke_in_main_thread(Profile.get_instance().outgoing_chunk,
+                              friend_number,
+                              file_number,
+                              position,
+                              size)
 
 
 def file_recv_control(tox, friend_number, file_number, file_control, user_data):
