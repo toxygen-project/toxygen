@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from ctypes import c_char_p, Structure, c_bool, addressof, c_int, c_size_t, POINTER, c_uint16, c_void_p, c_uint64
+from ctypes import c_char_p, Structure, c_bool, byref, c_int, c_size_t, POINTER, c_uint16, c_void_p, c_uint64
 from ctypes import create_string_buffer, ArgumentError, CFUNCTYPE, c_uint32, sizeof, c_uint8
 from toxcore_enums_and_consts import *
 from toxav import ToxAV
@@ -49,7 +49,7 @@ class Tox(object):
         else:
             tox_err_new = c_int()
             Tox.libtoxcore.tox_new.restype = POINTER(c_void_p)
-            self._tox_pointer = Tox.libtoxcore.tox_new(tox_options, addressof(tox_err_new))
+            self._tox_pointer = Tox.libtoxcore.tox_new(tox_options, byref(tox_err_new))
             tox_err_new = tox_err_new.value
             if tox_err_new == TOX_ERR_NEW['NULL']:
                 raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
@@ -128,7 +128,7 @@ class Tox(object):
         tox_err_options_new = c_int()
         f = Tox.libtoxcore.tox_options_new
         f.restype = POINTER(ToxOptions)
-        result = f(addressof(tox_err_options_new))
+        result = f(byref(tox_err_options_new))
         tox_err_options_new = tox_err_options_new.value
         if tox_err_options_new == TOX_ERR_OPTIONS_NEW['OK']:
             return result
@@ -192,7 +192,7 @@ class Tox(object):
         """
         tox_err_bootstrap = c_int()
         result = Tox.libtoxcore.tox_bootstrap(self._tox_pointer, c_char_p(address), c_uint16(port),
-                                              string_to_bin(public_key), addressof(tox_err_bootstrap))
+                                              string_to_bin(public_key), byref(tox_err_bootstrap))
         tox_err_bootstrap = tox_err_bootstrap.value
         if tox_err_bootstrap == TOX_ERR_BOOTSTRAP['OK']:
             return bool(result)
@@ -218,7 +218,7 @@ class Tox(object):
         """
         tox_err_bootstrap = c_int()
         result = Tox.libtoxcore.tox_add_tcp_relay(self._tox_pointer, c_char_p(address), c_uint16(port),
-                                                  c_char_p(public_key), addressof(tox_err_bootstrap))
+                                                  c_char_p(public_key), byref(tox_err_bootstrap))
         tox_err_bootstrap = tox_err_bootstrap.value
         if tox_err_bootstrap == TOX_ERR_BOOTSTRAP['OK']:
             return bool(result)
@@ -345,7 +345,7 @@ class Tox(object):
         """
         tox_err_set_info = c_int()
         result = Tox.libtoxcore.tox_self_set_name(self._tox_pointer, c_char_p(name),
-                                                  c_size_t(len(name)), addressof(tox_err_set_info))
+                                                  c_size_t(len(name)), byref(tox_err_set_info))
         tox_err_set_info = tox_err_set_info.value
         if tox_err_set_info == TOX_ERR_SET_INFO['OK']:
             return bool(result)
@@ -393,7 +393,7 @@ class Tox(object):
         """
         tox_err_set_info = c_int()
         result = Tox.libtoxcore.tox_self_set_status_message(self._tox_pointer, c_char_p(status_message),
-                                                            c_size_t(len(status_message)), addressof(tox_err_set_info))
+                                                            c_size_t(len(status_message)), byref(tox_err_set_info))
         tox_err_set_info = tox_err_set_info.value
         if tox_err_set_info == TOX_ERR_SET_INFO['OK']:
             return bool(result)
@@ -469,7 +469,7 @@ class Tox(object):
         """
         tox_err_friend_add = c_int()
         result = Tox.libtoxcore.tox_friend_add(self._tox_pointer, string_to_bin(address), c_char_p(message),
-                                               c_size_t(len(message)), addressof(tox_err_friend_add))
+                                               c_size_t(len(message)), byref(tox_err_friend_add))
         tox_err_friend_add = tox_err_friend_add.value
         if tox_err_friend_add == TOX_ERR_FRIEND_ADD['OK']:
             return result
@@ -509,7 +509,7 @@ class Tox(object):
         """
         tox_err_friend_add = c_int()
         result = Tox.libtoxcore.tox_friend_add_norequest(self._tox_pointer, string_to_bin(public_key),
-                                                         addressof(tox_err_friend_add))
+                                                         byref(tox_err_friend_add))
         tox_err_friend_add = tox_err_friend_add.value
         if tox_err_friend_add == TOX_ERR_FRIEND_ADD['OK']:
             return result
@@ -544,7 +544,7 @@ class Tox(object):
         """
         tox_err_friend_delete = c_int()
         result = Tox.libtoxcore.tox_friend_delete(self._tox_pointer, c_uint32(friend_number),
-                                                  addressof(tox_err_friend_delete))
+                                                  byref(tox_err_friend_delete))
         tox_err_friend_delete = tox_err_friend_delete.value
         if tox_err_friend_delete == TOX_ERR_FRIEND_DELETE['OK']:
             return bool(result)
@@ -564,7 +564,7 @@ class Tox(object):
         """
         tox_err_friend_by_public_key = c_int()
         result = Tox.libtoxcore.tox_friend_by_public_key(self._tox_pointer, string_to_bin(public_key),
-                                                         addressof(tox_err_friend_by_public_key))
+                                                         byref(tox_err_friend_by_public_key))
         tox_err_friend_by_public_key = tox_err_friend_by_public_key.value
         if tox_err_friend_by_public_key == TOX_ERR_FRIEND_BY_PUBLIC_KEY['OK']:
             return result
@@ -619,7 +619,7 @@ class Tox(object):
             public_key = create_string_buffer(TOX_PUBLIC_KEY_SIZE)
         tox_err_friend_get_public_key = c_int()
         Tox.libtoxcore.tox_friend_get_public_key(self._tox_pointer, c_uint32(friend_number), public_key,
-                                                 addressof(tox_err_friend_get_public_key))
+                                                 byref(tox_err_friend_get_public_key))
         tox_err_friend_get_public_key = tox_err_friend_get_public_key.value
         if tox_err_friend_get_public_key == TOX_ERR_FRIEND_GET_PUBLIC_KEY['OK']:
             return bin_to_string(public_key, TOX_PUBLIC_KEY_SIZE)
@@ -636,7 +636,7 @@ class Tox(object):
         """
         tox_err_last_online = c_int()
         result = Tox.libtoxcore.tox_friend_get_last_online(self._tox_pointer, c_uint32(friend_number),
-                                                           addressof(tox_err_last_online))
+                                                           byref(tox_err_last_online))
         tox_err_last_online = tox_err_last_online.value
         if tox_err_last_online == TOX_ERR_FRIEND_GET_LAST_ONLINE['OK']:
             return result
@@ -655,7 +655,7 @@ class Tox(object):
         """
         tox_err_friend_query = c_int()
         result = Tox.libtoxcore.tox_friend_get_name_size(self._tox_pointer, c_uint32(friend_number),
-                                                         addressof(tox_err_friend_query))
+                                                         byref(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
             return result
@@ -681,7 +681,7 @@ class Tox(object):
             name = create_string_buffer(self.friend_get_name_size(friend_number))
         tox_err_friend_query = c_int()
         Tox.libtoxcore.tox_friend_get_name(self._tox_pointer, c_uint32(friend_number), name,
-                                           addressof(tox_err_friend_query))
+                                           byref(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
             return name.value.decode('utf8')
@@ -717,7 +717,7 @@ class Tox(object):
         """
         tox_err_friend_query = c_int()
         result = Tox.libtoxcore.tox_friend_get_status_message_size(self._tox_pointer, c_uint32(friend_number),
-                                                                   addressof(tox_err_friend_query))
+                                                                   byref(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
             return result
@@ -745,7 +745,7 @@ class Tox(object):
             status_message = create_string_buffer(self.friend_get_status_message_size(friend_number))
         tox_err_friend_query = c_int()
         Tox.libtoxcore.tox_friend_get_status_message(self._tox_pointer, c_uint32(friend_number), status_message,
-                                                     addressof(tox_err_friend_query))
+                                                     byref(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
             return status_message.value.decode('utf8')
@@ -786,7 +786,7 @@ class Tox(object):
         """
         tox_err_friend_query = c_int()
         result = Tox.libtoxcore.tox_friend_get_status(self._tox_pointer, c_uint32(friend_number),
-                                                      addressof(tox_err_friend_query))
+                                                      byref(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
             return result
@@ -825,7 +825,7 @@ class Tox(object):
         """
         tox_err_friend_query = c_int()
         result = Tox.libtoxcore.tox_friend_get_connection_status(self._tox_pointer, c_uint32(friend_number),
-                                                                 addressof(tox_err_friend_query))
+                                                                 byref(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
             return result
@@ -865,7 +865,7 @@ class Tox(object):
         """
         tox_err_friend_query = c_int()
         result = Tox.libtoxcore.tox_friend_get_typing(self._tox_pointer, c_uint32(friend_number),
-                                                      addressof(tox_err_friend_query))
+                                                      byref(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
             return bool(result)
@@ -908,7 +908,7 @@ class Tox(object):
         """
         tox_err_set_typing = c_int()
         result = Tox.libtoxcore.tox_self_set_typing(self._tox_pointer, c_uint32(friend_number),
-                                                    c_bool(typing), addressof(tox_err_set_typing))
+                                                    c_bool(typing), byref(tox_err_set_typing))
         tox_err_set_typing = tox_err_set_typing.value
         if tox_err_set_typing == TOX_ERR_SET_TYPING['OK']:
             return bool(result)
@@ -938,7 +938,7 @@ class Tox(object):
         tox_err_friend_send_message = c_int()
         result = Tox.libtoxcore.tox_friend_send_message(self._tox_pointer, c_uint32(friend_number),
                                                         c_int(message_type), c_char_p(message), c_size_t(len(message)),
-                                                        addressof(tox_err_friend_send_message))
+                                                        byref(tox_err_friend_send_message))
         tox_err_friend_send_message = tox_err_friend_send_message.value
         if tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['OK']:
             return result
@@ -1048,7 +1048,7 @@ class Tox(object):
         """
         tox_err_file_control = c_int()
         result = Tox.libtoxcore.tox_file_control(self._tox_pointer, c_uint32(friend_number), c_uint32(file_number),
-                                                 c_int(control), addressof(tox_err_file_control))
+                                                 c_int(control), byref(tox_err_file_control))
         tox_err_file_control = tox_err_file_control.value
         if tox_err_file_control == TOX_ERR_FILE_CONTROL['OK']:
             return bool(result)
@@ -1103,7 +1103,7 @@ class Tox(object):
         """
         tox_err_file_seek = c_int()
         result = Tox.libtoxcore.tox_file_control(self._tox_pointer, c_uint32(friend_number), c_uint32(file_number),
-                                                 c_uint64(position), addressof(tox_err_file_seek))
+                                                 c_uint64(position), byref(tox_err_file_seek))
         tox_err_file_seek = tox_err_file_seek.value
         if tox_err_file_seek == TOX_ERR_FILE_SEEK['OK']:
             return bool(result)
@@ -1134,7 +1134,7 @@ class Tox(object):
             file_id = create_string_buffer(TOX_FILE_ID_LENGTH)
         tox_err_file_get = c_int()
         Tox.libtoxcore.tox_file_get_file_id(self._tox_pointer, c_uint32(friend_number), c_uint32(file_number), file_id,
-                                            addressof(tox_err_file_get))
+                                            byref(tox_err_file_get))
         tox_err_file_get = tox_err_file_get.value
         if tox_err_file_get == TOX_ERR_FILE_GET['OK']:
             return bin_to_string(file_id, TOX_FILE_ID_LENGTH)
@@ -1197,7 +1197,7 @@ class Tox(object):
         tox_err_file_send = c_int()
         result = self.libtoxcore.tox_file_send(self._tox_pointer, c_uint32(friend_number), c_uint32(kind),
                                                c_uint64(file_size), string_to_bin(file_id), c_char_p(filename),
-                                               c_size_t(len(filename)), addressof(tox_err_file_send))
+                                               c_size_t(len(filename)), byref(tox_err_file_send))
         tox_err_file_send = tox_err_file_send.value
         if tox_err_file_send == TOX_ERR_FILE_SEND['OK']:
             return result
@@ -1232,7 +1232,7 @@ class Tox(object):
         tox_err_file_send_chunk = c_int()
         result = self.libtoxcore.tox_file_send_chunk(self._tox_pointer, c_uint32(friend_number), c_uint32(file_number),
                                                      c_uint64(position), c_char_p(data), c_size_t(len(data)),
-                                                     addressof(tox_err_file_send_chunk))
+                                                     byref(tox_err_file_send_chunk))
         tox_err_file_send_chunk = tox_err_file_send_chunk.value
         if tox_err_file_send_chunk == TOX_ERR_FILE_SEND_CHUNK['OK']:
             return bool(result)
@@ -1377,7 +1377,7 @@ class Tox(object):
         Return the UDP port this Tox instance is bound to.
         """
         tox_err_get_port = c_int()
-        result = Tox.libtoxcore.tox_self_get_udp_port(self._tox_pointer, addressof(tox_err_get_port))
+        result = Tox.libtoxcore.tox_self_get_udp_port(self._tox_pointer, byref(tox_err_get_port))
         tox_err_get_port = tox_err_get_port.value
         if tox_err_get_port == TOX_ERR_GET_PORT['OK']:
             return result
@@ -1390,7 +1390,7 @@ class Tox(object):
         relay.
         """
         tox_err_get_port = c_int()
-        result = Tox.libtoxcore.tox_self_get_tcp_port(self._tox_pointer, addressof(tox_err_get_port))
+        result = Tox.libtoxcore.tox_self_get_tcp_port(self._tox_pointer, byref(tox_err_get_port))
         tox_err_get_port = tox_err_get_port.value
         if tox_err_get_port == TOX_ERR_GET_PORT['OK']:
             return result

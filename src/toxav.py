@@ -1,4 +1,4 @@
-from ctypes import c_int, POINTER, c_void_p, addressof, ArgumentError, c_uint32, CFUNCTYPE, c_size_t, c_uint8, c_uint16
+from ctypes import c_int, POINTER, c_void_p, byref, ArgumentError, c_uint32, CFUNCTYPE, c_size_t, c_uint8, c_uint16
 from ctypes import c_char_p, c_int32, c_bool, cast
 from libtox import LibToxAV
 from toxav_enums import *
@@ -26,7 +26,7 @@ class ToxAV(object):
         """
         toxav_err_new = c_int()
         ToxAV.libtoxav.toxav_new.restype = POINTER(c_void_p)
-        self._toxav_pointer = ToxAV.libtoxav.toxav_new(tox_pointer, addressof(toxav_err_new))
+        self._toxav_pointer = ToxAV.libtoxav.toxav_new(tox_pointer, byref(toxav_err_new))
         toxav_err_new = toxav_err_new.value
         if toxav_err_new == TOXAV_ERR_NEW['NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
@@ -98,7 +98,7 @@ class ToxAV(object):
         """
         toxav_err_call = c_int()
         result = ToxAV.libtoxav.toxav_call(self._toxav_pointer, c_uint32(friend_number), c_uint32(audio_bit_rate),
-                                           c_uint32(video_bit_rate), addressof(toxav_err_call))
+                                           c_uint32(video_bit_rate), byref(toxav_err_call))
         toxav_err_call = toxav_err_call.value
         if toxav_err_call == TOXAV_ERR_CALL['OK']:
             return bool(result)
@@ -147,7 +147,7 @@ class ToxAV(object):
         """
         toxav_err_answer = c_int()
         result = ToxAV.libtoxav.toxav_answer(self._toxav_pointer, c_uint32(friend_number), c_uint32(audio_bit_rate),
-                                             c_uint32(video_bit_rate), addressof(toxav_err_answer))
+                                             c_uint32(video_bit_rate), byref(toxav_err_answer))
         toxav_err_answer = toxav_err_answer.value
         if toxav_err_answer == TOXAV_ERR_ANSWER['OK']:
             return bool(result)
@@ -200,7 +200,7 @@ class ToxAV(object):
         """
         toxav_err_call_control = c_int()
         result = ToxAV.libtoxav.toxav_call_control(self._toxav_pointer, c_uint32(friend_number), c_int(control),
-                                                   addressof(toxav_err_call_control))
+                                                   byref(toxav_err_call_control))
         toxav_err_call_control = toxav_err_call_control.value
         if toxav_err_call_control == TOXAV_ERR_CALL_CONTROL['OK']:
             return bool(result)
@@ -244,7 +244,7 @@ class ToxAV(object):
         result = ToxAV.libtoxav.toxav_audio_send_frame(self._toxav_pointer, c_uint32(friend_number),
                                                        cast(pcm, c_void_p),
                                                        c_size_t(sample_count), c_uint8(channels),
-                                                       c_uint32(sampling_rate), addressof(toxav_err_send_frame))
+                                                       c_uint32(sampling_rate), byref(toxav_err_send_frame))
         toxav_err_send_frame = toxav_err_send_frame.value
         if toxav_err_send_frame == TOXAV_ERR_SEND_FRAME['OK']:
             return bool(result)
@@ -283,7 +283,7 @@ class ToxAV(object):
         toxav_err_send_frame = c_int()
         result = ToxAV.libtoxav.toxav_video_send_frame(self._toxav_pointer, c_uint32(friend_number), c_uint16(width),
                                                        c_uint16(height), c_char_p(y), c_char_p(u), c_char_p(v),
-                                                       addressof(toxav_err_send_frame))
+                                                       byref(toxav_err_send_frame))
         toxav_err_send_frame = toxav_err_send_frame.value
         if toxav_err_send_frame == TOXAV_ERR_SEND_FRAME['OK']:
             return bool(result)
