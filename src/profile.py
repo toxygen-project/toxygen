@@ -456,6 +456,10 @@ class Profile(Contact, Singleton):
     def is_active_online(self):
         return self._active_friend + 1 and self._friends[self._active_friend].status is not None
 
+    def update(self):
+        if self._active_friend + 1:
+            self.set_active(self._active_friend)
+
     # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications
     # -----------------------------------------------------------------------------------------------------------------
@@ -622,9 +626,10 @@ class Profile(Contact, Singleton):
     def create_file_transfer_item(self, tm, append=True):
         data = list(tm.get_data())
         data[3] = self.get_friend_by_number(data[4]).name if data[3] else self._name
+        data.append(self._messages.width())
         item = FileTransferItem(*data)
         elem = QtGui.QListWidgetItem()
-        elem.setSizeHint(QtCore.QSize(600, 50))
+        elem.setSizeHint(QtCore.QSize(self._messages.width(), 50))
         if append:
             self._messages.addItem(elem)
         else:
@@ -633,9 +638,9 @@ class Profile(Contact, Singleton):
         return item
 
     def create_inline_item(self, data, append=True):
-        item = InlineImageItem(data)
+        item = InlineImageItem(data, self._messages.width())
         elem = QtGui.QListWidgetItem()
-        elem.setSizeHint(QtCore.QSize(600, item.height()))
+        elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
         if append:
             self._messages.addItem(elem)
         else:

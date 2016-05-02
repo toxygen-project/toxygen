@@ -136,10 +136,10 @@ class StatusCircle(QtGui.QWidget):
 
 class FileTransferItem(QtGui.QListWidget):
 
-    def __init__(self, file_name, size, time, user, friend_number, file_number, state, parent=None):
+    def __init__(self, file_name, size, time, user, friend_number, file_number, state, width, parent=None):
 
         QtGui.QListWidget.__init__(self, parent)
-        self.resize(QtCore.QSize(620, 50))
+        self.resize(QtCore.QSize(width, 50))
         if state != FILE_TRANSFER_MESSAGE_STATUS['CANCELLED']:
             self.setStyleSheet('QWidget { background-color: green; }')
         else:
@@ -237,23 +237,24 @@ class FileTransferItem(QtGui.QListWidget):
 
 class InlineImageItem(QtGui.QWidget):
 
-    def __init__(self, data, parent=None):
+    def __init__(self, data, width, parent=None):
 
         QtGui.QWidget.__init__(self, parent)
-        self.resize(QtCore.QSize(620, 500))
+        self.resize(QtCore.QSize(width, 500))
         self._image_label = QtGui.QLabel(self)
         self._image_label.raise_()
         self._image_label.setAutoFillBackground(True)
         self._image_label.setScaledContents(False)
         self.pixmap = QtGui.QPixmap()
         self.pixmap.loadFromData(QtCore.QByteArray(data), "PNG")
-        if self.pixmap.width() <= 600:
+        max_size = width - 50
+        if self.pixmap.width() <= max_size:
             self._image_label.setPixmap(self.pixmap)
-            self.resize(QtCore.QSize(600, self.pixmap.height()))
+            self.resize(QtCore.QSize(max_size, self.pixmap.height()))
         else:
-            pixmap = self.pixmap.scaled(600, 600, QtCore.Qt.KeepAspectRatio)
+            pixmap = self.pixmap.scaled(max_size, max_size, QtCore.Qt.KeepAspectRatio)
             self._image_label.setPixmap(pixmap)
-            self.resize(QtCore.QSize(600, pixmap.height()))
+            self.resize(QtCore.QSize(max_size, pixmap.height()))
 
 
 
