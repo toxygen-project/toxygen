@@ -465,12 +465,18 @@ class Profile(Contact, Singleton):
     # -----------------------------------------------------------------------------------------------------------------
 
     def send_typing(self, typing):
+        """
+        Send typing notification to a friend
+        """
         if Settings.get_instance()['typing_notifications']:
             friend = self._friends[self._active_friend]
             if friend.status is not None:
                 self._tox.self_set_typing(friend.number, typing)
 
     def friend_typing(self, friend_number, typing):
+        """
+        Display incoming typing notification
+        """
         if friend_number == self.get_active_number():
             self._screen.typing.setVisible(typing)
 
@@ -495,7 +501,7 @@ class Profile(Contact, Singleton):
             elif '.' in last_part:
                 index = last_part.index('.')
             else:
-                index = TOX_MAX_MESSAGE_LENGTH - size
+                index = TOX_MAX_MESSAGE_LENGTH - size - 1
             index += size + 1
             self._tox.friend_send_message(number, message_type, message[:index])
             message = message[index:]
@@ -722,6 +728,9 @@ class Profile(Contact, Singleton):
         self._friends.append(friend)
 
     def block_user(self, tox_id):
+        """
+        Block user with specified tox id (or public key) - delete from friends list and ignore friend requests
+        """
         tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
         if tox_id == self.tox_id[:TOX_PUBLIC_KEY_SIZE * 2]:
             return
@@ -736,6 +745,11 @@ class Profile(Contact, Singleton):
             pass
 
     def unblock_user(self, tox_id, add_to_friend_list):
+        """
+        Unblock user
+        :param tox_id: tox id of contact
+        :param add_to_friend_list: add this contact to friend list or not
+        """
         s = Settings.get_instance()
         s['blocked'].remove(tox_id)
         s.save()
@@ -990,7 +1004,7 @@ class Profile(Contact, Singleton):
                         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                       FILE_TRANSFER_MESSAGE_STATUS['FINISHED'],
                                                                                       inline)
-                        self.set_active(self._active_friend)
+                        self.update()
                     else:
                         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                       FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])

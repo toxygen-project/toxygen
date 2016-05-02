@@ -256,7 +256,6 @@ class MainWindow(QtGui.QMainWindow):
 
     def initUI(self, tox):
         self.setMinimumSize(920, 500)
-        #self.setMaximumSize(920, 500)
         self.setGeometry(400, 400, 920, 500)
         self.setWindowTitle('Toxygen')
         main = QtGui.QWidget()
@@ -285,7 +284,6 @@ class MainWindow(QtGui.QMainWindow):
         grid.setRowMinimumHeight(2, 75)
         grid.setColumnStretch(1, 1)
         grid.setRowStretch(1, 1)
-        #grid.setRowStretch(2, 1)
         main.setLayout(grid)
         self.setCentralWidget(main)
         self.setup_menu(self)
@@ -300,7 +298,7 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QApplication.closeAllWindows()
 
     def resizeEvent(self, *args, **kwargs):
-        self.messages.setGeometry(0, 0, self.width() - 280, self.height() - 205)
+        self.messages.setGeometry(0, 0, self.width() - 300, self.height() - 205)
         self.friends_list.setGeometry(0, 0, 270, self.height() - 205)
         self.callButton.setGeometry(QtCore.QRect(self.width() - 370, 30, 50, 50))
         self.typing.setGeometry(QtCore.QRect(self.width() - 420, 40, 50, 30))
