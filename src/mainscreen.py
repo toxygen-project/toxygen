@@ -19,10 +19,10 @@ class MessageArea(QtGui.QPlainTextEdit):
             if modifiers & QtCore.Qt.ControlModifier or modifiers & QtCore.Qt.ShiftModifier:
                 self.appendPlainText('')
             else:
-                self.parent.send_message()
                 if self.timer.isActive():
                     self.timer.stop()
                 self.parent.profile.send_typing(False)
+                self.parent.send_message()
         elif event.key() == QtCore.Qt.Key_Up and not self.toPlainText():
             self.appendPlainText(Profile.get_instance().get_last_message())
         else:
@@ -357,7 +357,8 @@ class MainWindow(QtGui.QMainWindow):
 
     def send_file(self):
         if self.profile.is_active_online():  # active friend exists and online
-            choose = QtGui.QApplication.translate("MainWindow", "Choose file", None, QtGui.QApplication.UnicodeUTF8)
+            choose_file = QtGui.QApplication.translate("MainWindow", 'Choose file', None, QtGui.QApplication.UnicodeUTF8)
+            choose = QtGui.QApplication.translate("MainWindow", choose_file, None, QtGui.QApplication.UnicodeUTF8)
             name = QtGui.QFileDialog.getOpenFileName(self, choose)
             if name[0]:
                 self.profile.send_file(name[0])
@@ -433,8 +434,7 @@ class MainWindow(QtGui.QMainWindow):
         if value:
             settings['auto_accept_from_friends'].append(tox_id)
         else:
-            index = settings['auto_accept_from_friends'].index(tox_id)
-            del settings['auto_accept_from_friends'][index]
+            settings['auto_accept_from_friends'].remove(tox_id)
         settings.save()
 
     # -----------------------------------------------------------------------------------------------------------------
