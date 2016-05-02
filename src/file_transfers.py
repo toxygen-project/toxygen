@@ -16,7 +16,7 @@ TOX_FILE_TRANSFER_STATE = {
 
 
 class StateSignal(QtCore.QObject):
-    signal = QtCore.Signal(int, float)
+    signal = QtCore.Signal(int, float)  # state and progress
 
 
 class FileTransfer(QtCore.QObject):
@@ -98,7 +98,8 @@ class SendTransfer(FileTransfer):
             self._done += size
             self._state_changed.signal.emit(self.state, self._done / self._size)
         else:
-            self._file.close()
+            if hasattr(self, '_file'):
+                self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
             self._state_changed.signal.emit(self.state, 1)
 
