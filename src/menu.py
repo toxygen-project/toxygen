@@ -88,7 +88,7 @@ class ProfileSettings(CenteredWidget):
         self.status.setObjectName("status")
         self.status.setText(profile.status_message)
         self.label = QtGui.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(50, 30, 91, 21))
+        self.label.setGeometry(QtCore.QRect(40, 30, 91, 21))
         font = QtGui.QFont()
         font.setPointSize(18)
         font.setWeight(75)
@@ -100,7 +100,7 @@ class ProfileSettings(CenteredWidget):
         self.label_2.setFont(font)
         self.label_2.setObjectName("label_2")
         self.label_3 = QtGui.QLabel(self)
-        self.label_3.setGeometry(QtCore.QRect(40, 170, 100, 21))
+        self.label_3.setGeometry(QtCore.QRect(40, 180, 100, 21))
         self.label_3.setFont(font)
         self.label_3.setObjectName("label_3")
         self.tox_id = QtGui.QLabel(self)
@@ -111,13 +111,16 @@ class ProfileSettings(CenteredWidget):
         s = profile.tox_id
         self.tox_id.setText(s)
         self.copyId = QtGui.QPushButton(self)
-        self.copyId.setGeometry(QtCore.QRect(40, 250, 150, 30))
+        self.copyId.setGeometry(QtCore.QRect(40, 250, 160, 30))
         self.copyId.setObjectName("copyId")
         self.copyId.clicked.connect(self.copy)
         self.export = QtGui.QPushButton(self)
-        self.export.setGeometry(QtCore.QRect(200, 250, 150, 30))
+        self.export.setGeometry(QtCore.QRect(210, 250, 160, 30))
         self.export.setObjectName("export")
         self.export.clicked.connect(self.export_profile)
+        self.new_nospam = QtGui.QPushButton(self)
+        self.new_nospam.setGeometry(QtCore.QRect(380, 250, 160, 30))
+        self.new_nospam.clicked.connect(self.new_no_spam)
         self.new_avatar = QtGui.QPushButton(self)
         self.new_avatar.setGeometry(QtCore.QRect(400, 50, 200, 50))
         self.delete_avatar = QtGui.QPushButton(self)
@@ -136,11 +139,15 @@ class ProfileSettings(CenteredWidget):
         self.copyId.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Copy TOX ID", None, QtGui.QApplication.UnicodeUTF8))
         self.new_avatar.setText(QtGui.QApplication.translate("ProfileSettingsForm", "New avatar", None, QtGui.QApplication.UnicodeUTF8))
         self.delete_avatar.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Reset avatar", None, QtGui.QApplication.UnicodeUTF8))
+        self.new_nospam.setText(QtGui.QApplication.translate("ProfileSettingsForm", "New NoSpam", None, QtGui.QApplication.UnicodeUTF8))
 
     def copy(self):
         clipboard = QtGui.QApplication.clipboard()
         profile = Profile.get_instance()
         clipboard.setText(profile.tox_id)
+
+    def new_no_spam(self):
+        self.tox_id.setText(Profile.get_instance().new_nospam())
 
     def reset_avatar(self):
         Profile.get_instance().reset_avatar()

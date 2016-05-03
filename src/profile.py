@@ -341,6 +341,12 @@ class Profile(Contact, Singleton):
         super(self.__class__, self).set_status_message(value)
         self._tox.self_set_status_message(self._status_message.encode('utf-8'))
 
+    def new_nospam(self):
+        import random
+        self._tox.self_set_nospam(random.randint(0, 4294967295))  # no spam - uint32
+        self._tox_id = self._tox.self_get_address()
+        return self._tox_id
+
     # -----------------------------------------------------------------------------------------------------------------
     # Filtration
     # -----------------------------------------------------------------------------------------------------------------
