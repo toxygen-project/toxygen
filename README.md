@@ -25,10 +25,10 @@ Toxygen is simple [Tox](https://tox.chat/) client written on pure Python
 - [x] Contact aliases
 - [x] Contact blocking
 - [x] Typing notifications
+- [x] Changing nospam
 - [ ] Video
 - [ ] Save file encryption
 - [ ] File resuming
-- [ ] Changing nospam
 - [ ] Plugins support
 - [ ] Group chats
 - [ ] Read receipts

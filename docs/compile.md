@@ -1,3 +1,5 @@
+#Compile Toxygen
+
 You can compile Toxygen using [PyInstaller](http://www.pyinstaller.org/)
 Install PyInstaller: 
 ``pip install pyinstaller``

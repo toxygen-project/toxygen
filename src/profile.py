@@ -466,6 +466,15 @@ class Profile(Contact, Singleton):
         if self._active_friend + 1:
             self.set_active(self._active_friend)
 
+    def friend_exit(self, friend_number):
+        self.get_friend_by_number(friend_number).status = None
+        self.friend_typing(friend_number, False)
+        if friend_number in self._call:
+            self._call.finish_call(friend_number, True)
+        for key in filter(lambda x: x[0] == friend_number, self._file_transfers.keys()):
+            self._file_transfers[key].cancelled()
+            del self._file_transfers[key]
+
     # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications
     # -----------------------------------------------------------------------------------------------------------------

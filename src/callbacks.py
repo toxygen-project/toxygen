@@ -76,7 +76,7 @@ def friend_connection_status(tox, friend_num, new_status, user_data):
     profile = Profile.get_instance()
     friend = profile.get_friend_by_number(friend_num)
     if new_status == TOX_CONNECTION['NONE']:
-        invoke_in_main_thread(friend.set_status, None)
+        invoke_in_main_thread(profile.friend_exit, friend_num)
         invoke_in_main_thread(profile.update_filtration)
         if Settings.get_instance()['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['FRIEND_CONNECTION_STATUS'])
