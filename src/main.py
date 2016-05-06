@@ -13,9 +13,10 @@ import locale
 
 class Toxygen(object):
 
-    def __init__(self):
+    def __init__(self, path=None):
         super(Toxygen, self).__init__()
         self.tox = self.ms = self.init = self.mainloop = self.avloop = None
+        self.path = path
 
     def main(self):
         """
@@ -28,51 +29,57 @@ class Toxygen(object):
         with open(curr_directory() + '/styles/style.qss') as fl:
             dark_style = fl.read()
         app.setStyleSheet(dark_style)
-
-        auto_profile = Settings.get_auto_profile()
-        if not auto_profile:
-            # show login screen if default profile not found
-            current_locale = QtCore.QLocale()
-            curr_lang = current_locale.languageToString(current_locale.language())
-            langs = Settings.supported_languages()
-            if curr_lang in map(lambda x: x[0], langs):
-                lang_path = filter(lambda x: x[0] == curr_lang, langs)[0][1]
-                translator = QtCore.QTranslator()
-                translator.load(curr_directory() + '/translations/' + lang_path)
-                app.installTranslator(translator)
-                app.translator = translator
-            ls = LoginScreen()
-            ls.setWindowIconText("Toxygen")
-            profiles = ProfileHelper.find_profiles()
-            ls.update_select(map(lambda x: x[1], profiles))
-            _login = self.Login(profiles)
-            ls.update_on_close(_login.login_screen_close)
-            ls.show()
-            app.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app, QtCore.SLOT("quit()"))
-            app.exec_()
-            if not _login.t:
-                return
-            elif _login.t == 1:  # create new profile
-                name = _login.name if _login.name else 'toxygen_user'
-                self.tox = tox_factory()
-                self.tox.self_set_name(_login.name if _login.name else 'Toxygen User')
-                self.tox.self_set_status_message('Toxing on Toxygen')
-                ProfileHelper.save_profile(self.tox.get_savedata(), name)
-                path = Settings.get_default_path()
-                settings = Settings(name)
-            else:  # load existing profile
-                path, name = _login.get_data()
-                if _login.default:
-                    Settings.set_auto_profile(path, name)
-                data = ProfileHelper.open_profile(path, name)
-                settings = Settings(name)
-                self.tox = tox_factory(data, settings)
-        else:
-            path, name = auto_profile
-            path = path.encode(locale.getpreferredencoding())
+        if self.path is not None:
+            path = os.path.dirname(self.path.encode(locale.getpreferredencoding())) + '/'
+            name = os.path.basename(self.path.encode(locale.getpreferredencoding()))[:-4]
             data = ProfileHelper.open_profile(path, name)
             settings = Settings(name)
             self.tox = tox_factory(data, settings)
+        else:
+            auto_profile = Settings.get_auto_profile()
+            if not auto_profile:
+                # show login screen if default profile not found
+                current_locale = QtCore.QLocale()
+                curr_lang = current_locale.languageToString(current_locale.language())
+                langs = Settings.supported_languages()
+                if curr_lang in map(lambda x: x[0], langs):
+                    lang_path = filter(lambda x: x[0] == curr_lang, langs)[0][1]
+                    translator = QtCore.QTranslator()
+                    translator.load(curr_directory() + '/translations/' + lang_path)
+                    app.installTranslator(translator)
+                    app.translator = translator
+                ls = LoginScreen()
+                ls.setWindowIconText("Toxygen")
+                profiles = ProfileHelper.find_profiles()
+                ls.update_select(map(lambda x: x[1], profiles))
+                _login = self.Login(profiles)
+                ls.update_on_close(_login.login_screen_close)
+                ls.show()
+                app.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app, QtCore.SLOT("quit()"))
+                app.exec_()
+                if not _login.t:
+                    return
+                elif _login.t == 1:  # create new profile
+                    name = _login.name if _login.name else 'toxygen_user'
+                    self.tox = tox_factory()
+                    self.tox.self_set_name(_login.name if _login.name else 'Toxygen User')
+                    self.tox.self_set_status_message('Toxing on Toxygen')
+                    ProfileHelper.save_profile(self.tox.get_savedata(), name)
+                    path = Settings.get_default_path()
+                    settings = Settings(name)
+                else:  # load existing profile
+                    path, name = _login.get_data()
+                    if _login.default:
+                        Settings.set_auto_profile(path, name)
+                    data = ProfileHelper.open_profile(path, name)
+                    settings = Settings(name)
+                    self.tox = tox_factory(data, settings)
+            else:
+                path, name = auto_profile
+                path = path.encode(locale.getpreferredencoding())
+                data = ProfileHelper.open_profile(path, name)
+                settings = Settings(name)
+                self.tox = tox_factory(data, settings)
 
         if ProfileHelper.is_active_profile(path, name):  # profile is in use
             reply = QtGui.QMessageBox.question(None,
@@ -252,6 +259,8 @@ class Toxygen(object):
 
 
 if __name__ == '__main__':
-    # TODO: add command line options
-    toxygen = Toxygen()
+    if len(sys.argv) == 1:
+        toxygen = Toxygen()
+    else:  # path to profile
+        toxygen = Toxygen(sys.argv[1])
     toxygen.main()

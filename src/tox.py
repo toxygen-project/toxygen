@@ -32,6 +32,7 @@ def bin_to_string(raw_id, length):
 
 
 class Tox(object):
+
     libtoxcore = LibToxCore()
     
     def __init__(self, tox_options=None, tox_pointer=None):
@@ -57,9 +58,9 @@ class Tox(object):
                 raise MemoryError('The function was unable to allocate enough '
                                   'memory to store the internal structures for the Tox object.')
             elif tox_err_new == TOX_ERR_NEW['PORT_ALLOC']:
-                raise MemoryError('The function was unable to bind to a port. This may mean that all ports have already'
-                                  ' been bound, e.g. by other Tox instances, or it may mean a permission error. You may'
-                                  ' be able to gather more information from errno.')
+                raise RuntimeError('The function was unable to bind to a port. This may mean that all ports have '
+                                   'already been bound, e.g. by other Tox instances, or it may mean a permission error.'
+                                   ' You may be able to gather more information from errno.')
             elif tox_err_new == TOX_ERR_NEW['PROXY_BAD_TYPE']:
                 raise ArgumentError('proxy_type was invalid.')
             elif tox_err_new == TOX_ERR_NEW['PROXY_BAD_HOST']:

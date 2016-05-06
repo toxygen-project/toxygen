@@ -27,14 +27,15 @@ def convert_time(t):
     return '%02d:%02d' % (h, m)
 
 
+# obsolete
 def get_style(style):
     if style != 'default':
         return style
     else:
-        if system() == 'Linux':
-            return 'gtk'
-        elif system() == 'Windows':
+        if system() == 'Windows':
             return 'windows'
+        else:
+            return 'gtk'
 
 
 class Singleton(object):
