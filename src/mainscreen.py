@@ -306,6 +306,8 @@ class MainWindow(QtGui.QMainWindow):
         self.screenshotButton.setGeometry(QtCore.QRect(self.width() - 465, 5, 55, 70))
         self.fileTransferButton.setGeometry(QtCore.QRect(self.width() - 410, 5, 55, 70))
         self.sendMessageButton.setGeometry(QtCore.QRect(self.width() - 355, 5, 55, 70))
+        self.account_name.setGeometry(QtCore.QRect(100, 30, self.width() - 520, 25))
+        self.account_status.setGeometry(QtCore.QRect(100, 50, self.width() - 520, 25))
         self.profile.update()
 
     # -----------------------------------------------------------------------------------------------------------------

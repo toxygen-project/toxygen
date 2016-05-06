@@ -717,6 +717,13 @@ class Profile(Contact, Singleton):
         :param num: number of friend in list
         """
         friend = self._friends[num]
+        try:
+            settings = Settings.get_instance()
+            index = map(lambda x: x[0], settings['friends_aliases']).index(friend.tox_id)
+            del settings['friends_aliases'][index]
+            settings.save()
+        except:
+            pass
         self.clear_history(num)
         if self._history.friend_exists_in_db(friend.tox_id):
             self._history.delete_friend_from_db(friend.tox_id)
