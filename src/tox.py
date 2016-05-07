@@ -677,6 +677,7 @@ class Tox(object):
 
         The data written to `name` is equal to the data received by the last `friend_name` callback.
 
+        :param friend_number: number of friend
         :param name: pointer (c_char_p) to a valid memory region large enough to store the friend's name.
         :return: name of the friend
         """
@@ -952,7 +953,7 @@ class Tox(object):
         elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['FRIEND_NOT_CONNECTED']:
             raise ArgumentError('This client is currently not connected to the friend.')
         elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['SENDQ']:
-            raise ArgumentError('An allocation error occurred while increasing the send queue size.')
+            raise MemoryError('An allocation error occurred while increasing the send queue size.')
         elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['TOO_LONG']:
             raise ArgumentError('Message length exceeded TOX_MAX_MESSAGE_LENGTH.')
         elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['EMPTY']:
@@ -1058,16 +1059,16 @@ class Tox(object):
         elif tox_err_file_control == TOX_ERR_FILE_CONTROL['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number passed did not designate a valid friend.')
         elif tox_err_file_control == TOX_ERR_FILE_CONTROL['FRIEND_NOT_CONNECTED']:
-            raise RuntimeError('This client is currently not connected to the friend.')
+            raise ArgumentError('This client is currently not connected to the friend.')
         elif tox_err_file_control == TOX_ERR_FILE_CONTROL['NOT_FOUND']:
             raise ArgumentError('No file transfer with the given file number was found for the given friend.')
         elif tox_err_file_control == TOX_ERR_FILE_CONTROL['NOT_PAUSED']:
-            raise ArgumentError('A RESUME control was sent, but the file transfer is running normally.')
+            raise RuntimeError('A RESUME control was sent, but the file transfer is running normally.')
         elif tox_err_file_control == TOX_ERR_FILE_CONTROL['DENIED']:
-            raise ArgumentError('A RESUME control was sent, but the file transfer was paused by the other party. Only '
-                                'the party that paused the transfer can resume it.')
+            raise RuntimeError('A RESUME control was sent, but the file transfer was paused by the other party. Only '
+                               'the party that paused the transfer can resume it.')
         elif tox_err_file_control == TOX_ERR_FILE_CONTROL['ALREADY_PAUSED']:
-            raise ArgumentError('A PAUSE control was sent, but the file transfer was already paused.')
+            raise RuntimeError('A PAUSE control was sent, but the file transfer was already paused.')
         elif tox_err_file_control == TOX_ERR_FILE_CONTROL['SENDQ']:
             raise RuntimeError('Packet queue is full.')
 
@@ -1113,15 +1114,15 @@ class Tox(object):
         elif tox_err_file_seek == TOX_ERR_FILE_SEEK['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number passed did not designate a valid friend.')
         elif tox_err_file_seek == TOX_ERR_FILE_SEEK['FRIEND_NOT_CONNECTED']:
-            raise RuntimeError('This client is currently not connected to the friend.')
+            raise ArgumentError('This client is currently not connected to the friend.')
         elif tox_err_file_seek == TOX_ERR_FILE_SEEK['NOT_FOUND']:
             raise ArgumentError('No file transfer with the given file number was found for the given friend.')
         elif tox_err_file_seek == TOX_ERR_FILE_SEEK['SEEK_DENIED']:
-            raise ArgumentError('File was not in a state where it could be seeked.')
+            raise IOError('File was not in a state where it could be seeked.')
         elif tox_err_file_seek == TOX_ERR_FILE_SEEK['INVALID_POSITION']:
             raise ArgumentError('Seek position was invalid')
         elif tox_err_file_seek == TOX_ERR_FILE_SEEK['SENDQ']:
-            raise ArgumentError('Packet queue is full.')
+            raise RuntimeError('Packet queue is full.')
 
     def file_get_file_id(self, friend_number, file_number, file_id=None):
         """
@@ -1209,7 +1210,7 @@ class Tox(object):
         elif tox_err_file_send == TOX_ERR_FILE_SEND['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number passed did not designate a valid friend.')
         elif tox_err_file_send == TOX_ERR_FILE_SEND['FRIEND_NOT_CONNECTED']:
-            raise RuntimeError('This client is currently not connected to the friend.')
+            raise ArgumentError('This client is currently not connected to the friend.')
         elif tox_err_file_send == TOX_ERR_FILE_SEND['NAME_TOO_LONG']:
             raise ArgumentError('Filename length exceeded TOX_MAX_FILENAME_LENGTH bytes.')
         elif tox_err_file_send == TOX_ERR_FILE_SEND['TOO_MANY']:
@@ -1255,7 +1256,7 @@ class Tox(object):
                                 'adjusted according to maximum transmission unit and the expected end of the file. '
                                 'Trying to send less or more than requested will return this error.')
         elif tox_err_file_send_chunk == TOX_ERR_FILE_SEND_CHUNK['SENDQ']:
-            raise ArgumentError('Packet queue is full.')
+            raise RuntimeError('Packet queue is full.')
         elif tox_err_file_send_chunk == TOX_ERR_FILE_SEND_CHUNK['WRONG_POSITION']:
             raise ArgumentError('Position parameter was wrong.')
 
@@ -1445,11 +1446,11 @@ class Tox(object):
 
     def callback_friend_lossless_packet(self, callback, user_data):
         """
-        Set the callback for the `friend_lossy_packet` event. Pass NULL to unset.
+        Set the callback for the `friend_lossless_packet` event. Pass NULL to unset.
 
         :param callback: Python function.
         Should take pointer (c_void_p) to Tox object,
-        friend_number (c_uint32) - The friend number of the friend who sent a lossy packet,
+        friend_number (c_uint32) - The friend number of the friend who sent a lossless packet,
         A byte array (c_uint8 array) containing the received packet data,
         length (c_size_t) - The length of the packet data byte array,
         pointer (c_void_p) to user_data
