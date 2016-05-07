@@ -310,6 +310,12 @@ class MainWindow(QtGui.QMainWindow):
         self.account_status.setGeometry(QtCore.QRect(100, 50, self.width() - 520, 25))
         self.profile.update()
 
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Escape:
+            self.hide()
+        else:
+            super(MainWindow, self).keyPressEvent(event)
+
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click in menu
     # -----------------------------------------------------------------------------------------------------------------

@@ -207,7 +207,7 @@ class Friend(Contact):
         """
         if hasattr(self, '_message_getter'):
             del self._message_getter
-        self._corr = filter(lambda x: x.get_type() == 2 and x.get_status() in (2, 4), self._corr)
+        self._corr = filter(lambda x: x.get_type() == 2 and x.get_status() in (2, 3, 4), self._corr)
         self._unsaved_messages = 0
 
     def update_transfer_data(self, file_number, status, inline=None):
