@@ -90,6 +90,8 @@ class Tox(object):
             self.file_chunk_request_cb = None
             self.file_recv_cb = None
             self.file_recv_chunk_cb = None
+            self.friend_lossy_packet_cb = None
+            self.friend_lossless_packet_cb = None
 
             self.AV = ToxAV(self._tox_pointer)
 
@@ -1347,8 +1349,116 @@ class Tox(object):
         self.libtoxcore.tox_callback_file_recv_chunk(self._tox_pointer, self.file_recv_chunk_cb, user_data)
 
     # -----------------------------------------------------------------------------------------------------------------
-    # TODO Low-level custom packet sending and receiving
+    # Low-level custom packet sending and receiving
     # -----------------------------------------------------------------------------------------------------------------
+
+    def friend_send_lossy_packet(self, friend_number, data):
+        """
+        Send a custom lossy packet to a friend.
+        The first byte of data must be in the range 200-254. Maximum length of a
+        custom packet is TOX_MAX_CUSTOM_PACKET_SIZE.
+
+        Lossy packets behave like UDP packets, meaning they might never reach the
+        other side or might arrive more than once (if someone is messing with the
+        connection) or might arrive in the wrong order.
+
+        Unless latency is an issue, it is recommended that you use lossless custom packets instead.
+
+        :param friend_number: The friend number of the friend this lossy packet
+        :param data: python string containing the packet data
+        :return: True on success.
+        """
+        tox_err_friend_custom_packet = c_int()
+        result = self.libtoxcore.tox_friend_send_lossy_packet(self._tox_pointer, c_uint32(friend_number),
+                                                              c_char_p(data), c_size_t(len(data)),
+                                                              byref(tox_err_friend_custom_packet))
+        tox_err_friend_custom_packet = tox_err_friend_custom_packet.value
+        if tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['OK']:
+            return bool(result)
+        elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['NULL']:
+            raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
+        elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['FRIEND_NOT_FOUND']:
+            raise ArgumentError('The friend number did not designate a valid friend.')
+        elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['FRIEND_NOT_CONNECTED']:
+            raise ArgumentError('This client is currently not connected to the friend.')
+        elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['INVALID']:
+            raise ArgumentError('The first byte of data was not in the specified range for the packet type.'
+                                'This range is 200-254 for lossy, and 160-191 for lossless packets.')
+        elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['EMPTY']:
+            raise ArgumentError('Attempted to send an empty packet.')
+        elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['TOO_LONG']:
+            raise ArgumentError('Packet data length exceeded TOX_MAX_CUSTOM_PACKET_SIZE.')
+        elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['SENDQ']:
+            raise RuntimeError('Packet queue is full.')
+
+    def friend_send_lossless_packet(self, friend_number, data):
+        """
+        Send a custom lossless packet to a friend.
+        The first byte of data must be in the range 160-191. Maximum length of a
+        custom packet is TOX_MAX_CUSTOM_PACKET_SIZE.
+
+        Lossless packet behaviour is comparable to TCP (reliability, arrive in order)
+        but with packets instead of a stream.
+
+        :param friend_number: The friend number of the friend this lossless packet
+        :param data: python string containing the packet data
+        :return: True on success.
+        """
+        tox_err_friend_custom_packet = c_int()
+        result = self.libtoxcore.tox_friend_send_lossless_packet(self._tox_pointer, c_uint32(friend_number),
+                                                                 c_char_p(data), c_size_t(len(data)),
+                                                                 byref(tox_err_friend_custom_packet))
+        tox_err_friend_custom_packet = tox_err_friend_custom_packet.value
+        if tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['OK']:
+            return bool(result)
+        elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['NULL']:
+            raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
+        elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['FRIEND_NOT_FOUND']:
+            raise ArgumentError('The friend number did not designate a valid friend.')
+        elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['FRIEND_NOT_CONNECTED']:
+            raise ArgumentError('This client is currently not connected to the friend.')
+        elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['INVALID']:
+            raise ArgumentError('The first byte of data was not in the specified range for the packet type.'
+                                'This range is 200-254 for lossy, and 160-191 for lossless packets.')
+        elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['EMPTY']:
+            raise ArgumentError('Attempted to send an empty packet.')
+        elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['TOO_LONG']:
+            raise ArgumentError('Packet data length exceeded TOX_MAX_CUSTOM_PACKET_SIZE.')
+        elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['SENDQ']:
+            raise RuntimeError('Packet queue is full.')
+
+    def callback_friend_lossy_packet(self, callback, user_data):
+        """
+        Set the callback for the `friend_lossy_packet` event. Pass NULL to unset.
+
+        :param callback: Python function.
+        Should take pointer (c_void_p) to Tox object,
+        friend_number (c_uint32) - The friend number of the friend who sent a lossy packet,
+        A byte array (c_uint8 array) containing the received packet data,
+        length (c_size_t) - The length of the packet data byte array,
+        pointer (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
+        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, POINTER(c_uint8), c_size_t, c_void_p)
+        self.friend_lossy_packet_cb = c_callback(callback)
+        self.libtoxcore.tox_callback_friend_lossy_packet(self._tox_pointer, self.friend_lossy_packet_cb, user_data)
+
+    def callback_friend_lossless_packet(self, callback, user_data):
+        """
+        Set the callback for the `friend_lossy_packet` event. Pass NULL to unset.
+
+        :param callback: Python function.
+        Should take pointer (c_void_p) to Tox object,
+        friend_number (c_uint32) - The friend number of the friend who sent a lossy packet,
+        A byte array (c_uint8 array) containing the received packet data,
+        length (c_size_t) - The length of the packet data byte array,
+        pointer (c_void_p) to user_data
+        :param user_data: pointer (c_void_p) to user data
+        """
+        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, POINTER(c_uint8), c_size_t, c_void_p)
+        self.friend_lossless_packet_cb = c_callback(callback)
+        self.libtoxcore.tox_callback_friend_lossless_packet(self._tox_pointer, self.friend_lossless_packet_cb,
+                                                            user_data)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Low-level network information
