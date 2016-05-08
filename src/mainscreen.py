@@ -117,16 +117,28 @@ class MainWindow(QtGui.QMainWindow):
         self.messageEdit = MessageArea(Form, self)
         self.messageEdit.setGeometry(QtCore.QRect(0, 5, 450, 70))
         self.messageEdit.setObjectName("messageEdit")
-        self.screenshotButton = QtGui.QPushButton(Form)
+
+        class QRightClickButton(QtGui.QPushButton):
+            def __init__(self, parent):
+                super(QRightClickButton, self).__init__(parent)
+
+            def mousePressEvent(self, event):
+                if event.button() == QtCore.Qt.RightButton:
+                    self.emit(QtCore.SIGNAL("rightClicked()"))
+                else:
+                    super(QRightClickButton, self).mousePressEvent(event)
+
+        self.screenshotButton = QRightClickButton(Form)
         self.screenshotButton.setGeometry(QtCore.QRect(455, 5, 55, 70))
         self.screenshotButton.setObjectName("screenshotButton")
+
         self.fileTransferButton = QtGui.QPushButton(Form)
         self.fileTransferButton.setGeometry(QtCore.QRect(510, 5, 55, 70))
         self.fileTransferButton.setObjectName("fileTransferButton")
+
         self.sendMessageButton = QtGui.QPushButton(Form)
         self.sendMessageButton.setGeometry(QtCore.QRect(565, 5, 55, 70))
         self.sendMessageButton.setObjectName("sendMessageButton")
-        self.sendMessageButton.clicked.connect(self.send_message)
 
         pixmap = QtGui.QPixmap(curr_directory() + '/images/send.png')
         icon = QtGui.QIcon(pixmap)
@@ -135,7 +147,7 @@ class MainWindow(QtGui.QMainWindow):
         pixmap = QtGui.QPixmap(curr_directory() + '/images/file.png')
         icon = QtGui.QIcon(pixmap)
         self.fileTransferButton.setIcon(icon)
-        self.fileTransferButton.setIconSize(QtCore.QSize(55, 70))
+        self.fileTransferButton.setIconSize(QtCore.QSize(30, 45))
         pixmap = QtGui.QPixmap(curr_directory() + '/images/screenshot.png')
         icon = QtGui.QIcon(pixmap)
         self.screenshotButton.setIcon(icon)
@@ -143,6 +155,9 @@ class MainWindow(QtGui.QMainWindow):
 
         self.fileTransferButton.clicked.connect(self.send_file)
         self.screenshotButton.clicked.connect(self.send_screenshot)
+        self.sendMessageButton.clicked.connect(self.send_message)
+        self.connect(self.screenshotButton, QtCore.SIGNAL("rightClicked()"), lambda: self.send_screenshot(True))
+
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def setup_left_bottom(self, Form):
@@ -371,10 +386,12 @@ class MainWindow(QtGui.QMainWindow):
             if name[0]:
                 self.profile.send_file(name[0])
 
-    def send_screenshot(self):
+    def send_screenshot(self, hide=False):
         if self.profile.is_active_online():  # active friend exists and online
-            self.sw = ScreenShotWindow()
+            self.sw = ScreenShotWindow(self)
             self.sw.show()
+            if hide:
+                self.hide()
 
     def call(self):
         if self.profile.is_active_online():  # active friend exists and online
@@ -467,13 +484,18 @@ class MainWindow(QtGui.QMainWindow):
 
 class ScreenShotWindow(QtGui.QWidget):
 
-    def __init__(self):
+    def __init__(self, parent):
         super(ScreenShotWindow, self).__init__()
+        self.parent = parent
         self.setMouseTracking(True)
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
         self.showFullScreen()
         self.setWindowOpacity(0.5)
         self.rubberband = QtGui.QRubberBand(QtGui.QRubberBand.Rectangle, None)
+
+    def closeEvent(self, *args):
+        if self.parent.isHidden():
+            self.parent.show()
 
     def mousePressEvent(self, event):
         self.origin = event.pos()
@@ -495,16 +517,17 @@ class ScreenShotWindow(QtGui.QWidget):
             self.rubberband.hide()
             rect = self.rubberband.geometry()
             print rect
-            p = QtGui.QPixmap.grabWindow(QtGui.QApplication.desktop().winId(),
-                                         rect.x() + 4,
-                                         rect.y() + 4,
-                                         rect.width() - 8,
-                                         rect.height() - 8)
-            byte_array = QtCore.QByteArray()
-            buffer = QtCore.QBuffer(byte_array)
-            buffer.open(QtCore.QIODevice.WriteOnly)
-            p.save(buffer, 'PNG')
-            Profile.get_instance().send_screenshot(str(byte_array.data()))
+            if rect.width() and rect.height():
+                p = QtGui.QPixmap.grabWindow(QtGui.QApplication.desktop().winId(),
+                                             rect.x() + 4,
+                                             rect.y() + 4,
+                                             rect.width() - 8,
+                                             rect.height() - 8)
+                byte_array = QtCore.QByteArray()
+                buffer = QtCore.QBuffer(byte_array)
+                buffer.open(QtCore.QIODevice.WriteOnly)
+                p.save(buffer, 'PNG')
+                Profile.get_instance().send_screenshot(str(byte_array.data()))
             self.close()
 
     def keyPressEvent(self, event):

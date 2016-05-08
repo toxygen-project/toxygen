@@ -796,7 +796,7 @@ class Profile(Contact, Singleton):
         :return: True on success else error string
         """
         try:
-            message = message or 'Add me to your contact list'
+            message = message or 'Hello! Add me to your contact list please'
             if '@' in tox_id:  # value like groupbot@toxme.io
                 tox_id = tox_dns(tox_id)
                 if tox_id is None:

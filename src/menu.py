@@ -2,7 +2,7 @@ from PySide import QtCore, QtGui
 from settings import *
 from profile import Profile
 from util import get_style, curr_directory
-from widgets import CenteredWidget
+from widgets import CenteredWidget, DataLabel
 import pyaudio
 
 
@@ -26,17 +26,12 @@ class AddContact(CenteredWidget):
         self.tox_id.setGeometry(QtCore.QRect(50, 40, 471, 27))
         self.tox_id.setObjectName("lineEdit")
         self.label = QtGui.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(30, 10, 80, 20))
-        self.error_label = QtGui.QLabel(self)
-        self.error_label.setGeometry(QtCore.QRect(120, 10, 400, 20))
+        self.label.setGeometry(QtCore.QRect(50, 10, 80, 20))
+        self.error_label = DataLabel(self)
+        self.error_label.setGeometry(QtCore.QRect(120, 10, 420, 20))
         font = QtGui.QFont()
-        font.setPointSize(16)
-        font.setWeight(75)
-        font.setBold(True)
-        self.label.setFont(font)
-        font.setPointSize(12)
-        font.setBold(False)
-        font.setWeight(40)
+        font.setPointSize(10)
+        font.setWeight(30)
         self.error_label.setFont(font)
         self.error_label.setStyleSheet("QLabel { color: red; }")
         self.label.setObjectName("label")
@@ -48,6 +43,7 @@ class AddContact(CenteredWidget):
         self.label_2.setFont(font)
         self.label_2.setObjectName("label_2")
         self.retranslateUi()
+        self.message_edit.setText('Hello! Add me to your contact list please')
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def add_friend(self):
@@ -57,8 +53,6 @@ class AddContact(CenteredWidget):
             # request was successful
             self.close()
         else:  # print error data
-            if len(send) > 40:
-                send = send[:40] + '...'
             self.error_label.setText(send)
 
     def retranslateUi(self):
