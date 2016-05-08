@@ -802,14 +802,17 @@ class Profile(Contact, Singleton):
                 tox_id = tox_dns(tox_id)
                 if tox_id is None:
                     raise Exception('TOX DNS lookup failed')
-            result = self._tox.friend_add(tox_id, message.encode('utf-8'))
-            tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
-            item = self.create_friend_item()
-            if not self._history.friend_exists_in_db(tox_id):
-                self._history.add_friend_to_db(tox_id)
-            message_getter = self._history.messages_getter(tox_id)
-            friend = Friend(message_getter, result, tox_id, '', item, tox_id)
-            self._friends.append(friend)
+            if len(tox_id) == TOX_PUBLIC_KEY_SIZE * 2:  # public key
+                self.add_friend(tox_id)
+            else:
+                result = self._tox.friend_add(tox_id, message.encode('utf-8'))
+                tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
+                item = self.create_friend_item()
+                if not self._history.friend_exists_in_db(tox_id):
+                    self._history.add_friend_to_db(tox_id)
+                message_getter = self._history.messages_getter(tox_id)
+                friend = Friend(message_getter, result, tox_id, '', item, tox_id)
+                self._friends.append(friend)
             data = self._tox.get_savedata()
             ProfileHelper.save_profile(data)
             return True
