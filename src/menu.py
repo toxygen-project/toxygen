@@ -210,7 +210,7 @@ class NetworkSettings(CenteredWidget):
         settings = Settings.get_instance()
         self.ipv.setChecked(settings['ipv6_enabled'])
         self.udp.setChecked(settings['udp_enabled'])
-        self.proxy.setChecked(settings['proxy_type'] != 0)
+        self.proxy.setChecked(settings['proxy_type'])
         self.proxyip.setText(settings['proxy_host'])
         self.proxyport.setText(unicode(settings['proxy_port']))
         self.http.setChecked(settings['proxy_type'] == 1)
@@ -245,7 +245,7 @@ class NetworkSettings(CenteredWidget):
         if changed:
             settings['ipv6_enabled'] = self.ipv.isChecked()
             settings['udp_enabled'] = self.udp.isChecked()
-            settings['proxy_type'] = 2 - int(self.http.isChecked())
+            settings['proxy_type'] = 2 - int(self.http.isChecked()) if self.proxy.isChecked() else 0
             settings['proxy_host'] = str(self.proxyip.text())
             settings['proxy_port'] = int(self.proxyport.text())
             settings.save()

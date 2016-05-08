@@ -42,6 +42,9 @@ class FileTransfer(QtCore.QObject):
     def set_state_changed_handler(self, handler):
         self._state_changed.signal.connect(handler)
 
+    def signal(self):
+        self._state_changed.signal.emit(self.state, self._done / self._size if self._size else 0)
+
     def get_file_number(self):
         return self._file_number
 
@@ -58,12 +61,18 @@ class FileTransfer(QtCore.QObject):
         if hasattr(self, '_file'):
             sleep(0.1)
             self._file.close()
-        self._state_changed.signal.emit(TOX_FILE_CONTROL['CANCEL'], 1)
+        self.state = TOX_FILE_TRANSFER_STATE['CANCELED']
+        self._state_changed.signal.emit(self.state, 1)
+
+    def pause(self, by_friend):
+        if not by_friend:
+            self.send_control(TOX_FILE_CONTROL['PAUSE'])
+        self.signal()
 
     def send_control(self, control):
         if self._tox.file_control(self._friend_number, self._file_number, control):
             self.state = control
-            self._state_changed.signal.emit(self.state, self._done / self._size if self._size else 0)
+            self.signal()
 
     def get_file_id(self):
         return self._tox.file_get_file_id(self._friend_number, self._file_number)
@@ -96,7 +105,7 @@ class SendTransfer(FileTransfer):
             data = self._file.read(size)
             self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
             self._done += size
-            self._state_changed.signal.emit(self.state, self._done / self._size)
+            self.signal()
         else:
             if hasattr(self, '_file'):
                 self._file.close()
@@ -209,7 +218,7 @@ class ReceiveToBuffer(FileTransfer):
             if position + l > self._data_size:
                 self._data_size = position + l
             self._done += l
-            self._state_changed.signal.emit(self.state, self._done / self._size)
+            self.signal()
 
 
 class ReceiveAvatar(ReceiveTransfer):

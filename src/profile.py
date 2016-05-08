@@ -207,7 +207,7 @@ class Friend(Contact):
         """
         if hasattr(self, '_message_getter'):
             del self._message_getter
-        self._corr = filter(lambda x: x.get_type() == 2 and x.get_status() in (2, 3, 4), self._corr)
+        self._corr = filter(lambda x: x.get_type() == 2 and x.get_status() >= 2, self._corr)
         self._unsaved_messages = 0
 
     def update_transfer_data(self, file_number, status, inline=None):
@@ -419,9 +419,10 @@ class Profile(Contact, Singleton):
                                                  data[3])
                     elif message.get_type() == 2:
                         item = self.create_file_transfer_item(message)
-                        if message.get_status() in (2, 4):  # active file transfer
+                        if message.get_status() >= 2:  # active file transfer
                             ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
                             ft.set_state_changed_handler(item.update)
+                            ft.signal()
                     else:  # inline
                         self.create_inline_item(message.get_data())
                 self._messages.scrollToBottom()
@@ -611,7 +612,7 @@ class Profile(Contact, Singleton):
                                          False)
             elif message.get_type() == 2:
                 item = self.create_file_transfer_item(message, False)
-                if message.get_status() in (2, 4):
+                if message.get_status() >= 2:
                     ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
                     ft.set_state_changed_handler(item.update)
 
@@ -939,6 +940,16 @@ class Profile(Contact, Singleton):
             del self._file_transfers[(friend_number, file_number)]
         else:
             self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
+
+    def pause_transfer(self, friend_number, file_number, by_friend=False):
+        tr = self._file_transfers[(friend_number, file_number)]
+        tr.pause(by_friend)
+        t = FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_FRIEND'] if by_friend else FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_USER']
+        self.get_friend_by_number(friend_number).update_transfer_data(file_number, t)
+
+    def resume_transfer(self, friend_number, file_number, by_friend=False):
+        self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+                                                                      FILE_TRANSFER_MESSAGE_STATUS['OUTGOING'])
 
     def accept_transfer(self, item, path, friend_number, file_number, size, inline=False):
         """

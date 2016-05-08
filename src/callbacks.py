@@ -183,11 +183,14 @@ def file_recv_chunk(tox, friend_number, file_number, position, chunk, length, us
     """
     Incoming chunk
     """
-    invoke_in_main_thread(Profile.get_instance().incoming_chunk,
-                          friend_number,
-                          file_number,
-                          position,
-                          chunk[:length] if length else None)
+    if not length:
+        invoke_in_main_thread(Profile.get_instance().incoming_chunk,
+                              friend_number,
+                              file_number,
+                              position,
+                              None)
+    else:
+        Profile.get_instance().incoming_chunk(friend_number, file_number, position,chunk[:length])
 
 
 def file_chunk_request(tox, friend_number, file_number, position, size, user_data):
@@ -210,6 +213,10 @@ def file_recv_control(tox, friend_number, file_number, file_control, user_data):
     """
     if file_control == TOX_FILE_CONTROL['CANCEL']:
         Profile.get_instance().cancel_transfer(friend_number, file_number, True)
+    elif file_control == TOX_FILE_CONTROL['PAUSE']:
+        Profile.get_instance().pause_transfer(friend_number, file_number, True)
+    elif file_control == TOX_FILE_CONTROL['RESUME']:
+        Profile.get_instance().resume_transfer(friend_number, file_number, True)
 
 
 # -----------------------------------------------------------------------------------------------------------------

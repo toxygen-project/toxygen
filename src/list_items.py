@@ -192,7 +192,7 @@ class FileTransferItem(QtGui.QListWidget):
             self.pb.setVisible(False)
 
         self.file_name = DataLabel(self)
-        self.file_name.setGeometry(QtCore.QRect(210, 2, 230, 46))
+        self.file_name.setGeometry(QtCore.QRect(210, 2, width - 400, 46))
         font.setPointSize(12)
         self.file_name.setFont(font)
         file_size = size / 1024
