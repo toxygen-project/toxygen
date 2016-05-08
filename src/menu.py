@@ -26,7 +26,7 @@ class AddContact(CenteredWidget):
         self.tox_id.setGeometry(QtCore.QRect(50, 40, 471, 27))
         self.tox_id.setObjectName("lineEdit")
         self.label = QtGui.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(50, 10, 80, 20))
+        self.label.setGeometry(QtCore.QRect(60, 10, 80, 20))
         self.error_label = DataLabel(self)
         self.error_label.setGeometry(QtCore.QRect(120, 10, 420, 20))
         font = QtGui.QFont()
@@ -70,8 +70,8 @@ class ProfileSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("ProfileSettingsForm")
-        self.setMinimumSize(QtCore.QSize(650, 370))
-        self.setMaximumSize(QtCore.QSize(650, 370))
+        self.setMinimumSize(QtCore.QSize(650, 320))
+        self.setMaximumSize(QtCore.QSize(650, 320))
         self.nick = QtGui.QLineEdit(self)
         self.nick.setGeometry(QtCore.QRect(30, 60, 350, 27))
         self.nick.setObjectName("nick")

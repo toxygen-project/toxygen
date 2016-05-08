@@ -168,7 +168,7 @@ class MainWindow(QtGui.QMainWindow):
         self.online_contacts.setObjectName("online_contacts")
         self.online_contacts.clicked.connect(self.filtering)
         self.contact_name = QtGui.QLineEdit(Form)
-        self.contact_name.setGeometry(QtCore.QRect(0, 25, 270, 25))
+        self.contact_name.setGeometry(QtCore.QRect(0, 24, 270, 25))
         self.contact_name.setObjectName("contact_name")
         self.contact_name.textChanged.connect(self.filtering)
         QtCore.QMetaObject.connectSlotsByName(Form)
