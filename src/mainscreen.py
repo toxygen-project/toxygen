@@ -168,7 +168,7 @@ class MainWindow(QtGui.QMainWindow):
         self.online_contacts.setObjectName("online_contacts")
         self.online_contacts.clicked.connect(self.filtering)
         self.contact_name = QtGui.QLineEdit(Form)
-        self.contact_name.setGeometry(QtCore.QRect(0, 24, 270, 25))
+        self.contact_name.setGeometry(QtCore.QRect(0, 23, 270, 26))
         self.contact_name.setObjectName("contact_name")
         self.contact_name.textChanged.connect(self.filtering)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -340,7 +340,8 @@ class MainWindow(QtGui.QMainWindow):
         import util
         msgBox = QtGui.QMessageBox()
         msgBox.setWindowTitle(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
-        msgBox.setText(QtGui.QApplication.translate("MainWindow", 'Toxygen is Tox client written on Python 2.7. Version: ', None, QtGui.QApplication.UnicodeUTF8) + util.program_version)
+        text = (QtGui.QApplication.translate("MainWindow", 'Toxygen is Tox client written on Python.\nVersion: ', None, QtGui.QApplication.UnicodeUTF8))
+        msgBox.setText(text + util.program_version + '\nGitHub: github.com/xveduk/toxygen')
         msgBox.exec_()
 
     def network_settings(self):

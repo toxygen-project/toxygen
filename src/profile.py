@@ -805,6 +805,11 @@ class Profile(Contact, Singleton):
                     raise Exception('TOX DNS lookup failed')
             if len(tox_id) == TOX_PUBLIC_KEY_SIZE * 2:  # public key
                 self.add_friend(tox_id)
+                msgBox = QtGui.QMessageBox()
+                msgBox.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Friend added", None, QtGui.QApplication.UnicodeUTF8))
+                text = (QtGui.QApplication.translate("MainWindow", 'Friend added without sending friend request', None, QtGui.QApplication.UnicodeUTF8))
+                msgBox.setText(text)
+                msgBox.exec_()
             else:
                 result = self._tox.friend_add(tox_id, message.encode('utf-8'))
                 tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]

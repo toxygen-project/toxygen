@@ -38,12 +38,17 @@ class AddContact(CenteredWidget):
         self.message_edit = QtGui.QTextEdit(self)
         self.message_edit.setGeometry(QtCore.QRect(50, 110, 471, 151))
         self.message_edit.setObjectName("textEdit")
-        self.label_2 = QtGui.QLabel(self)
-        self.label_2.setGeometry(QtCore.QRect(60, 70, 101, 31))
-        self.label_2.setFont(font)
-        self.label_2.setObjectName("label_2")
+        self.message = QtGui.QLabel(self)
+        self.message.setGeometry(QtCore.QRect(60, 70, 101, 31))
+        self.message.setFont(font)
+        self.message.setObjectName("label_2")
         self.retranslateUi()
         self.message_edit.setText('Hello! Add me to your contact list please')
+        font = QtGui.QFont()
+        font.setPointSize(12)
+        font.setBold(True)
+        self.label.setFont(font)
+        self.message.setFont(font)
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def add_friend(self):
@@ -59,7 +64,7 @@ class AddContact(CenteredWidget):
         self.setWindowTitle(QtGui.QApplication.translate('AddContact', "Add contact", None, QtGui.QApplication.UnicodeUTF8))
         self.sendRequestButton.setText(QtGui.QApplication.translate("Form", "Send request", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate('AddContact', "TOX ID:", None, QtGui.QApplication.UnicodeUTF8))
-        self.label_2.setText(QtGui.QApplication.translate('AddContact', "Message:", None, QtGui.QApplication.UnicodeUTF8))
+        self.message.setText(QtGui.QApplication.translate('AddContact', "Message:", None, QtGui.QApplication.UnicodeUTF8))
 
 
 class ProfileSettings(CenteredWidget):
@@ -82,7 +87,7 @@ class ProfileSettings(CenteredWidget):
         self.status.setObjectName("status")
         self.status.setText(profile.status_message)
         self.label = QtGui.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(40, 30, 91, 21))
+        self.label.setGeometry(QtCore.QRect(40, 30, 91, 25))
         font = QtGui.QFont()
         font.setPointSize(18)
         font.setWeight(75)
@@ -90,11 +95,11 @@ class ProfileSettings(CenteredWidget):
         self.label.setFont(font)
         self.label.setObjectName("label")
         self.label_2 = QtGui.QLabel(self)
-        self.label_2.setGeometry(QtCore.QRect(40, 100, 100, 21))
+        self.label_2.setGeometry(QtCore.QRect(40, 100, 100, 25))
         self.label_2.setFont(font)
         self.label_2.setObjectName("label_2")
         self.label_3 = QtGui.QLabel(self)
-        self.label_3.setGeometry(QtCore.QRect(40, 180, 100, 21))
+        self.label_3.setGeometry(QtCore.QRect(40, 180, 100, 25))
         self.label_3.setFont(font)
         self.label_3.setObjectName("label_3")
         self.tox_id = QtGui.QLabel(self)
@@ -139,6 +144,10 @@ class ProfileSettings(CenteredWidget):
         clipboard = QtGui.QApplication.clipboard()
         profile = Profile.get_instance()
         clipboard.setText(profile.tox_id)
+        pixmap = QtGui.QPixmap(curr_directory() + '/images/accept.png')
+        icon = QtGui.QIcon(pixmap)
+        self.copyId.setIcon(icon)
+        self.copyId.setIconSize(QtCore.QSize(10, 10))
 
     def new_no_spam(self):
         self.tox_id.setText(Profile.get_instance().new_nospam())
@@ -148,7 +157,6 @@ class ProfileSettings(CenteredWidget):
 
     def set_avatar(self):
         name = QtGui.QFileDialog.getOpenFileName(self, 'Open file', None, 'Image Files (*.png)')
-        print name
         if name[0]:
             with open(name[0], 'rb') as f:
                 data = f.read()
