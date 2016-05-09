@@ -145,6 +145,8 @@ class FileTransferItem(QtGui.QListWidget):
         else:
             self.setStyleSheet('QWidget { background-color: #B40404; }')
 
+        self.state = state
+
         self.name = DataLabel(self)
         self.name.setGeometry(QtCore.QRect(1, 15, 95, 20))
         self.name.setTextFormat(QtCore.Qt.PlainText)
@@ -174,15 +176,22 @@ class FileTransferItem(QtGui.QListWidget):
         self.cancel.clicked.connect(lambda: self.cancel_transfer(friend_number, file_number))
         self.cancel.setStyleSheet('QPushButton:hover { border: 1px solid #3A3939; }')
 
-        self.accept = QtGui.QPushButton(self)
-        self.accept.setGeometry(QtCore.QRect(450, 2, 46, 46))
-        pixmap = QtGui.QPixmap(curr_directory() + '/images/accept.png')
-        icon = QtGui.QIcon(pixmap)
-        self.accept.setIcon(icon)
-        self.accept.setIconSize(QtCore.QSize(30, 30))
-        self.accept.clicked.connect(lambda: self.accept_transfer(friend_number, file_number, size))
-        self.accept.setVisible(state == FILE_TRANSFER_MESSAGE_STATUS['INCOMING_NOT_STARTED'])
-        self.accept.setStyleSheet('QPushButton:hover { border: 1px solid #3A3939; }')
+        self.accept_or_pause = QtGui.QPushButton(self)
+        self.accept_or_pause.setGeometry(QtCore.QRect(450, 2, 46, 46))
+        if state == FILE_TRANSFER_MESSAGE_STATUS['INCOMING_NOT_STARTED']:
+            self.accept_or_pause.setVisible(True)
+            self.button_update('accept')
+        elif state in (0, 1, 5):
+            self.accept_or_pause.setVisible(False)
+        elif state == FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_USER']:  # setup for continue
+            self.accept_or_pause.setVisible(True)
+            self.button_update('resume')
+        else:  # pause
+            self.accept_or_pause.setVisible(True)
+            self.button_update('pause')
+        self.accept_or_pause.clicked.connect(lambda: self.accept_or_pause_transfer(friend_number, file_number, size))
+
+        self.accept_or_pause.setStyleSheet('QPushButton:hover { border: 1px solid #3A3939; }')
 
         self.pb = QtGui.QProgressBar(self)
         self.pb.setGeometry(QtCore.QRect(100, 15, 100, 20))
@@ -212,27 +221,56 @@ class FileTransferItem(QtGui.QListWidget):
         pr.cancel_transfer(friend_number, file_number)
         self.setStyleSheet('QListWidget { background-color: #B40404; }')
         self.cancel.setVisible(False)
-        self.accept.setVisible(False)
+        self.accept_or_pause.setVisible(False)
         self.pb.setVisible(False)
 
-    def accept_transfer(self, friend_number, file_number, size):
-        directory = QtGui.QFileDialog.getExistingDirectory()
-        if directory:
-            pr = profile.Profile.get_instance()
-            pr.accept_transfer(self, directory + '/' + self.saved_name, friend_number, file_number, size)
-            self.accept.setVisible(False)
+    def accept_or_pause_transfer(self, friend_number, file_number, size):
+        if self.state == FILE_TRANSFER_MESSAGE_STATUS['INCOMING_NOT_STARTED']:
+            directory = QtGui.QFileDialog.getExistingDirectory()
+            if directory:
+                pr = profile.Profile.get_instance()
+                pr.accept_transfer(self, directory + '/' + self.saved_name, friend_number, file_number, size)
+                self.button_update('pause')
+        elif self.state == FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_USER']:  # resume
+            profile.Profile.get_instance().resume_transfer(friend_number, file_number)
+        else:  # pause
+            profile.Profile.get_instance().pause_transfer(friend_number, file_number)
+            self.state = FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_USER']
+        self.accept_or_pause.clearFocus()
+
+    def button_update(self, path):
+        pixmap = QtGui.QPixmap(curr_directory() + '/images/{}.png'.format(path))
+        icon = QtGui.QIcon(pixmap)
+        self.accept_or_pause.setIcon(icon)
+        self.accept_or_pause.setIconSize(QtCore.QSize(30, 30))
+
+    def convert(self, state):
+        # convert TOX_FILE_TRANSFER_STATE to FILE_TRANSFER_MESSAGE_STATUS
+        d = {0: 2, 1: 6, 2: 1, 3: 0, 4: 5}
+        return d[state]
 
     @QtCore.Slot(int, float)
     def update(self, state, progress):
         self.pb.setValue(int(progress * 100))
-        if state == TOX_FILE_TRANSFER_STATE['CANCELED']:
-            self.setStyleSheet('QListWidget { background-color: #B40404; }')
-            self.cancel.setVisible(False)
-            self.accept.setVisible(False)
-            self.pb.setVisible(False)
-        elif state == TOX_FILE_TRANSFER_STATE['FINISHED']:
-            self.pb.setVisible(False)
-            self.cancel.setVisible(False)
+        state = self.convert(state)
+        if self.state != state:
+            if state == FILE_TRANSFER_MESSAGE_STATUS['CANCELLED']:
+                self.setStyleSheet('QListWidget { background-color: #B40404; }')
+                self.cancel.setVisible(False)
+                self.accept_or_pause.setVisible(False)
+                self.pb.setVisible(False)
+            elif state == FILE_TRANSFER_MESSAGE_STATUS['FINISHED']:
+                self.accept_or_pause.setVisible(False)
+                self.pb.setVisible(False)
+                self.cancel.setVisible(False)
+            elif state == FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_FRIEND']:
+                self.accept_or_pause.setVisible(False)
+            elif state == FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_USER']:
+                self.button_update('resume')  # setup button continue
+            else:  # active
+                self.accept_or_pause.setVisible(True)  # setup to pause
+                self.button_update('pause')
+            self.state = state
 
 
 class InlineImageItem(QtGui.QWidget):

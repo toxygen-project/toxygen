@@ -12,6 +12,7 @@ TOX_FILE_TRANSFER_STATE = {
     'PAUSED': 1,
     'CANCELED': 2,
     'FINISHED': 3,
+    'PAUSED_BY_FRIEND': 4
 }
 
 
@@ -67,6 +68,8 @@ class FileTransfer(QtCore.QObject):
     def pause(self, by_friend):
         if not by_friend:
             self.send_control(TOX_FILE_CONTROL['PAUSE'])
+        else:
+            self.state = TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND']
         self.signal()
 
     def send_control(self, control):

@@ -953,6 +953,12 @@ class Profile(Contact, Singleton):
     def resume_transfer(self, friend_number, file_number, by_friend=False):
         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                       FILE_TRANSFER_MESSAGE_STATUS['OUTGOING'])
+        tr = self._file_transfers[(friend_number, file_number)]
+        if by_friend:
+            tr.state = TOX_FILE_TRANSFER_STATE['RUNNING']
+            tr.signal()
+        else:
+            tr.send_control(TOX_FILE_CONTROL['RESUME'])
 
     def accept_transfer(self, item, path, friend_number, file_number, size, inline=False):
         """
@@ -1018,7 +1024,7 @@ class Profile(Contact, Singleton):
         if (friend_number, file_number) in self._file_transfers:
             transfer = self._file_transfers[(friend_number, file_number)]
             transfer.write_chunk(position, data)
-            if transfer.state:
+            if transfer.state in (2, 3):  # finished or cancelled
                 if type(transfer) is ReceiveAvatar:
                     self.get_friend_by_number(friend_number).load_avatar()
                     self.set_active(None)
@@ -1043,7 +1049,7 @@ class Profile(Contact, Singleton):
         if (friend_number, file_number) in self._file_transfers:
             transfer = self._file_transfers[(friend_number, file_number)]
             transfer.send_chunk(position, size)
-            if transfer.state:
+            if transfer.state in (2, 3):  # finished or cancelled
                 del self._file_transfers[(friend_number, file_number)]
                 if type(transfer) is not SendAvatar:
                     if type(transfer) is SendFromBuffer and Settings.get_instance()['allow_inline']:  # inline
