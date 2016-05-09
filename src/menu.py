@@ -174,7 +174,6 @@ class NetworkSettings(CenteredWidget):
     def __init__(self, reset):
         super(NetworkSettings, self).__init__()
         self.reset = reset
-        self.reconn = False
         self.initUI()
 
     def initUI(self):
@@ -235,26 +234,16 @@ class NetworkSettings(CenteredWidget):
         self.http.setEnabled(bl)
         self.proxyport.setEnabled(bl)
 
-    def closeEvent(self, *args, **kwargs):
-        settings = Settings.get_instance()
-        old_data = str(settings['ipv6_enabled']) + str(settings['udp_enabled']) + str(bool(settings['proxy_type']))
-        new_data = str(self.ipv.isChecked()) + str(self.udp.isChecked()) + str(self.proxy.isChecked())
-        changed = old_data != new_data
-        if self.proxy.isChecked() and (self.proxyip.text() != settings['proxy_host'] or self.proxyport.text() != unicode(settings['proxy_port'])):
-            changed = True
-        if changed:
-            settings['ipv6_enabled'] = self.ipv.isChecked()
-            settings['udp_enabled'] = self.udp.isChecked()
-            settings['proxy_type'] = 2 - int(self.http.isChecked()) if self.proxy.isChecked() else 0
-            settings['proxy_host'] = str(self.proxyip.text())
-            settings['proxy_port'] = int(self.proxyport.text())
-            settings.save()
-        if changed or self.reconnect:
-            # recreate tox instance
-            Profile.get_instance().reset(self.reset)
-
     def restart_core(self):
-        self.reconn = True
+        settings = Settings.get_instance()
+        settings['ipv6_enabled'] = self.ipv.isChecked()
+        settings['udp_enabled'] = self.udp.isChecked()
+        settings['proxy_type'] = 2 - int(self.http.isChecked()) if self.proxy.isChecked() else 0
+        settings['proxy_host'] = str(self.proxyip.text())
+        settings['proxy_port'] = int(self.proxyport.text())
+        settings.save()
+        # recreate tox instance
+        Profile.get_instance().reset(self.reset)
         self.close()
 
 
@@ -271,21 +260,21 @@ class PrivacySettings(CenteredWidget):
         self.setMinimumSize(QtCore.QSize(350, 550))
         self.setMaximumSize(QtCore.QSize(350, 550))
         self.saveHistory = QtGui.QCheckBox(self)
-        self.saveHistory.setGeometry(QtCore.QRect(40, 20, 291, 22))
+        self.saveHistory.setGeometry(QtCore.QRect(10, 20, 291, 22))
         self.saveHistory.setObjectName("saveHistory")
         self.fileautoaccept = QtGui.QCheckBox(self)
-        self.fileautoaccept.setGeometry(QtCore.QRect(40, 60, 271, 22))
+        self.fileautoaccept.setGeometry(QtCore.QRect(10, 60, 271, 22))
         self.fileautoaccept.setObjectName("fileautoaccept")
         self.typingNotifications = QtGui.QCheckBox(self)
-        self.typingNotifications.setGeometry(QtCore.QRect(40, 100, 350, 30))
+        self.typingNotifications.setGeometry(QtCore.QRect(10, 100, 350, 30))
         self.typingNotifications.setObjectName("typingNotifications")
         self.inlines = QtGui.QCheckBox(self)
-        self.inlines.setGeometry(QtCore.QRect(40, 140, 350, 30))
+        self.inlines.setGeometry(QtCore.QRect(10, 140, 350, 30))
         self.inlines.setObjectName("inlines")
 
 
         self.auto_path = QtGui.QLabel(self)
-        self.auto_path.setGeometry(QtCore.QRect(40, 190, 350, 30))
+        self.auto_path.setGeometry(QtCore.QRect(10, 190, 350, 30))
         self.path = QtGui.QPlainTextEdit(self)
         self.path.setGeometry(QtCore.QRect(10, 225, 330, 45))
         self.change_path = QtGui.QPushButton(self)
