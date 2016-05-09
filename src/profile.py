@@ -420,6 +420,7 @@ class Profile(Contact, Singleton):
                     elif message.get_type() == 2:
                         item = self.create_file_transfer_item(message)
                         if message.get_status() >= 2:  # active file transfer
+                            # TODO: fix bug with file_number == 65536L
                             ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
                             ft.set_state_changed_handler(item.update)
                             ft.signal()
@@ -651,7 +652,7 @@ class Profile(Contact, Singleton):
         data.append(self._messages.width())
         item = FileTransferItem(*data)
         elem = QtGui.QListWidgetItem()
-        elem.setSizeHint(QtCore.QSize(self._messages.width(), 50))
+        elem.setSizeHint(QtCore.QSize(self._messages.width() - 30, 34))
         if append:
             self._messages.addItem(elem)
         else:

@@ -1269,3 +1269,8 @@ QCheckBox
     margin-bottom: 2px;
     text-align: center;
 }
+
+QListWidget > QLabel 
+{
+    color: #A9A9A9;
+}

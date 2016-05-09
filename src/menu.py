@@ -204,7 +204,7 @@ class NetworkSettings(CenteredWidget):
         self.label_2 = QtGui.QLabel(self)
         self.label_2.setGeometry(QtCore.QRect(40, 165, 66, 17))
         self.reconnect = QtGui.QPushButton(self)
-        self.reconnect.setGeometry(QtCore.QRect(40, 230, 200, 30))
+        self.reconnect.setGeometry(QtCore.QRect(40, 230, 231, 30))
         self.reconnect.clicked.connect(self.restart_core)
         settings = Settings.get_instance()
         self.ipv.setChecked(settings['ipv6_enabled'])
@@ -235,16 +235,19 @@ class NetworkSettings(CenteredWidget):
         self.proxyport.setEnabled(bl)
 
     def restart_core(self):
-        settings = Settings.get_instance()
-        settings['ipv6_enabled'] = self.ipv.isChecked()
-        settings['udp_enabled'] = self.udp.isChecked()
-        settings['proxy_type'] = 2 - int(self.http.isChecked()) if self.proxy.isChecked() else 0
-        settings['proxy_host'] = str(self.proxyip.text())
-        settings['proxy_port'] = int(self.proxyport.text())
-        settings.save()
-        # recreate tox instance
-        Profile.get_instance().reset(self.reset)
-        self.close()
+        try:
+            settings = Settings.get_instance()
+            settings['ipv6_enabled'] = self.ipv.isChecked()
+            settings['udp_enabled'] = self.udp.isChecked()
+            settings['proxy_type'] = 2 - int(self.http.isChecked()) if self.proxy.isChecked() else 0
+            settings['proxy_host'] = str(self.proxyip.text())
+            settings['proxy_port'] = int(self.proxyport.text())
+            settings.save()
+            # recreate tox instance
+            Profile.get_instance().reset(self.reset)
+            self.close()
+        except:
+            pass
 
 
 class PrivacySettings(CenteredWidget):
