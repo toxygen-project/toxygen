@@ -14,7 +14,11 @@ class Settings(Singleton, dict):
         if os.path.isfile(self.path):
             with open(self.path) as fl:
                 data = fl.read()
-            super(self.__class__, self).__init__(json.loads(data))
+            try:
+                info = json.loads(data)
+            except:
+                info = Settings.get_default_settings()
+            super(self.__class__, self).__init__(info)
             self.upgrade()
         else:
             super(self.__class__, self).__init__(Settings.get_default_settings())

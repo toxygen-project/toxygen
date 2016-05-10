@@ -150,7 +150,7 @@ class FileTransferItem(QtGui.QListWidget):
         self.state = state
 
         self.name = DataLabel(self)
-        self.name.setGeometry(QtCore.QRect(7, 5, 95, 20))
+        self.name.setGeometry(QtCore.QRect(3, 7, 95, 20))
         self.name.setTextFormat(QtCore.Qt.PlainText)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -160,7 +160,7 @@ class FileTransferItem(QtGui.QListWidget):
         self.name.setText(user)
 
         self.time = QtGui.QLabel(self)
-        self.time.setGeometry(QtCore.QRect(width - 50, 7, 50, 20))
+        self.time.setGeometry(QtCore.QRect(width - 53, 7, 50, 20))
         font.setPointSize(10)
         font.setBold(False)
         self.time.setFont(font)

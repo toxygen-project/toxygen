@@ -387,6 +387,7 @@ class Profile(Contact, Singleton):
 
     def set_active(self, value=None):
         """
+        Change current active friend or update info
         :param value: number of new active friend in friend's list or None to update active user's data
         """
         if value is None and self._active_friend == -1:  # nothing to update
@@ -420,10 +421,12 @@ class Profile(Contact, Singleton):
                     elif message.get_type() == 2:
                         item = self.create_file_transfer_item(message)
                         if message.get_status() >= 2:  # active file transfer
-                            # TODO: fix bug with file_number == 65536L
-                            ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
-                            ft.set_state_changed_handler(item.update)
-                            ft.signal()
+                            try:
+                                ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
+                                ft.set_state_changed_handler(item.update)
+                                ft.signal()
+                            except:
+                                print 'Incoming not started transfer - no info found'
                     else:  # inline
                         self.create_inline_item(message.get_data())
                 self._messages.scrollToBottom()
@@ -946,7 +949,9 @@ class Profile(Contact, Singleton):
                 tr.cancel()
             else:
                 tr.cancelled()
-            del self._file_transfers[(friend_number, file_number)]
+            if (friend_number, file_number) in self._file_transfers:
+                del tr
+                del self._file_transfers[(friend_number, file_number)]
         else:
             self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
 
