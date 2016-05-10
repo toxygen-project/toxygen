@@ -344,7 +344,7 @@ class ToxAV(object):
         height          Height (c_uint16) of the frame in pixels.
         y
         u
-        v               Plane data (c_char_p).
+        v               Plane data (POINTER(c_uint8)).
                             The size of plane data is derived from width and height where
                             Y = MAX(width, abs(ystride)) * height,
                             U = MAX(width/2, abs(ustride)) * (height/2) and
@@ -357,7 +357,7 @@ class ToxAV(object):
         user_data       pointer (c_void_p) to user_data
         :param user_data: pointer (c_void_p) to user data
         """
-        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint16, c_uint16, c_char_p, c_char_p, c_char_p, c_int32,
-                               c_int32, c_int32, c_void_p)
+        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint16, c_uint16, POINTER(c_uint8), POINTER(c_uint8),
+                               POINTER(c_uint8), c_int32, c_int32, c_int32, c_void_p)
         self.video_receive_frame_cb = c_callback(callback)
         ToxAV.libtoxav.toxav_callback_video_receive_frame(self._toxav_pointer, self.video_receive_frame_cb, user_data)

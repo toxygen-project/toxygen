@@ -956,12 +956,18 @@ class Profile(Contact, Singleton):
             self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
 
     def pause_transfer(self, friend_number, file_number, by_friend=False):
+        """
+        Pause transfer with specified data
+        """
         tr = self._file_transfers[(friend_number, file_number)]
         tr.pause(by_friend)
         t = FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_FRIEND'] if by_friend else FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_USER']
         self.get_friend_by_number(friend_number).update_transfer_data(file_number, t)
 
     def resume_transfer(self, friend_number, file_number, by_friend=False):
+        """
+        Resume transfer with specified data
+        """
         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                       FILE_TRANSFER_MESSAGE_STATUS['OUTGOING'])
         tr = self._file_transfers[(friend_number, file_number)]
@@ -1001,7 +1007,7 @@ class Profile(Contact, Singleton):
         self._file_transfers[(friend.number, st.get_file_number())] = st
         tm = TransferMessage(MESSAGE_OWNER['ME'],
                              time.time(),
-                             FILE_TRANSFER_MESSAGE_STATUS['OUTGOING'],
+                             FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_FRIEND'],  # OUTGOING NOT STARTED
                              len(data),
                              'toxygen_inline.png',
                              friend.number,
@@ -1021,7 +1027,7 @@ class Profile(Contact, Singleton):
         self._file_transfers[(friend_number, st.get_file_number())] = st
         tm = TransferMessage(MESSAGE_OWNER['ME'],
                              time.time(),
-                             FILE_TRANSFER_MESSAGE_STATUS['OUTGOING'],
+                             FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_FRIEND'],  # OUTGOING NOT STARTED
                              os.path.getsize(path),
                              os.path.basename(path),
                              friend_number,

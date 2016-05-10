@@ -239,7 +239,6 @@ class ReceiveAvatar(ReceiveTransfer):
         elif exists(path):
             if not size:
                 self.send_control(TOX_FILE_CONTROL['CANCEL'])
-                self.state = TOX_FILE_TRANSFER_STATE['CANCELED']
                 self._file.close()
                 remove(path)
                 remove(path + '.tmp')
@@ -250,7 +249,6 @@ class ReceiveAvatar(ReceiveTransfer):
                 existing_hash = Tox.hash(data)
                 if hash == existing_hash:
                     self.send_control(TOX_FILE_CONTROL['CANCEL'])
-                    self.state = TOX_FILE_TRANSFER_STATE['CANCELED']
                     remove(path + '.tmp')
                 else:
                     self.send_control(TOX_FILE_CONTROL['RESUME'])

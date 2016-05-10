@@ -221,7 +221,7 @@ class Tox(object):
         """
         tox_err_bootstrap = c_int()
         result = Tox.libtoxcore.tox_add_tcp_relay(self._tox_pointer, c_char_p(address), c_uint16(port),
-                                                  c_char_p(public_key), byref(tox_err_bootstrap))
+                                                  string_to_bin(public_key), byref(tox_err_bootstrap))
         tox_err_bootstrap = tox_err_bootstrap.value
         if tox_err_bootstrap == TOX_ERR_BOOTSTRAP['OK']:
             return bool(result)
