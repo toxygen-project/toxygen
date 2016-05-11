@@ -110,6 +110,10 @@ class MainWindow(QtGui.QMainWindow):
         self.actionSettings.setText(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.audioSettings.setText(QtGui.QApplication.translate("MainWindow", "Audio", None, QtGui.QApplication.UnicodeUTF8))
         self.contact_name.setPlaceholderText(QtGui.QApplication.translate("MainWindow", "Find contact", None, QtGui.QApplication.UnicodeUTF8))
+        self.screenshotButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Send screenshot", None, QtGui.QApplication.UnicodeUTF8))
+        self.fileTransferButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Send file", None, QtGui.QApplication.UnicodeUTF8))
+        self.sendMessageButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Send message", None, QtGui.QApplication.UnicodeUTF8))
+        self.callButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Start audio call with friend", None, QtGui.QApplication.UnicodeUTF8))
 
     def setup_right_bottom(self, Form):
         Form.setObjectName("right_bottom")
@@ -382,7 +386,8 @@ class MainWindow(QtGui.QMainWindow):
 
     def send_file(self):
         if self.profile.is_active_online():  # active friend exists and online
-            choose_file = QtGui.QApplication.translate("MainWindow", 'Choose file', None, QtGui.QApplication.UnicodeUTF8)
+            text = QtGui.QApplication.translate("MainWindow", 'Choose file', None, QtGui.QApplication.UnicodeUTF8)
+            choose_file = QtGui.QApplication.translate("MainWindow", text, None, QtGui.QApplication.UnicodeUTF8)
             choose = QtGui.QApplication.translate("MainWindow", choose_file, None, QtGui.QApplication.UnicodeUTF8)
             name = QtGui.QFileDialog.getOpenFileName(self, choose)
             if name[0]:

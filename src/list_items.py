@@ -227,7 +227,10 @@ class FileTransferItem(QtGui.QListWidget):
 
     def accept_or_pause_transfer(self, friend_number, file_number, size):
         if self.state == FILE_TRANSFER_MESSAGE_STATUS['INCOMING_NOT_STARTED']:
-            directory = QtGui.QFileDialog.getExistingDirectory()
+            directory = QtGui.QFileDialog.getExistingDirectory(self,
+                                                               QtGui.QApplication.translate("MainWindow", 'Choose folder', None, QtGui.QApplication.UnicodeUTF8),
+                                                               curr_directory(),
+                                                               QtGui.QFileDialog.ShowDirsOnly)
             if directory:
                 pr = profile.Profile.get_instance()
                 pr.accept_transfer(self, directory + '/' + self.saved_name, friend_number, file_number, size)
