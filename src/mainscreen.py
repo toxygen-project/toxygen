@@ -386,8 +386,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def send_file(self):
         if self.profile.is_active_online():  # active friend exists and online
-            text = QtGui.QApplication.translate("MainWindow", 'Choose file', None, QtGui.QApplication.UnicodeUTF8)
-            choose_file = QtGui.QApplication.translate("MainWindow", text, None, QtGui.QApplication.UnicodeUTF8)
+            choose_file = QtGui.QApplication.translate("MainWindow", 'Choose file', None, QtGui.QApplication.UnicodeUTF8)
             choose = QtGui.QApplication.translate("MainWindow", choose_file, None, QtGui.QApplication.UnicodeUTF8)
             name = QtGui.QFileDialog.getOpenFileName(self, choose)
             if name[0]:

@@ -74,7 +74,7 @@
         <translation>Paramêtres</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="342"/>
+        <location filename="mainscreen.py" line="346"/>
         <source>About</source>
         <translation>À Propos</translation>
     </message>
@@ -109,13 +109,13 @@
         <translation>À propos du programme</translation>
     </message>
     <message>
-        <location filename="profile.py" line="837"/>
+        <location filename="profile.py" line="840"/>
         <source>User {} wants to add you to contact list. Message:
 {}</source>
         <translation>L&apos;Utilisateur {} veut vout rajouter à sa liste de contacts. Message : {}</translation>
     </message>
     <message>
-        <location filename="profile.py" line="839"/>
+        <location filename="profile.py" line="842"/>
         <source>Friend request</source>
         <translation>Demande d&apos;amis</translation>
     </message>
@@ -125,42 +125,42 @@
         <translation type="obsolete">Toxygen est un client Tox écris en Python 2.7. Version : </translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="386"/>
+        <location filename="mainscreen.py" line="390"/>
         <source>Choose file</source>
         <translation>Choisir un fichier</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="427"/>
+        <location filename="mainscreen.py" line="431"/>
         <source>Disallow auto accept</source>
         <translation>Désactiver l&apos;auto-réception</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="428"/>
+        <location filename="mainscreen.py" line="432"/>
         <source>Allow auto accept</source>
         <translation>Activer l&apos;auto-réception</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="430"/>
+        <location filename="mainscreen.py" line="434"/>
         <source>Set alias</source>
         <translation>Définir un alias</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="431"/>
+        <location filename="mainscreen.py" line="435"/>
         <source>Clear history</source>
         <translation>Vider l&apos;historique</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="432"/>
+        <location filename="mainscreen.py" line="436"/>
         <source>Copy public key</source>
         <translation>Copier la clé publique</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="434"/>
+        <location filename="mainscreen.py" line="438"/>
         <source>Remove friend</source>
         <translation>Retirer un ami</translation>
     </message>
     <message>
-        <location filename="profile.py" line="683"/>
+        <location filename="profile.py" line="686"/>
         <source>Enter new alias for friend {} or leave empty to use friend&apos;s name:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -175,19 +175,44 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="profile.py" line="809"/>
+        <location filename="profile.py" line="812"/>
         <source>Friend added</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="343"/>
+        <location filename="mainscreen.py" line="347"/>
         <source>Toxygen is Tox client written on Python.
 Version: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="profile.py" line="810"/>
+        <location filename="profile.py" line="813"/>
         <source>Friend added without sending friend request</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="list_items.py" line="231"/>
+        <source>Choose folder</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainscreen.py" line="113"/>
+        <source>Send screenshot</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainscreen.py" line="114"/>
+        <source>Send file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainscreen.py" line="115"/>
+        <source>Send message</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainscreen.py" line="116"/>
+        <source>Start audio call with friend</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -273,12 +298,12 @@ Version: </source>
 <context>
     <name>incoming_call</name>
     <message>
-        <location filename="profile.py" line="1140"/>
+        <location filename="profile.py" line="1151"/>
         <source>Incoming video call</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="profile.py" line="1142"/>
+        <location filename="profile.py" line="1153"/>
         <source>Incoming audio call</source>
         <translation type="unfinished"></translation>
     </message>

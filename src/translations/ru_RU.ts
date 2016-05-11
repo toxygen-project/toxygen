@@ -75,7 +75,7 @@
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="342"/>
+        <location filename="mainscreen.py" line="346"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
@@ -110,54 +110,54 @@
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="profile.py" line="837"/>
+        <location filename="profile.py" line="840"/>
         <source>User {} wants to add you to contact list. Message:
 {}</source>
         <translation>Пользователь {} хочет добавить Вас в список контактов. Сообщение:
 {}</translation>
     </message>
     <message>
-        <location filename="profile.py" line="839"/>
+        <location filename="profile.py" line="842"/>
         <source>Friend request</source>
         <translation>Запрос на добавление в друзья</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="386"/>
+        <location filename="mainscreen.py" line="390"/>
         <source>Choose file</source>
         <translation>Выберите файл</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="427"/>
+        <location filename="mainscreen.py" line="431"/>
         <source>Disallow auto accept</source>
         <translation>Запретить автоматическое получение файлов</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="428"/>
+        <location filename="mainscreen.py" line="432"/>
         <source>Allow auto accept</source>
         <translation>Разрешить автоматическое получение файлов</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="430"/>
+        <location filename="mainscreen.py" line="434"/>
         <source>Set alias</source>
         <translation>Изменить псевдоним</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="431"/>
+        <location filename="mainscreen.py" line="435"/>
         <source>Clear history</source>
         <translation>Очистить историю</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="432"/>
+        <location filename="mainscreen.py" line="436"/>
         <source>Copy public key</source>
         <translation>Копировать публичный ключ</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="434"/>
+        <location filename="mainscreen.py" line="438"/>
         <source>Remove friend</source>
         <translation>Удалить друга</translation>
     </message>
     <message>
-        <location filename="profile.py" line="683"/>
+        <location filename="profile.py" line="686"/>
         <source>Enter new alias for friend {} or leave empty to use friend&apos;s name:</source>
         <translation>Введите новый псевдоним для друга {} или оставьте пустым для использования его имени:</translation>
     </message>
@@ -172,20 +172,45 @@
         <translation>Найти контакт</translation>
     </message>
     <message>
-        <location filename="profile.py" line="809"/>
+        <location filename="profile.py" line="812"/>
         <source>Friend added</source>
         <translation>Друг добавлен</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="343"/>
+        <location filename="mainscreen.py" line="347"/>
         <source>Toxygen is Tox client written on Python.
 Version: </source>
         <translation>Toxygen - клиент для мессенджера Tox, написанный на Python. Версия: </translation>
     </message>
     <message>
-        <location filename="profile.py" line="810"/>
+        <location filename="profile.py" line="813"/>
         <source>Friend added without sending friend request</source>
         <translation>Друг добавлен без отправки запроса на добавление в друзья</translation>
+    </message>
+    <message>
+        <location filename="list_items.py" line="231"/>
+        <source>Choose folder</source>
+        <translation>Выбрать папку</translation>
+    </message>
+    <message>
+        <location filename="mainscreen.py" line="113"/>
+        <source>Send screenshot</source>
+        <translation>Отправить снимок экрана</translation>
+    </message>
+    <message>
+        <location filename="mainscreen.py" line="114"/>
+        <source>Send file</source>
+        <translation>Отправить файл</translation>
+    </message>
+    <message>
+        <location filename="mainscreen.py" line="115"/>
+        <source>Send message</source>
+        <translation>Отправить сообщение</translation>
+    </message>
+    <message>
+        <location filename="mainscreen.py" line="116"/>
+        <source>Start audio call with friend</source>
+        <translation>Начать аудиозвонок с другом</translation>
     </message>
 </context>
 <context>
@@ -275,12 +300,12 @@ Version: </source>
 <context>
     <name>incoming_call</name>
     <message>
-        <location filename="profile.py" line="1140"/>
+        <location filename="profile.py" line="1151"/>
         <source>Incoming video call</source>
         <translation>Входящий видеозвонок</translation>
     </message>
     <message>
-        <location filename="profile.py" line="1142"/>
+        <location filename="profile.py" line="1153"/>
         <source>Incoming audio call</source>
         <translation>Входящий аудиозвонок</translation>
     </message>
