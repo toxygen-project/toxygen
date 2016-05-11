@@ -302,7 +302,7 @@ class InlineImageItem(QtGui.QWidget):
         self._image_label.setScaledContents(False)
         self.pixmap = QtGui.QPixmap()
         self.pixmap.loadFromData(QtCore.QByteArray(data), "PNG")
-        max_size = width - 50
+        max_size = width - 40
         if self.pixmap.width() <= max_size:
             self._image_label.setPixmap(self.pixmap)
             self.resize(QtCore.QSize(max_size, self.pixmap.height()))

@@ -1052,7 +1052,7 @@ class Profile(Contact, Singleton):
                                                                                       inline)
                     if friend_number == self.get_active_number():
                         count = self._messages.count()
-                        item = InlineImageItem(transfer.get_data())
+                        item = InlineImageItem(transfer.get_data(), self._messages.width())
                         elem = QtGui.QListWidgetItem()
                         elem.setSizeHint(QtCore.QSize(600, item.height()))
                         self._messages.insertItem(count + i + 1, elem)
