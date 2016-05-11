@@ -974,7 +974,7 @@ class Profile(Contact, Singleton):
         if by_friend:
             tr.state = TOX_FILE_TRANSFER_STATE['RUNNING']
             tr.signal()
-        else:
+        else:  # send seek control?
             tr.send_control(TOX_FILE_CONTROL['RESUME'])
 
     def accept_transfer(self, item, path, friend_number, file_number, size, inline=False):

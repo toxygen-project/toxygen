@@ -215,6 +215,7 @@ class FileTransferItem(QtGui.QListWidget):
         self.file_name.setText(file_data)
         self.saved_name = file_name
         self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.paused = False
 
     def cancel_transfer(self, friend_number, file_number):
         pr = profile.Profile.get_instance()
@@ -232,10 +233,15 @@ class FileTransferItem(QtGui.QListWidget):
                 pr.accept_transfer(self, directory + '/' + self.saved_name, friend_number, file_number, size)
                 self.button_update('pause')
         elif self.state == FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_USER']:  # resume
+            self.paused = False
             profile.Profile.get_instance().resume_transfer(friend_number, file_number)
+            self.button_update('pause')
+            self.state = FILE_TRANSFER_MESSAGE_STATUS['OUTGOING']
         else:  # pause
-            profile.Profile.get_instance().pause_transfer(friend_number, file_number)
+            self.paused = True
             self.state = FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_USER']
+            profile.Profile.get_instance().pause_transfer(friend_number, file_number)
+            self.button_update('resume')
         self.accept_or_pause.clearFocus()
 
     def button_update(self, path):
@@ -259,22 +265,26 @@ class FileTransferItem(QtGui.QListWidget):
                 self.cancel.setVisible(False)
                 self.accept_or_pause.setVisible(False)
                 self.pb.setVisible(False)
+                self.state = state
             elif state == FILE_TRANSFER_MESSAGE_STATUS['FINISHED']:
                 self.accept_or_pause.setVisible(False)
                 self.pb.setVisible(False)
                 self.cancel.setVisible(False)
                 self.setStyleSheet('QListWidget { border: 1px solid green; }')
+                self.state = state
             elif state == FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_FRIEND']:
                 self.accept_or_pause.setVisible(False)
                 self.setStyleSheet('QListWidget { border: 1px solid #FF8000; }')
+                self.state = state
             elif state == FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_USER']:
                 self.button_update('resume')  # setup button continue
                 self.setStyleSheet('QListWidget { border: 1px solid green; }')
-            else:  # active
+                self.state = state
+            elif not self.paused:  # active
                 self.accept_or_pause.setVisible(True)  # setup to pause
                 self.button_update('pause')
                 self.setStyleSheet('QListWidget { border: 1px solid green; }')
-            self.state = state
+                self.state = state
 
 
 class InlineImageItem(QtGui.QWidget):
