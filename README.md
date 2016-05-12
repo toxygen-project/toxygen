@@ -1,8 +1,14 @@
 # Toxygen 
 Toxygen is simple [Tox](https://tox.chat/) client written on pure Python
-### [How to install](/docs/install.md)
 
-### [Contributing](/docs/contributing.md)
+[![Release](https://img.shields.io/github/release/xveduk/toxygen.svg?style=flat)](https://github.com/xveduk/toxygen/releases/latest)
+[![License](https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat)](https://raw.githubusercontent.com/xveduk/toxygen/master/LICENSE.md)
+[![Open issues](https://img.shields.io/github/issues/xveduk/toxygen.svg?style=flat)](https://github.com/xveduk/toxygen/issues)
+
+
+### [Install](/docs/install.md)
+
+### [Contribute](/docs/contributing.md)
 
 # Supported OS:
 - Windows
@@ -26,9 +32,9 @@ Toxygen is simple [Tox](https://tox.chat/) client written on pure Python
 - [x] Contact blocking
 - [x] Typing notifications
 - [x] Changing nospam
+- [x] File resuming
 - [ ] Video
 - [ ] Save file encryption
-- [ ] File resuming
 - [ ] Plugins support
 - [ ] Group chats
 - [ ] Read receipts
@@ -43,7 +49,7 @@ Toxygen is simple [Tox](https://tox.chat/) client written on pure Python
 [Releases](https://github.com/xveduk/toxygen/releases)
 
 ###Screenshots
-*Toxygen running on Ubuntu and Windows*
+*Toxygen on Ubuntu and Windows*
 ![Ubuntu](/docs/ubuntu.png)
 ![Windows](/docs/windows.png)
 
