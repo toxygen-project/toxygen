@@ -444,6 +444,7 @@ class Profile(Contact, Singleton):
             avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(friend.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
             if not os.path.isfile(avatar_path):  # load default image
                 avatar_path = curr_directory() + '/images/avatar.png'
+            os.chdir(os.path.dirname(avatar_path))
             pixmap = QtGui.QPixmap(QtCore.QSize(64, 64))
             pixmap.load(avatar_path)
             self._screen.account_avatar.setScaledContents(False)

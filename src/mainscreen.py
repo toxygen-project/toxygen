@@ -277,6 +277,7 @@ class MainWindow(QtGui.QMainWindow):
         self.setMinimumSize(920, 500)
         self.setGeometry(400, 400, 920, 500)
         self.setWindowTitle('Toxygen')
+        os.chdir(curr_directory() + '/images/')
         main = QtGui.QWidget()
         grid = QtGui.QGridLayout()
         search = QtGui.QWidget()
