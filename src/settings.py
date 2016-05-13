@@ -2,7 +2,7 @@ from platform import system
 import json
 import os
 import locale
-from util import Singleton, curr_directory
+from util import Singleton, curr_directory, log
 import pyaudio
 
 
@@ -16,8 +16,9 @@ class Settings(Singleton, dict):
                 data = fl.read()
             try:
                 info = json.loads(data)
-            except:
+            except Exception as ex:
                 info = Settings.get_default_settings()
+                log('Parsing settings error: ' + str(ex))
             super(self.__class__, self).__init__(info)
             self.upgrade()
         else:
@@ -61,7 +62,7 @@ class Settings(Singleton, dict):
             'language': 'English',
             'save_history': False,
             'allow_inline': True,
-            'allow_auto_accept': False,
+            'allow_auto_accept': True,
             'auto_accept_path': None,
             'show_online_friends': False,
             'auto_accept_from_friends': [],

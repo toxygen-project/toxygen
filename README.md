@@ -1,16 +1,13 @@
 # Toxygen 
-Toxygen is simple [Tox](https://tox.chat/) client written on pure Python
+Toxygen is cross-platform [Tox](https://tox.chat/) client written on Python
 
 [![Release](https://img.shields.io/github/release/xveduk/toxygen.svg?style=flat)](https://github.com/xveduk/toxygen/releases/latest)
-[![License](https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat)](https://raw.githubusercontent.com/xveduk/toxygen/master/LICENSE.md)
 [![Open issues](https://img.shields.io/github/issues/xveduk/toxygen.svg?style=flat)](https://github.com/xveduk/toxygen/issues)
+[![License](https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat)](https://raw.githubusercontent.com/xveduk/toxygen/master/LICENSE.md)
 
+### [Install](/docs/install.md) - [Contribute](/docs/contributing.md)
 
-### [Install](/docs/install.md)
-
-### [Contribute](/docs/contributing.md)
-
-# Supported OS:
+### Supported OS:
 - Windows
 - Linux
 
