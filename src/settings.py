@@ -7,6 +7,9 @@ import pyaudio
 
 
 class Settings(Singleton, dict):
+    """
+    Settings of current profile + global app settings
+    """
 
     def __init__(self, name):
         self.path = ProfileHelper.get_path() + str(name) + '.json'
@@ -47,6 +50,9 @@ class Settings(Singleton, dict):
 
     @staticmethod
     def get_default_settings():
+        """
+        Default profile settings
+        """
         return {
             'theme': 'default',
             'ipv6_enabled': True,
@@ -108,6 +114,9 @@ class Settings(Singleton, dict):
                 fl.write(data)
 
     def set_active_profile(self):
+        """
+        Mark current profile as active
+        """
         path = Settings.get_default_path() + 'toxygen.json'
         if os.path.isfile(path):
             with open(path) as fl:
@@ -176,6 +185,9 @@ class ProfileHelper(Singleton):
 
     @staticmethod
     def find_profiles():
+        """
+        Find available tox profiles
+        """
         path = Settings.get_default_path()
         result = []
         # check default path
@@ -203,8 +215,7 @@ class ProfileHelper(Singleton):
             data = json.loads(data)
             if 'active_profile' in data:
                 return path in data['active_profile']
-        else:
-            return False
+        return False
 
     @staticmethod
     def get_path():
