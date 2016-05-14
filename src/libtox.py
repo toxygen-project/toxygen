@@ -6,7 +6,7 @@ class LibToxCore(object):
 
     def __init__(self):
         if system() == 'Linux':
-            # be sure that libtoxcore and libsodium are installed in your os
+            # libtoxcore and libsodium must be installed in your os
             self._libtoxcore = CDLL('libtoxcore.so')
         elif system() == 'Windows':
             self._libtoxcore = CDLL('libs/libtox.dll')
@@ -21,7 +21,7 @@ class LibToxAV(object):
 
     def __init__(self):
         if system() == 'Linux':
-            # be sure that /usr/lib/libtoxav.so exists
+            # that /usr/lib/libtoxav.so must exists
             self._libtoxav = CDLL('libtoxav.so')
         elif system() == 'Windows':
             # on Windows av api is in libtox.dll
@@ -31,3 +31,19 @@ class LibToxAV(object):
 
     def __getattr__(self, item):
         return self._libtoxav.__getattr__(item)
+
+
+class LibToxEncryptSave(object):
+
+    def __init__(self):
+        if system() == 'Linux':
+            # /usr/lib/libtoxencryptsave.so must exists
+            self._lib_tox_encrypt_save = CDLL('libtoxencryptsave.so')
+        elif system() == 'Windows':
+            # on Windows profile encryption api is in libtox.dll
+            self._lib_tox_encrypt_save = CDLL('libs/libtox.dll')
+        else:
+            raise OSError('Unknown system.')
+
+    def __getattr__(self, item):
+        return self._lib_tox_encrypt_save.__getattr__(item)

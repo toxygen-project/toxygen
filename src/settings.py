@@ -136,6 +136,7 @@ class Settings(Singleton, dict):
             return os.getenv('APPDATA') + '/Tox/'
 
 
+# TODO: singleton (with encryption)
 class ProfileHelper(object):
     """
     Class with static methods for search, load and save profiles
