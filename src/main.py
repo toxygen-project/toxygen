@@ -32,7 +32,7 @@ class Toxygen(object):
         if self.path is not None:
             path = os.path.dirname(self.path.encode(locale.getpreferredencoding())) + '/'
             name = os.path.basename(self.path.encode(locale.getpreferredencoding()))[:-4]
-            data = ProfileHelper.open_profile(path, name)
+            data = ProfileHelper(path, name).open_profile()
             settings = Settings(name)
             self.tox = tox_factory(data, settings)
         else:
@@ -64,20 +64,20 @@ class Toxygen(object):
                     self.tox = tox_factory()
                     self.tox.self_set_name(_login.name if _login.name else 'Toxygen User')
                     self.tox.self_set_status_message('Toxing on Toxygen')
-                    ProfileHelper.save_profile(self.tox.get_savedata(), name)
+                    ProfileHelper(Settings.get_default_path(), name).save_profile(self.tox.get_savedata())
                     path = Settings.get_default_path()
                     settings = Settings(name)
                 else:  # load existing profile
                     path, name = _login.get_data()
                     if _login.default:
                         Settings.set_auto_profile(path, name)
-                    data = ProfileHelper.open_profile(path, name)
+                    data = ProfileHelper(path, name).open_profile()
                     settings = Settings(name)
                     self.tox = tox_factory(data, settings)
             else:
                 path, name = auto_profile
                 path = path.encode(locale.getpreferredencoding())
-                data = ProfileHelper.open_profile(path, name)
+                data = ProfileHelper(path, name).open_profile()
                 settings = Settings(name)
                 self.tox = tox_factory(data, settings)
 
@@ -146,7 +146,7 @@ class Toxygen(object):
         self.init.wait()
         self.avloop.wait()
         data = self.tox.get_savedata()
-        ProfileHelper.save_profile(data)
+        ProfileHelper.get_instance().save_profile(data)
         settings.close()
         del self.tox
 
@@ -162,7 +162,7 @@ class Toxygen(object):
         self.init.wait()
         self.avloop.wait()
         data = self.tox.get_savedata()
-        ProfileHelper.save_profile(data)
+        ProfileHelper.get_instance().save_profile(data)
         del self.tox
         # create new tox instance
         self.tox = tox_factory(data, Settings.get_instance())

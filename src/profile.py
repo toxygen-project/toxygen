@@ -742,7 +742,7 @@ class Profile(Contact, Singleton):
             else:
                 self.set_active(0)
         data = self._tox.get_savedata()
-        ProfileHelper.save_profile(data)
+        ProfileHelper.get_instance().save_profile(data)
 
     def add_friend(self, tox_id):
         num = self._tox.friend_add_norequest(tox_id)  # num - friend number
@@ -772,7 +772,7 @@ class Profile(Contact, Singleton):
             num = self._tox.friend_by_public_key(tox_id)
             self.delete_friend(num)
             data = self._tox.get_savedata()
-            ProfileHelper.save_profile(data)
+            ProfileHelper.get_instance().save_profile(data)
         except:  # not in friend list
             pass
 
@@ -788,7 +788,7 @@ class Profile(Contact, Singleton):
         if add_to_friend_list:
             self.add_friend(tox_id)
             data = self._tox.get_savedata()
-            ProfileHelper.save_profile(data)
+            ProfileHelper.get_instance().save_profile(data)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Friend requests
@@ -824,7 +824,7 @@ class Profile(Contact, Singleton):
                 friend = Friend(message_getter, result, tox_id, '', item, tox_id)
                 self._friends.append(friend)
             data = self._tox.get_savedata()
-            ProfileHelper.save_profile(data)
+            ProfileHelper.get_instance().save_profile(data)
             return True
         except Exception as ex:  # wrong data
             log('Friend request failed with ' + str(ex))
@@ -844,7 +844,7 @@ class Profile(Contact, Singleton):
             if reply == QtGui.QMessageBox.Yes:  # accepted
                 self.add_friend(tox_id)
                 data = self._tox.get_savedata()
-                ProfileHelper.save_profile(data)
+                ProfileHelper.get_instance().save_profile(data)
         except Exception as ex:  # something is wrong
             log('Accept friend request failed! ' + str(ex))
 

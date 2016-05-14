@@ -136,11 +136,44 @@ class Settings(Singleton, dict):
             return os.getenv('APPDATA') + '/Tox/'
 
 
-# TODO: singleton (with encryption)
-class ProfileHelper(object):
+# TODO: encrypted profiles support
+class ProfileHelper(Singleton):
     """
-    Class with static methods for search, load and save profiles
+    Class with methods for search, load and save profiles
     """
+    def __init__(self, path, name):
+        path = path.decode(locale.getpreferredencoding())
+        self._path = path + name + '.tox'
+        self._directory = path
+        # create /avatars if not exists:
+        directory = path + 'avatars'
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+
+    def open_profile(self):
+        with open(self._path, 'rb') as fl:
+            data = fl.read()
+        if data:
+            return data
+        else:
+            raise IOError('Save file has zero size!')
+
+    def get_dir(self):
+        return self._directory
+
+    def save_profile(self, data):
+        with open(self._path, 'wb') as fl:
+            fl.write(data)
+        print 'Profile saved successfully'
+
+    def export_profile(self, new_path):
+        new_path += os.path.basename(self._path)
+        with open(self._path, 'rb') as fin:
+            data = fin.read()
+        with open(new_path, 'wb') as fout:
+            fout.write(data)
+        print 'Profile exported successfully'
+
     @staticmethod
     def find_profiles():
         path = Settings.get_default_path()
@@ -174,38 +207,5 @@ class ProfileHelper(object):
             return False
 
     @staticmethod
-    def open_profile(path, name):
-        path = path.decode(locale.getpreferredencoding())
-        ProfileHelper._path = path + name + '.tox'
-        ProfileHelper._directory = path
-        # create /avatars if not exists:
-        directory = path + 'avatars'
-        if not os.path.exists(directory):
-            os.makedirs(directory)
-        with open(ProfileHelper._path, 'rb') as fl:
-            data = fl.read()
-        if data:
-            return data
-        else:
-            raise IOError('Save file has zero size!')
-
-    @staticmethod
-    def save_profile(data, name=None):
-        if name is not None:
-            ProfileHelper._path = Settings.get_default_path() + name + '.tox'
-            ProfileHelper._directory = Settings.get_default_path()
-        with open(ProfileHelper._path, 'wb') as fl:
-            fl.write(data)
-
-    @staticmethod
-    def export_profile(new_path):
-        new_path += os.path.basename(ProfileHelper._path)
-        with open(ProfileHelper._path, 'rb') as fin:
-            data = fin.read()
-        with open(new_path, 'wb') as fout:
-            fout.write(data)
-        print 'Data exported to: {}'.format(new_path)
-
-    @staticmethod
     def get_path():
-        return ProfileHelper._directory
+        return ProfileHelper.get_instance().get_dir()

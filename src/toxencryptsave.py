@@ -13,5 +13,3 @@ class LibToxEncryptSave(util.Singleton):
 
     def set_password(self, value):
         self._password = value
-
-

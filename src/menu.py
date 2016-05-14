@@ -165,7 +165,7 @@ class ProfileSettings(CenteredWidget):
     def export_profile(self):
         directory = QtGui.QFileDialog.getExistingDirectory() + '/'
         if directory != '/':
-            ProfileHelper.export_profile(directory)
+            ProfileHelper.get_instance().export_profile(directory)
             settings = Settings.get_instance()
             settings.export(directory)
             profile = Profile.get_instance()
