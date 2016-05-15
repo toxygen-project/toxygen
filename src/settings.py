@@ -4,6 +4,7 @@ import os
 import locale
 from util import Singleton, curr_directory, log
 import pyaudio
+from toxencryptsave import LibToxEncryptSave
 
 
 class Settings(Singleton, dict):
@@ -145,7 +146,6 @@ class Settings(Singleton, dict):
             return os.getenv('APPDATA') + '/Tox/'
 
 
-# TODO: encrypted profiles support
 class ProfileHelper(Singleton):
     """
     Class with methods for search, load and save profiles
@@ -171,6 +171,9 @@ class ProfileHelper(Singleton):
         return self._directory
 
     def save_profile(self, data):
+        inst = LibToxEncryptSave.get_instance()
+        if inst.has_password():
+            data = inst.pass_encrypt(data)
         with open(self._path, 'wb') as fl:
             fl.write(data)
         print 'Profile saved successfully'

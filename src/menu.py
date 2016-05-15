@@ -145,10 +145,10 @@ class ProfileSettings(CenteredWidget):
         self.not_match = QtGui.QLabel(self)
         self.not_match.setGeometry(QtCore.QRect(340, 400, 300, 30))
         self.not_match.setVisible(False)
-        self.not_match.setStyleSheet('QLabel { color: red; }')
+        self.not_match.setStyleSheet('QLabel { color: #F70D1A; }')
         self.warning = QtGui.QLabel(self)
         self.warning.setGeometry(QtCore.QRect(30, 490, 500, 30))
-        self.warning.setStyleSheet('QLabel { color: red; }')
+        self.warning.setStyleSheet('QLabel { color: #F70D1A; }')
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -225,10 +225,10 @@ class NetworkSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("NetworkSettings")
-        self.resize(300, 300)
-        self.setMinimumSize(QtCore.QSize(300, 300))
-        self.setMaximumSize(QtCore.QSize(300, 300))
-        self.setBaseSize(QtCore.QSize(300, 300))
+        self.resize(300, 330)
+        self.setMinimumSize(QtCore.QSize(300, 330))
+        self.setMaximumSize(QtCore.QSize(300, 330))
+        self.setBaseSize(QtCore.QSize(300, 330))
         self.ipv = QtGui.QCheckBox(self)
         self.ipv.setGeometry(QtCore.QRect(20, 10, 97, 22))
         self.ipv.setObjectName("ipv")
@@ -260,6 +260,9 @@ class NetworkSettings(CenteredWidget):
         self.proxyip.setText(settings['proxy_host'])
         self.proxyport.setText(unicode(settings['proxy_port']))
         self.http.setChecked(settings['proxy_type'] == 1)
+        self.warning = QtGui.QLabel(self)
+        self.warning.setGeometry(QtCore.QRect(40, 270, 200, 60))
+        self.warning.setStyleSheet('QLabel { color: #F70D1A; }')
         self.retranslateUi()
         self.proxy.stateChanged.connect(lambda x: self.activate())
         self.activate()
@@ -274,6 +277,8 @@ class NetworkSettings(CenteredWidget):
         self.label_2.setText(QtGui.QApplication.translate("Form", "Port:", None, QtGui.QApplication.UnicodeUTF8))
         self.reconnect.setText(QtGui.QApplication.translate("NetworkSettings", "Restart TOX core", None, QtGui.QApplication.UnicodeUTF8))
         self.http.setText(QtGui.QApplication.translate("Form", "HTTP", None, QtGui.QApplication.UnicodeUTF8))
+        self.warning.setText(QtGui.QApplication.translate("Form", "WARNING:\nusing proxy with enabled UDP\ncan produce IP leak",
+                                                          None, QtGui.QApplication.UnicodeUTF8))
 
     def activate(self):
         bl = self.proxy.isChecked()

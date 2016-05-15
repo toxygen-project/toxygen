@@ -10,6 +10,7 @@ from util import curr_directory, get_style
 import styles.style
 import locale
 import toxencryptsave
+from passwordscreen import PasswordScreen
 
 
 class Toxygen(object):
@@ -19,12 +20,19 @@ class Toxygen(object):
         self.tox = self.ms = self.init = self.mainloop = self.avloop = None
         self.path = path
 
-    def enter_pass(self, old_data):
+    def enter_pass(self, data):
         """
         Show password screen
         """
-        # TODO: show password screen and decrypt data
-        raise NotImplementedError()
+        tmp = [data]
+        p = PasswordScreen(toxencryptsave.LibToxEncryptSave.get_instance(), tmp)
+        p.show()
+        self.app.connect(self.app, QtCore.SIGNAL("lastWindowClosed()"), self.app, QtCore.SLOT("quit()"))
+        self.app.exec_()
+        if tmp[0] == data:
+            raise SystemExit()
+        else:
+            return tmp[0]
 
     def main(self):
         """
@@ -32,6 +40,7 @@ class Toxygen(object):
         """
         app = QtGui.QApplication(sys.argv)
         app.setWindowIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
+        self.app = app
 
         # application color scheme
         with open(curr_directory() + '/styles/style.qss') as fl:
