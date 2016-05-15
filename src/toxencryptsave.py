@@ -1,6 +1,6 @@
 import libtox
 import util
-from ctypes import c_void_p, c_size_t, create_string_buffer, byref, c_int, ArgumentError
+from ctypes import c_size_t, create_string_buffer, byref, c_int, ArgumentError, c_char_p
 
 
 TOX_ERR_ENCRYPTION = {
@@ -52,11 +52,15 @@ class LibToxEncryptSave(util.Singleton):
         """
         out = create_string_buffer(len(data) + TOX_PASS_ENCRYPTION_EXTRA_LENGTH)
         tox_err_encryption = c_int()
-        self.libtoxencryptsave.tox_pass_encrypt(c_void_p(data), c_size_t(len(data)), c_void_p(self._passphrase),
-                                                c_size_t(len(self._passphrase)), out, byref(tox_err_encryption))
+        self.libtoxencryptsave.tox_pass_encrypt(c_char_p(data),
+                                                c_size_t(len(data)),
+                                                c_char_p(self._passphrase),
+                                                c_size_t(len(self._passphrase)),
+                                                out,
+                                                byref(tox_err_encryption))
         tox_err_encryption = tox_err_encryption.value
         if tox_err_encryption == TOX_ERR_ENCRYPTION['OK']:
-            return out
+            return out[:]
         elif tox_err_encryption == TOX_ERR_ENCRYPTION['NULL']:
             raise ArgumentError('Some input data, or maybe the output pointer, was null.')
         elif tox_err_encryption == TOX_ERR_ENCRYPTION['KEY_DERIVATION_FAILED']:
@@ -73,11 +77,15 @@ class LibToxEncryptSave(util.Singleton):
         """
         out = create_string_buffer(len(data) - TOX_PASS_ENCRYPTION_EXTRA_LENGTH)
         tox_err_decryption = c_int()
-        self.libtoxencryptsave.tox_pass_encrypt(c_void_p(data), c_size_t(len(data)), c_void_p(self._passphrase),
-                                                c_size_t(len(self._passphrase)), out, byref(tox_err_decryption))
+        self.libtoxencryptsave.tox_pass_decrypt(c_char_p(data),
+                                                c_size_t(len(data)),
+                                                c_char_p(self._passphrase),
+                                                c_size_t(len(self._passphrase)),
+                                                out,
+                                                byref(tox_err_decryption))
         tox_err_decryption = tox_err_decryption.value
         if tox_err_decryption == TOX_ERR_DECRYPTION['OK']:
-            return out
+            return out[:]
         elif tox_err_decryption == TOX_ERR_DECRYPTION['NULL']:
             raise ArgumentError('Some input data, or maybe the output pointer, was null.')
         elif tox_err_decryption == TOX_ERR_DECRYPTION['INVALID_LENGTH']:
