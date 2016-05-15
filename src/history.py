@@ -2,6 +2,8 @@
 from sqlite3 import connect
 import settings
 from os import chdir
+import os.path
+from toxencryptsave import LibToxEncryptSave
 
 
 PAGE_SIZE = 42
@@ -17,12 +19,31 @@ class History(object):
     def __init__(self, name):
         self._name = name
         chdir(settings.ProfileHelper.get_path())
+        path = settings.ProfileHelper.get_path() + self._name + '.hstr'
+        if os.path.exists(path):
+            decr = LibToxEncryptSave.get_instance()
+            if decr.has_password():
+                with open(path, 'rb') as fin:
+                    data = fin.read()
+                data = decr.pass_decrypt(data)
+                with open(path, 'wb') as fout:
+                    fout.write(data)
         db = connect(name + '.hstr')
         cursor = db.cursor()
         cursor.execute('CREATE TABLE IF NOT EXISTS friends('
                        '    tox_id TEXT PRIMARY KEY'
                        ')')
         db.close()
+
+    def save(self):
+        encr = LibToxEncryptSave.get_instance()
+        if encr.has_password():
+            path = settings.ProfileHelper.get_path() + self._name + '.hstr'
+            with open(path, 'rb') as fin:
+                data = fin.read()
+            data = encr.pass_encrypt(data)
+            with open(path, 'wb') as fout:
+                fout.write(data)
 
     def export(self, directory):
         path = settings.ProfileHelper.get_path() + self._name + '.hstr'

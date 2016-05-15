@@ -18,6 +18,9 @@ class Settings(Singleton, dict):
         if os.path.isfile(self.path):
             with open(self.path) as fl:
                 data = fl.read()
+            inst = LibToxEncryptSave.get_instance()
+            if inst.has_password():
+                data = inst.pass_decrypt(data)
             try:
                 info = json.loads(data)
             except Exception as ex:
@@ -97,6 +100,9 @@ class Settings(Singleton, dict):
 
     def save(self):
         text = json.dumps(self)
+        inst = LibToxEncryptSave.get_instance()
+        if inst.has_password():
+            text = inst.pass_encrypt(text)
         with open(self.path, 'w') as fl:
             fl.write(text)
 

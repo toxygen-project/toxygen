@@ -580,6 +580,7 @@ class Profile(Contact, Singleton):
                     if not self._history.friend_exists_in_db(friend.tox_id):
                         self._history.add_friend_to_db(friend.tox_id)
                     self._history.save_messages_to_db(friend.tox_id, messages)
+            self._history.save()
             del self._history
 
     def clear_history(self, num=None):
