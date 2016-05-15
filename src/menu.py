@@ -4,6 +4,7 @@ from profile import Profile
 from util import get_style, curr_directory
 from widgets import CenteredWidget, DataLabel
 import pyaudio
+import toxencryptsave
 
 
 class AddContact(CenteredWidget):
@@ -75,8 +76,8 @@ class ProfileSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("ProfileSettingsForm")
-        self.setMinimumSize(QtCore.QSize(650, 320))
-        self.setMaximumSize(QtCore.QSize(650, 320))
+        self.setMinimumSize(QtCore.QSize(650, 520))
+        self.setMaximumSize(QtCore.QSize(650, 520))
         self.nick = QtGui.QLineEdit(self)
         self.nick.setGeometry(QtCore.QRect(30, 60, 350, 27))
         self.nick.setObjectName("nick")
@@ -126,6 +127,28 @@ class ProfileSettings(CenteredWidget):
         self.delete_avatar.setGeometry(QtCore.QRect(400, 120, 200, 50))
         self.delete_avatar.clicked.connect(self.reset_avatar)
         self.new_avatar.clicked.connect(self.set_avatar)
+        self.profile_pass = QtGui.QLabel(self)
+        self.profile_pass.setGeometry(QtCore.QRect(40, 300, 300, 50))
+        font.setPointSize(18)
+        self.profile_pass.setFont(font)
+        self.password = QtGui.QLineEdit(self)
+        self.password.setGeometry(QtCore.QRect(30, 350, 300, 30))
+        self.password.setEchoMode(QtGui.QLineEdit.EchoMode.Password)
+        self.leave_blank = QtGui.QLabel(self)
+        self.leave_blank.setGeometry(QtCore.QRect(340, 350, 300, 30))
+        self.confirm_password = QtGui.QLineEdit(self)
+        self.confirm_password.setGeometry(QtCore.QRect(30, 400, 300, 30))
+        self.confirm_password.setEchoMode(QtGui.QLineEdit.EchoMode.Password)
+        self.set_password = QtGui.QPushButton(self)
+        self.set_password.setGeometry(QtCore.QRect(30, 450, 300, 30))
+        self.set_password.clicked.connect(self.new_password)
+        self.not_match = QtGui.QLabel(self)
+        self.not_match.setGeometry(QtCore.QRect(340, 400, 300, 30))
+        self.not_match.setVisible(False)
+        self.not_match.setStyleSheet('QLabel { color: red; }')
+        self.warning = QtGui.QLabel(self)
+        self.warning.setGeometry(QtCore.QRect(30, 490, 500, 30))
+        self.warning.setStyleSheet('QLabel { color: red; }')
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -139,6 +162,21 @@ class ProfileSettings(CenteredWidget):
         self.new_avatar.setText(QtGui.QApplication.translate("ProfileSettingsForm", "New avatar", None, QtGui.QApplication.UnicodeUTF8))
         self.delete_avatar.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Reset avatar", None, QtGui.QApplication.UnicodeUTF8))
         self.new_nospam.setText(QtGui.QApplication.translate("ProfileSettingsForm", "New NoSpam", None, QtGui.QApplication.UnicodeUTF8))
+        self.profile_pass.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Profile password", None, QtGui.QApplication.UnicodeUTF8))
+        self.password.setPlaceholderText(QtGui.QApplication.translate("ProfileSettingsForm", "Password", None, QtGui.QApplication.UnicodeUTF8))
+        self.confirm_password.setPlaceholderText(QtGui.QApplication.translate("ProfileSettingsForm", "Confirm password", None, QtGui.QApplication.UnicodeUTF8))
+        self.set_password.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Set password", None, QtGui.QApplication.UnicodeUTF8))
+        self.not_match.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Passwords do not match", None, QtGui.QApplication.UnicodeUTF8))
+        self.leave_blank.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Leaving blank will reset current password", None, QtGui.QApplication.UnicodeUTF8))
+        self.warning.setText(QtGui.QApplication.translate("ProfileSettingsForm", "There is no way to recover lost passwords", None, QtGui.QApplication.UnicodeUTF8))
+
+    def new_password(self):
+        if self.password.text() == self.confirm_password.text():
+            e = toxencryptsave.LibToxEncryptSave.get_instance()
+            e.set_password(self.password.text())
+            self.close()
+        else:
+            self.not_match.setVisible(True)
 
     def copy(self):
         clipboard = QtGui.QApplication.clipboard()
@@ -156,7 +194,8 @@ class ProfileSettings(CenteredWidget):
         Profile.get_instance().reset_avatar()
 
     def set_avatar(self):
-        name = QtGui.QFileDialog.getOpenFileName(self, 'Open file', None, 'Image Files (*.png)')
+        choose = QtGui.QApplication.translate("ProfileSettingsForm", "Choose avatar", None, QtGui.QApplication.UnicodeUTF8)
+        name = QtGui.QFileDialog.getOpenFileName(self, choose, None, 'Image Files (*.png)')
         if name[0]:
             with open(name[0], 'rb') as f:
                 data = f.read()
