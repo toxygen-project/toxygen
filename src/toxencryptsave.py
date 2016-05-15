@@ -38,11 +38,18 @@ class LibToxEncryptSave(util.Singleton):
 
     libtoxencryptsave = libtox.LibToxEncryptSave()
 
-    def __init__(self, passphrase=''):
-        self._passphrase = passphrase
+    def __init__(self):
+        self._passphrase = None
 
     def set_password(self, passphrase):
         self._passphrase = passphrase
+
+    def has_password(self):
+        return bool(self._passphrase)
+
+    def is_data_encrypted(self, data):
+        result = self.libtoxencryptsave.tox_is_data_encrypted(c_char_p(data))
+        return bool(result)
 
     def pass_encrypt(self, data):
         """
