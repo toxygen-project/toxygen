@@ -1,6 +1,6 @@
 import libtox
 import util
-from ctypes import c_size_t, create_string_buffer, byref, c_int, ArgumentError, c_char_p
+from ctypes import c_size_t, create_string_buffer, byref, c_int, ArgumentError, c_char_p, c_bool
 
 
 TOX_ERR_ENCRYPTION = {
@@ -48,8 +48,10 @@ class LibToxEncryptSave(util.Singleton):
         return bool(self._passphrase)
 
     def is_data_encrypted(self, data):
-        result = self.libtoxencryptsave.tox_is_data_encrypted(c_char_p(data))
-        return bool(result)
+        func = self.libtoxencryptsave.tox_is_data_encrypted
+        func.restype = c_bool
+        result = func(c_char_p(data))
+        return result
 
     def pass_encrypt(self, data):
         """

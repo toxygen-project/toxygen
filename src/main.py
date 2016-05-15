@@ -9,6 +9,7 @@ from callbacks import init_callbacks
 from util import curr_directory, get_style
 import styles.style
 import locale
+import toxencryptsave
 
 
 class Toxygen(object):
@@ -17,6 +18,13 @@ class Toxygen(object):
         super(Toxygen, self).__init__()
         self.tox = self.ms = self.init = self.mainloop = self.avloop = None
         self.path = path
+
+    def enter_pass(self, old_data):
+        """
+        Show password screen
+        """
+        # TODO: show password screen and decrypt data
+        raise NotImplementedError()
 
     def main(self):
         """
@@ -29,10 +37,15 @@ class Toxygen(object):
         with open(curr_directory() + '/styles/style.qss') as fl:
             dark_style = fl.read()
         app.setStyleSheet(dark_style)
+
+        encrypt_save = toxencryptsave.LibToxEncryptSave()
+
         if self.path is not None:
             path = os.path.dirname(self.path.encode(locale.getpreferredencoding())) + '/'
             name = os.path.basename(self.path.encode(locale.getpreferredencoding()))[:-4]
             data = ProfileHelper(path, name).open_profile()
+            if encrypt_save.is_data_encrypted(data):
+                data = self.enter_pass(data)
             settings = Settings(name)
             self.tox = tox_factory(data, settings)
         else:
@@ -72,12 +85,16 @@ class Toxygen(object):
                     if _login.default:
                         Settings.set_auto_profile(path, name)
                     data = ProfileHelper(path, name).open_profile()
+                    if encrypt_save.is_data_encrypted(data):
+                        data = self.enter_pass(data)
                     settings = Settings(name)
                     self.tox = tox_factory(data, settings)
             else:
                 path, name = auto_profile
                 path = path.encode(locale.getpreferredencoding())
                 data = ProfileHelper(path, name).open_profile()
+                if encrypt_save.is_data_encrypted(data):
+                    data = self.enter_pass(data)
                 settings = Settings(name)
                 self.tox = tox_factory(data, settings)
 
