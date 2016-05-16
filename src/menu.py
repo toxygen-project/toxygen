@@ -163,7 +163,7 @@ class ProfileSettings(CenteredWidget):
         self.delete_avatar.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Reset avatar", None, QtGui.QApplication.UnicodeUTF8))
         self.new_nospam.setText(QtGui.QApplication.translate("ProfileSettingsForm", "New NoSpam", None, QtGui.QApplication.UnicodeUTF8))
         self.profile_pass.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Profile password", None, QtGui.QApplication.UnicodeUTF8))
-        self.password.setPlaceholderText(QtGui.QApplication.translate("ProfileSettingsForm", "Password", None, QtGui.QApplication.UnicodeUTF8))
+        self.password.setPlaceholderText(QtGui.QApplication.translate("ProfileSettingsForm", "Password (at least 8 symbols)", None, QtGui.QApplication.UnicodeUTF8))
         self.confirm_password.setPlaceholderText(QtGui.QApplication.translate("ProfileSettingsForm", "Confirm password", None, QtGui.QApplication.UnicodeUTF8))
         self.set_password.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Set password", None, QtGui.QApplication.UnicodeUTF8))
         self.not_match.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Passwords do not match", None, QtGui.QApplication.UnicodeUTF8))
@@ -172,10 +172,18 @@ class ProfileSettings(CenteredWidget):
 
     def new_password(self):
         if self.password.text() == self.confirm_password.text():
-            e = toxencryptsave.LibToxEncryptSave.get_instance()
-            e.set_password(self.password.text())
-            self.close()
+            if not len(self.password.text()) or len(self.password.text()) >= 8:
+                e = toxencryptsave.LibToxEncryptSave.get_instance()
+                e.set_password(self.password.text())
+                self.close()
+            else:
+                self.not_match.setText(
+                    QtGui.QApplication.translate("ProfileSettingsForm", "Password must be at least 8 symbols", None,
+                                                 QtGui.QApplication.UnicodeUTF8))
+            self.not_match.setVisible(True)
         else:
+            self.not_match.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Passwords do not match", None,
+                                                                QtGui.QApplication.UnicodeUTF8))
             self.not_match.setVisible(True)
 
     def copy(self):
