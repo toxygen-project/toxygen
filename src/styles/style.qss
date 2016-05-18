@@ -1251,9 +1251,7 @@ QPushButton:hover
 
 #friends_list:item:selected
 {
-    border: 2px solid;
-    background-color: transparent;
-    border-color: green;
+    background-color: #333333;
 }
 
 #toxygen

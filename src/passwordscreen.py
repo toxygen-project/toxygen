@@ -2,6 +2,20 @@ from widgets import CenteredWidget
 from PySide import QtCore, QtGui
 
 
+class PasswordArea(QtGui.QLineEdit):
+
+    def __init__(self, parent):
+        super(PasswordArea, self).__init__(parent)
+        self.parent = parent
+        self.setEchoMode(QtGui.QLineEdit.EchoMode.Password)
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Return:
+            self.parent.button_click()
+        else:
+            super(PasswordArea, self).keyPressEvent(event)
+
+
 class PasswordScreen(CenteredWidget):
 
     def __init__(self, encrypt, data):
@@ -18,9 +32,8 @@ class PasswordScreen(CenteredWidget):
         self.enter_pass = QtGui.QLabel(self)
         self.enter_pass.setGeometry(QtCore.QRect(30, 10, 300, 30))
 
-        self.password = QtGui.QLineEdit(self)
+        self.password = PasswordArea(self)
         self.password.setGeometry(QtCore.QRect(30, 50, 300, 30))
-        self.password.setEchoMode(QtGui.QLineEdit.EchoMode.Password)
 
         self.button = QtGui.QPushButton(self)
         self.button.setGeometry(QtCore.QRect(30, 90, 300, 30))
@@ -33,6 +46,7 @@ class PasswordScreen(CenteredWidget):
         self.warning.setVisible(False)
 
         self.retranslateUi()
+        self.center()
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def button_click(self):
@@ -40,11 +54,17 @@ class PasswordScreen(CenteredWidget):
             try:
                 self._encrypt.set_password(self.password.text())
                 new_data = self._encrypt.pass_decrypt(self._data[0])
-            except RuntimeError:
+            except Exception:
                 self.warning.setVisible(True)
             else:
                 self._data[0] = new_data
                 self.close()
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Enter:
+            self.button_click()
+        else:
+            super(PasswordScreen, self).keyPressEvent(event)
 
     def retranslateUi(self):
         self.setWindowTitle(QtGui.QApplication.translate("pass", "Enter password", None, QtGui.QApplication.UnicodeUTF8))

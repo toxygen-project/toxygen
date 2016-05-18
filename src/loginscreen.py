@@ -22,6 +22,7 @@ class LoginScreen(CenteredWidget):
     def __init__(self):
         super(LoginScreen, self).__init__()
         self.initUI()
+        self.center()
 
     def initUI(self):
         self.resize(400, 200)

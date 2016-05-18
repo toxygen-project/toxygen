@@ -3,6 +3,7 @@
 from menu import *
 from profile import *
 from list_items import *
+from widgets import QRightClickButton
 
 
 class MessageArea(QtGui.QPlainTextEdit):
@@ -96,7 +97,6 @@ class MainWindow(QtGui.QMainWindow):
         self.retranslateUi()
 
     def retranslateUi(self):
-        self.online_contacts.setText(QtGui.QApplication.translate("Form", "Online contacts", None, QtGui.QApplication.UnicodeUTF8))
         self.menuProfile.setTitle(QtGui.QApplication.translate("MainWindow", "Profile", None, QtGui.QApplication.UnicodeUTF8))
         self.menuSettings.setTitle(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.menuAbout.setTitle(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
@@ -109,39 +109,35 @@ class MainWindow(QtGui.QMainWindow):
         self.actionAbout_program.setText(QtGui.QApplication.translate("MainWindow", "About program", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSettings.setText(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.audioSettings.setText(QtGui.QApplication.translate("MainWindow", "Audio", None, QtGui.QApplication.UnicodeUTF8))
-        self.contact_name.setPlaceholderText(QtGui.QApplication.translate("MainWindow", "Find contact", None, QtGui.QApplication.UnicodeUTF8))
+        self.contact_name.setPlaceholderText(QtGui.QApplication.translate("MainWindow", "Search", None, QtGui.QApplication.UnicodeUTF8))
         self.screenshotButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Send screenshot", None, QtGui.QApplication.UnicodeUTF8))
         self.fileTransferButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Send file", None, QtGui.QApplication.UnicodeUTF8))
         self.sendMessageButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Send message", None, QtGui.QApplication.UnicodeUTF8))
         self.callButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Start audio call with friend", None, QtGui.QApplication.UnicodeUTF8))
+        self.online_contacts.clear()
+        self.online_contacts.addItem(QtGui.QApplication.translate("MainWindow", "All", None, QtGui.QApplication.UnicodeUTF8))
+        self.online_contacts.addItem(QtGui.QApplication.translate("MainWindow", "Online", None, QtGui.QApplication.UnicodeUTF8))
 
     def setup_right_bottom(self, Form):
         Form.setObjectName("right_bottom")
-        Form.resize(650, 75)
+        Form.resize(650, 60)
         self.messageEdit = MessageArea(Form, self)
-        self.messageEdit.setGeometry(QtCore.QRect(0, 5, 450, 70))
+        self.messageEdit.setGeometry(QtCore.QRect(0, 3, 450, 55))
         self.messageEdit.setObjectName("messageEdit")
-
-        class QRightClickButton(QtGui.QPushButton):
-            def __init__(self, parent):
-                super(QRightClickButton, self).__init__(parent)
-
-            def mousePressEvent(self, event):
-                if event.button() == QtCore.Qt.RightButton:
-                    self.emit(QtCore.SIGNAL("rightClicked()"))
-                else:
-                    super(QRightClickButton, self).mousePressEvent(event)
+        font = QtGui.QFont()
+        font.setPointSize(10)
+        self.messageEdit.setFont(font)
 
         self.screenshotButton = QRightClickButton(Form)
-        self.screenshotButton.setGeometry(QtCore.QRect(455, 5, 55, 70))
+        self.screenshotButton.setGeometry(QtCore.QRect(455, 3, 55, 55))
         self.screenshotButton.setObjectName("screenshotButton")
 
         self.fileTransferButton = QtGui.QPushButton(Form)
-        self.fileTransferButton.setGeometry(QtCore.QRect(510, 5, 55, 70))
+        self.fileTransferButton.setGeometry(QtCore.QRect(510, 3, 55, 55))
         self.fileTransferButton.setObjectName("fileTransferButton")
 
         self.sendMessageButton = QtGui.QPushButton(Form)
-        self.sendMessageButton.setGeometry(QtCore.QRect(565, 5, 55, 70))
+        self.sendMessageButton.setGeometry(QtCore.QRect(565, 3, 60, 55))
         self.sendMessageButton.setObjectName("sendMessageButton")
 
         pixmap = QtGui.QPixmap(curr_directory() + '/images/send.png')
@@ -151,7 +147,7 @@ class MainWindow(QtGui.QMainWindow):
         pixmap = QtGui.QPixmap(curr_directory() + '/images/file.png')
         icon = QtGui.QIcon(pixmap)
         self.fileTransferButton.setIcon(icon)
-        self.fileTransferButton.setIconSize(QtCore.QSize(30, 45))
+        self.fileTransferButton.setIconSize(QtCore.QSize(40, 40))
         pixmap = QtGui.QPixmap(curr_directory() + '/images/screenshot.png')
         icon = QtGui.QIcon(pixmap)
         self.screenshotButton.setIcon(icon)
@@ -164,31 +160,36 @@ class MainWindow(QtGui.QMainWindow):
 
         QtCore.QMetaObject.connectSlotsByName(Form)
 
-    def setup_left_bottom(self, Form):
-        Form.setObjectName("left_bottom")
-        Form.resize(270, 80)
-        self.online_contacts = QtGui.QCheckBox(Form)
-        self.online_contacts.setGeometry(QtCore.QRect(0, 0, 250, 20))
-        self.online_contacts.setObjectName("online_contacts")
-        self.online_contacts.clicked.connect(self.filtering)
+    def setup_left_center_menu(self, Form):
+        Form.resize(270, 25)
+        self.search_label = QtGui.QLabel(Form)
+        self.search_label.setGeometry(QtCore.QRect(3, 0, 25, 25))
+        pixmap = QtGui.QPixmap(QtCore.QSize(25, 25))
+        pixmap.load(curr_directory() + '/images/search.png')
+        self.search_label.setScaledContents(False)
+        self.search_label.setPixmap(pixmap.scaled(25, 25, QtCore.Qt.KeepAspectRatio))
+
         self.contact_name = QtGui.QLineEdit(Form)
-        self.contact_name.setGeometry(QtCore.QRect(0, 23, 270, 26))
+        self.contact_name.setGeometry(QtCore.QRect(30, 0, 120, 25))
         self.contact_name.setObjectName("contact_name")
         self.contact_name.textChanged.connect(self.filtering)
+        self.online_contacts = QtGui.QComboBox(Form)
+        self.online_contacts.setGeometry(QtCore.QRect(150, 0, 120, 25))
+        self.online_contacts.activated[int].connect(lambda x: self.filtering())
+
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def setup_left_top(self, Form):
         Form.setObjectName("left_top")
-        Form.resize(500, 300)
         Form.setCursor(QtCore.Qt.PointingHandCursor)
-        Form.setMinimumSize(QtCore.QSize(250, 100))
-        Form.setMaximumSize(QtCore.QSize(250, 100))
-        Form.setBaseSize(QtCore.QSize(250, 100))
+        Form.setMinimumSize(QtCore.QSize(250, 80))
+        Form.setMaximumSize(QtCore.QSize(250, 80))
+        Form.setBaseSize(QtCore.QSize(250, 80))
         self.avatar_label = Form.avatar_label = QtGui.QLabel(Form)
-        self.avatar_label.setGeometry(QtCore.QRect(10, 20, 64, 64))
+        self.avatar_label.setGeometry(QtCore.QRect(5, 15, 64, 64))
         self.avatar_label.setScaledContents(True)
         self.name = Form.name = DataLabel(Form)
-        Form.name.setGeometry(QtCore.QRect(80, 30, 150, 25))
+        Form.name.setGeometry(QtCore.QRect(80, 25, 150, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(14)
@@ -196,13 +197,13 @@ class MainWindow(QtGui.QMainWindow):
         Form.name.setFont(font)
         Form.name.setObjectName("name")
         self.status_message = Form.status_message = DataLabel(Form)
-        Form.status_message.setGeometry(QtCore.QRect(80, 60, 170, 20))
+        Form.status_message.setGeometry(QtCore.QRect(80, 55, 170, 20))
         font.setPointSize(12)
         font.setBold(False)
         Form.status_message.setFont(font)
         Form.status_message.setObjectName("status_message")
         self.connection_status = Form.connection_status = StatusCircle(self)
-        Form.connection_status.setGeometry(QtCore.QRect(230, 34, 64, 64))
+        Form.connection_status.setGeometry(QtCore.QRect(230, 29, 64, 64))
         Form.connection_status.setMinimumSize(QtCore.QSize(32, 32))
         Form.connection_status.setMaximumSize(QtCore.QSize(32, 32))
         Form.connection_status.setBaseSize(QtCore.QSize(32, 32))
@@ -214,12 +215,12 @@ class MainWindow(QtGui.QMainWindow):
 
     def setup_right_top(self, Form):
         Form.setObjectName("Form")
-        Form.resize(650, 300)
+        Form.resize(650, 80)
         self.account_avatar = QtGui.QLabel(Form)
-        self.account_avatar.setGeometry(QtCore.QRect(10, 20, 64, 64))
+        self.account_avatar.setGeometry(QtCore.QRect(10, 17, 64, 64))
         self.account_avatar.setScaledContents(True)
         self.account_name = DataLabel(Form)
-        self.account_name.setGeometry(QtCore.QRect(100, 30, 400, 25))
+        self.account_name.setGeometry(QtCore.QRect(100, 25, 400, 25))
         self.account_name.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -228,7 +229,7 @@ class MainWindow(QtGui.QMainWindow):
         self.account_name.setFont(font)
         self.account_name.setObjectName("account_name")
         self.account_status = DataLabel(Form)
-        self.account_status.setGeometry(QtCore.QRect(100, 50, 400, 25))
+        self.account_status.setGeometry(QtCore.QRect(100, 45, 400, 25))
         self.account_status.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse)
         font.setPointSize(12)
         font.setBold(False)
@@ -281,37 +282,39 @@ class MainWindow(QtGui.QMainWindow):
         main = QtGui.QWidget()
         grid = QtGui.QGridLayout()
         search = QtGui.QWidget()
-        self.setup_left_bottom(search)
-        grid.addWidget(search, 3, 0)
+        self.setup_left_center_menu(search)
+        grid.addWidget(search, 1, 0)
         name = QtGui.QWidget()
         self.setup_left_top(name)
         grid.addWidget(name, 0, 0)
         messages = QtGui.QWidget()
         self.setup_right_center(messages)
-        grid.addWidget(messages, 1, 1)
+        grid.addWidget(messages, 1, 1, 2, 1)
         info = QtGui.QWidget()
         self.setup_right_top(info)
         grid.addWidget(info, 0, 1)
         message_buttons = QtGui.QWidget()
         self.setup_right_bottom(message_buttons)
-        grid.addWidget(message_buttons, 2, 1, 2, 1)
+        grid.addWidget(message_buttons, 3, 1)
         main_list = QtGui.QWidget()
         self.setup_left_center(main_list)
-        grid.addWidget(main_list, 1, 0, 2, 1)
+        grid.addWidget(main_list, 2, 0, 2, 1)
         grid.setColumnMinimumWidth(1, 500)
         grid.setColumnMinimumWidth(0, 270)
-        grid.setRowMinimumHeight(1, 400)
-        grid.setRowMinimumHeight(2, 20)
-        grid.setRowMinimumHeight(3, 50)
+        grid.setRowMinimumHeight(0, 82)
+        grid.setRowMinimumHeight(1, 25)
+        grid.setRowMinimumHeight(2, 410)
+        grid.setRowMinimumHeight(3, 60)
         grid.setColumnStretch(1, 1)
         grid.setRowStretch(1, 1)
         main.setLayout(grid)
         self.setCentralWidget(main)
         self.setup_menu(self)
+        self.messageEdit.setFocus()
         self.user_info = name
         self.friend_info = info
-        self.profile = Profile(tox, self)
         self.retranslateUi()
+        self.profile = Profile(tox, self)
 
     def closeEvent(self, *args, **kwargs):
         self.profile.save_history()
@@ -319,14 +322,16 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QApplication.closeAllWindows()
 
     def resizeEvent(self, *args, **kwargs):
-        self.messages.setGeometry(0, 0, self.width() - 300, self.height() - 205)
-        self.friends_list.setGeometry(0, 0, 270, self.height() - 180)
-        self.callButton.setGeometry(QtCore.QRect(self.width() - 370, 30, 50, 50))
-        self.typing.setGeometry(QtCore.QRect(self.width() - 420, 40, 50, 30))
-        self.messageEdit.setGeometry(QtCore.QRect(0, 5, self.width() - 470, 70))
-        self.screenshotButton.setGeometry(QtCore.QRect(self.width() - 465, 5, 55, 70))
-        self.fileTransferButton.setGeometry(QtCore.QRect(self.width() - 410, 5, 55, 70))
-        self.sendMessageButton.setGeometry(QtCore.QRect(self.width() - 355, 5, 55, 70))
+        self.messages.setGeometry(0, 0, self.width() - 300, self.height() - 172)
+        self.friends_list.setGeometry(0, 0, 270, self.height() - 142)
+        self.callButton.setGeometry(QtCore.QRect(self.width() - 370, 20, 50, 50))
+        self.typing.setGeometry(QtCore.QRect(self.width() - 420, 30, 50, 30))
+
+        self.messageEdit.setGeometry(QtCore.QRect(120, 2, self.width() - 490, 55))
+        self.screenshotButton.setGeometry(QtCore.QRect(0, 2, 55, 55))
+        self.fileTransferButton.setGeometry(QtCore.QRect(60, 2, 55, 55))
+        self.sendMessageButton.setGeometry(QtCore.QRect(self.width() - 360, 2, 60, 55))
+
         self.account_name.setGeometry(QtCore.QRect(100, 30, self.width() - 520, 25))
         self.account_status.setGeometry(QtCore.QRect(100, 50, self.width() - 520, 25))
         self.profile.update()
@@ -486,7 +491,7 @@ class MainWindow(QtGui.QMainWindow):
             super(self.__class__, self).mouseReleaseEvent(event)
 
     def filtering(self):
-        self.profile.filtration(self.online_contacts.isChecked(), self.contact_name.text())
+        self.profile.filtration(self.online_contacts.currentIndex() == 1, self.contact_name.text())
 
 
 class ScreenShotWindow(QtGui.QWidget):

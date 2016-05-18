@@ -298,7 +298,7 @@ class Profile(Contact, Singleton):
         self._incoming_calls = set()
         settings = Settings.get_instance()
         self._show_online = settings['show_online_friends']
-        screen.online_contacts.setChecked(self._show_online)
+        screen.online_contacts.setCurrentIndex(int(self._show_online))
         aliases = settings['friends_aliases']
         data = tox.self_get_friend_list()
         self._history = History(tox.self_get_public_key())  # connection to db

@@ -21,3 +21,14 @@ class CenteredWidget(QtGui.QWidget):
         cp = QtGui.QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
+
+
+class QRightClickButton(QtGui.QPushButton):
+    def __init__(self, parent):
+        super(QRightClickButton, self).__init__(parent)
+
+    def mousePressEvent(self, event):
+        if event.button() == QtCore.Qt.RightButton:
+            self.emit(QtCore.SIGNAL("rightClicked()"))
+        else:
+            super(QRightClickButton, self).mousePressEvent(event)

@@ -73,6 +73,7 @@ class ProfileSettings(CenteredWidget):
     def __init__(self):
         super(ProfileSettings, self).__init__()
         self.initUI()
+        self.center()
 
     def initUI(self):
         self.setObjectName("ProfileSettingsForm")
@@ -230,6 +231,7 @@ class NetworkSettings(CenteredWidget):
         super(NetworkSettings, self).__init__()
         self.reset = reset
         self.initUI()
+        self.center()
 
     def initUI(self):
         self.setObjectName("NetworkSettings")
@@ -316,6 +318,7 @@ class PrivacySettings(CenteredWidget):
     def __init__(self):
         super(PrivacySettings, self).__init__()
         self.initUI()
+        self.center()
 
     def initUI(self):
         self.setObjectName("privacySettings")
@@ -424,6 +427,7 @@ class NotificationsSettings(CenteredWidget):
     def __init__(self):
         super(NotificationsSettings, self).__init__()
         self.initUI()
+        self.center()
 
     def initUI(self):
         self.setObjectName("notificationsForm")
@@ -469,6 +473,7 @@ class InterfaceSettings(CenteredWidget):
     def __init__(self):
         super(InterfaceSettings, self).__init__()
         self.initUI()
+        self.center()
 
     def initUI(self):
         self.setObjectName("interfaceForm")
@@ -536,6 +541,7 @@ class AudioSettings(CenteredWidget):
         super(AudioSettings, self).__init__()
         self.initUI()
         self.retranslateUi()
+        self.center()
 
     def initUI(self):
         self.setObjectName("audioSettingsForm")
