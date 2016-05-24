@@ -11,6 +11,7 @@ import styles.style
 import locale
 import toxencryptsave
 from passwordscreen import PasswordScreen
+import profile
 
 
 class Toxygen(object):
@@ -131,23 +132,56 @@ class Toxygen(object):
         self.tray.setObjectName('tray')
 
         class Menu(QtGui.QMenu):
+
+            def newStatus(self, status):
+                profile.Profile.get_instance().set_status(status)
+                self.aboutToShow()
+                self.hide()
+
+            def aboutToShow(self):
+                status = profile.Profile.get_instance().status
+                act = self.act
+                if status is None:
+                    self.actions()[1].setVisible(False)
+                else:
+                    self.actions()[1].setVisible(True)
+                    act.actions()[0].setChecked(False)
+                    act.actions()[1].setChecked(False)
+                    act.actions()[2].setChecked(False)
+                    act.actions()[status].setChecked(True)
+
             def languageChange(self, *args, **kwargs):
                 self.actions()[0].setText(QtGui.QApplication.translate('tray', 'Open Toxygen', None, QtGui.QApplication.UnicodeUTF8))
-                self.actions()[1].setText(QtGui.QApplication.translate('tray', 'Exit', None, QtGui.QApplication.UnicodeUTF8))
+                self.actions()[1].setText(QtGui.QApplication.translate('tray', 'Set status', None, QtGui.QApplication.UnicodeUTF8))
+                self.actions()[2].setText(QtGui.QApplication.translate('tray', 'Exit', None, QtGui.QApplication.UnicodeUTF8))
+                self.act.actions()[0].setText(QtGui.QApplication.translate('tray', 'Online', None, QtGui.QApplication.UnicodeUTF8))
+                self.act.actions()[1].setText(QtGui.QApplication.translate('tray', 'Away', None, QtGui.QApplication.UnicodeUTF8))
+                self.act.actions()[2].setText(QtGui.QApplication.translate('tray', 'Busy', None, QtGui.QApplication.UnicodeUTF8))
 
         m = Menu()
         show = m.addAction(QtGui.QApplication.translate('tray', 'Open Toxygen', None, QtGui.QApplication.UnicodeUTF8))
+        sub = m.addMenu(QtGui.QApplication.translate('tray', 'Set status', None, QtGui.QApplication.UnicodeUTF8))
+        onl = sub.addAction(QtGui.QApplication.translate('tray', 'Online', None, QtGui.QApplication.UnicodeUTF8))
+        away = sub.addAction(QtGui.QApplication.translate('tray', 'Away', None, QtGui.QApplication.UnicodeUTF8))
+        busy = sub.addAction(QtGui.QApplication.translate('tray', 'Busy', None, QtGui.QApplication.UnicodeUTF8))
+        onl.setCheckable(True)
+        away.setCheckable(True)
+        busy.setCheckable(True)
+        m.act = sub
         exit = m.addAction(QtGui.QApplication.translate('tray', 'Exit', None, QtGui.QApplication.UnicodeUTF8))
 
         def show_window():
             if not self.ms.isActiveWindow():
                 self.ms.setWindowState(self.ms.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
                 self.ms.activateWindow()
-            if self.ms.isHidden():
-                self.ms.show()
+            self.ms.show()
 
         m.connect(show, QtCore.SIGNAL("triggered()"), show_window)
         m.connect(exit, QtCore.SIGNAL("triggered()"), lambda: app.exit())
+        m.connect(m, QtCore.SIGNAL("aboutToShow()"), lambda: m.aboutToShow())
+        sub.connect(onl, QtCore.SIGNAL("triggered()"), lambda: m.newStatus(0))
+        sub.connect(away, QtCore.SIGNAL("triggered()"), lambda: m.newStatus(1))
+        sub.connect(busy, QtCore.SIGNAL("triggered()"), lambda: m.newStatus(2))
         self.tray.setContextMenu(m)
         self.tray.show()
 

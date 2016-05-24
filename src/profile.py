@@ -329,9 +329,11 @@ class Profile(Contact, Singleton):
         Changes status of user (online, away, busy)
         """
         if self._status is not None:
-            status = (self._status + 1) % 3
-            super(self.__class__, self).set_status(status)
-            self._tox.self_set_status(status)
+            self.set_status((self._status + 1) % 3)
+
+    def set_status(self, status):
+        super(Profile, self).set_status(status)
+        self._tox.self_set_status(status)
 
     def set_name(self, value):
         super(self.__class__, self).set_name(value)
