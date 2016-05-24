@@ -1,5 +1,8 @@
 from widgets import CenteredWidget
-from PySide import QtCore, QtGui
+try:
+    from PySide import QtCore, QtGui
+except ImportError:
+    from PyQt4 import QtCore, QtGui
 
 
 class PasswordArea(QtGui.QLineEdit):

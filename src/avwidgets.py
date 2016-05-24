@@ -1,4 +1,7 @@
-from PySide import QtCore, QtGui
+try:
+    from PySide import QtCore, QtGui
+except ImportError:
+    from PyQt4 import QtCore, QtGui
 import widgets
 import profile
 import util

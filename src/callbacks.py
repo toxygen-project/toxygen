@@ -1,4 +1,7 @@
-from PySide import QtCore
+try:
+    from PySide import QtCore
+except ImportError:
+    from PyQt4 import QtCore
 from notifications import *
 from settings import Settings
 from profile import Profile

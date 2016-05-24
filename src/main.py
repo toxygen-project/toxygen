@@ -1,7 +1,10 @@
 import sys
 from loginscreen import LoginScreen
 from settings import *
-from PySide import QtCore, QtGui
+try:
+    from PySide import QtCore, QtGui
+except ImportError:
+    from PyQt4 import QtCore, QtGui
 from bootstrap import node_generator
 from mainscreen import MainWindow
 from profile import tox_factory

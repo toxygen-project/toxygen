@@ -1,5 +1,8 @@
 from toxcore_enums_and_consts import *
-from PySide import QtGui, QtCore
+try:
+    from PySide import QtCore, QtGui
+except ImportError:
+    from PyQt4 import QtCore, QtGui
 import profile
 from file_transfers import TOX_FILE_TRANSFER_STATE
 from util import curr_directory, convert_time

@@ -1,4 +1,7 @@
-from PySide import QtCore, QtGui
+try:
+    from PySide import QtCore, QtGui
+except ImportError:
+    from PyQt4 import QtCore, QtGui
 from settings import *
 from profile import Profile
 from util import get_style, curr_directory

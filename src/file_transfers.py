@@ -4,7 +4,10 @@ from os import remove, rename
 from time import time, sleep
 from tox import Tox
 import settings
-from PySide import QtCore
+try:
+    from PySide import QtCore
+except ImportError:
+    from PyQt4 import QtCore
 
 
 TOX_FILE_TRANSFER_STATE = {
@@ -17,7 +20,10 @@ TOX_FILE_TRANSFER_STATE = {
 
 
 class StateSignal(QtCore.QObject):
-    signal = QtCore.Signal(int, float)  # state and progress
+    try:
+        signal = QtCore.Signal(int, float)  # state and progress
+    except:
+        signal = QtCore.pyqtSignal(int, float)  # state and progress - pyqt4
 
 
 class FileTransfer(QtCore.QObject):

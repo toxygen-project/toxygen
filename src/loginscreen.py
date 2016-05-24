@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from PySide import QtCore, QtGui
+try:
+    from PySide import QtCore, QtGui
+except ImportError:
+    from PyQt4 import QtCore, QtGui
 from widgets import *
 
 

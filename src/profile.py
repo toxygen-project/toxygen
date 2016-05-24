@@ -1,5 +1,8 @@
 from list_items import MessageItem, ContactItem, FileTransferItem, InlineImageItem
-from PySide import QtCore, QtGui
+try:
+    from PySide import QtCore, QtGui
+except ImportError:
+    from PyQt4 import QtCore, QtGui
 from tox import Tox
 import os
 from messages import *
