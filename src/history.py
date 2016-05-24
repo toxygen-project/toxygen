@@ -22,9 +22,9 @@ class History(object):
         path = settings.ProfileHelper.get_path() + self._name + '.hstr'
         if os.path.exists(path):
             decr = LibToxEncryptSave.get_instance()
-            if decr.has_password():
-                with open(path, 'rb') as fin:
-                    data = fin.read()
+            with open(path, 'rb') as fin:
+                data = fin.read()
+            if decr.is_data_encrypted(data):
                 data = decr.pass_decrypt(data)
                 with open(path, 'wb') as fout:
                     fout.write(data)
@@ -52,7 +52,6 @@ class History(object):
             data = fin.read()
         with open(new_path, 'wb') as fout:
             fout.write(data)
-        print 'History exported to: {}'.format(new_path)
 
     def add_friend_to_db(self, tox_id):
         chdir(settings.ProfileHelper.get_path())
