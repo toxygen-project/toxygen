@@ -242,22 +242,22 @@ class ReceiveAvatar(ReceiveTransfer):
         if size > self.MAX_AVATAR_SIZE:
             self.send_control(TOX_FILE_CONTROL['CANCEL'])
             remove(path + '.tmp')
-        elif exists(path):
-            if not size:
-                self.send_control(TOX_FILE_CONTROL['CANCEL'])
-                self._file.close()
+        elif not size:
+            self.send_control(TOX_FILE_CONTROL['CANCEL'])
+            self._file.close()
+            if exists(path):
                 remove(path)
+            remove(path + '.tmp')
+        elif exists(path):
+            hash = self.get_file_id()
+            with open(path) as fl:
+                data = fl.read()
+            existing_hash = Tox.hash(data)
+            if hash == existing_hash:
+                self.send_control(TOX_FILE_CONTROL['CANCEL'])
                 remove(path + '.tmp')
             else:
-                hash = self.get_file_id()
-                with open(path) as fl:
-                    data = fl.read()
-                existing_hash = Tox.hash(data)
-                if hash == existing_hash:
-                    self.send_control(TOX_FILE_CONTROL['CANCEL'])
-                    remove(path + '.tmp')
-                else:
-                    self.send_control(TOX_FILE_CONTROL['RESUME'])
+                self.send_control(TOX_FILE_CONTROL['RESUME'])
         else:
             self.send_control(TOX_FILE_CONTROL['RESUME'])
 
