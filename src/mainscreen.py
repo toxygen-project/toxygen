@@ -4,6 +4,7 @@ from menu import *
 from profile import *
 from list_items import *
 from widgets import QRightClickButton
+import plugin_support
 
 
 class MessageArea(QtGui.QPlainTextEdit):
@@ -48,12 +49,16 @@ class MainWindow(QtGui.QMainWindow):
         self.menubar.setMinimumSize(self.width(), 25)
         self.menubar.setMaximumSize(self.width(), 25)
         self.menubar.setBaseSize(self.width(), 25)
+
         self.menuProfile = QtGui.QMenu(self.menubar)
         self.menuProfile.setObjectName("menuProfile")
         self.menuSettings = QtGui.QMenu(self.menubar)
         self.menuSettings.setObjectName("menuSettings")
+        self.menuPlugins = QtGui.QMenu(self.menubar)
+        self.menuPlugins.setObjectName("menuPlugins")
         self.menuAbout = QtGui.QMenu(self.menubar)
         self.menuAbout.setObjectName("menuAbout")
+
         self.actionAdd_friend = QtGui.QAction(MainWindow)
         self.actionAdd_friend.setObjectName("actionAdd_friend")
         self.actionProfile_settings = QtGui.QAction(MainWindow)
@@ -71,6 +76,7 @@ class MainWindow(QtGui.QMainWindow):
         self.actionSettings = QtGui.QAction(MainWindow)
         self.actionSettings.setObjectName("actionSettings")
         self.audioSettings = QtGui.QAction(MainWindow)
+        self.pluginData = QtGui.QAction(MainWindow)
         self.menuProfile.addAction(self.actionAdd_friend)
         self.menuProfile.addAction(self.actionSettings)
         self.menuSettings.addAction(self.actionPrivacy_settings)
@@ -78,9 +84,11 @@ class MainWindow(QtGui.QMainWindow):
         self.menuSettings.addAction(self.actionNotifications)
         self.menuSettings.addAction(self.actionNetwork)
         self.menuSettings.addAction(self.audioSettings)
+        self.menuPlugins.addAction(self.pluginData)
         self.menuAbout.addAction(self.actionAbout_program)
         self.menubar.addAction(self.menuProfile.menuAction())
         self.menubar.addAction(self.menuSettings.menuAction())
+        self.menubar.addAction(self.menuPlugins.menuAction())
         self.menubar.addAction(self.menuAbout.menuAction())
 
         self.actionAbout_program.triggered.connect(self.about_program)
@@ -91,12 +99,15 @@ class MainWindow(QtGui.QMainWindow):
         self.actionInterface_settings.triggered.connect(self.interface_settings)
         self.actionNotifications.triggered.connect(self.notification_settings)
         self.audioSettings.triggered.connect(self.audio_settings)
+        self.pluginData.triggered.connect(self.plugins_menu)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def languageChange(self, *args, **kwargs):
         self.retranslateUi()
 
     def retranslateUi(self):
+        self.menuPlugins.setTitle(QtGui.QApplication.translate("MainWindow", "Plugins", None, QtGui.QApplication.UnicodeUTF8))
+        self.pluginData.setText(QtGui.QApplication.translate("MainWindow", "List of plugins", None, QtGui.QApplication.UnicodeUTF8))
         self.menuProfile.setTitle(QtGui.QApplication.translate("MainWindow", "Profile", None, QtGui.QApplication.UnicodeUTF8))
         self.menuSettings.setTitle(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.menuAbout.setTitle(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
@@ -358,6 +369,10 @@ class MainWindow(QtGui.QMainWindow):
         self.n_s = NetworkSettings(self.reset)
         self.n_s.show()
 
+    def plugins_menu(self):
+        self.p_s = PluginsSettings()
+        self.p_s.show()
+
     def add_contact(self):
         self.a_c = AddContact()
         self.a_c.show()
@@ -431,7 +446,7 @@ class MainWindow(QtGui.QMainWindow):
     def friend_right_click(self, pos):
         item = self.friends_list.itemAt(pos)
         num = self.friends_list.indexFromItem(item).row()
-        friend = Profile.get_instance().get_friend_by_number(num)
+        friend = Profile.get_instance().get_friend(num)
         settings = Settings.get_instance()
         allowed = friend.tox_id in settings['auto_accept_from_friends']
         auto = QtGui.QApplication.translate("MainWindow", 'Disallow auto accept', None, QtGui.QApplication.UnicodeUTF8) if allowed else QtGui.QApplication.translate("MainWindow", 'Allow auto accept', None, QtGui.QApplication.UnicodeUTF8)
@@ -442,6 +457,10 @@ class MainWindow(QtGui.QMainWindow):
             copy_key_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Copy public key', None, QtGui.QApplication.UnicodeUTF8))
             auto_accept_item = self.listMenu.addAction(auto)
             remove_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Remove friend', None, QtGui.QApplication.UnicodeUTF8))
+            submenu = plugin_support.PluginLoader.get_instance().get_menu(self.listMenu, num)
+            if len(submenu):
+                plug = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Plugins', None, QtGui.QApplication.UnicodeUTF8))
+                plug.addActions(submenu)
             self.connect(set_alias_item, QtCore.SIGNAL("triggered()"), lambda: self.set_alias(num))
             self.connect(remove_item, QtCore.SIGNAL("triggered()"), lambda: self.remove_friend(num))
             self.connect(copy_key_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_friend_key(num))

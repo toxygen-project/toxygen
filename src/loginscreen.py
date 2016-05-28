@@ -95,7 +95,7 @@ class LoginScreen(CenteredWidget):
     def update_select(self, data):
         list_of_profiles = []
         for elem in data:
-            list_of_profiles.append(self.tr(elem))
+            list_of_profiles.append(elem)
         self.comboBox.addItems(list_of_profiles)
         self.create_only = not list_of_profiles
 

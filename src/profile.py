@@ -16,6 +16,7 @@ from file_transfers import *
 import time
 import calls
 import avwidgets
+import plugin_support
 
 
 class Contact(object):
@@ -383,6 +384,9 @@ class Profile(Contact, Singleton):
     def get_friend_by_number(self, num):
         return filter(lambda x: x.number == num, self._friends)[0]
 
+    def get_friend(self, num):
+        return self._friends[num]
+
     # -----------------------------------------------------------------------------------------------------------------
     # Work with active friend
     # -----------------------------------------------------------------------------------------------------------------
@@ -557,7 +561,10 @@ class Profile(Contact, Singleton):
         Send message to active friend
         :param text: message text
         """
-        if self.is_active_online() and text:
+        if text.startswith('/plugin '):
+            plugin_support.PluginLoader.get_instance().command(text[8:])
+            self._screen.messageEdit.clear()
+        elif self.is_active_online() and text:
             if text.startswith('/me '):
                 message_type = TOX_MESSAGE_TYPE['ACTION']
                 text = text[4:]
@@ -1024,12 +1031,15 @@ class Profile(Contact, Singleton):
         st.set_state_changed_handler(item.update)
         self._messages.scrollToBottom()
 
-    def send_file(self, path):
+    def send_file(self, path, number=None):
         """
         Send file to current active friend
         :param path: file path
+        :param number: friend_number
         """
-        friend_number = self.get_active_number()
+        friend_number = number or self.get_active_number()
+        if self.get_friend_by_number(friend_number).status is None:
+            return
         st = SendTransfer(path, self._tox, friend_number)
         self._file_transfers[(friend_number, st.get_file_number())] = st
         tm = TransferMessage(MESSAGE_OWNER['ME'],

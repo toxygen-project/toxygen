@@ -79,7 +79,8 @@ class Settings(Singleton, dict):
             'friends_aliases': [],
             'typing_notifications': False,
             'calls_sound': True,
-            'blocked': []
+            'blocked': [],
+            'plugins': []
         }
 
     @staticmethod

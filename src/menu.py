@@ -8,6 +8,7 @@ from util import get_style, curr_directory
 from widgets import CenteredWidget, DataLabel
 import pyaudio
 import toxencryptsave
+import plugin_support
 
 
 class AddContact(CenteredWidget):
@@ -311,8 +312,8 @@ class NetworkSettings(CenteredWidget):
             # recreate tox instance
             Profile.get_instance().reset(self.reset)
             self.close()
-        except:
-            pass
+        except Exception as ex:
+            log('Exception in restart: ' + str(ex))
 
 
 class PrivacySettings(CenteredWidget):
@@ -589,3 +590,76 @@ class AudioSettings(CenteredWidget):
         settings.audio['input'] = self.in_indexes[self.input.currentIndex()]
         settings.audio['output'] = self.out_indexes[self.output.currentIndex()]
         settings.save()
+
+
+class PluginsSettings(CenteredWidget):
+
+    def __init__(self):
+        super(PluginsSettings, self).__init__()
+        self.initUI()
+        self.center()
+        self.retranslateUi()
+
+    def initUI(self):
+        self.resize(400, 210)
+        self.setMinimumSize(QtCore.QSize(400, 210))
+        self.setMaximumSize(QtCore.QSize(400, 210))
+        self.comboBox = QtGui.QComboBox(self)
+        self.comboBox.setGeometry(QtCore.QRect(30, 10, 340, 30))
+        self.label = QtGui.QLabel(self)
+        self.label.setGeometry(QtCore.QRect(30, 40, 340, 90))
+        self.label.setWordWrap(True)
+        self.button = QtGui.QPushButton(self)
+        self.button.setGeometry(QtCore.QRect(30, 130, 340, 30))
+        self.button.clicked.connect(self.button_click)
+        self.open = QtGui.QPushButton(self)
+        self.open.setGeometry(QtCore.QRect(30, 170, 340, 30))
+        self.open.clicked.connect(self.open_plugin)
+        self.pl_loader = plugin_support.PluginLoader.get_instance()
+        self.update_list()
+        self.comboBox.currentIndexChanged.connect(self.show_data)
+        self.show_data()
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate('PluginsForm', "Plugins", None, QtGui.QApplication.UnicodeUTF8))
+        self.open.setText(QtGui.QApplication.translate('PluginsForm', "Open selected plugin", None, QtGui.QApplication.UnicodeUTF8))
+
+    def open_plugin(self):
+        ind = self.comboBox.currentIndex()
+        plugin = self.data[ind]
+        window = self.pl_loader.plugin_window(plugin[-1])
+        if window is not None:
+            self.window = window
+            self.window.show()
+        else:
+            msgBox = QtGui.QMessageBox()
+            text = (QtGui.QApplication.translate("PluginsForm", 'No GUI found for this plugin', None,
+                                                 QtGui.QApplication.UnicodeUTF8))
+            msgBox.setText(text)
+            msgBox.exec_()
+
+    def update_list(self):
+        self.comboBox.clear()
+        data = self.pl_loader.get_plugins_list()
+        self.comboBox.addItems(map(lambda x: x[0], data))
+        self.data = data
+
+    def show_data(self):
+        ind = self.comboBox.currentIndex()
+        plugin = self.data[ind]
+        descr = plugin[2] or QtGui.QApplication.translate("PluginsForm", "No description available", None, QtGui.QApplication.UnicodeUTF8)
+        self.label.setText(descr)
+        if plugin[1]:
+            self.button.setText(QtGui.QApplication.translate("PluginsForm", "Disable plugin", None, QtGui.QApplication.UnicodeUTF8))
+        else:
+            self.button.setText(QtGui.QApplication.translate("PluginsForm", "Enable plugin", None, QtGui.QApplication.UnicodeUTF8))
+
+    def button_click(self):
+        ind = self.comboBox.currentIndex()
+        plugin = self.data[ind]
+        self.pl_loader.toggle_plugin(plugin[-1])
+        plugin[1] = not plugin[1]
+        if plugin[1]:
+            self.button.setText(QtGui.QApplication.translate("PluginsForm", "Disable plugin", None, QtGui.QApplication.UnicodeUTF8))
+        else:
+            self.button.setText(QtGui.QApplication.translate("PluginsForm", "Enable plugin", None, QtGui.QApplication.UnicodeUTF8))
