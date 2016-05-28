@@ -5,7 +5,7 @@ Toxygen is cross-platform [Tox](https://tox.chat/) client written on Python
 [![Open issues](https://img.shields.io/github/issues/xveduk/toxygen.svg?style=flat)](https://github.com/xveduk/toxygen/issues)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat)](https://raw.githubusercontent.com/xveduk/toxygen/master/LICENSE.md)
 
-### [Install](/docs/install.md) - [Contribute](/docs/contributing.md)
+### [Install](/docs/install.md) - [Contribute](/docs/contributing.md) - [Plugins](/docs/plugins.md)
 
 ### Supported OS:
 - Windows
@@ -16,8 +16,9 @@ Toxygen is cross-platform [Tox](https://tox.chat/) client written on Python
 - [x] File transfers
 - [x] Audio
 - [x] Chat history
-- [x] Name lookups (TOX DNS 4 support)
-- [x] Profile import/export
+- [x] Screenshots
+- [x] Name lookups (toxme.io support)
+- [x] Profile import and export
 - [x] Inline images
 - [x] Message splitting
 - [x] Proxy support
@@ -30,9 +31,9 @@ Toxygen is cross-platform [Tox](https://tox.chat/) client written on Python
 - [x] Typing notifications
 - [x] Changing nospam
 - [x] File resuming
+- [x] Save file encryption
+- [x] Plugins support
 - [ ] Video
-- [ ] Save file encryption
-- [ ] Plugins support
 - [ ] Group chats
 - [ ] Read receipts
 - [ ] Faux offline messaging
