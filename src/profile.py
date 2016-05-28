@@ -881,8 +881,9 @@ class Profile(Contact, Singleton):
             friend.status = None
 
     def close(self):
-        self._call.stop()
-        del self._call
+        if hasattr(self, '_stop'):
+            self._call.stop()
+            del self._call
 
     # -----------------------------------------------------------------------------------------------------------------
     # File transfers support

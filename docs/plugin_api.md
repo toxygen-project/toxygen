@@ -12,6 +12,7 @@ All plugin's data should be stored in following structure:
 |---plugin_short_name.py
 |---/plugin_short_name/
 	|---settings.json
+	|---logs.txt
 	|---other_files
 ```
 
@@ -21,6 +22,7 @@ Plugin can override following methods:
 - get_window - plugins can have GUI, this method should return window instance or None for plugins without GUI.
 - start - plugin was started.
 - stop - plugin was stopped.
+- close - app is closing, stop plugin.
 - command - new command to plugin. Command can be entered in message field in format '/plugin <plugin_short_name> <command>'. Command 'help' should show user list of supported commands.
 - lossless_packet - callback - incoming lossless packet from friend.
 - lossy_packet - callback - incoming lossy packet from friend.
@@ -33,4 +35,19 @@ Other methods:
 - save_settings - saves settings to default location.
 - load_translator - loads translations. Translations must be stored in directory with plugin's data. Files with translations must have the same name as in main app.
 
+About import:
+
+import statement will not work in case you import module that wasn't previously imported by main program and user use precompiled binary. It's recommended to use imp module and dynamic import instead.
+
+About GUI:
+
+It's strictly recommended to support both PySide and PyQt4 in GUI.
+
+Exceptions:
+
+Plugin's methods should not raise exceptions.
+
+#Examples
+
+You can find example of a plugin in [official repo](https://github.com/ingvar1995/toxygen_plugins)
 

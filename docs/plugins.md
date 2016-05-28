@@ -8,6 +8,8 @@ Check [Plugin API](/docs/plugin_api.md) for more info
 
 #How to install plugin
 
+Toxygen comes without preinstalled plugins.
+
 1. Put plugin and directory with it's data into /src/plugins/
 2. Restart Toxygen
 
@@ -15,3 +17,4 @@ Check [Plugin API](/docs/plugin_api.md) for more info
 
 WARNING: It is unsecure to install plugin not from this list!
 
+[Main repo](https://github.com/ingvar1995/toxygen_plugins)

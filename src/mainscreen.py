@@ -128,6 +128,7 @@ class MainWindow(QtGui.QMainWindow):
         self.online_contacts.clear()
         self.online_contacts.addItem(QtGui.QApplication.translate("MainWindow", "All", None, QtGui.QApplication.UnicodeUTF8))
         self.online_contacts.addItem(QtGui.QApplication.translate("MainWindow", "Online", None, QtGui.QApplication.UnicodeUTF8))
+        self.online_contacts.setCurrentIndex(int(Settings.get_instance()['show_online_friends']))
 
     def setup_right_bottom(self, Form):
         Form.setObjectName("right_bottom")

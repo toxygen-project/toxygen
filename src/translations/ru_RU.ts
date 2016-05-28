@@ -66,8 +66,8 @@
         <source>WARNING:
 using proxy with enabled UDP
 can produce IP leak</source>
-        <translation>Предупреждение:
-использование прокси со включенным UDP
+        <translation type="unfinished">Предупреждение:
+использование прокси с UDP
 может привести к утечке IP</translation>
     </message>
 </context>

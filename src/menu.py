@@ -275,7 +275,7 @@ class NetworkSettings(CenteredWidget):
         self.proxyport.setText(unicode(settings['proxy_port']))
         self.http.setChecked(settings['proxy_type'] == 1)
         self.warning = QtGui.QLabel(self)
-        self.warning.setGeometry(QtCore.QRect(40, 270, 200, 60))
+        self.warning.setGeometry(QtCore.QRect(5, 270, 290, 60))
         self.warning.setStyleSheet('QLabel { color: #F70D1A; }')
         self.retranslateUi()
         self.proxy.stateChanged.connect(lambda x: self.activate())

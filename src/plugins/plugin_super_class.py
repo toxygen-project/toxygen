@@ -20,6 +20,15 @@ def path_to_data(name):
     return os.path.dirname(os.path.realpath(__file__)) + '/' + name + '/'
 
 
+def log(name, data):
+    """
+    :param name: plugin unique name
+    :param data: data for saving in log
+    """
+    with open(path_to_data(name) + 'logs.txt', 'a') as fl:
+        fl.write(str(data) + '\n')
+
+
 class PluginSuperClass(object):
     """
     Superclass for all plugins. Plugin is python module with at least one class derived from PluginSuperClass.
