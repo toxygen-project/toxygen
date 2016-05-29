@@ -27,6 +27,7 @@ class CenteredWidget(QtGui.QWidget):
 
 
 class QRightClickButton(QtGui.QPushButton):
+
     def __init__(self, parent):
         super(QRightClickButton, self).__init__(parent)
 
@@ -35,3 +36,20 @@ class QRightClickButton(QtGui.QPushButton):
             self.emit(QtCore.SIGNAL("rightClicked()"))
         else:
             super(QRightClickButton, self).mousePressEvent(event)
+
+
+class RubberBand(QtGui.QRubberBand):
+
+    def __init__(self):
+        super(RubberBand, self).__init__(QtGui.QRubberBand.Rectangle, None)
+        self.setPalette(QtGui.QPalette(QtCore.Qt.transparent))
+        self.pen = QtGui.QPen(QtCore.Qt.blue, 4)
+        self.pen.setStyle(QtCore.Qt.SolidLine)
+        self.painter = QtGui.QPainter()
+
+    def paintEvent(self, event):
+
+        self.painter.begin(self)
+        self.painter.setPen(self.pen)
+        self.painter.drawRect(event.rect())
+        self.painter.end()

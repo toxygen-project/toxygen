@@ -3,7 +3,7 @@
 from menu import *
 from profile import *
 from list_items import *
-from widgets import QRightClickButton
+from widgets import QRightClickButton, RubberBand
 import plugin_support
 
 
@@ -523,7 +523,7 @@ class ScreenShotWindow(QtGui.QWidget):
         self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
         self.showFullScreen()
         self.setWindowOpacity(0.5)
-        self.rubberband = QtGui.QRubberBand(QtGui.QRubberBand.Rectangle, None)
+        self.rubberband = RubberBand()
 
     def closeEvent(self, *args):
         if self.parent.isHidden():
