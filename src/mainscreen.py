@@ -318,7 +318,7 @@ class MainWindow(QtGui.QMainWindow):
         grid.setRowMinimumHeight(2, 410)
         grid.setRowMinimumHeight(3, 60)
         grid.setColumnStretch(1, 1)
-        grid.setRowStretch(1, 1)
+        grid.setRowStretch(2, 1)
         main.setLayout(grid)
         self.setCentralWidget(main)
         self.setup_menu(self)
@@ -335,7 +335,7 @@ class MainWindow(QtGui.QMainWindow):
 
     def resizeEvent(self, *args, **kwargs):
         self.messages.setGeometry(0, 0, self.width() - 300, self.height() - 172)
-        self.friends_list.setGeometry(0, 0, 270, self.height() - 142)
+        self.friends_list.setGeometry(0, 0, 270, self.height() - 140)
         self.callButton.setGeometry(QtCore.QRect(self.width() - 370, 20, 50, 50))
         self.typing.setGeometry(QtCore.QRect(self.width() - 420, 30, 50, 30))
 
