@@ -337,7 +337,8 @@ class Profile(Contact, Singleton):
 
     def set_status(self, status):
         super(Profile, self).set_status(status)
-        self._tox.self_set_status(status)
+        if status is not None:
+            self._tox.self_set_status(status)
 
     def set_name(self, value):
         super(self.__class__, self).set_name(value)
@@ -366,6 +367,7 @@ class Profile(Contact, Singleton):
         filter_str = filter_str.lower()
         for index, friend in enumerate(self._friends):
             friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name.lower())
+            friend.visibility = friend.visibility or friend.messages
             if friend.visibility:
                 self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 70))
             else:
@@ -555,6 +557,8 @@ class Profile(Contact, Singleton):
             friend.set_messages(True)
             friend.append_message(
                 TextMessage(message.decode('utf-8'), MESSAGE_OWNER['FRIEND'], time.time(), message_type))
+            if not friend.visibility:
+                self.update_filtration()
 
     def send_message(self, text):
         """
@@ -881,7 +885,7 @@ class Profile(Contact, Singleton):
             friend.status = None
 
     def close(self):
-        if hasattr(self, '_stop'):
+        if hasattr(self, '_call'):
             self._call.stop()
             del self._call
 

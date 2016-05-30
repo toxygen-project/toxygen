@@ -53,3 +53,38 @@ class RubberBand(QtGui.QRubberBand):
         self.painter.setPen(self.pen)
         self.painter.drawRect(event.rect())
         self.painter.end()
+
+
+def create_menu(menu):
+    for action in menu.actions():
+        text = action.text()
+        if 'Link Location' in text:
+            text = text.replace('Copy Link Location',
+                                QtGui.QApplication.translate("MainWindow", "Copy link location", None,
+                                                             QtGui.QApplication.UnicodeUTF8))
+        elif '&Copy' in text:
+            text = text.replace('&Copy', QtGui.QApplication.translate("MainWindow", "Copy", None,
+                                                                      QtGui.QApplication.UnicodeUTF8))
+        elif 'All' in text:
+            text = text.replace('Select All', QtGui.QApplication.translate("MainWindow", "Select all", None,
+                                                                           QtGui.QApplication.UnicodeUTF8))
+        elif 'Delete' in text:
+            text = text.replace('Delete', QtGui.QApplication.translate("MainWindow", "Delete", None,
+                                                                       QtGui.QApplication.UnicodeUTF8))
+        elif '&Paste' in text:
+            text = text.replace('&Paste', QtGui.QApplication.translate("MainWindow", "Paste", None,
+                                                                       QtGui.QApplication.UnicodeUTF8))
+        elif 'Cu&t' in text:
+            text = text.replace('Cu&t', QtGui.QApplication.translate("MainWindow", "Cut", None,
+                                                                     QtGui.QApplication.UnicodeUTF8))
+        elif '&Undo' in text:
+            text = text.replace('&Undo', QtGui.QApplication.translate("MainWindow", "Undo", None,
+                                                                      QtGui.QApplication.UnicodeUTF8))
+        elif '&Redo' in text:
+            text = text.replace('&Redo', QtGui.QApplication.translate("MainWindow", "Redo", None,
+                                                                      QtGui.QApplication.UnicodeUTF8))
+        else:
+            menu.removeAction(action)
+            continue
+        action.setText(text)
+    return menu

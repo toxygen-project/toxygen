@@ -7,7 +7,7 @@ import profile
 from file_transfers import TOX_FILE_TRANSFER_STATE
 from util import curr_directory, convert_time
 from messages import FILE_TRANSFER_MESSAGE_STATUS
-from widgets import DataLabel
+from widgets import DataLabel, create_menu
 
 
 class MessageEdit(QtGui.QTextEdit):
@@ -26,6 +26,11 @@ class MessageEdit(QtGui.QTextEdit):
         self.setFont(font)
         self.setFixedHeight(self.document().size().height())
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
+
+    def contextMenuEvent(self, event):
+        menu = create_menu(self.createStandardContextMenu())
+        menu.exec_(event.globalPos())
+        del menu
 
 
 class MessageItem(QtGui.QWidget):

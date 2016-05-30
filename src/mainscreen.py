@@ -3,7 +3,7 @@
 from menu import *
 from profile import *
 from list_items import *
-from widgets import QRightClickButton, RubberBand
+from widgets import QRightClickButton, RubberBand, create_menu
 import plugin_support
 
 
@@ -33,6 +33,11 @@ class MessageArea(QtGui.QPlainTextEdit):
                 self.timer.stop()
             self.timer.start(5000)
             super(MessageArea, self).keyPressEvent(event)
+
+    def contextMenuEvent(self, event):
+        menu = create_menu(self.createStandardContextMenu())
+        menu.exec_(event.globalPos())
+        del menu
 
 
 class MainWindow(QtGui.QMainWindow):
