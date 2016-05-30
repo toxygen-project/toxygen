@@ -76,6 +76,9 @@ class PluginLoader(util.Singleton):
             self._plugins[name][0].lossy_packet(''.join(chr(x) for x in data[l + 1:length]), friend_number)
 
     def friend_online(self, friend_number):
+        """
+        Friend with specified number is online
+        """
         for elem in self._plugins.values():
             if elem[1]:
                 elem[0].friend_connected(friend_number)

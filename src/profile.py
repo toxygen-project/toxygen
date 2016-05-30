@@ -484,6 +484,10 @@ class Profile(Contact, Singleton):
             self.set_active(self._active_friend)
 
     def friend_exit(self, friend_number):
+        """
+        Friend with specified number quit
+        """
+        # TODO: pause transfers
         self.get_friend_by_number(friend_number).status = None
         self.friend_typing(friend_number, False)
         if friend_number in self._call:
@@ -600,6 +604,9 @@ class Profile(Contact, Singleton):
             del self._history
 
     def clear_history(self, num=None):
+        """
+        Clear chat history
+        """
         if num is not None:
             friend = self._friends[num]
             friend.clear_corr()
@@ -696,6 +703,9 @@ class Profile(Contact, Singleton):
     # -----------------------------------------------------------------------------------------------------------------
 
     def set_alias(self, num):
+        """
+        Set new alias for friend
+        """
         friend = self._friends[num]
         name = friend.name.encode('utf-8')
         dialog = QtGui.QApplication.translate('MainWindow',
@@ -762,6 +772,9 @@ class Profile(Contact, Singleton):
         ProfileHelper.get_instance().save_profile(data)
 
     def add_friend(self, tox_id):
+        """
+        Adds friend to list
+        """
         num = self._tox.friend_add_norequest(tox_id)  # num - friend number
         item = self.create_friend_item()
         try:

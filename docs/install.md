@@ -1,11 +1,14 @@
 # How to install Toxygen
 
+## Use precompiled binary:
+[Check our releases page](https://github.com/xveduk/toxygen/releases)
+
 ## From source code (recommended for developers)
 
 ### Windows
 
 1. [Download and install latest Python 2.7](https://www.python.org/downloads/windows/)
-2. [Install PySide](https://pypi.python.org/pypi/PySide/1.2.4) *(PyQt4 support will be added later)*
+2. [Install PySide](https://pypi.python.org/pypi/PySide/1.2.4) (recommended) or [PyQt4](https://riverbankcomputing.com/software/pyqt/download)
 3. Install PyAudio: ``python -m pip install pyaudio``
 4. [Download toxygen](https://github.com/xveduk/toxygen/archive/master.zip)
 5. Unpack archive  
@@ -23,22 +26,23 @@
 
 ### Linux
 
-- Install Python2.7: 
+Dependencies:
+
+1. Install Python2.7: 
 ``sudo apt-get install python2.7``
-- [Install PySide](https://wiki.qt.io/PySide_Binaries_Linux) *(PyQt4 support will be added later)*
-- Install PyAudio: 
+2. [Install PySide](https://wiki.qt.io/PySide_Binaries_Linux)  (recommended) or [PyQt4](https://riverbankcomputing.com/software/pyqt/download)
+3. Install [toxcore](https://github.com/irungentoo/toxcore/blob/master/INSTALL.md) with toxav support in your system (install in /usr/lib/)
+4. Install PyAudio: 
 ```bash
 sudo apt-get install portaudio19-dev
 sudo pip install pyaudio
 ```
-- [Download toxygen](https://github.com/xveduk/toxygen/archive/master.zip)
-- Unpack archive 
-- Install [toxcore](https://github.com/irungentoo/toxcore/blob/master/INSTALL.md) in your system (install in /usr/lib/)
-- Run app:
-``python main.py``
+Toxygen:
 
-## Use precompiled binary:
-[Check our releases page](https://github.com/xveduk/toxygen/releases)
+1. [Download toxygen](https://github.com/xveduk/toxygen/archive/master.zip)
+2. Unpack archive 
+3. Run app:
+``python main.py``
 
 ## Compile Toxygen
 Check [compile.md](/docs/compile.md) for more info
