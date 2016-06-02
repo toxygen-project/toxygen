@@ -351,6 +351,7 @@ class MainWindow(QtGui.QMainWindow):
 
         self.account_name.setGeometry(QtCore.QRect(100, 30, self.width() - 520, 25))
         self.account_status.setGeometry(QtCore.QRect(100, 50, self.width() - 520, 25))
+        self.messageEdit.setFocus()
         self.profile.update()
 
     def keyPressEvent(self, event):

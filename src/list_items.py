@@ -8,9 +8,12 @@ from file_transfers import TOX_FILE_TRANSFER_STATE
 from util import curr_directory, convert_time
 from messages import FILE_TRANSFER_MESSAGE_STATUS
 from widgets import DataLabel, create_menu
+import cgi
 
 
-class MessageEdit(QtGui.QTextEdit):
+class MessageEdit(QtGui.QTextBrowser):
+
+    # TODO: add anchor clicked with tox: support and unfocus links
 
     def __init__(self, text, width, parent=None):
         super(MessageEdit, self).__init__(parent)
@@ -18,7 +21,8 @@ class MessageEdit(QtGui.QTextEdit):
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setWordWrapMode(QtGui.QTextOption.WrapAtWordBoundaryOrAnywhere)
         self.document().setTextWidth(width)
-        self.setPlainText(text)
+        self.setOpenExternalLinks(True)
+        self.setTextWithLinks(text)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPixelSize(14)
@@ -28,9 +32,32 @@ class MessageEdit(QtGui.QTextEdit):
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
 
     def contextMenuEvent(self, event):
-        menu = create_menu(self.createStandardContextMenu())
+        menu = create_menu(self.createStandardContextMenu(event.pos()))
+        menu.popup(event.globalPos())
         menu.exec_(event.globalPos())
         del menu
+
+    def setTextWithLinks(self, text):
+        text = cgi.escape(text)
+        exp = QtCore.QRegExp(
+            '('
+            '(?:\\b)((www\\.)|(http[s]?|ftp)://)'
+            '\\w+\\S+)'
+            '|(?:\\b)(file:///)([\\S| ]*)'
+            '|(?:\\b)(tox:[a-zA-Z\\d]{76}$)'
+            '|(?:\\b)(mailto:\\S+@\\S+\\.\\S+)'
+            '|(?:\\b)(tox:\\S+@\\S+)')
+        offset = exp.indexIn(text, 0)
+        while offset != -1:
+            url = exp.cap()
+            if exp.cap(2) == 'www.':
+                html = '<a href="http://{0}">{0}</a>'.format(url)
+            else:
+                html = '<a href="{0}">{0}</a>'.format(url)
+            text = text[:offset] + html + text[offset + len(exp.cap()):]
+            offset += len(html)
+            offset = exp.indexIn(text, offset)
+        self.setHtml(text)
 
 
 class MessageItem(QtGui.QWidget):
@@ -67,7 +94,7 @@ class MessageItem(QtGui.QWidget):
         if message_type == TOX_MESSAGE_TYPE['ACTION']:
             self.name.setStyleSheet("QLabel { color: #4169E1; }")
             self.message.setStyleSheet("QTextEdit { color: #4169E1; }")
-        else:
+        else:  # TODO: replace with regex
             if text[0] == '>':
                 self.message.setStyleSheet("QTextEdit { color: green; }")
             if text[-1] == '<':
