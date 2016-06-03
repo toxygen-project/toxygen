@@ -75,7 +75,7 @@ def friend_connection_status(tox, friend_num, new_status, user_data):
     """
     Check friend's connection status (offline, udp, tcp)
     """
-    print "Friend #{} connected! Friend's status: {}".format(friend_num, new_status)
+    print "Friend #{} connection status: {}".format(friend_num, new_status)
     profile = Profile.get_instance()
     friend = profile.get_friend_by_number(friend_num)
     if new_status == TOX_CONNECTION['NONE']:
@@ -127,7 +127,7 @@ def friend_message(window, tray):
                 invoke_in_main_thread(tray_notification, friend.name, message.decode('utf8'), tray, window)
             if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                 sound_notification(SOUND_NOTIFICATION['MESSAGE'])
-            tray.setIcon(QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
+            invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
     return wrapped
 
 

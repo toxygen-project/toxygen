@@ -14,11 +14,11 @@ import plugin_support
 class AddContact(CenteredWidget):
     """Add contact form"""
 
-    def __init__(self):
+    def __init__(self, tox_id=''):
         super(AddContact, self).__init__()
-        self.initUI()
+        self.initUI(tox_id)
 
-    def initUI(self):
+    def initUI(self, tox_id):
         self.setObjectName('AddContact')
         self.resize(568, 306)
         self.sendRequestButton = QtGui.QPushButton(self)
@@ -30,8 +30,9 @@ class AddContact(CenteredWidget):
         self.tox_id = QtGui.QLineEdit(self)
         self.tox_id.setGeometry(QtCore.QRect(50, 40, 471, 27))
         self.tox_id.setObjectName("lineEdit")
+        self.tox_id.setText(tox_id)
         self.label = QtGui.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(60, 10, 80, 20))
+        self.label.setGeometry(QtCore.QRect(50, 10, 80, 20))
         self.error_label = DataLabel(self)
         self.error_label.setGeometry(QtCore.QRect(120, 10, 420, 20))
         font = QtGui.QFont()
@@ -44,7 +45,7 @@ class AddContact(CenteredWidget):
         self.message_edit.setGeometry(QtCore.QRect(50, 110, 471, 151))
         self.message_edit.setObjectName("textEdit")
         self.message = QtGui.QLabel(self)
-        self.message.setGeometry(QtCore.QRect(60, 70, 101, 31))
+        self.message.setGeometry(QtCore.QRect(50, 70, 101, 31))
         self.message.setFont(font)
         self.message.setObjectName("label_2")
         self.retranslateUi()
@@ -70,6 +71,7 @@ class AddContact(CenteredWidget):
         self.sendRequestButton.setText(QtGui.QApplication.translate("Form", "Send request", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate('AddContact', "TOX ID:", None, QtGui.QApplication.UnicodeUTF8))
         self.message.setText(QtGui.QApplication.translate('AddContact', "Message:", None, QtGui.QApplication.UnicodeUTF8))
+        self.tox_id.setPlaceholderText(QtGui.QApplication.translate('AddContact', "TOX ID or public key of contact", None, QtGui.QApplication.UnicodeUTF8))
 
 
 class ProfileSettings(CenteredWidget):

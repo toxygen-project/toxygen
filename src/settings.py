@@ -19,17 +19,17 @@ class Settings(Singleton, dict):
             with open(self.path) as fl:
                 data = fl.read()
             inst = LibToxEncryptSave.get_instance()
-            if inst.has_password():
+            if inst.is_data_encrypted(data):
                 data = inst.pass_decrypt(data)
             try:
                 info = json.loads(data)
             except Exception as ex:
                 info = Settings.get_default_settings()
                 log('Parsing settings error: ' + str(ex))
-            super(self.__class__, self).__init__(info)
+            super(Settings, self).__init__(info)
             self.upgrade()
         else:
-            super(self.__class__, self).__init__(Settings.get_default_settings())
+            super(Settings, self).__init__(Settings.get_default_settings())
             self.save()
         p = pyaudio.PyAudio()
         self.audio = {'input': p.get_default_input_device_info()['index'],

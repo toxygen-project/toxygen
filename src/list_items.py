@@ -13,8 +13,6 @@ import cgi
 
 class MessageEdit(QtGui.QTextBrowser):
 
-    # TODO: add anchor clicked with tox: support and unfocus links
-
     def __init__(self, text, width, parent=None):
         super(MessageEdit, self).__init__(parent)
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -22,6 +20,7 @@ class MessageEdit(QtGui.QTextBrowser):
         self.setWordWrapMode(QtGui.QTextOption.WrapAtWordBoundaryOrAnywhere)
         self.document().setTextWidth(width)
         self.setOpenExternalLinks(True)
+        self.setOpenLinks(False)
         self.setTextWithLinks(text)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -30,12 +29,23 @@ class MessageEdit(QtGui.QTextBrowser):
         self.setFont(font)
         self.setFixedHeight(self.document().size().height())
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
+        self.anchorClicked.connect(self.on_anchor_clicked)
 
     def contextMenuEvent(self, event):
         menu = create_menu(self.createStandardContextMenu(event.pos()))
         menu.popup(event.globalPos())
         menu.exec_(event.globalPos())
         del menu
+
+    def on_anchor_clicked(self, url):
+        text = str(url.toString())
+        if text.startswith('tox:'):
+            import menu
+            self.add_contact = menu.AddContact(text[4:])
+            self.add_contact.show()
+        else:
+            QtGui.QDesktopServices.openUrl(url)
+        self.clearFocus()
 
     def setTextWithLinks(self, text):
         text = cgi.escape(text)
@@ -57,7 +67,11 @@ class MessageEdit(QtGui.QTextBrowser):
             text = text[:offset] + html + text[offset + len(exp.cap()):]
             offset += len(html)
             offset = exp.indexIn(text, offset)
-        self.setHtml(text)
+        arr = text.split('\n')
+        for i in range(len(arr)):
+            if arr[i].startswith('&gt;'):
+                arr[i] = '<font color="green">' + arr[i] + '</font>'
+        self.setHtml('<br>'.join(arr))
 
 
 class MessageItem(QtGui.QWidget):
@@ -94,11 +108,6 @@ class MessageItem(QtGui.QWidget):
         if message_type == TOX_MESSAGE_TYPE['ACTION']:
             self.name.setStyleSheet("QLabel { color: #4169E1; }")
             self.message.setStyleSheet("QTextEdit { color: #4169E1; }")
-        else:  # TODO: replace with regex
-            if text[0] == '>':
-                self.message.setStyleSheet("QTextEdit { color: green; }")
-            if text[-1] == '<':
-                self.message.setStyleSheet("QTextEdit { color: red; }")
 
 
 class ContactItem(QtGui.QWidget):
