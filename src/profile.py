@@ -238,7 +238,7 @@ class Friend(Contact):
         :param value: new name
         """
         if not self._alias:
-            super(self.__class__, self).set_name(value)
+            super(Friend, self).set_name(value)
 
     def set_alias(self, alias):
         self._alias = bool(alias)
@@ -341,11 +341,11 @@ class Profile(Contact, Singleton):
             self._tox.self_set_status(status)
 
     def set_name(self, value):
-        super(self.__class__, self).set_name(value)
+        super(Profile, self).set_name(value)
         self._tox.self_set_name(self._name.encode('utf-8'))
 
     def set_status_message(self, value):
-        super(self.__class__, self).set_status_message(value)
+        super(Profile, self).set_status_message(value)
         self._tox.self_set_status_message(self._status_message.encode('utf-8'))
 
     def new_nospam(self):

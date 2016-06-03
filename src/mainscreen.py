@@ -42,9 +42,10 @@ class MessageArea(QtGui.QPlainTextEdit):
 
 class MainWindow(QtGui.QMainWindow):
 
-    def __init__(self, tox, reset):
+    def __init__(self, tox, reset, tray):
         super(MainWindow, self).__init__()
         self.reset = reset
+        self.tray = tray
         self.initUI(tox)
 
     def setup_menu(self, MainWindow):
@@ -109,6 +110,11 @@ class MainWindow(QtGui.QMainWindow):
 
     def languageChange(self, *args, **kwargs):
         self.retranslateUi()
+
+    def event(self, event):
+        if event.type() == QtCore.QEvent.WindowActivate:
+            self.tray.setIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
+        return super(MainWindow, self).event(event)
 
     def retranslateUi(self):
         self.menuPlugins.setTitle(QtGui.QApplication.translate("MainWindow", "Plugins", None, QtGui.QApplication.UnicodeUTF8))

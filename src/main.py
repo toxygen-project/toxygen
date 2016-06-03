@@ -129,11 +129,11 @@ class Toxygen(object):
         app.installTranslator(translator)
         app.translator = translator
 
-        self.ms = MainWindow(self.tox, self.reset)
-
         # tray icon
         self.tray = QtGui.QSystemTrayIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
         self.tray.setObjectName('tray')
+
+        self.ms = MainWindow(self.tox, self.reset, self.tray)
 
         class Menu(QtGui.QMenu):
 
@@ -186,6 +186,7 @@ class Toxygen(object):
         sub.connect(onl, QtCore.SIGNAL("triggered()"), lambda: m.newStatus(0))
         sub.connect(away, QtCore.SIGNAL("triggered()"), lambda: m.newStatus(1))
         sub.connect(busy, QtCore.SIGNAL("triggered()"), lambda: m.newStatus(2))
+
         self.tray.setContextMenu(m)
         self.tray.show()
 

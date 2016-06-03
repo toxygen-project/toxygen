@@ -127,6 +127,7 @@ def friend_message(window, tray):
                 invoke_in_main_thread(tray_notification, friend.name, message.decode('utf8'), tray, window)
             if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                 sound_notification(SOUND_NOTIFICATION['MESSAGE'])
+            tray.setIcon(QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
     return wrapped
 
 
