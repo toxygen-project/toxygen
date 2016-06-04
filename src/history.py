@@ -10,7 +10,8 @@ PAGE_SIZE = 42
 
 MESSAGE_OWNER = {
     'ME': 0,
-    'FRIEND': 1
+    'FRIEND': 1,
+    'NOT_SENT': 2
 }
 
 

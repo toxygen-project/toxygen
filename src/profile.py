@@ -205,6 +205,16 @@ class Friend(Contact):
         else:
             return -1
 
+    def not_sent_messages(self):
+        messages = filter(lambda x: x.get_owner() == 2, self._corr)
+        return messages
+
+    def mark_as_sent(self, mark_all=True):
+        for message in filter(lambda x: x.get_owner() == 2, self._corr):
+            message.mark_as_sent()
+            if not mark_all:
+                break
+
     def clear_corr(self):
         """
         Clear messages list
@@ -522,6 +532,21 @@ class Profile(Contact, Singleton):
     # Private messages
     # -----------------------------------------------------------------------------------------------------------------
 
+    def send_messages(self, friend_number):
+        """
+        Send 'offline' messages to friend
+        """
+        friend = self.get_friend_by_number(friend_number)
+        friend.load_corr()
+        messages = friend.not_sent_messages()
+        try:
+            for message in messages:
+                self.split_and_send(friend_number, message.get_data()[-1], message.get_data()[0].encode('utf-8'))
+        except:
+            pass
+        else:
+            friend.mark_as_sent()
+
     def split_and_send(self, number, message_type, message):
         """
         Message splitting
@@ -574,18 +599,22 @@ class Profile(Contact, Singleton):
         if text.startswith('/plugin '):
             plugin_support.PluginLoader.get_instance().command(text[8:])
             self._screen.messageEdit.clear()
-        elif self.is_active_online() and text:
+        elif text:
             if text.startswith('/me '):
                 message_type = TOX_MESSAGE_TYPE['ACTION']
                 text = text[4:]
             else:
                 message_type = TOX_MESSAGE_TYPE['NORMAL']
             friend = self._friends[self._active_friend]
-            self.split_and_send(friend.number, message_type, text.encode('utf-8'))
+            if friend.status is not None:
+                self.split_and_send(friend.number, message_type, text.encode('utf-8'))
+                owner = MESSAGE_OWNER['ME']
+            else:
+                owner = MESSAGE_OWNER['NOT_SENT']
             self.create_message_item(text, curr_time(), self._name, message_type)
             self._screen.messageEdit.clear()
             self._messages.scrollToBottom()
-            friend.append_message(TextMessage(text, MESSAGE_OWNER['ME'], time.time(), message_type))
+            friend.append_message(TextMessage(text, owner, time.time(), message_type))
 
     # -----------------------------------------------------------------------------------------------------------------
     # History support

@@ -110,6 +110,7 @@ def friend_status_message(tox, friend_num, status_message, size, user_data):
     friend = profile.get_friend_by_number(friend_num)
     invoke_in_main_thread(friend.set_status_message, status_message)
     print 'User #{} has new status: {}'.format(friend_num, status_message)
+    profile.send_messages(friend_num)
     if profile.get_active_number() == friend_num:
         invoke_in_main_thread(profile.set_active)
 

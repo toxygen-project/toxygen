@@ -31,6 +31,9 @@ class Message(object):
     def get_owner(self):
         return self._owner
 
+    def mark_as_sent(self):
+        self._owner = 0
+
 
 class TextMessage(Message):
     """
