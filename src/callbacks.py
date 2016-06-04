@@ -110,7 +110,7 @@ def friend_status_message(tox, friend_num, status_message, size, user_data):
     friend = profile.get_friend_by_number(friend_num)
     invoke_in_main_thread(friend.set_status_message, status_message)
     print 'User #{} has new status: {}'.format(friend_num, status_message)
-    profile.send_messages(friend_num)
+    invoke_in_main_thread(profile.send_messages, friend_num)
     if profile.get_active_number() == friend_num:
         invoke_in_main_thread(profile.set_active)
 
@@ -147,6 +147,10 @@ def friend_request(tox, public_key, message, message_size, user_data):
 
 def friend_typing(tox, friend_number, typing, user_data):
     invoke_in_main_thread(Profile.get_instance().friend_typing, friend_number, typing)
+
+
+def friend_read_receipt(tox, friend_number, message_id, user_data):
+    Profile.get_instance().get_friend_by_number(friend_number).dec_receipt()
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - file transfers
@@ -303,6 +307,7 @@ def init_callbacks(tox, window, tray):
     tox.callback_friend_status_message(friend_status_message, 0)
     tox.callback_friend_request(friend_request, 0)
     tox.callback_friend_typing(friend_typing, 0)
+    tox.callback_friend_read_receipt(friend_read_receipt, 0)
 
     tox.callback_file_recv(tox_file_recv(window, tray), 0)
     tox.callback_file_recv_chunk(file_recv_chunk, 0)

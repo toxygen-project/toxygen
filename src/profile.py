@@ -144,6 +144,7 @@ class Friend(Contact):
         self._corr = []
         self._unsaved_messages = 0
         self._history_loaded = False
+        self._receipts = 0
 
     def __del__(self):
         self.set_visibility(False)
@@ -154,6 +155,19 @@ class Friend(Contact):
     # -----------------------------------------------------------------------------------------------------------------
     # History support
     # -----------------------------------------------------------------------------------------------------------------
+
+    def get_receipts(self):
+        return self._receipts
+
+    receipts = property(get_receipts)
+
+    def inc_receipts(self):
+        self._receipts += 1
+
+    def dec_receipt(self):
+        if self._receipts:
+            self._receipts -= 1
+            self.mark_as_sent(False)
 
     def load_corr(self, first_time=True):
         """
@@ -608,13 +622,11 @@ class Profile(Contact, Singleton):
             friend = self._friends[self._active_friend]
             if friend.status is not None:
                 self.split_and_send(friend.number, message_type, text.encode('utf-8'))
-                owner = MESSAGE_OWNER['ME']
-            else:
-                owner = MESSAGE_OWNER['NOT_SENT']
             self.create_message_item(text, curr_time(), self._name, message_type)
             self._screen.messageEdit.clear()
             self._messages.scrollToBottom()
-            friend.append_message(TextMessage(text, owner, time.time(), message_type))
+            friend.append_message(TextMessage(text, MESSAGE_OWNER['NOT_SENT'], time.time(), message_type))
+            friend.inc_receipts()
 
     # -----------------------------------------------------------------------------------------------------------------
     # History support
