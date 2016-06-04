@@ -3,7 +3,7 @@
 from menu import *
 from profile import *
 from list_items import *
-from widgets import QRightClickButton, RubberBand, create_menu
+from widgets import QRightClickButton, RubberBand, create_menu, MultilineEdit
 import plugin_support
 
 
@@ -470,6 +470,8 @@ class MainWindow(QtGui.QMainWindow):
             copy_key_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Copy public key', None, QtGui.QApplication.UnicodeUTF8))
             auto_accept_item = self.listMenu.addAction(auto)
             remove_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Remove friend', None, QtGui.QApplication.UnicodeUTF8))
+            notes_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Notes', None, QtGui.QApplication.UnicodeUTF8))
+
             submenu = plugin_support.PluginLoader.get_instance().get_menu(self.listMenu, num)
             if len(submenu):
                 plug = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Plugins', None, QtGui.QApplication.UnicodeUTF8))
@@ -479,9 +481,22 @@ class MainWindow(QtGui.QMainWindow):
             self.connect(copy_key_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_friend_key(num))
             self.connect(clear_history_item, QtCore.SIGNAL("triggered()"), lambda: self.clear_history(num))
             self.connect(auto_accept_item, QtCore.SIGNAL("triggered()"), lambda: self.auto_accept(num, not allowed))
+            self.connect(notes_item, QtCore.SIGNAL("triggered()"), lambda: self.show_note(friend))
             parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
             self.listMenu.move(parent_position + pos)
             self.listMenu.show()
+
+    def show_note(self, friend):
+        s = Settings.get_instance()
+        note = s['notes'][friend.tox_id] if friend.tox_id in s['notes'] else ''
+        user = QtGui.QApplication.translate("MainWindow", 'Notes about user', None, QtGui.QApplication.UnicodeUTF8)
+        user = u'{} {}'.format(user, friend.name)
+
+        def save_note(text):
+            s['notes'][friend.tox_id] = text
+            s.save()
+        self.note = MultilineEdit(user, note, save_note)
+        self.note.show()
 
     def set_alias(self, num):
         self.profile.set_alias(num)

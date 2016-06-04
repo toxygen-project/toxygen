@@ -212,9 +212,15 @@ class ProfileSettings(CenteredWidget):
         choose = QtGui.QApplication.translate("ProfileSettingsForm", "Choose avatar", None, QtGui.QApplication.UnicodeUTF8)
         name = QtGui.QFileDialog.getOpenFileName(self, choose, None, 'Image Files (*.png)')
         if name[0]:
-            with open(name[0], 'rb') as f:
-                data = f.read()
-            Profile.get_instance().set_avatar(data)
+            bitmap = QtGui.QPixmap(name[0])
+            bitmap.scaled(QtCore.QSize(128, 128), aspectMode=QtCore.Qt.KeepAspectRatio,
+                          mode=QtCore.Qt.SmoothTransformation)
+
+            byte_array = QtCore.QByteArray()
+            buffer = QtCore.QBuffer(byte_array)
+            buffer.open(QtCore.QIODevice.WriteOnly)
+            bitmap.save(buffer, 'PNG')
+            Profile.get_instance().set_avatar(str(byte_array.data()))
 
     def export_profile(self):
         directory = QtGui.QFileDialog.getExistingDirectory() + '/'

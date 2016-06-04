@@ -85,7 +85,8 @@ def friend_connection_status(tox, friend_num, new_status, user_data):
             sound_notification(SOUND_NOTIFICATION['FRIEND_CONNECTION_STATUS'])
     elif friend.status is None:
         invoke_in_main_thread(profile.send_avatar, friend_num)
-        PluginLoader.get_instance().friend_online(friend_num)
+        profile.friend_online(friend_num)
+        invoke_in_main_thread(PluginLoader.get_instance().friend_online, friend_num)
 
 
 def friend_name(tox, friend_num, name, size, user_data):
@@ -176,6 +177,7 @@ def tox_file_recv(window, tray):
                     invoke_in_main_thread(tray_notification, file_from + ' ' + friend.name, file_name, tray, window)
                 if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                     sound_notification(SOUND_NOTIFICATION['FILE_TRANSFER'])
+                invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
         else:  # AVATAR
             print 'Avatar'
             invoke_in_main_thread(profile.incoming_avatar,
@@ -196,7 +198,7 @@ def file_recv_chunk(tox, friend_number, file_number, position, chunk, length, us
                               position,
                               None)
     else:
-        Profile.get_instance().incoming_chunk(friend_number, file_number, position,chunk[:length])
+        Profile.get_instance().incoming_chunk(friend_number, file_number, position, chunk[:length])
 
 
 def file_chunk_request(tox, friend_number, file_number, position, size, user_data):

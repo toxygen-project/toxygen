@@ -198,7 +198,7 @@ class ReceiveTransfer(FileTransfer):
             if position + l > self._file_size:
                 self._file_size = position + l
             self._done += l
-            self._state_changed.signal.emit(self.state, self._done / self._size)
+            self.signal()
 
 
 class ReceiveToBuffer(FileTransfer):

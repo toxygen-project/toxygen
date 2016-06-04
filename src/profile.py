@@ -483,18 +483,20 @@ class Profile(Contact, Singleton):
         if self._active_friend + 1:
             self.set_active(self._active_friend)
 
+    def friend_online(self, friend_number):
+        for key in filter(lambda x: x[0] == friend_number, self._file_transfers.keys()):
+            self.resume_transfer(key[0], key[1], True)
+
     def friend_exit(self, friend_number):
         """
         Friend with specified number quit
         """
-        # TODO: pause transfers
         self.get_friend_by_number(friend_number).status = None
         self.friend_typing(friend_number, False)
         if friend_number in self._call:
             self._call.finish_call(friend_number, True)
         for key in filter(lambda x: x[0] == friend_number, self._file_transfers.keys()):
-            self._file_transfers[key].cancelled()
-            del self._file_transfers[key]
+            self._file_transfers[key].pause(False)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications
@@ -718,7 +720,9 @@ class Profile(Contact, Singleton):
 
         text, ok = QtGui.QInputDialog.getText(None,
                                               title,
-                                              dialog)
+                                              dialog,
+                                              QtGui.QLineEdit.Normal,
+                                              name.decode('utf-8'))
         if ok:
             settings = Settings.get_instance()
             aliases = settings['friends_aliases']

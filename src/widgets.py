@@ -88,3 +88,27 @@ def create_menu(menu):
             continue
         action.setText(text)
     return menu
+
+
+class MultilineEdit(CenteredWidget):
+
+    def __init__(self, title, text, save):
+        super(MultilineEdit, self).__init__()
+        self.resize(350, 200)
+        self.setMinimumSize(QtCore.QSize(350, 200))
+        self.setMaximumSize(QtCore.QSize(350, 200))
+        self.setWindowTitle(title)
+        self.edit = QtGui.QTextEdit(self)
+        self.edit.setGeometry(QtCore.QRect(0, 0, 350, 150))
+        self.edit.setText(text)
+        self.button = QtGui.QPushButton(self)
+        self.button.setGeometry(QtCore.QRect(0, 150, 350, 50))
+        self.button.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        self.button.clicked.connect(self.button_click)
+        self.center()
+        self.save = save
+
+    def button_click(self):
+        self.save(self.edit.toPlainText())
+        self.close()
+

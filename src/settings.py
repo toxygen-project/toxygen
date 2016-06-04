@@ -80,7 +80,8 @@ class Settings(Singleton, dict):
             'typing_notifications': False,
             'calls_sound': True,
             'blocked': [],
-            'plugins': []
+            'plugins': [],
+            'notes': {}
         }
 
     @staticmethod
