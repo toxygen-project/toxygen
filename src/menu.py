@@ -654,13 +654,18 @@ class PluginsSettings(CenteredWidget):
 
     def show_data(self):
         ind = self.comboBox.currentIndex()
-        plugin = self.data[ind]
-        descr = plugin[2] or QtGui.QApplication.translate("PluginsForm", "No description available", None, QtGui.QApplication.UnicodeUTF8)
-        self.label.setText(descr)
-        if plugin[1]:
-            self.button.setText(QtGui.QApplication.translate("PluginsForm", "Disable plugin", None, QtGui.QApplication.UnicodeUTF8))
+        if len(self.data):
+            plugin = self.data[ind]
+            descr = plugin[2] or QtGui.QApplication.translate("PluginsForm", "No description available", None, QtGui.QApplication.UnicodeUTF8)
+            self.label.setText(descr)
+            if plugin[1]:
+                self.button.setText(QtGui.QApplication.translate("PluginsForm", "Disable plugin", None, QtGui.QApplication.UnicodeUTF8))
+            else:
+                self.button.setText(QtGui.QApplication.translate("PluginsForm", "Enable plugin", None, QtGui.QApplication.UnicodeUTF8))
         else:
-            self.button.setText(QtGui.QApplication.translate("PluginsForm", "Enable plugin", None, QtGui.QApplication.UnicodeUTF8))
+            self.open.setVisible(False)
+            self.button.setVisible(False)
+            self.label.setText(QtGui.QApplication.translate("PluginsForm", "No plugins found", None, QtGui.QApplication.UnicodeUTF8))
 
     def button_click(self):
         ind = self.comboBox.currentIndex()

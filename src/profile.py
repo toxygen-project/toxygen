@@ -167,7 +167,7 @@ class Friend(Contact):
     def dec_receipt(self):
         if self._receipts:
             self._receipts -= 1
-            self.mark_as_sent(False)
+            self.mark_as_sent()
 
     def load_corr(self, first_time=True):
         """
@@ -212,22 +212,13 @@ class Friend(Contact):
         else:
             return ''
 
-    def last_message_owner(self):
-        messages = filter(lambda x: x.get_type() <= 1, self._corr)
-        if messages:
-            return messages[-1].get_owner()
-        else:
-            return -1
-
-    def not_sent_messages(self):
+    def unsent_messages(self):
         messages = filter(lambda x: x.get_owner() == 2, self._corr)
         return messages
 
-    def mark_as_sent(self, mark_all=True):
-        for message in filter(lambda x: x.get_owner() == 2, self._corr):
-            message.mark_as_sent()
-            if not mark_all:
-                break
+    def mark_as_sent(self):
+        message = filter(lambda x: x.get_owner() == 2, self._corr)[0]
+        message.mark_as_sent()
 
     def clear_corr(self):
         """
@@ -552,14 +543,13 @@ class Profile(Contact, Singleton):
         """
         friend = self.get_friend_by_number(friend_number)
         friend.load_corr()
-        messages = friend.not_sent_messages()
+        messages = friend.unsent_messages()
         try:
             for message in messages:
                 self.split_and_send(friend_number, message.get_data()[-1], message.get_data()[0].encode('utf-8'))
+                friend.mark_as_sent()
         except:
             pass
-        else:
-            friend.mark_as_sent()
 
     def split_and_send(self, number, message_type, message):
         """

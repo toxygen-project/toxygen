@@ -19,9 +19,9 @@ class Settings(Singleton, dict):
             with open(self.path) as fl:
                 data = fl.read()
             inst = LibToxEncryptSave.get_instance()
-            if inst.is_data_encrypted(data):
-                data = inst.pass_decrypt(data)
             try:
+                if inst.is_data_encrypted(data):
+                    data = inst.pass_decrypt(data)
                 info = json.loads(data)
             except Exception as ex:
                 info = Settings.get_default_settings()

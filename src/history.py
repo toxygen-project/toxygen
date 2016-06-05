@@ -23,12 +23,15 @@ class History(object):
         path = settings.ProfileHelper.get_path() + self._name + '.hstr'
         if os.path.exists(path):
             decr = LibToxEncryptSave.get_instance()
-            with open(path, 'rb') as fin:
-                data = fin.read()
-            if decr.is_data_encrypted(data):
-                data = decr.pass_decrypt(data)
-                with open(path, 'wb') as fout:
-                    fout.write(data)
+            try:
+                with open(path, 'rb') as fin:
+                    data = fin.read()
+                if decr.is_data_encrypted(data):
+                    data = decr.pass_decrypt(data)
+                    with open(path, 'wb') as fout:
+                        fout.write(data)
+            except:
+                os.remove(path)
         db = connect(name + '.hstr')
         cursor = db.cursor()
         cursor.execute('CREATE TABLE IF NOT EXISTS friends('
