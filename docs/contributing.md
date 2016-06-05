@@ -9,13 +9,13 @@ Help us find all bugs in Toxygen! Please provide following info:
 - Toxygen executable info - .py or precompiled binary
 - Steps to reproduce the bug
 
-Want to see new feature in Toxygen? [Open issue!](https://github.com/xveduk/toxygen/issues)
+Want to see new feature in Toxygen? [Ask for it!](https://github.com/xveduk/toxygen/issues)
 
 #Pull requests
 
 Developer? Feel free to open pull request. Our dev team is small so we glad to get help. 
-Don't know what to do? Impove UI, fix [issues](https://github.com/xveduk/toxygen/issues) or implement features from our TODO list.
-You can find our TODO's in code and [here](/README.md)
+Don't know what to do? Improve UI, fix [issues](https://github.com/xveduk/toxygen/issues) or implement features from our TODO list.
+You can find our TODO's in code and [here](/README.md). Also you can implement plugins for Toxygen.
 
 #Translations
 

@@ -5,6 +5,9 @@ except ImportError:
 
 
 class DataLabel(QtGui.QLabel):
+    """
+    Label with elided text
+    """
 
     def paintEvent(self, event):
         painter = QtGui.QPainter(self)
@@ -27,6 +30,9 @@ class CenteredWidget(QtGui.QWidget):
 
 
 class QRightClickButton(QtGui.QPushButton):
+    """
+    Button with right click support
+    """
 
     def __init__(self, parent):
         super(QRightClickButton, self).__init__(parent)
@@ -56,10 +62,13 @@ class RubberBand(QtGui.QRubberBand):
 
 
 def create_menu(menu):
+    """
+    :return translated menu
+    """
     for action in menu.actions():
         text = action.text()
         if 'Link Location' in text:
-            text = text.replace('Copy Link Location',
+            text = text.replace('Copy &Link Location',
                                 QtGui.QApplication.translate("MainWindow", "Copy link location", None,
                                                              QtGui.QApplication.UnicodeUTF8))
         elif '&Copy' in text:

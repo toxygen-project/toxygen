@@ -33,23 +33,24 @@ Toxygen is cross-platform [Tox](https://tox.chat/) client written on Python
 - [x] File resuming
 - [x] Save file encryption
 - [x] Plugins support
+- [x] Read receipts
+- [x] Faux offline messaging
 - [ ] Video
 - [ ] Group chats
-- [ ] Read receipts
-- [ ] Faux offline messaging
 - [ ] Desktop sharing
 
 ###Downloads
+[Releases](https://github.com/xveduk/toxygen/releases)
+
 [Download last stable version](https://github.com/xveduk/toxygen/archive/master.zip)
 
 [Download develop version](https://github.com/xveduk/toxygen/archive/develop.zip)
-
-[Releases](https://github.com/xveduk/toxygen/releases)
 
 ###Screenshots
 *Toxygen on Ubuntu and Windows*
 ![Ubuntu](/docs/ubuntu.png)
 ![Windows](/docs/windows.png)
+
 
 ###Docs
 [Check /docs/ for more info](/docs/)

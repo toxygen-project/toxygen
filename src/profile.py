@@ -506,6 +506,7 @@ class Profile(Contact, Singleton):
         """
         Friend with specified number quit
         """
+        # TODO: fix
         self.get_friend_by_number(friend_number).status = None
         self.friend_typing(friend_number, False)
         if friend_number in self._call:

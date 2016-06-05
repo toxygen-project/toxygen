@@ -548,6 +548,9 @@ class InterfaceSettings(CenteredWidget):
 
 
 class AudioSettings(CenteredWidget):
+    """
+    Audio calls settings form
+    """
 
     def __init__(self):
         super(AudioSettings, self).__init__()
@@ -601,6 +604,9 @@ class AudioSettings(CenteredWidget):
 
 
 class PluginsSettings(CenteredWidget):
+    """
+    Plugins settings form
+    """
 
     def __init__(self):
         super(PluginsSettings, self).__init__()
