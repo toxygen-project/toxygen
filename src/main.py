@@ -20,10 +20,17 @@ from plugin_support import PluginLoader
 
 class Toxygen(object):
 
-    def __init__(self, path=None):
+    def __init__(self, path_or_uri=None):
         super(Toxygen, self).__init__()
         self.tox = self.ms = self.init = self.mainloop = self.avloop = None
-        self.path = path
+        if path_or_uri is None:
+            self.uri = self.path = None
+        elif path_or_uri.startswith('tox:'):
+            self.path = None
+            self.uri = path_or_uri[4:]
+        else:
+            self.path = path_or_uri
+            self.uri = None
 
     def enter_pass(self, data):
         """
@@ -206,6 +213,9 @@ class Toxygen(object):
         self.avloop = self.ToxAVIterateThread(self.tox.AV)
         self.avloop.start()
 
+        if self.uri is not None:
+            self.ms.add_contact(self.uri)
+
         app.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app, QtCore.SLOT("quit()"))
         app.exec_()
         self.init.stop = True
@@ -335,9 +345,8 @@ class Toxygen(object):
 
 
 if __name__ == '__main__':
-    # TODO: add tox: URI support
     if len(sys.argv) == 1:
         toxygen = Toxygen()
-    else:  # path to profile
+    else:  # path to profile or tox: uri
         toxygen = Toxygen(sys.argv[1])
     toxygen.main()

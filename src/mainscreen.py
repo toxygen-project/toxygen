@@ -386,8 +386,8 @@ class MainWindow(QtGui.QMainWindow):
         self.p_s = PluginsSettings()
         self.p_s.show()
 
-    def add_contact(self):
-        self.a_c = AddContact()
+    def add_contact(self, link=''):
+        self.a_c = AddContact(link)
         self.a_c.show()
 
     def profile_settings(self, *args):
