@@ -335,6 +335,7 @@ class Toxygen(object):
 
 
 if __name__ == '__main__':
+    # TODO: add tox: URI support
     if len(sys.argv) == 1:
         toxygen = Toxygen()
     else:  # path to profile

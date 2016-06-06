@@ -506,13 +506,16 @@ class Profile(Contact, Singleton):
         """
         Friend with specified number quit
         """
-        # TODO: fix
+        # TODO: fix and add full file resuming support
         self.get_friend_by_number(friend_number).status = None
         self.friend_typing(friend_number, False)
         if friend_number in self._call:
             self._call.finish_call(friend_number, True)
         for key in filter(lambda x: x[0] == friend_number, self._file_transfers.keys()):
-            self._file_transfers[key].pause(False)
+            if type(self._file_transfers[key]) in (ReceiveAvatar, SendAvatar):
+                self._file_transfers[key].cancelled()
+            else:
+                self._file_transfers[key].pause(False)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications

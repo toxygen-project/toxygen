@@ -16,7 +16,7 @@ class Settings(Singleton, dict):
         self.path = ProfileHelper.get_path() + str(name) + '.json'
         self.name = name
         if os.path.isfile(self.path):
-            with open(self.path) as fl:
+            with open(self.path, 'rb') as fl:
                 data = fl.read()
             inst = LibToxEncryptSave.get_instance()
             try:
@@ -105,7 +105,7 @@ class Settings(Singleton, dict):
         inst = LibToxEncryptSave.get_instance()
         if inst.has_password():
             text = inst.pass_encrypt(text)
-        with open(self.path, 'w') as fl:
+        with open(self.path, 'wb') as fl:
             fl.write(text)
 
     def close(self):
