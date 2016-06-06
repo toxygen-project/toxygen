@@ -8,18 +8,22 @@ import plugin_support
 
 
 class MessageArea(QtGui.QPlainTextEdit):
+    """User enters messages here"""
 
     def __init__(self, parent, form):
         super(MessageArea, self).__init__(parent)
         self.parent = form
+        self.setAcceptDrops(True)
         self.timer = QtCore.QTimer(self)
         self.timer.timeout.connect(lambda: self.parent.profile.send_typing(False))
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Return:
+        if event.matches(QtGui.QKeySequence.Paste):
+            self.pasteEvent()
+        elif event.key() == QtCore.Qt.Key_Return:
             modifiers = event.modifiers()
             if modifiers & QtCore.Qt.ControlModifier or modifiers & QtCore.Qt.ShiftModifier:
-                self.appendPlainText('')
+                self.insertPlainText('\n')
             else:
                 if self.timer.isActive():
                     self.timer.stop()
@@ -39,6 +43,26 @@ class MessageArea(QtGui.QPlainTextEdit):
         menu.exec_(event.globalPos())
         del menu
 
+    def dragEnterEvent(self, e):
+        e.accept()
+
+    def dragMoveEvent(self, e):
+        e.accept()
+
+    def dropEvent(self, e):
+        if e.mimeData().hasFormat('text/plain'):
+            e.accept()
+            self.pasteEvent(e.mimeData().text())
+        else:
+            e.ignore()
+
+    def pasteEvent(self, text=None):
+        text = text or QtGui.QApplication.clipboard().text()
+        if text.startswith('file://'):
+            self.parent.profile.send_file(text[7:])
+        else:
+            self.insertPlainText(text)
+
 
 class MainWindow(QtGui.QMainWindow):
 
@@ -46,6 +70,7 @@ class MainWindow(QtGui.QMainWindow):
         super(MainWindow, self).__init__()
         self.reset = reset
         self.tray = tray
+        self.setAcceptDrops(True)
         self.initUI(tox)
 
     def setup_menu(self, MainWindow):

@@ -29,7 +29,7 @@ class Contact(object):
     def __init__(self, name, status_message, widget, tox_id):
         """
         :param name: name, example: 'Toxygen user'
-        :param status_message: status message, example: 'Toxing on toxygen'
+        :param status_message: status message, example: 'Toxing on Toxygen'
         :param widget: ContactItem instance
         :param tox_id: tox id of contact
         """
@@ -199,26 +199,32 @@ class Friend(Contact):
 
     def append_message(self, message):
         """
-        :param message: tuple (message, owner, unix_time, message_type)
+        :param message: text or file transfer message
         """
         self._corr.append(message)
         if message.get_type() <= 1:
             self._unsaved_messages += 1
 
     def get_last_message_text(self):
-        messages = filter(lambda x: x.get_type() <= 1 and not x.get_owner(), self._corr)
+        messages = filter(lambda x: x.get_type() <= 1 and x.get_owner() != MESSAGE_OWNER['FRIEND'], self._corr)
         if messages:
             return messages[-1].get_data()[0]
         else:
             return ''
 
     def unsent_messages(self):
-        messages = filter(lambda x: x.get_owner() == 2, self._corr)
+        """
+        :return list of unsent messages
+        """
+        messages = filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr)
         return messages
 
     def mark_as_sent(self):
-        message = filter(lambda x: x.get_owner() == 2, self._corr)[0]
-        message.mark_as_sent()
+        try:
+            message = filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr)[0]
+            message.mark_as_sent()
+        except Exception as ex:
+            log('Mark as sent ex: ' + str(ex))
 
     def clear_corr(self):
         """
@@ -226,7 +232,8 @@ class Friend(Contact):
         """
         if hasattr(self, '_message_getter'):
             del self._message_getter
-        self._corr = filter(lambda x: x.get_type() == 2 and x.get_status() >= 2, self._corr)
+        # don't delete data about active file transfer
+        self._corr = filter(lambda x: x.get_type() in (2, 3) and x.get_status() >= 2, self._corr)
         self._unsaved_messages = 0
 
     def update_transfer_data(self, file_number, status, inline=None):
@@ -234,14 +241,15 @@ class Friend(Contact):
         Update status of active transfer and load inline if needed
         """
         try:
-            tr = filter(lambda x: x.get_type() == 2 and x.is_active(file_number), self._corr)[0]
+            tr = filter(lambda x: x.get_type() == MESSAGE_TYPE['FILE_TRANSFER'] and x.is_active(file_number),
+                        self._corr)[0]
             tr.set_status(status)
             if inline:  # inline was loaded
                 i = self._corr.index(tr)
                 self._corr.insert(i, inline)
                 return i - len(self._corr)
-        except Exception as ex:
-            log('Update transfer data failed: ' + str(ex))
+        except:
+            pass
 
     # -----------------------------------------------------------------------------------------------------------------
     # Alias support
@@ -525,7 +533,7 @@ class Profile(Contact, Singleton):
         """
         Send typing notification to a friend
         """
-        if Settings.get_instance()['typing_notifications']:
+        if Settings.get_instance()['typing_notifications'] and self._active_friend + 1:
             friend = self._friends[self._active_friend]
             if friend.status is not None:
                 self._tox.self_set_typing(friend.number, typing)
@@ -1112,6 +1120,9 @@ class Profile(Contact, Singleton):
         self._messages.scrollToBottom()
 
     def incoming_chunk(self, friend_number, file_number, position, data):
+        """
+        Incoming chunk
+        """
         if (friend_number, file_number) in self._file_transfers:
             transfer = self._file_transfers[(friend_number, file_number)]
             transfer.write_chunk(position, data)
@@ -1137,6 +1148,9 @@ class Profile(Contact, Singleton):
                 del self._file_transfers[(friend_number, file_number)]
 
     def outgoing_chunk(self, friend_number, file_number, position, size):
+        """
+        Ougoing chubk
+        """
         if (friend_number, file_number) in self._file_transfers:
             transfer = self._file_transfers[(friend_number, file_number)]
             transfer.send_chunk(position, size)
