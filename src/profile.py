@@ -563,7 +563,6 @@ class Profile(Contact, Singleton):
         try:
             for message in messages:
                 self.split_and_send(friend_number, message.get_data()[-1], message.get_data()[0].encode('utf-8'))
-                friend.mark_as_sent()
         except:
             pass
 

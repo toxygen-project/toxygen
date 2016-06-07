@@ -286,7 +286,11 @@ class MainWindow(QtGui.QMainWindow):
         self.callButton = QtGui.QPushButton(Form)
         self.callButton.setGeometry(QtCore.QRect(550, 30, 50, 50))
         self.callButton.setObjectName("callButton")
-        self.callButton.clicked.connect(self.call)
+        self.callButton.clicked.connect(lambda: self.profile.call_click(True))
+        self.videocallButton = QtGui.QPushButton(Form)
+        self.videocallButton.setGeometry(QtCore.QRect(550, 30, 50, 50))
+        self.videocallButton.setObjectName("videocallButton")
+        self.videocallButton.clicked.connect(lambda: self.profile.call_click(True, True))
         self.update_call_state('call')
         self.typing = QtGui.QLabel(Form)
         self.typing.setGeometry(QtCore.QRect(500, 40, 50, 30))
@@ -372,15 +376,16 @@ class MainWindow(QtGui.QMainWindow):
     def resizeEvent(self, *args, **kwargs):
         self.messages.setGeometry(0, 0, self.width() - 300, self.height() - 172)
         self.friends_list.setGeometry(0, 0, 270, self.height() - 140)
-        self.callButton.setGeometry(QtCore.QRect(self.width() - 370, 20, 50, 50))
-        self.typing.setGeometry(QtCore.QRect(self.width() - 420, 30, 50, 30))
+        self.videocallButton.setGeometry(QtCore.QRect(self.width() - 350, 20, 50, 50))
+        self.callButton.setGeometry(QtCore.QRect(self.width() - 410, 20, 50, 50))
+        self.typing.setGeometry(QtCore.QRect(self.width() - 470, 30, 50, 30))
 
         self.messageEdit.setGeometry(QtCore.QRect(120, 2, self.width() - 490, 55))
         self.screenshotButton.setGeometry(QtCore.QRect(0, 2, 55, 55))
         self.fileTransferButton.setGeometry(QtCore.QRect(60, 2, 55, 55))
         self.sendMessageButton.setGeometry(QtCore.QRect(self.width() - 360, 2, 60, 55))
 
-        self.account_name.setGeometry(QtCore.QRect(100, 30, self.width() - 520, 25))
+        self.account_name.setGeometry(QtCore.QRect(100, 30, self.width() - 600, 25))
         self.account_status.setGeometry(QtCore.QRect(100, 50, self.width() - 520, 25))
         self.messageEdit.setFocus()
         self.profile.update()
@@ -458,10 +463,6 @@ class MainWindow(QtGui.QMainWindow):
             if hide:
                 self.hide()
 
-    def call(self):
-        if self.profile.is_active_online():  # active friend exists and online
-            self.profile.call_click(True)
-
     def active_call(self):
         self.update_call_state('finish_call')
 
@@ -472,10 +473,15 @@ class MainWindow(QtGui.QMainWindow):
         self.update_call_state('call')
 
     def update_call_state(self, fl):
+        # TODO: do smth with video call button
         pixmap = QtGui.QPixmap(curr_directory() + '/images/{}.png'.format(fl))
         icon = QtGui.QIcon(pixmap)
         self.callButton.setIcon(icon)
         self.callButton.setIconSize(QtCore.QSize(50, 50))
+        pixmap = QtGui.QPixmap(curr_directory() + '/images/videocall.png')
+        icon = QtGui.QIcon(pixmap)
+        self.videocallButton.setIcon(icon)
+        self.videocallButton.setIconSize(QtCore.QSize(35, 35))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user open context menu in friends list

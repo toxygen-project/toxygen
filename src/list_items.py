@@ -70,7 +70,7 @@ class MessageEdit(QtGui.QTextBrowser):
         arr = text.split('\n')
         for i in range(len(arr)):
             if arr[i].startswith('&gt;'):
-                arr[i] = '<font color="green">' + arr[i] + '</font>'
+                arr[i] = '<font color="green">' + arr[i][4:] + '</font>'
         self.setHtml('<br>'.join(arr))
 
 
