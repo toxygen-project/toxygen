@@ -114,6 +114,10 @@ class History(object):
         finally:
             db.close()
 
+    def update_messages(self, tox_id, count):
+        # TODO: mark all unsent messages to friend with specified public key :tox_id (except last :count) as sent
+        pass
+
     def delete_messages(self, tox_id):
         chdir(settings.ProfileHelper.get_path())
         db = connect(self._name + '.hstr')

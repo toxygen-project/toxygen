@@ -450,7 +450,7 @@ class Profile(Contact, Singleton):
                         data = message.get_data()
                         self.create_message_item(data[0],
                                                  convert_time(data[2]),
-                                                 friend.name if data[1] else self._name,
+                                                 friend.name if data[1] == MESSAGE_OWNER['FRIEND'] else self._name,
                                                  data[3])
                     elif message.get_type() == 2:
                         item = self.create_file_transfer_item(message)
@@ -505,6 +505,10 @@ class Profile(Contact, Singleton):
     def update(self):
         if self._active_friend + 1:
             self.set_active(self._active_friend)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Friend connection status callbacks
+    # -----------------------------------------------------------------------------------------------------------------
 
     def friend_online(self, friend_number):
         for key in filter(lambda x: x[0] == friend_number, self._file_transfers.keys()):
@@ -645,6 +649,8 @@ class Profile(Contact, Singleton):
                     if not self._history.friend_exists_in_db(friend.tox_id):
                         self._history.add_friend_to_db(friend.tox_id)
                     self._history.save_messages_to_db(friend.tox_id, messages)
+                    unsent_count = len(friend.unsent_messages())
+                    self._history.update_messages(friend.tox_id, unsent_count)
             self._history.save()
             del self._history
 
@@ -681,7 +687,7 @@ class Profile(Contact, Singleton):
                 data = message.get_data()
                 self.create_message_item(data[0],
                                          convert_time(data[2]),
-                                         friend.name if data[1] else self._name,
+                                         friend.name if data[1] == MESSAGE_OWNER['FRIEND'] else self._name,
                                          data[3],
                                          False)
             elif message.get_type() == 2:
@@ -1130,7 +1136,7 @@ class Profile(Contact, Singleton):
                 if type(transfer) is ReceiveAvatar:
                     self.get_friend_by_number(friend_number).load_avatar()
                     self.set_active(None)
-                elif type(transfer) is ReceiveToBuffer:
+                elif type(transfer) is ReceiveToBuffer:  # inline image
                     inline = InlineImage(transfer.get_data())
                     i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                       FILE_TRANSFER_MESSAGE_STATUS['FINISHED'],
@@ -1149,7 +1155,7 @@ class Profile(Contact, Singleton):
 
     def outgoing_chunk(self, friend_number, file_number, position, size):
         """
-        Ougoing chubk
+        Outgoing chunk
         """
         if (friend_number, file_number) in self._file_transfers:
             transfer = self._file_transfers[(friend_number, file_number)]
