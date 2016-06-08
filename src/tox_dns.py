@@ -1,7 +1,6 @@
 import json
 import urllib2
 from util import log
-# TODO: add TOX DNS 3 support
 
 
 def tox_dns(email):

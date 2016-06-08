@@ -19,6 +19,8 @@ TOX_FILE_TRANSFER_STATE = {
 }
 
 
+# TODO: rewrite
+
 class StateSignal(QtCore.QObject):
     try:
         signal = QtCore.Signal(int, float)  # state and progress
