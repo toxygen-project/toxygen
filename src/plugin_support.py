@@ -29,6 +29,9 @@ class PluginLoader(util.Singleton):
         Load all plugins in plugins folder
         """
         path = util.curr_directory() + '/plugins/'
+        if not os.path.exists(path):
+            util.log('Plugin dir not found')
+            return
         files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
         for fl in files:
             if fl in ('plugin_super_class.py', '__init__.py') or not fl.endswith('.py'):

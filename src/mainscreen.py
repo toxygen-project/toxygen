@@ -20,7 +20,7 @@ class MessageArea(QtGui.QPlainTextEdit):
     def keyPressEvent(self, event):
         if event.matches(QtGui.QKeySequence.Paste):
             self.pasteEvent()
-        elif event.key() == QtCore.Qt.Key_Return:
+        elif event.key() in (QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter):
             modifiers = event.modifiers()
             if modifiers & QtCore.Qt.ControlModifier or modifiers & QtCore.Qt.ShiftModifier:
                 self.insertPlainText('\n')

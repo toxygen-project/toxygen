@@ -372,6 +372,7 @@ class Profile(Contact, Singleton):
         self._tox.self_set_status_message(self._status_message.encode('utf-8'))
 
     def new_nospam(self):
+        """Sets new nospam part of tox id"""
         import random
         self._tox.self_set_nospam(random.randint(0, 4294967295))  # no spam - uint32
         self._tox_id = self._tox.self_get_address()
@@ -682,16 +683,16 @@ class Profile(Contact, Singleton):
         data.reverse()
         data = data[self._messages.count():self._messages.count() + PAGE_SIZE]
         for message in data:
-            if message.get_type() <= 1:
+            if message.get_type() <= 1:  # text message
                 data = message.get_data()
                 self.create_message_item(data[0],
                                          convert_time(data[2]),
                                          friend.name if data[1] == MESSAGE_OWNER['FRIEND'] else self._name,
                                          data[3],
                                          False)
-            elif message.get_type() == 2:
+            elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:
                 item = self.create_file_transfer_item(message, False)
-                if message.get_status() >= 2:
+                if message.get_status() >= 2:  # active file transfer
                     ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
                     ft.set_state_changed_handler(item.update)
 
@@ -802,13 +803,15 @@ class Profile(Contact, Singleton):
         :param num: number of friend in list
         """
         friend = self._friends[num]
+        settings = Settings.get_instance()
         try:
-            settings = Settings.get_instance()
             index = map(lambda x: x[0], settings['friends_aliases']).index(friend.tox_id)
             del settings['friends_aliases'][index]
-            settings.save()
         except:
             pass
+        if friend.tox_id in settings['notes']:
+            del settings['notes'][friend.tox_id]
+        settings.save()
         self.clear_history(num)
         if self._history.friend_exists_in_db(friend.tox_id):
             self._history.delete_friend_from_db(friend.tox_id)
