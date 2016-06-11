@@ -481,7 +481,7 @@ class NotificationsSettings(CenteredWidget):
 
 class InterfaceSettings(CenteredWidget):
     """Interface settings form"""
-
+    # TODO: add smileys support and drop themes support
     def __init__(self):
         super(InterfaceSettings, self).__init__()
         self.initUI()

@@ -5,6 +5,7 @@ import locale
 from util import Singleton, curr_directory, log
 import pyaudio
 from toxencryptsave import LibToxEncryptSave
+import smileys
 
 
 class Settings(Singleton, dict):
@@ -31,6 +32,7 @@ class Settings(Singleton, dict):
         else:
             super(Settings, self).__init__(Settings.get_default_settings())
             self.save()
+        smileys.SmileyLoader(self)
         p = pyaudio.PyAudio()
         self.audio = {'input': p.get_default_input_device_info()['index'],
                       'output': p.get_default_output_device_info()['index']}
@@ -81,7 +83,9 @@ class Settings(Singleton, dict):
             'calls_sound': True,
             'blocked': [],
             'plugins': [],
-            'notes': {}
+            'notes': {},
+            'smileys': True,
+            'smiley_pack': 'default'
         }
 
     @staticmethod

@@ -9,19 +9,23 @@ from util import curr_directory, convert_time
 from messages import FILE_TRANSFER_MESSAGE_STATUS
 from widgets import DataLabel, create_menu
 import cgi
+import smileys
 
 
 class MessageEdit(QtGui.QTextBrowser):
 
     def __init__(self, text, width, parent=None):
         super(MessageEdit, self).__init__(parent)
+        self.urls = {}
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.setWordWrapMode(QtGui.QTextOption.WrapAtWordBoundaryOrAnywhere)
         self.document().setTextWidth(width)
         self.setOpenExternalLinks(True)
+        self.setAcceptRichText(True)
         self.setOpenLinks(False)
-        self.setTextWithLinks(text)
+        self.setSearchPaths([smileys.SmileyLoader.get_instance().get_smileys_path()])
+        self.setDecoratedText(text)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPixelSize(14)
@@ -47,7 +51,20 @@ class MessageEdit(QtGui.QTextBrowser):
             QtGui.QDesktopServices.openUrl(url)
         self.clearFocus()
 
-    def setTextWithLinks(self, text):
+    def addAnimation(self, url, fileName):
+        movie = QtGui.QMovie(self)
+        movie.setFileName(fileName)
+        self.urls[movie] = url
+        movie.frameChanged[int].connect(lambda x: self.animate(movie))
+        movie.start()
+
+    def animate(self, movie):
+        self.document().addResource(QtGui.QTextDocument.ImageResource,
+                                    self.urls[movie],
+                                    movie.currentPixmap())
+        self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
+
+    def setDecoratedText(self, text):
         text = cgi.escape(text)
         exp = QtCore.QRegExp(
             '('
@@ -71,7 +88,9 @@ class MessageEdit(QtGui.QTextBrowser):
         for i in range(len(arr)):
             if arr[i].startswith('&gt;'):
                 arr[i] = '<font color="green">' + arr[i][4:] + '</font>'
-        self.setHtml('<br>'.join(arr))
+        text = '<br>'.join(arr)
+        text = smileys.SmileyLoader.get_instance().add_smileys_to_text(text, self)
+        self.setHtml(text)
 
 
 class MessageItem(QtGui.QWidget):
