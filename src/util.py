@@ -1,6 +1,5 @@
 import os
 import time
-from platform import system
 
 
 program_version = '0.1.3'
@@ -25,17 +24,6 @@ def convert_time(t):
     h, m = divmod(m, 60)
     d, h = divmod(h, 24)
     return '%02d:%02d' % (h, m)
-
-
-# obsolete
-def get_style(style):
-    if style != 'default':
-        return style
-    else:
-        if system() == 'Windows':
-            return 'windows'
-        else:
-            return 'gtk'
 
 
 class Singleton(object):

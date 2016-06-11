@@ -85,7 +85,8 @@ class Settings(Singleton, dict):
             'plugins': [],
             'notes': {},
             'smileys': True,
-            'smiley_pack': 'default'
+            'smiley_pack': 'default',
+            'mirror_mode': False
         }
 
     @staticmethod

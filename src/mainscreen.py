@@ -65,6 +65,7 @@ class MessageArea(QtGui.QPlainTextEdit):
 
 
 class MainWindow(QtGui.QMainWindow):
+    # TODO: add mirror mode
 
     def __init__(self, tox, reset, tray):
         super(MainWindow, self).__init__()

@@ -4,7 +4,7 @@ except ImportError:
     from PyQt4 import QtCore, QtGui
 from settings import *
 from profile import Profile
-from util import get_style, curr_directory
+from util import curr_directory
 from widgets import CenteredWidget, DataLabel
 import pyaudio
 import toxencryptsave
@@ -481,7 +481,6 @@ class NotificationsSettings(CenteredWidget):
 
 class InterfaceSettings(CenteredWidget):
     """Interface settings form"""
-    # TODO: add smileys support and drop themes support
     def __init__(self):
         super(InterfaceSettings, self).__init__()
         self.initUI()
@@ -489,12 +488,12 @@ class InterfaceSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("interfaceForm")
-        self.resize(300, 300)
-        self.setMinimumSize(QtCore.QSize(300, 300))
-        self.setMaximumSize(QtCore.QSize(300, 300))
-        self.setBaseSize(QtCore.QSize(300, 300))
+        self.resize(300, 320)
+        self.setMinimumSize(QtCore.QSize(300, 320))
+        self.setMaximumSize(QtCore.QSize(300, 320))
+        self.setBaseSize(QtCore.QSize(300, 320))
         self.label = QtGui.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(30, 20, 91, 21))
+        self.label.setGeometry(QtCore.QRect(30, 10, 100, 20))
         font = QtGui.QFont()
         font.setPointSize(16)
         font.setWeight(75)
@@ -502,16 +501,19 @@ class InterfaceSettings(CenteredWidget):
         self.label.setFont(font)
         self.label.setObjectName("label")
         self.themeSelect = QtGui.QComboBox(self)
-        self.themeSelect.setGeometry(QtCore.QRect(30, 60, 160, 30))
+        self.themeSelect.setGeometry(QtCore.QRect(30, 40, 160, 30))
         self.themeSelect.setObjectName("themeSelect")
-        list_of_themes = ['default', 'windows', 'gtk', 'cde', 'plastique', 'motif']
+        list_of_themes = ['dark']
         self.themeSelect.addItems(list_of_themes)
         settings = Settings.get_instance()
         theme = settings['theme']
-        index = list_of_themes.index(theme)
+        if theme in list_of_themes:
+            index = list_of_themes.index(theme)
+        else:
+            index = 0
         self.themeSelect.setCurrentIndex(index)
         self.lang_choose = QtGui.QComboBox(self)
-        self.lang_choose.setGeometry(QtCore.QRect(30, 150, 160, 30))
+        self.lang_choose.setGeometry(QtCore.QRect(30, 110, 160, 30))
         self.lang_choose.setObjectName("comboBox")
         supported = Settings.supported_languages()
         for elem in supported:
@@ -520,8 +522,27 @@ class InterfaceSettings(CenteredWidget):
         index = map(lambda x: x[0], supported).index(lang)
         self.lang_choose.setCurrentIndex(index)
         self.lang = QtGui.QLabel(self)
-        self.lang.setGeometry(QtCore.QRect(30, 110, 121, 31))
+        self.lang.setGeometry(QtCore.QRect(30, 80, 121, 20))
         self.lang.setFont(font)
+        self.mirror_mode = QtGui.QCheckBox(self)
+        self.mirror_mode.setGeometry(QtCore.QRect(30, 160, 120, 20))
+        self.mirror_mode.setChecked(settings['mirror_mode'])
+        self.smileys = QtGui.QCheckBox(self)
+        self.smileys.setGeometry(QtCore.QRect(30, 190, 120, 20))
+        self.smileys.setChecked(settings['smileys'])
+        self.smiley_pack_label = QtGui.QLabel(self)
+        self.smiley_pack_label.setGeometry(QtCore.QRect(30, 230, 120, 20))
+        self.smiley_pack_label.setFont(font)
+        self.smiley_pack = QtGui.QComboBox(self)
+        self.smiley_pack.setGeometry(QtCore.QRect(30, 260, 160, 30))
+        sm = smileys.SmileyLoader.get_instance()
+        self.smiley_pack.addItems(sm.get_packs_list())
+        print sm.get_packs_list()
+        try:
+            ind = sm.get_packs_list().index(settings['smiley_pack'])
+        except:
+            ind = sm.get_packs_list().index('default')
+        self.smiley_pack.setCurrentIndex(ind)
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -529,12 +550,17 @@ class InterfaceSettings(CenteredWidget):
         self.setWindowTitle(QtGui.QApplication.translate("interfaceForm", "Interface settings", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("interfaceForm", "Theme:", None, QtGui.QApplication.UnicodeUTF8))
         self.lang.setText(QtGui.QApplication.translate("interfaceForm", "Language:", None, QtGui.QApplication.UnicodeUTF8))
+        self.smileys.setText(QtGui.QApplication.translate("interfaceForm", "Smileys", None, QtGui.QApplication.UnicodeUTF8))
+        self.smiley_pack_label.setText(QtGui.QApplication.translate("interfaceForm", "Smiley pack:", None, QtGui.QApplication.UnicodeUTF8))
+        self.mirror_mode.setText(QtGui.QApplication.translate("interfaceForm", "Mirror mode", None, QtGui.QApplication.UnicodeUTF8))
 
     def closeEvent(self, event):
         settings = Settings.get_instance()
-        style = str(self.themeSelect.currentText())
-        settings['theme'] = style
-        QtGui.QApplication.setStyle(get_style(style))
+        settings['theme'] = str(self.themeSelect.currentText())
+        settings['smileys'] = self.smileys.isChecked()
+        settings['mirror_mode'] = self.mirror_mode.isChecked()
+        settings['smiley_pack'] = self.smiley_pack.currentText()
+        smileys.SmileyLoader.get_instance().load_pack()
         language = self.lang_choose.currentText()
         if settings['language'] != language:
             settings['language'] = language

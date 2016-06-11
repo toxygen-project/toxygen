@@ -9,7 +9,7 @@ from bootstrap import node_generator
 from mainscreen import MainWindow
 from profile import tox_factory
 from callbacks import init_callbacks
-from util import curr_directory, get_style
+from util import curr_directory
 import styles.style
 import locale
 import toxencryptsave
@@ -198,7 +198,6 @@ class Toxygen(object):
         self.tray.show()
 
         self.ms.show()
-        QtGui.QApplication.setStyle(get_style(settings['theme']))  # set application style
 
         plugin_helper = PluginLoader(self.tox, settings)  # plugin support
         plugin_helper.load()

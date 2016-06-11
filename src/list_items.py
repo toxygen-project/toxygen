@@ -65,7 +65,7 @@ class MessageEdit(QtGui.QTextBrowser):
         self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
 
     def setDecoratedText(self, text):
-        text = cgi.escape(text)
+        text = cgi.escape(text)  # replace < and >
         exp = QtCore.QRegExp(
             '('
             '(?:\\b)((www\\.)|(http[s]?|ftp)://)'
@@ -75,7 +75,7 @@ class MessageEdit(QtGui.QTextBrowser):
             '|(?:\\b)(mailto:\\S+@\\S+\\.\\S+)'
             '|(?:\\b)(tox:\\S+@\\S+)')
         offset = exp.indexIn(text, 0)
-        while offset != -1:
+        while offset != -1:  # add links
             url = exp.cap()
             if exp.cap(2) == 'www.':
                 html = '<a href="http://{0}">{0}</a>'.format(url)
@@ -85,11 +85,11 @@ class MessageEdit(QtGui.QTextBrowser):
             offset += len(html)
             offset = exp.indexIn(text, offset)
         arr = text.split('\n')
-        for i in range(len(arr)):
+        for i in range(len(arr)):  # quotes
             if arr[i].startswith('&gt;'):
                 arr[i] = '<font color="green">' + arr[i][4:] + '</font>'
         text = '<br>'.join(arr)
-        text = smileys.SmileyLoader.get_instance().add_smileys_to_text(text, self)
+        text = smileys.SmileyLoader.get_instance().add_smileys_to_text(text, self)  # smileys
         self.setHtml(text)
 
 
