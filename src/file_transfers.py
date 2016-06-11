@@ -1,6 +1,6 @@
 from toxcore_enums_and_consts import TOX_FILE_KIND, TOX_FILE_CONTROL
-from os.path import basename, getsize, exists
-from os import remove, rename
+from os.path import basename, getsize, exists, dirname
+from os import remove, rename, chdir
 from time import time, sleep
 from tox import Tox
 import settings
@@ -161,6 +161,18 @@ class SendFromBuffer(FileTransfer):
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
             self._state_changed.signal.emit(self.state, 1)
 
+
+class SendFromFileBuffer(SendTransfer):
+
+    def __init__(self, *args):
+        super(SendFromFileBuffer, self).__init__(*args)
+
+    def send_chunk(self, position, size):
+        super(SendFromFileBuffer, self).send_chunk(position, size)
+        if not size:
+            chdir(dirname(self._path))
+            remove(self._path)
+
 # -----------------------------------------------------------------------------------------------------------------
 # Receive file
 # -----------------------------------------------------------------------------------------------------------------
@@ -268,6 +280,7 @@ class ReceiveAvatar(ReceiveTransfer):
         if self.state:
             avatar_path = self._path[:-4]
             if exists(avatar_path):
+                chdir(dirname(avatar_path))
                 remove(avatar_path)
             rename(self._path, avatar_path)
 
