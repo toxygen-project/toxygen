@@ -164,11 +164,15 @@ class Friend(contact.Contact):
     def get_messages(self):
         return self._new_messages
 
-    def set_messages(self, value):
-        self._widget.connection_status.messages = self._new_messages = value
+    def inc_messages(self):
+        self._widget.connection_status.messages = self._new_messages + 1
         self._widget.connection_status.repaint()
 
-    messages = property(get_messages, set_messages)
+    def reset_messages(self):
+        self._widget.connection_status.messages = self._new_messages = 0
+        self._widget.connection_status.repaint()
+
+    messages = property(get_messages)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Friend's number (can be used in toxcore)

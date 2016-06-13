@@ -230,9 +230,9 @@ class MainWindow(QtGui.QMainWindow):
     def setup_left_top(self, Form):
         Form.setObjectName("left_top")
         Form.setCursor(QtCore.Qt.PointingHandCursor)
-        Form.setMinimumSize(QtCore.QSize(250, 80))
-        Form.setMaximumSize(QtCore.QSize(250, 80))
-        Form.setBaseSize(QtCore.QSize(250, 80))
+        Form.setMinimumSize(QtCore.QSize(270, 80))
+        Form.setMaximumSize(QtCore.QSize(270, 80))
+        Form.setBaseSize(QtCore.QSize(270, 80))
         self.avatar_label = Form.avatar_label = QtGui.QLabel(Form)
         self.avatar_label.setGeometry(QtCore.QRect(5, 15, 64, 64))
         self.avatar_label.setScaledContents(True)
@@ -250,7 +250,7 @@ class MainWindow(QtGui.QMainWindow):
         font.setBold(False)
         Form.status_message.setFont(font)
         Form.status_message.setObjectName("status_message")
-        self.connection_status = Form.connection_status = StatusCircle(self)
+        self.connection_status = Form.connection_status = StatusCircle(Form)
         Form.connection_status.setGeometry(QtCore.QRect(230, 29, 64, 64))
         Form.connection_status.setMinimumSize(QtCore.QSize(32, 32))
         Form.connection_status.setMaximumSize(QtCore.QSize(32, 32))
@@ -579,12 +579,12 @@ class MainWindow(QtGui.QMainWindow):
         self.profile.set_active(num)
 
     def mouseReleaseEvent(self, event):
-        x, y = event.x(), event.y()
         pos = self.connection_status.pos()
-        if (pos.x() < x < pos.x() + 32) and (pos.y() < y < pos.y() + 32):
+        x, y = pos.x() + self.user_info.pos().x(), pos.y() + self.user_info.pos().y()
+        if (x < event.x() < x + 32) and (y < event.y() < y + 32):
             self.profile.change_status()
         else:
-            super(self.__class__, self).mouseReleaseEvent(event)
+            super(MainWindow, self).mouseReleaseEvent(event)
 
     def filtering(self):
         self.profile.filtration(self.online_contacts.currentIndex() == 1, self.contact_name.text())

@@ -124,9 +124,12 @@ class MessageItem(QtGui.QWidget):
         self.message.setGeometry(QtCore.QRect(100, 0, parent.width() - 150, self.message.height()))
         self.setFixedHeight(self.message.height())
 
-        if message_type == TOX_MESSAGE_TYPE['ACTION']:
+        if message_type != TOX_MESSAGE_TYPE['NORMAL']:
             self.name.setStyleSheet("QLabel { color: #4169E1; }")
+            self.name.setAlignment(QtCore.Qt.AlignCenter)
             self.message.setStyleSheet("QTextEdit { color: #4169E1; }")
+            self.message.setAlignment(QtCore.Qt.AlignCenter)
+            self.time.setStyleSheet("QLabel { color: #4169E1; }")
 
 
 class ContactItem(QtGui.QWidget):

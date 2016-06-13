@@ -4,7 +4,8 @@ MESSAGE_TYPE = {
     'TEXT': 0,
     'ACTION': 1,
     'FILE_TRANSFER': 2,
-    'INLINE': 3
+    'INLINE': 3,
+    'INFO_MESSAGE': 4
 }
 
 FILE_TRANSFER_MESSAGE_STATUS = {
@@ -90,3 +91,9 @@ class InlineImage(Message):
 
     def get_data(self):
         return self._data
+
+
+class InfoMessage(TextMessage):
+
+    def __init__(self, message, time):
+        super(InfoMessage, self).__init__(message, None, time, MESSAGE_TYPE['INFO_MESSAGE'])

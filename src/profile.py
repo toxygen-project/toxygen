@@ -154,7 +154,7 @@ class Profile(contact.Contact, Singleton):
             if value is not None:
                 self._active_friend = value
                 friend = self._friends[value]
-                self._friends[value].set_messages(False)
+                self._friends[value].reset_messages()
                 self._screen.messageEdit.clear()
                 self._messages.clear()
                 friend.load_corr()
@@ -166,7 +166,7 @@ class Profile(contact.Contact, Singleton):
                                                  convert_time(data[2]),
                                                  friend.name if data[1] == MESSAGE_OWNER['FRIEND'] else self._name,
                                                  data[3])
-                    elif message.get_type() == 2:
+                    elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:
                         item = self.create_file_transfer_item(message)
                         if message.get_status() >= 2:  # active file transfer
                             try:
@@ -175,8 +175,14 @@ class Profile(contact.Contact, Singleton):
                                 ft.signal()
                             except:
                                 print 'Incoming not started transfer - no info found'
-                    else:  # inline
+                    elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline
                         self.create_inline_item(message.get_data())
+                    else:  # info message
+                        data = message.get_data()
+                        self.create_message_item(data[0],
+                                                 convert_time(data[2]),
+                                                 '',
+                                                 data[3])
                 self._messages.scrollToBottom()
                 if value in self._call:
                     self._screen.active_call()
@@ -215,6 +221,20 @@ class Profile(contact.Contact, Singleton):
 
     def is_active_online(self):
         return self._active_friend + 1 and self._friends[self._active_friend].status is not None
+
+    def new_name(self, number, name):
+        friend = self.get_friend_by_number(number)
+        tmp = friend.name
+        friend.set_name(name)
+        name = name.decode('utf-8')
+        if friend.name == name and tmp != name:
+            message = QtGui.QApplication.translate("MainWindow", 'User {} is now known as {}', None, QtGui.QApplication.UnicodeUTF8)
+            message = message.format(tmp, name)
+            friend.append_message(InfoMessage(message, time.time()))
+            if friend.number == self.get_active_number():
+                self.create_message_item(message, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+                self._messages.scrollToBottom()
+            self.set_active(None)
 
     def update(self):
         if self._active_friend + 1:
@@ -318,7 +338,7 @@ class Profile(contact.Contact, Singleton):
                 TextMessage(message.decode('utf-8'), MESSAGE_OWNER['FRIEND'], time.time(), message_type))
         else:
             friend = self.get_friend_by_number(friend_num)
-            friend.set_messages(True)
+            friend.inc_messages()
             friend.append_message(
                 TextMessage(message.decode('utf-8'), MESSAGE_OWNER['FRIEND'], time.time(), message_type))
             if not friend.visibility:
@@ -408,6 +428,14 @@ class Profile(contact.Contact, Singleton):
                 if message.get_status() >= 2:  # active file transfer
                     ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
                     ft.set_state_changed_handler(item.update)
+            elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline
+                self.create_inline_item(message.get_data())
+            else:  # info message
+                data = message.get_data()
+                self.create_message_item(data[0],
+                                         convert_time(data[2]),
+                                         '',
+                                         data[3])
 
     def export_history(self, directory):
         self._history.export(directory)
@@ -730,7 +758,7 @@ class Profile(contact.Contact, Singleton):
                 self._file_transfers[(friend_number, file_number)].set_state_changed_handler(item.update)
             self._messages.scrollToBottom()
         else:
-            friend.set_messages(True)
+            friend.inc_messages()
 
         friend.append_message(tm)
 
@@ -942,6 +970,15 @@ class Profile(contact.Contact, Singleton):
         if num not in self._call and self.is_active_online():  # start call
             self._call(num, audio, video)
             self._screen.active_call()
+            if video:
+                text = QtGui.QApplication.translate("incoming_call", "Outgoing video call", None,
+                                                    QtGui.QApplication.UnicodeUTF8)
+            else:
+                text = QtGui.QApplication.translate("incoming_call", "Outgoing audio call", None,
+                                                    QtGui.QApplication.UnicodeUTF8)
+            self._friends[self._active_friend].append_message(InfoMessage(text, time.time()))
+            self.create_message_item(text, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+            self._messages.scrollToBottom()
         elif num in self._call:  # finish or cancel call if you call with active friend
             self.stop_call(num, False)
 
@@ -950,15 +987,20 @@ class Profile(contact.Contact, Singleton):
         Incoming call from friend. Only audio is supported now
         """
         friend = self.get_friend_by_number(friend_number)
+        if video:
+            text = QtGui.QApplication.translate("incoming_call", "Incoming video call", None,
+                                                QtGui.QApplication.UnicodeUTF8)
+        else:
+            text = QtGui.QApplication.translate("incoming_call", "Incoming audio call", None,
+                                                QtGui.QApplication.UnicodeUTF8)
+        friend.append_message(InfoMessage(text, time.time()))
         self._incoming_calls.add(friend_number)
         if friend_number == self.get_active_number():
             self._screen.incoming_call()
+            self.create_message_item(text, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+            self._messages.scrollToBottom()
         else:
-            friend.set_messages(True)
-        if video:
-            text = QtGui.QApplication.translate("incoming_call", "Incoming video call", None, QtGui.QApplication.UnicodeUTF8)
-        else:
-            text = QtGui.QApplication.translate("incoming_call", "Incoming audio call", None, QtGui.QApplication.UnicodeUTF8)
+            friend.inc_messages()
         self._call_widget = avwidgets.IncomingCallWidget(friend_number, text, friend.name)
         self._call_widget.set_pixmap(friend.get_pixmap())
         self._call_widget.show()
@@ -979,10 +1021,18 @@ class Profile(contact.Contact, Singleton):
         """
         if friend_number in self._incoming_calls:
             self._incoming_calls.remove(friend_number)
+            text = QtGui.QApplication.translate("incoming_call", "Call declined", None, QtGui.QApplication.UnicodeUTF8)
+        else:
+            text = QtGui.QApplication.translate("incoming_call", "Call finished", None, QtGui.QApplication.UnicodeUTF8)
         self._screen.call_finished()
         self._call.finish_call(friend_number, by_friend)  # finish or decline call
         if hasattr(self, '_call_widget'):
             del self._call_widget
+        friend = self.get_friend_by_number(friend_number)
+        friend.append_message(InfoMessage(text, time.time()))
+        if friend_number == self.get_active_number():
+            self.create_message_item(text, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+            self._messages.scrollToBottom()
 
 
 def tox_factory(data=None, settings=None):

@@ -94,11 +94,9 @@ def friend_name(tox, friend_num, name, size, user_data):
     Friend changed his name
     """
     profile = Profile.get_instance()
-    friend = profile.get_friend_by_number(friend_num)
     print 'New name: ', str(friend_num), str(name)
-    invoke_in_main_thread(friend.set_name, name)
     if profile.get_active_number() == friend_num:
-        invoke_in_main_thread(profile.set_active)
+        invoke_in_main_thread(profile.new_name, friend_num, name)
 
 
 def friend_status_message(tox, friend_num, status_message, size, user_data):
@@ -279,7 +277,7 @@ def callback_audio(toxav, friend_number, samples, audio_samples_per_channel, aud
     """
     New audio chunk
     """
-    print audio_samples_per_channel, audio_channels_count, rate
+    # print audio_samples_per_channel, audio_channels_count, rate
     Profile.get_instance().call.chunk(
         ''.join(chr(x) for x in samples[:audio_samples_per_channel * 2 * audio_channels_count]),
         audio_channels_count,
