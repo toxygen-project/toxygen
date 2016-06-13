@@ -382,8 +382,9 @@ class Profile(contact.Contact, Singleton):
                     if not self._history.friend_exists_in_db(friend.tox_id):
                         self._history.add_friend_to_db(friend.tox_id)
                     self._history.save_messages_to_db(friend.tox_id, messages)
-                    unsent_count = len(friend.unsent_messages())
-                    self._history.update_messages(friend.tox_id, unsent_count)
+                    unsent_messages = friend.unsent_messages()
+                    unsent_time = unsent_messages[0].get_data()[2] if len(unsent_messages) else time.time() + 1
+                    self._history.update_messages(friend.tox_id, unsent_time)
             self._history.save()
             del self._history
 

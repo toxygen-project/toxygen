@@ -13,28 +13,35 @@ class SmileyLoader(util.Singleton):
     """
 
     def __init__(self, settings):
-        self.settings = settings
-        self.curr_pack = None  # current pack name
-        self.smileys = {}  # smileys dict. key - smiley (str), value - path to image (str)
+        self._settings = settings
+        self._curr_pack = None  # current pack name
+        self._smileys = {}  # smileys dict. key - smiley (str), value - path to image (str)
+        self._set = {}  # smileys dict without duplicates
         self.load_pack()
 
     def load_pack(self):
         """
         Loads smiley pack
         """
-        pack_name = self.settings['smiley_pack']
-        if self.settings['smileys'] and self.curr_pack != pack_name:
-            self.curr_pack = pack_name
+        pack_name = self._settings['smiley_pack']
+        if self._settings['smileys'] and self._curr_pack != pack_name:
+            self._curr_pack = pack_name
             path = self.get_smileys_path() + 'config.json'
             try:
                 with open(path) as fl:
-                    self.smileys = json.loads(fl.read())
+                    self._smileys = json.loads(fl.read())
                 print 'Smiley pack', pack_name, 'loaded'
+                self._set = {}
+                for key, value in self._smileys.items():
+                    if value not in self._set.values():
+                        self._set[key] = value
             except:
+                self._smileys = {}
+                self._set = {}
                 print 'Smiley pack', pack_name, 'was not loaded'
 
     def get_smileys_path(self):
-        return util.curr_directory() + '/smileys/' + self.curr_pack + '/'
+        return util.curr_directory() + '/smileys/' + self._curr_pack + '/'
 
     def get_packs_list(self):
         d = util.curr_directory() + '/smileys/'
@@ -47,13 +54,28 @@ class SmileyLoader(util.Singleton):
         :param edit: MessageEdit instance
         :return text with smileys
         """
-        if not self.settings['smileys']:
+        if not self._settings['smileys']:
             return text
         arr = text.split(' ')
         for i in range(len(arr)):
-            if arr[i] in self.smileys:
-                file_name = self.smileys[arr[i]]  # image name
+            if arr[i] in self._smileys:
+                file_name = self._smileys[arr[i]]  # image name
                 arr[i] = u'<img title=\"{}\" src=\"{}\" />'.format(arr[i], file_name)
                 if file_name.endswith('.gif'):  # animated smiley
                     edit.addAnimation(QtCore.QUrl(file_name), self.get_smileys_path() + file_name)
         return ' '.join(arr)
+
+
+def sticker_loader():
+    """
+    :return dict of stickers
+    """
+    result = {}
+    d = util.curr_directory() + '/stickers/'
+    keys = [x[1] for x in os.walk(d)][0]
+    for key in keys:
+        path = d + key
+        files = [f for f in os.listdir(path)]
+        if files:
+            result[key] = files
+    return result
