@@ -101,8 +101,6 @@ class MainWindow(QtGui.QMainWindow):
         self.actionSettings.setText(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.audioSettings.setText(QtGui.QApplication.translate("MainWindow", "Audio", None, QtGui.QApplication.UnicodeUTF8))
         self.contact_name.setPlaceholderText(QtGui.QApplication.translate("MainWindow", "Search", None, QtGui.QApplication.UnicodeUTF8))
-        self.screenshotButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Send screenshot", None, QtGui.QApplication.UnicodeUTF8))
-        self.fileTransferButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Send file", None, QtGui.QApplication.UnicodeUTF8))
         self.sendMessageButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Send message", None, QtGui.QApplication.UnicodeUTF8))
         self.callButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Start audio call with friend", None, QtGui.QApplication.UnicodeUTF8))
         self.online_contacts.clear()
@@ -120,35 +118,24 @@ class MainWindow(QtGui.QMainWindow):
         font.setPointSize(10)
         self.messageEdit.setFont(font)
 
-        self.screenshotButton = QRightClickButton(Form)
-        self.screenshotButton.setGeometry(QtCore.QRect(455, 3, 55, 55))
-        self.screenshotButton.setObjectName("screenshotButton")
-
-        self.fileTransferButton = QtGui.QPushButton(Form)
-        self.fileTransferButton.setGeometry(QtCore.QRect(510, 3, 55, 55))
-        self.fileTransferButton.setObjectName("fileTransferButton")
-
         self.sendMessageButton = QtGui.QPushButton(Form)
         self.sendMessageButton.setGeometry(QtCore.QRect(565, 3, 60, 55))
         self.sendMessageButton.setObjectName("sendMessageButton")
+
+        self.menuButton = MenuButton(Form, self.show_menu)
+        self.menuButton.setGeometry(QtCore.QRect(QtCore.QRect(455, 3, 55, 55)))
 
         pixmap = QtGui.QPixmap('send.png')
         icon = QtGui.QIcon(pixmap)
         self.sendMessageButton.setIcon(icon)
         self.sendMessageButton.setIconSize(QtCore.QSize(45, 60))
-        pixmap = QtGui.QPixmap('file.png')
-        icon = QtGui.QIcon(pixmap)
-        self.fileTransferButton.setIcon(icon)
-        self.fileTransferButton.setIconSize(QtCore.QSize(40, 40))
-        pixmap = QtGui.QPixmap('screenshot.png')
-        icon = QtGui.QIcon(pixmap)
-        self.screenshotButton.setIcon(icon)
-        self.screenshotButton.setIconSize(QtCore.QSize(40, 60))
 
-        self.fileTransferButton.clicked.connect(self.send_file)
-        self.screenshotButton.clicked.connect(self.send_screenshot)
+        pixmap = QtGui.QPixmap('menu.png')
+        icon = QtGui.QIcon(pixmap)
+        self.menuButton.setIcon(icon)
+        self.menuButton.setIconSize(QtCore.QSize(40, 40))
+
         self.sendMessageButton.clicked.connect(self.send_message)
-        self.connect(self.screenshotButton, QtCore.SIGNAL("rightClicked()"), lambda: self.send_screenshot(True))
 
         QtCore.QMetaObject.connectSlotsByName(Form)
 
@@ -239,7 +226,7 @@ class MainWindow(QtGui.QMainWindow):
         self.typing = QtGui.QLabel(Form)
         self.typing.setGeometry(QtCore.QRect(500, 40, 50, 30))
         pixmap = QtGui.QPixmap(QtCore.QSize(50, 30))
-        pixmap.load('typing.png')
+        pixmap.load(curr_directory() + '/images/typing.png')
         self.typing.setScaledContents(False)
         self.typing.setPixmap(pixmap.scaled(50, 30, QtCore.Qt.KeepAspectRatio))
         self.typing.setVisible(False)
@@ -334,16 +321,15 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QApplication.closeAllWindows()
 
     def resizeEvent(self, *args, **kwargs):
-        self.messages.setGeometry(0, 0, self.width() - 300, self.height() - 172)
-        self.friends_list.setGeometry(0, 0, 270, self.height() - 140)
+        self.messages.setGeometry(0, 0, self.width() - 294, self.height() - 172)
+        self.friends_list.setGeometry(0, 0, 270, self.height() - 135)
 
         self.videocallButton.setGeometry(QtCore.QRect(self.width() - 350, 20, 50, 50))
         self.callButton.setGeometry(QtCore.QRect(self.width() - 410, 20, 50, 50))
         self.typing.setGeometry(QtCore.QRect(self.width() - 470, 30, 50, 30))
 
-        self.messageEdit.setGeometry(QtCore.QRect(120, 2, self.width() - 490, 55))
-        self.screenshotButton.setGeometry(QtCore.QRect(0, 2, 55, 55))
-        self.fileTransferButton.setGeometry(QtCore.QRect(60, 2, 55, 55))
+        self.messageEdit.setGeometry(QtCore.QRect(60, 2, self.width() - 430, 55))
+        self.menuButton.setGeometry(QtCore.QRect(0, 2, 55, 55))
         self.sendMessageButton.setGeometry(QtCore.QRect(self.width() - 360, 2, 60, 55))
 
         self.account_name.setGeometry(QtCore.QRect(100, 30, self.width() - 600, 25))
@@ -401,6 +387,17 @@ class MainWindow(QtGui.QMainWindow):
         self.audio_s = AudioSettings()
         self.audio_s.show()
 
+    def show_menu(self):
+        if hasattr(self, 'menu') and self.menu.isVisible():
+            self.menu.hide()
+            return
+        self.menu = DropdownMenu(self)
+        self.menu.setGeometry(QtCore.QRect(0 if Settings.get_instance()['mirror_mode'] else 270,
+                                           self.height() - 160,
+                                           150,
+                                           100))
+        self.menu.show()
+
     # -----------------------------------------------------------------------------------------------------------------
     # Messages, calls and file transfers
     # -----------------------------------------------------------------------------------------------------------------
@@ -410,6 +407,7 @@ class MainWindow(QtGui.QMainWindow):
         self.profile.send_message(text)
 
     def send_file(self):
+        self.menu.hide()
         if self.profile.is_active_online():  # active friend exists and online
             choose_file = QtGui.QApplication.translate("MainWindow", 'Choose file', None, QtGui.QApplication.UnicodeUTF8)
             choose = QtGui.QApplication.translate("MainWindow", choose_file, None, QtGui.QApplication.UnicodeUTF8)
@@ -418,11 +416,21 @@ class MainWindow(QtGui.QMainWindow):
                 self.profile.send_file(name[0])
 
     def send_screenshot(self, hide=False):
+        self.menu.hide()
         if self.profile.is_active_online():  # active friend exists and online
             self.sw = ScreenShotWindow(self)
             self.sw.show()
             if hide:
                 self.hide()
+
+    def send_smiley(self):
+        self.menu.hide()
+        self.smiley = SmileyWindow(self)
+        self.smiley.setGeometry(QtCore.QRect(self.x() if Settings.get_instance()['mirror_mode'] else 270 + self.x(),
+                                             self.y() + self.height() - 200,
+                                             self.smiley.width(),
+                                             self.smiley.height()))
+        self.smiley.show()
 
     def active_call(self):
         self.update_call_state('finish_call')
@@ -436,11 +444,11 @@ class MainWindow(QtGui.QMainWindow):
     def update_call_state(self, fl):
         # TODO: do smth with video call button
         os.chdir(curr_directory() + '/images/')
-        pixmap = QtGui.QPixmap('{}.png'.format(fl))
+        pixmap = QtGui.QPixmap(curr_directory() + '/images/{}.png'.format(fl))
         icon = QtGui.QIcon(pixmap)
         self.callButton.setIcon(icon)
         self.callButton.setIconSize(QtCore.QSize(50, 50))
-        pixmap = QtGui.QPixmap('videocall.png')
+        pixmap = QtGui.QPixmap(curr_directory() + '/images/videocall.png')
         icon = QtGui.QIcon(pixmap)
         self.videocallButton.setIcon(icon)
         self.videocallButton.setIconSize(QtCore.QSize(35, 35))

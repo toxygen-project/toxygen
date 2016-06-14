@@ -33,6 +33,7 @@ class SmileyLoader(util.Singleton):
                 print 'Smiley pack', pack_name, 'loaded'
                 self._set = {}
                 for key, value in self._smileys.items():
+                    value = self.get_smileys_path() + value
                     if value not in self._set.values():
                         self._set[key] = value
             except:
@@ -47,6 +48,9 @@ class SmileyLoader(util.Singleton):
         d = util.curr_directory() + '/smileys/'
         return [x[1] for x in os.walk(d)][0]
 
+    def get_smileys(self):
+        return list(self._set.items())
+
     def add_smileys_to_text(self, text, edit):
         """
         Adds smileys to text
@@ -54,7 +58,7 @@ class SmileyLoader(util.Singleton):
         :param edit: MessageEdit instance
         :return text with smileys
         """
-        if not self._settings['smileys']:
+        if not self._settings['smileys'] or not len(self._smileys):
             return text
         arr = text.split(' ')
         for i in range(len(arr)):
@@ -75,7 +79,7 @@ def sticker_loader():
     keys = [x[1] for x in os.walk(d)][0]
     for key in keys:
         path = d + key
-        files = [f for f in os.listdir(path)]
+        files = map(lambda f: f.endswith('.png'), os.listdir(path))
         if files:
             result[key] = files
     return result

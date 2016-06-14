@@ -2,8 +2,10 @@ try:
     from PySide import QtCore, QtGui
 except ImportError:
     from PyQt4 import QtCore, QtGui
-from widgets import RubberBand, create_menu
+from widgets import RubberBand, create_menu, QRightClickButton
 from profile import Profile
+import smileys
+import util
 
 
 class MessageArea(QtGui.QPlainTextEdit):
@@ -117,3 +119,141 @@ class ScreenShotWindow(QtGui.QWidget):
             self.close()
         else:
             super(ScreenShotWindow, self).keyPressEvent(event)
+
+
+class SmileyWindow(QtGui.QWidget):
+
+    def __init__(self, parent):
+        super(SmileyWindow, self).__init__()
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        inst = smileys.SmileyLoader.get_instance()
+        self.data = inst.get_smileys()
+        count = len(self.data)
+        self.page_size = int(pow(count / 8, 0.5) + 1) * 8
+        if count % self.page_size == 0:
+            self.page_count = count / self.page_size
+        else:
+            self.page_count = int(count / float(self.page_size) + 0.5)
+        self.page = 0
+        self.radio = []
+        self.parent = parent
+        for i in range(self.page_count):
+            elem = QtGui.QRadioButton(self)
+            elem.setGeometry(QtCore.QRect(i * 20 + 5, 180, 20, 20))
+            elem.clicked.connect(lambda i=i: self.checked(i))
+            self.radio.append(elem)
+        width = max(self.page_count * 20 + 30, (self.page_size + 5) * 8 / 10)
+        self.setMaximumSize(width, 200)
+        self.setMinimumSize(width, 200)
+        self.buttons = []
+        for i in range(self.page_size):
+            b = QtGui.QPushButton(self)
+            b.setGeometry(QtCore.QRect((i / 8) * 20 + 5, (i % 8) * 20, 20, 20))
+            b.clicked.connect(lambda i=i: self.clicked(i))
+            self.buttons.append(b)
+        self.checked(0)
+
+    def checked(self, pos):
+        self.radio[self.page].setChecked(False)
+        self.radio[pos].setChecked(True)
+        self.page = pos
+        start = self.page * self.page_size
+        for i in range(self.page_size):
+            try:
+                self.buttons[i].setVisible(True)
+                pixmap = QtGui.QPixmap(self.data[start + i][1])
+                icon = QtGui.QIcon(pixmap)
+                self.buttons[i].setIcon(icon)
+            except:
+                self.buttons[i].setVisible(False)
+
+    def clicked(self, pos):
+        pos += self.page * self.page_size
+        smiley = self.data[pos][0]
+        self.parent.messageEdit.insertPlainText(smiley)
+        self.close()
+
+
+class MenuButton(QtGui.QPushButton):
+
+    def __init__(self, parent, enter):
+        super(MenuButton, self).__init__(parent)
+        self.enter = enter
+
+    def enterEvent(self, event):
+        self.enter()
+        super(MenuButton, self).enterEvent(event)
+
+
+class DropdownMenu(QtGui.QWidget):
+
+    def __init__(self, parent):
+        super(DropdownMenu, self).__init__(parent)
+        self.installEventFilter(self)
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        self.setMaximumSize(150, 100)
+        self.setMinimumSize(150, 100)
+        self.screenshotButton = QRightClickButton(self)
+        self.screenshotButton.setGeometry(QtCore.QRect(0, 50, 50, 50))
+        self.screenshotButton.setObjectName("screenshotButton")
+
+        self.fileTransferButton = QtGui.QPushButton(self)
+        self.fileTransferButton.setGeometry(QtCore.QRect(50, 50, 50, 50))
+        self.fileTransferButton.setObjectName("fileTransferButton")
+
+        self.audioMessageButton = QtGui.QPushButton(self)
+        self.audioMessageButton.setGeometry(QtCore.QRect(100, 50, 50, 50))
+
+        self.smileyButton = QtGui.QPushButton(self)
+        self.smileyButton.setGeometry(QtCore.QRect(0, 0, 50, 50))
+
+        self.videoMessageButton = QtGui.QPushButton(self)
+        self.videoMessageButton.setGeometry(QtCore.QRect(100, 0, 50, 50))
+
+        self.stickerButton = QtGui.QPushButton(self)
+        self.stickerButton.setGeometry(QtCore.QRect(50, 0, 50, 50))
+
+        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/file.png')
+        icon = QtGui.QIcon(pixmap)
+        self.fileTransferButton.setIcon(icon)
+        self.fileTransferButton.setIconSize(QtCore.QSize(40, 40))
+        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/screenshot.png')
+        icon = QtGui.QIcon(pixmap)
+        self.screenshotButton.setIcon(icon)
+        self.screenshotButton.setIconSize(QtCore.QSize(40, 50))
+        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/audio_message.png')
+        icon = QtGui.QIcon(pixmap)
+        self.audioMessageButton.setIcon(icon)
+        self.audioMessageButton.setIconSize(QtCore.QSize(40, 40))
+        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/smiley.png')
+        icon = QtGui.QIcon(pixmap)
+        self.smileyButton.setIcon(icon)
+        self.smileyButton.setIconSize(QtCore.QSize(40, 40))
+        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/video_message.png')
+        icon = QtGui.QIcon(pixmap)
+        self.videoMessageButton.setIcon(icon)
+        self.videoMessageButton.setIconSize(QtCore.QSize(45, 45))
+        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/sticker.png')
+        icon = QtGui.QIcon(pixmap)
+        self.stickerButton.setIcon(icon)
+        self.stickerButton.setIconSize(QtCore.QSize(45, 45))
+
+        self.screenshotButton.setToolTip(QtGui.QApplication.translate("MenuWindow", "Send screenshot", None, QtGui.QApplication.UnicodeUTF8))
+        self.fileTransferButton.setToolTip(QtGui.QApplication.translate("MenuWindow", "Send file", None, QtGui.QApplication.UnicodeUTF8))
+        self.audioMessageButton.setToolTip(QtGui.QApplication.translate("MenuWindow", "Send audio message", None, QtGui.QApplication.UnicodeUTF8))
+        self.videoMessageButton.setToolTip(QtGui.QApplication.translate("MenuWindow", "Send video message", None, QtGui.QApplication.UnicodeUTF8))
+        self.smileyButton.setToolTip(QtGui.QApplication.translate("MenuWindow", "Add smiley", None, QtGui.QApplication.UnicodeUTF8))
+        self.stickerButton.setToolTip(QtGui.QApplication.translate("MenuWindow", "Send sticker", None, QtGui.QApplication.UnicodeUTF8))
+
+        self.fileTransferButton.clicked.connect(parent.send_file)
+        self.screenshotButton.clicked.connect(parent.send_screenshot)
+        self.connect(self.screenshotButton, QtCore.SIGNAL("rightClicked()"), lambda: parent.send_screenshot(True))
+        self.smileyButton.clicked.connect(parent.send_smiley)
+
+    def leaveEvent(self, event):
+        self.close()
+
+    def eventFilter(self, object, event):
+        if event.type() == QtCore.QEvent.WindowDeactivate:
+            self.close()
+        return False

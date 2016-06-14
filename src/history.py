@@ -54,6 +54,9 @@ class History(object):
         new_path = directory + self._name + '.hstr'
         with open(path, 'rb') as fin:
             data = fin.read()
+        encr = LibToxEncryptSave.get_instance()
+        if encr.has_password():
+            data = encr.pass_encrypt(data)
         with open(new_path, 'wb') as fout:
             fout.write(data)
 

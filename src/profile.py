@@ -152,10 +152,12 @@ class Profile(contact.Contact, Singleton):
             self.send_typing(False)
             self._screen.typing.setVisible(False)
             if value is not None:
+                if self._active_friend + 1:
+                    self._friends[self._active_friend].curr_text = self._screen.messageEdit.toPlainText()
                 self._active_friend = value
                 friend = self._friends[value]
                 self._friends[value].reset_messages()
-                self._screen.messageEdit.clear()
+                self._screen.messageEdit.setPlainText(friend.curr_text)
                 self._messages.clear()
                 friend.load_corr()
                 messages = friend.get_corr()[-PAGE_SIZE:]
@@ -912,7 +914,7 @@ class Profile(contact.Contact, Singleton):
                         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                       FILE_TRANSFER_MESSAGE_STATUS['FINISHED'],
                                                                                       inline)
-                        self.update()
+                        #self.update()
                     else:
                         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                       FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])

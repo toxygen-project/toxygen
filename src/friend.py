@@ -24,6 +24,7 @@ class Friend(contact.Contact):
         self._unsaved_messages = 0
         self._history_loaded = False
         self._receipts = 0
+        self._curr_text = ''
 
     def __del__(self):
         self.set_visibility(False)
@@ -129,6 +130,14 @@ class Friend(contact.Contact):
                 return i - len(self._corr)
         except:
             pass
+
+    def get_curr_text(self):
+        return self._curr_text
+
+    def set_curr_text(self, value):
+        self._curr_text = value
+
+    curr_text = property(get_curr_text, set_curr_text)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Alias support
