@@ -249,6 +249,7 @@ class DropdownMenu(QtGui.QWidget):
         self.screenshotButton.clicked.connect(parent.send_screenshot)
         self.connect(self.screenshotButton, QtCore.SIGNAL("rightClicked()"), lambda: parent.send_screenshot(True))
         self.smileyButton.clicked.connect(parent.send_smiley)
+        self.stickerButton.clicked.connect(parent.send_sticker)
 
     def leaveEvent(self, event):
         self.close()
@@ -257,3 +258,42 @@ class DropdownMenu(QtGui.QWidget):
         if event.type() == QtCore.QEvent.WindowDeactivate:
             self.close()
         return False
+
+
+class StickerItem(QtGui.QWidget):
+
+    def __init__(self, fl):
+        super(StickerItem, self).__init__()
+        self._image_label = QtGui.QLabel(self)
+        self.path = fl
+        self.pixmap = QtGui.QPixmap()
+        self.pixmap.load(fl)
+        self.setFixedSize(150, self.pixmap.height())
+        self._image_label.setPixmap(self.pixmap)
+
+
+class StickerWindow(QtGui.QWidget):
+
+    def __init__(self, parent):
+        super(StickerWindow, self).__init__()
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        self.setMaximumSize(150, 200)
+        self.setMinimumSize(150, 200)
+        self.list = QtGui.QListWidget(self)
+        self.list.setGeometry(QtCore.QRect(0, 0, 150, 200))
+        self.arr = smileys.sticker_loader()
+        for sticker in self.arr:
+            item = StickerItem(sticker)
+            elem = QtGui.QListWidgetItem()
+            elem.setSizeHint(QtCore.QSize(150, item.height()))
+            self.list.addItem(elem)
+            self.list.setItemWidget(elem, item)
+        self.list.clicked.connect(self.click)
+        self.parent = parent
+
+    def click(self, index):
+        num = index.row()
+        self.parent.profile.send_sticker(self.arr[num])
+        self.close()
+
+

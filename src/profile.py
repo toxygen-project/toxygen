@@ -716,7 +716,7 @@ class Profile(contact.Contact, Singleton):
         settings = Settings.get_instance()
         friend = self.get_friend_by_number(friend_number)
         auto = settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']
-        inline = (file_name == 'toxygen_inline.png' or file_name == 'utox-inline.png') and settings['allow_inline']
+        inline = (file_name in ('toxygen_inline.png', 'utox-inline.png', 'sticker.png')) and settings['allow_inline']
         if inline and size < 1024 * 1024:
             self.accept_transfer(None, '', friend_number, file_number, size, True)
             tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
@@ -833,8 +833,18 @@ class Profile(contact.Contact, Singleton):
         Send screenshot to current active friend
         :param data: raw data - png
         """
+        self.send_inline(data, 'toxygen_inline.png')
+
+    def send_sticker(self, path):
+        with open(path) as fl:
+            data = fl.read()
+        self.send_inline(data, 'sticker.png')
+
+    def send_inline(self, data, file_name):
         friend = self._friends[self._active_friend]
-        st = SendFromBuffer(self._tox, friend.number, data, 'toxygen_inline.png')
+        if friend.status is None:
+            return
+        st = SendFromBuffer(self._tox, friend.number, data, file_name)
         self._file_transfers[(friend.number, st.get_file_number())] = st
         tm = TransferMessage(MESSAGE_OWNER['ME'],
                              time.time(),

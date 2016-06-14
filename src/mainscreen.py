@@ -432,6 +432,14 @@ class MainWindow(QtGui.QMainWindow):
                                              self.smiley.height()))
         self.smiley.show()
 
+    def send_sticker(self):
+        self.sticker = StickerWindow(self)
+        self.sticker.setGeometry(QtCore.QRect(self.x() if Settings.get_instance()['mirror_mode'] else 270 + self.x(),
+                                             self.y() + self.height() - 200,
+                                             self.sticker.width(),
+                                             self.sticker.height()))
+        self.sticker.show()
+
     def active_call(self):
         self.update_call_state('finish_call')
 
