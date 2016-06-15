@@ -306,6 +306,11 @@ class Profile(contact.Contact, Singleton):
     # Private messages
     # -----------------------------------------------------------------------------------------------------------------
 
+    def receipt(self):
+        i = 0
+        while i < self._messages.count() and not self._messages.itemWidget(self._messages.item(i)).mark_as_sent():
+            i += 1
+
     def send_messages(self, friend_number):
         """
         Send 'offline' messages to friend
@@ -976,7 +981,7 @@ class Profile(contact.Contact, Singleton):
                         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                       FILE_TRANSFER_MESSAGE_STATUS['FINISHED'],
                                                                                       inline)
-                        self.update()
+                        self.update()  # not load all messages?
                     else:
                         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                       FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])

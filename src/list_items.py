@@ -123,6 +123,7 @@ class MessageItem(QtGui.QWidget):
             movie = QtGui.QMovie(curr_directory() + '/images/spinner.gif')
             self.time.setMovie(movie)
             movie.start()
+            self.t = time
         else:
             self.time.setText(time)
 
@@ -135,6 +136,12 @@ class MessageItem(QtGui.QWidget):
             self.message.setStyleSheet("QTextEdit { color: #5CB3FF; font: italic; font-size: 20px; }")
             self.message.setAlignment(QtCore.Qt.AlignCenter)
             self.time.setStyleSheet("QLabel { color: #5CB3FF; }")
+
+    def mark_as_sent(self):
+        if hasattr(self, 't'):
+            self.time.setText(self.t)
+            return True
+        return False
 
 
 class ContactItem(QtGui.QWidget):
