@@ -1,4 +1,4 @@
-from list_items import MessageItem, ContactItem, FileTransferItem, InlineImageItem
+from list_items import *
 try:
     from PySide import QtCore, QtGui
 except ImportError:
@@ -169,6 +169,9 @@ class Profile(contact.Contact, Singleton):
                                                  friend.name if data[1] == MESSAGE_OWNER['FRIEND'] else self._name,
                                                  data[3])
                     elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:
+                        if message.get_status() is None:
+                            self.create_unsent_file_item(message)
+                            continue
                         item = self.create_file_transfer_item(message)
                         if message.get_status() >= 2:  # active file transfer
                             try:
@@ -246,9 +249,23 @@ class Profile(contact.Contact, Singleton):
     # Friend connection status callbacks
     # -----------------------------------------------------------------------------------------------------------------
 
-    def friend_online(self, friend_number):
-        for key in filter(lambda x: x[0] == friend_number, self._file_transfers.keys()):
-            self.resume_transfer(key[0], key[1], True)
+    def send_files(self, friend_number):
+        # for key in filter(lambda x: x[0] == friend_number, self._file_transfers.keys()):
+        #     self.resume_transfer(key[0], key[1], True)
+        friend = self.get_friend_by_number(friend_number)
+        files = friend.get_unsent_files()
+        try:
+            for fl in files:
+                data = fl.get_data()
+                if data[1] is not None:
+                    self.send_inline(data[1], data[0], friend_number, True)
+                else:
+                    self.send_file(data[0], friend_number, True)
+            friend.clear_unsent_files()
+            if friend_number == self.get_active_number():
+                self.update()
+        except:
+            pass
 
     def friend_exit(self, friend_number):
         """
@@ -482,6 +499,21 @@ class Profile(contact.Contact, Singleton):
             self._messages.insertItem(0, elem)
         self._messages.setItemWidget(elem, item)
         return item
+
+    def create_unsent_file_item(self, message, append=True):
+        data = message.get_data()
+        item = UnsentFileItem(os.path.basename(data[0]),
+                              os.path.getsize(data[0]) if data[1] is None else len(data[1]),
+                              self.name,
+                              data[2],
+                              self._messages.width())
+        elem = QtGui.QListWidgetItem()
+        elem.setSizeHint(QtCore.QSize(self._messages.width() - 30, 34))
+        if append:
+            self._messages.addItem(elem)
+        else:
+            self._messages.insertItem(0, elem)
+        self._messages.setItemWidget(elem, item)
 
     def create_inline_item(self, data, append=True):
         item = InlineImageItem(data, self._messages.width())
@@ -786,6 +818,10 @@ class Profile(contact.Contact, Singleton):
         else:
             self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
 
+    def cancel_not_started_transfer(self, time):
+        self._friends[self._active_friend].delete_one_unsent_file(time)
+        self.update()
+
     def pause_transfer(self, friend_number, file_number, by_friend=False):
         """
         Pause transfer with specified data
@@ -840,10 +876,16 @@ class Profile(contact.Contact, Singleton):
             data = fl.read()
         self.send_inline(data, 'sticker.png')
 
-    def send_inline(self, data, file_name):
-        friend = self._friends[self._active_friend]
-        if friend.status is None:
+    def send_inline(self, data, file_name, friend_number=None, is_resend=False):
+        friend_number = friend_number or self.get_active_number()
+        friend = self.get_friend_by_number(friend_number)
+        if friend.status is None and not is_resend:
+            m = UnsentFile(file_name, data, time.time())
+            friend.append_message(m)
+            self.update()
             return
+        elif friend.status is None and is_resend:
+            raise Exception()
         st = SendFromBuffer(self._tox, friend.number, data, file_name)
         self._file_transfers[(friend.number, st.get_file_number())] = st
         tm = TransferMessage(MESSAGE_OWNER['ME'],
@@ -858,15 +900,21 @@ class Profile(contact.Contact, Singleton):
         st.set_state_changed_handler(item.update)
         self._messages.scrollToBottom()
 
-    def send_file(self, path, number=None):
+    def send_file(self, path, number=None, is_resend=False):
         """
         Send file to current active friend
         :param path: file path
         :param number: friend_number
         """
         friend_number = number or self.get_active_number()
-        if self.get_friend_by_number(friend_number).status is None:
+        friend = self.get_friend_by_number(friend_number)
+        if friend.status is None and not is_resend:
+            m = UnsentFile(path, None, time.time())
+            friend.append_message(m)
+            self.update()
             return
+        elif friend.status is None and is_resend:
+            raise Exception()
         st = SendTransfer(path, self._tox, friend_number)
         self._file_transfers[(friend_number, st.get_file_number())] = st
         tm = TransferMessage(MESSAGE_OWNER['ME'],

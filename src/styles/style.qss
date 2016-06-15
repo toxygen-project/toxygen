@@ -1272,3 +1272,8 @@ QListWidget > QLabel
 {
     color: #A9A9A9;
 }
+
+#contact_name
+{
+    padding-left: 22px;
+}

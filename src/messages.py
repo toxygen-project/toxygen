@@ -80,6 +80,18 @@ class TransferMessage(Message):
         return self._file_name, self._size, self._time, self._owner, self._friend_number, self._file_number, self._status
 
 
+class UnsentFile(Message):
+    def __init__(self, path, data, time):
+        super(UnsentFile, self).__init__(MESSAGE_TYPE['FILE_TRANSFER'], 0, time)
+        self._data, self._path = data, path
+
+    def get_data(self):
+        return self._path, self._data, self._time
+
+    def get_status(self):
+        return None
+
+
 class InlineImage(Message):
     """
     Inline image

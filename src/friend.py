@@ -116,6 +116,18 @@ class Friend(contact.Contact):
         self._corr = filter(lambda x: x.get_type() in (2, 3) and x.get_status() >= 2, self._corr)
         self._unsaved_messages = 0
 
+    def get_curr_text(self):
+        return self._curr_text
+
+    def set_curr_text(self, value):
+        self._curr_text = value
+
+    curr_text = property(get_curr_text, set_curr_text)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # File transfers support
+    # -----------------------------------------------------------------------------------------------------------------
+
     def update_transfer_data(self, file_number, status, inline=None):
         """
         Update status of active transfer and load inline if needed
@@ -131,13 +143,15 @@ class Friend(contact.Contact):
         except:
             pass
 
-    def get_curr_text(self):
-        return self._curr_text
+    def get_unsent_files(self):
+        messages = filter(lambda x: type(x) is UnsentFile, self._corr)
+        return messages
 
-    def set_curr_text(self, value):
-        self._curr_text = value
+    def clear_unsent_files(self):
+        self._corr = filter(lambda x: type(x) is not UnsentFile, self._corr)
 
-    curr_text = property(get_curr_text, set_curr_text)
+    def delete_one_unsent_file(self, time):
+        self._corr = filter(lambda x: not (type(x) is UnsentFile and x.get_data()[2] == time), self._corr)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Alias support

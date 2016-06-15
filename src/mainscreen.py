@@ -3,7 +3,7 @@
 from menu import *
 from profile import *
 from list_items import *
-from widgets import QRightClickButton, RubberBand, MultilineEdit
+from widgets import MultilineEdit
 import plugin_support
 from mainscreen_widgets import *
 
@@ -142,33 +142,34 @@ class MainWindow(QtGui.QMainWindow):
     def setup_left_center_menu(self, Form):
         Form.resize(270, 25)
         self.search_label = QtGui.QLabel(Form)
-        self.search_label.setGeometry(QtCore.QRect(3, 0, 25, 25))
-        pixmap = QtGui.QPixmap(QtCore.QSize(25, 25))
+        self.search_label.setGeometry(QtCore.QRect(3, 2, 20, 20))
+        pixmap = QtGui.QPixmap()
         pixmap.load(curr_directory() + '/images/search.png')
         self.search_label.setScaledContents(False)
-        self.search_label.setPixmap(pixmap.scaled(25, 25, QtCore.Qt.KeepAspectRatio))
+        self.search_label.setPixmap(pixmap)
 
         self.contact_name = QtGui.QLineEdit(Form)
-        self.contact_name.setGeometry(QtCore.QRect(30, 0, 120, 25))
+        self.contact_name.setGeometry(QtCore.QRect(0, 0, 150, 25))
         self.contact_name.setObjectName("contact_name")
         self.contact_name.textChanged.connect(self.filtering)
         self.online_contacts = QtGui.QComboBox(Form)
         self.online_contacts.setGeometry(QtCore.QRect(150, 0, 120, 25))
         self.online_contacts.activated[int].connect(lambda x: self.filtering())
+        self.search_label.raise_()
 
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def setup_left_top(self, Form):
         Form.setObjectName("left_top")
         Form.setCursor(QtCore.Qt.PointingHandCursor)
-        Form.setMinimumSize(QtCore.QSize(270, 80))
-        Form.setMaximumSize(QtCore.QSize(270, 80))
-        Form.setBaseSize(QtCore.QSize(270, 80))
+        Form.setMinimumSize(QtCore.QSize(270, 100))
+        Form.setMaximumSize(QtCore.QSize(270, 100))
+        Form.setBaseSize(QtCore.QSize(270, 100))
         self.avatar_label = Form.avatar_label = QtGui.QLabel(Form)
-        self.avatar_label.setGeometry(QtCore.QRect(5, 15, 64, 64))
+        self.avatar_label.setGeometry(QtCore.QRect(5, 30, 64, 64))
         self.avatar_label.setScaledContents(True)
         self.name = Form.name = DataLabel(Form)
-        Form.name.setGeometry(QtCore.QRect(80, 25, 150, 25))
+        Form.name.setGeometry(QtCore.QRect(80, 40, 150, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(14)
@@ -176,7 +177,7 @@ class MainWindow(QtGui.QMainWindow):
         Form.name.setFont(font)
         Form.name.setObjectName("name")
         self.status_message = Form.status_message = DataLabel(Form)
-        Form.status_message.setGeometry(QtCore.QRect(80, 55, 170, 20))
+        Form.status_message.setGeometry(QtCore.QRect(80, 60, 170, 25))
         font.setPointSize(12)
         font.setBold(False)
         Form.status_message.setFont(font)
@@ -194,9 +195,9 @@ class MainWindow(QtGui.QMainWindow):
 
     def setup_right_top(self, Form):
         Form.setObjectName("Form")
-        Form.resize(650, 80)
+        Form.resize(650, 100)
         self.account_avatar = QtGui.QLabel(Form)
-        self.account_avatar.setGeometry(QtCore.QRect(10, 17, 64, 64))
+        self.account_avatar.setGeometry(QtCore.QRect(10, 30, 64, 64))
         self.account_avatar.setScaledContents(True)
         self.account_name = DataLabel(Form)
         self.account_name.setGeometry(QtCore.QRect(100, 25, 400, 25))
@@ -224,7 +225,7 @@ class MainWindow(QtGui.QMainWindow):
         self.videocallButton.clicked.connect(lambda: self.profile.call_click(True, True))
         self.update_call_state('call')
         self.typing = QtGui.QLabel(Form)
-        self.typing.setGeometry(QtCore.QRect(500, 40, 50, 30))
+        self.typing.setGeometry(QtCore.QRect(500, 50, 50, 30))
         pixmap = QtGui.QPixmap(QtCore.QSize(50, 30))
         pixmap.load(curr_directory() + '/images/typing.png')
         self.typing.setScaledContents(False)
@@ -299,11 +300,13 @@ class MainWindow(QtGui.QMainWindow):
             self.setup_left_center(main_list)
             grid.addWidget(main_list, 2, 1, 2, 1)
             grid.setColumnMinimumWidth(0, 500)
-            grid.setColumnMinimumWidth(1, 270)
-        grid.setRowMinimumHeight(0, 82)
+            grid.setColumnMinimumWidth(1, 280)
+        grid.setSpacing(0)
+        grid.setContentsMargins(0, 0, 0, 0)
+        grid.setRowMinimumHeight(0, 100)
         grid.setRowMinimumHeight(1, 25)
-        grid.setRowMinimumHeight(2, 410)
-        grid.setRowMinimumHeight(3, 60)
+        grid.setRowMinimumHeight(2, 320)
+        grid.setRowMinimumHeight(3, 55)
         grid.setColumnStretch(1, 1)
         grid.setRowStretch(2, 1)
         main.setLayout(grid)
@@ -321,19 +324,19 @@ class MainWindow(QtGui.QMainWindow):
         QtGui.QApplication.closeAllWindows()
 
     def resizeEvent(self, *args, **kwargs):
-        self.messages.setGeometry(0, 0, self.width() - 294, self.height() - 172)
-        self.friends_list.setGeometry(0, 0, 270, self.height() - 135)
+        self.messages.setGeometry(0, 0, self.width() - 270, self.height() - 155)
+        self.friends_list.setGeometry(0, 0, 270, self.height() - 125)
 
-        self.videocallButton.setGeometry(QtCore.QRect(self.width() - 350, 20, 50, 50))
-        self.callButton.setGeometry(QtCore.QRect(self.width() - 410, 20, 50, 50))
-        self.typing.setGeometry(QtCore.QRect(self.width() - 470, 30, 50, 30))
+        self.videocallButton.setGeometry(QtCore.QRect(self.width() - 330, 40, 50, 50))
+        self.callButton.setGeometry(QtCore.QRect(self.width() - 390, 40, 50, 50))
+        self.typing.setGeometry(QtCore.QRect(self.width() - 450, 50, 50, 30))
 
-        self.messageEdit.setGeometry(QtCore.QRect(60, 2, self.width() - 430, 55))
-        self.menuButton.setGeometry(QtCore.QRect(0, 2, 55, 55))
-        self.sendMessageButton.setGeometry(QtCore.QRect(self.width() - 360, 2, 60, 55))
+        self.messageEdit.setGeometry(QtCore.QRect(55, 0, self.width() - 395, 55))
+        self.menuButton.setGeometry(QtCore.QRect(0, 0, 55, 55))
+        self.sendMessageButton.setGeometry(QtCore.QRect(self.width() - 340, 0, 70, 55))
 
-        self.account_name.setGeometry(QtCore.QRect(100, 30, self.width() - 600, 25))
-        self.account_status.setGeometry(QtCore.QRect(100, 50, self.width() - 520, 25))
+        self.account_name.setGeometry(QtCore.QRect(100, 40, self.width() - 560, 25))
+        self.account_status.setGeometry(QtCore.QRect(100, 60, self.width() - 560, 25))
         self.messageEdit.setFocus()
         self.profile.update()
 
@@ -391,9 +394,10 @@ class MainWindow(QtGui.QMainWindow):
         if hasattr(self, 'menu') and self.menu.isVisible():
             self.menu.hide()
             return
-        self.menu = DropdownMenu(self)
+        elif not hasattr(self, 'menu'):
+            self.menu = DropdownMenu(self)
         self.menu.setGeometry(QtCore.QRect(0 if Settings.get_instance()['mirror_mode'] else 270,
-                                           self.height() - 160,
+                                           self.height() - 100,
                                            150,
                                            100))
         self.menu.show()
@@ -408,20 +412,18 @@ class MainWindow(QtGui.QMainWindow):
 
     def send_file(self):
         self.menu.hide()
-        if self.profile.is_active_online():  # active friend exists and online
-            choose_file = QtGui.QApplication.translate("MainWindow", 'Choose file', None, QtGui.QApplication.UnicodeUTF8)
-            choose = QtGui.QApplication.translate("MainWindow", choose_file, None, QtGui.QApplication.UnicodeUTF8)
-            name = QtGui.QFileDialog.getOpenFileName(self, choose)
-            if name[0]:
-                self.profile.send_file(name[0])
+        choose_file = QtGui.QApplication.translate("MainWindow", 'Choose file', None, QtGui.QApplication.UnicodeUTF8)
+        choose = QtGui.QApplication.translate("MainWindow", choose_file, None, QtGui.QApplication.UnicodeUTF8)
+        name = QtGui.QFileDialog.getOpenFileName(self, choose)
+        if name[0]:
+            self.profile.send_file(name[0])
 
     def send_screenshot(self, hide=False):
         self.menu.hide()
-        if self.profile.is_active_online():  # active friend exists and online
-            self.sw = ScreenShotWindow(self)
-            self.sw.show()
-            if hide:
-                self.hide()
+        self.sw = ScreenShotWindow(self)
+        self.sw.show()
+        if hide:
+            self.hide()
 
     def send_smiley(self):
         self.menu.hide()

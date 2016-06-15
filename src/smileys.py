@@ -72,7 +72,7 @@ class SmileyLoader(util.Singleton):
 
 def sticker_loader():
     """
-    :return dict of stickers
+    :return list of stickers
     """
     result = []
     d = util.curr_directory() + '/stickers/'
