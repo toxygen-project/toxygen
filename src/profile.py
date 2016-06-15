@@ -444,6 +444,9 @@ class Profile(contact.Contact, Singleton):
                                          data[3],
                                          False)
             elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:
+                if message.get_status() is None:
+                    self.create_unsent_file_item(message)
+                    continue
                 item = self.create_file_transfer_item(message, False)
                 if message.get_status() >= 2:  # active file transfer
                     ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
@@ -973,8 +976,7 @@ class Profile(contact.Contact, Singleton):
                         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                       FILE_TRANSFER_MESSAGE_STATUS['FINISHED'],
                                                                                       inline)
-                        #self.update()
-                        # TODO: fix
+                        self.update()
                     else:
                         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                       FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])

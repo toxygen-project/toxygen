@@ -9,7 +9,7 @@ import util
 
 
 class MessageArea(QtGui.QPlainTextEdit):
-    """User enters messages here"""
+    """User types messages here"""
 
     def __init__(self, parent, form):
         super(MessageArea, self).__init__(parent)
@@ -122,6 +122,9 @@ class ScreenShotWindow(QtGui.QWidget):
 
 
 class SmileyWindow(QtGui.QWidget):
+    """
+    Smiley selection window
+    """
 
     def __init__(self, parent):
         super(SmileyWindow, self).__init__()
@@ -129,7 +132,7 @@ class SmileyWindow(QtGui.QWidget):
         inst = smileys.SmileyLoader.get_instance()
         self.data = inst.get_smileys()
         count = len(self.data)
-        self.page_size = int(pow(count / 8, 0.5) + 1) * 8
+        self.page_size = int(pow(count / 8, 0.5) + 1) * 8  # smileys per page
         if count % self.page_size == 0:
             self.page_count = count / self.page_size
         else:
@@ -137,7 +140,7 @@ class SmileyWindow(QtGui.QWidget):
         self.page = 0
         self.radio = []
         self.parent = parent
-        for i in range(self.page_count):
+        for i in range(self.page_count):  # buttons with smileys
             elem = QtGui.QRadioButton(self)
             elem.setGeometry(QtCore.QRect(i * 20 + 5, 180, 20, 20))
             elem.clicked.connect(lambda i=i: self.checked(i))
@@ -146,14 +149,14 @@ class SmileyWindow(QtGui.QWidget):
         self.setMaximumSize(width, 200)
         self.setMinimumSize(width, 200)
         self.buttons = []
-        for i in range(self.page_size):
+        for i in range(self.page_size):  # pages - radio buttons
             b = QtGui.QPushButton(self)
             b.setGeometry(QtCore.QRect((i / 8) * 20 + 5, (i % 8) * 20, 20, 20))
             b.clicked.connect(lambda i=i: self.clicked(i))
             self.buttons.append(b)
         self.checked(0)
 
-    def checked(self, pos):
+    def checked(self, pos):  # new page opened
         self.radio[self.page].setChecked(False)
         self.radio[pos].setChecked(True)
         self.page = pos
@@ -167,10 +170,13 @@ class SmileyWindow(QtGui.QWidget):
             except:
                 self.buttons[i].setVisible(False)
 
-    def clicked(self, pos):
+    def clicked(self, pos):  # smiley selected
         pos += self.page * self.page_size
         smiley = self.data[pos][0]
         self.parent.messageEdit.insertPlainText(smiley)
+        self.close()
+
+    def leaveEvent(self, event):
         self.close()
 
 
@@ -268,11 +274,14 @@ class StickerItem(QtGui.QWidget):
         self.path = fl
         self.pixmap = QtGui.QPixmap()
         self.pixmap.load(fl)
+        if self.pixmap.width() > 150:
+            self.pixmap = self.pixmap.scaled(150, 200, QtCore.Qt.KeepAspectRatio)
         self.setFixedSize(150, self.pixmap.height())
         self._image_label.setPixmap(self.pixmap)
 
 
 class StickerWindow(QtGui.QWidget):
+    """Sticker selection window"""
 
     def __init__(self, parent):
         super(StickerWindow, self).__init__()
@@ -294,6 +303,9 @@ class StickerWindow(QtGui.QWidget):
     def click(self, index):
         num = index.row()
         self.parent.profile.send_sticker(self.arr[num])
+        self.close()
+
+    def leaveEvent(self, event):
         self.close()
 
 

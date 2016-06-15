@@ -25,6 +25,7 @@ class MessageEdit(QtGui.QTextBrowser):
         self.setAcceptRichText(True)
         self.setOpenLinks(False)
         self.setSearchPaths([smileys.SmileyLoader.get_instance().get_smileys_path()])
+        self.document().setDefaultStyleSheet('a { color: #306EFF; }')
         self.setDecoratedText(text)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
@@ -87,7 +88,7 @@ class MessageEdit(QtGui.QTextBrowser):
         arr = text.split('\n')
         for i in range(len(arr)):  # quotes
             if arr[i].startswith('&gt;'):
-                arr[i] = '<font color="green">' + arr[i][4:] + '</font>'
+                arr[i] = '<font color="green"><b>' + arr[i][4:] + '</b></font>'
         text = '<br>'.join(arr)
         text = smileys.SmileyLoader.get_instance().add_smileys_to_text(text, self)  # smileys
         self.setHtml(text)
@@ -125,17 +126,17 @@ class MessageItem(QtGui.QWidget):
         self.setFixedHeight(self.message.height())
 
         if message_type != TOX_MESSAGE_TYPE['NORMAL']:
-            self.name.setStyleSheet("QLabel { color: #4169E1; }")
-            self.name.setAlignment(QtCore.Qt.AlignCenter)
-            self.message.setStyleSheet("QTextEdit { color: #4169E1; }")
+            self.name.setStyleSheet("QLabel { color: #5CB3FF; }")
+            self.message.setStyleSheet("QTextEdit { color: #5CB3FF; font: italic; font-size: 20px; }")
             self.message.setAlignment(QtCore.Qt.AlignCenter)
-            self.time.setStyleSheet("QLabel { color: #4169E1; }")
+            self.time.setStyleSheet("QLabel { color: #5CB3FF; }")
 
 
 class ContactItem(QtGui.QWidget):
     """
     Contact in friends list
     """
+
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.setBaseSize(QtCore.QSize(250, 70))
@@ -143,7 +144,7 @@ class ContactItem(QtGui.QWidget):
         self.avatar_label.setGeometry(QtCore.QRect(3, 3, 64, 64))
         self.avatar_label.setScaledContents(True)
         self.name = DataLabel(self)
-        self.name.setGeometry(QtCore.QRect(70, 10, 160, 25))
+        self.name.setGeometry(QtCore.QRect(75, 10, 160, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(12)
@@ -151,7 +152,7 @@ class ContactItem(QtGui.QWidget):
         self.name.setFont(font)
         self.name.setObjectName("name")
         self.status_message = DataLabel(self)
-        self.status_message.setGeometry(QtCore.QRect(70, 30, 180, 20))
+        self.status_message.setGeometry(QtCore.QRect(75, 30, 180, 20))
         font.setPointSize(10)
         font.setBold(False)
         self.status_message.setFont(font)
@@ -165,6 +166,7 @@ class StatusCircle(QtGui.QWidget):
     """
     Connection status
     """
+    # TODO: rewrite
     def __init__(self, parent):
         QtGui.QWidget.__init__(self, parent)
         self.setGeometry(0, 0, 32, 32)
