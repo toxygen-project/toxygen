@@ -356,58 +356,16 @@ class FileTransferItem(QtGui.QListWidget):
                 self.state = state
 
 
-class UnsentFileItem(QtGui.QListWidget):
+class UnsentFileItem(FileTransferItem):
 
     def __init__(self, file_name, size, user, time, width, parent=None):
-        QtGui.QListWidget.__init__(self, parent)
-        self.resize(QtCore.QSize(width, 34))
-        self.time = time
-        self.setStyleSheet('QListWidget { border: 1px solid #FF8000; }')
+        super(UnsentFileItem, self).__init__(file_name, size, time, user, -1, -1,
+                                             FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_FRIEND'], width, parent)
+        self._time = time
 
-        self.name = DataLabel(self)
-        self.name.setGeometry(QtCore.QRect(3, 7, 95, 20))
-        self.name.setTextFormat(QtCore.Qt.PlainText)
-        font = QtGui.QFont()
-        font.setFamily("Times New Roman")
-        font.setPointSize(11)
-        font.setBold(True)
-        self.name.setFont(font)
-        self.name.setText(user)
-
-        self.time = QtGui.QLabel(self)
-        self.time.setGeometry(QtCore.QRect(width - 53, 7, 50, 20))
-        font.setPointSize(10)
-        font.setBold(False)
-        self.time.setFont(font)
-        self.time.setText(convert_time(time))
-
-        self.cancel = QtGui.QPushButton(self)
-        self.cancel.setGeometry(QtCore.QRect(width - 120, 2, 30, 30))
-        pixmap = QtGui.QPixmap(curr_directory() + '/images/decline.png')
-        icon = QtGui.QIcon(pixmap)
-        self.cancel.setIcon(icon)
-        self.cancel.setIconSize(QtCore.QSize(30, 30))
-        self.cancel.clicked.connect(self.cancel_transfer)
-        self.cancel.setStyleSheet('QPushButton:hover { border: 1px solid #3A3939; background-color: none;}')
-
-        self.file_name = DataLabel(self)
-        self.file_name.setGeometry(QtCore.QRect(210, 7, width - 400, 20))
-        font.setPointSize(12)
-        self.file_name.setFont(font)
-        file_size = size / 1024
-        if not file_size:
-            file_size = '{}B'.format(size)
-        elif file_size >= 1024:
-            file_size = '{}MB'.format(file_size / 1024)
-        else:
-            file_size = '{}KB'.format(file_size)
-        file_data = u'{} {}'.format(file_size, file_name)
-        self.file_name.setText(file_data)
-        self.setFocusPolicy(QtCore.Qt.NoFocus)
-
-    def cancel_transfer(self):
+    def cancel_transfer(self, *args):
         pr = profile.Profile.get_instance()
-        pr.cancel_not_started_transfer(self.time)
+        pr.cancel_not_started_transfer(self._time)
 
 
 class InlineImageItem(QtGui.QWidget):

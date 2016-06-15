@@ -276,11 +276,11 @@ class Profile(contact.Contact, Singleton):
         self.friend_typing(friend_number, False)
         if friend_number in self._call:
             self._call.finish_call(friend_number, True)
-        for key in filter(lambda x: x[0] == friend_number, self._file_transfers.keys()):
-            if type(self._file_transfers[key]) in (ReceiveAvatar, SendAvatar):
-                self._file_transfers[key].cancelled()
-            else:
-                self._file_transfers[key].pause(False)
+        # for key in filter(lambda x: x[0] == friend_number, self._file_transfers.keys()):
+        #     if type(self._file_transfers[key]) in (ReceiveAvatar, SendAvatar):
+        #         self._file_transfers[key].cancelled()
+        #     else:
+        #         self._file_transfers[key].pause(False)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications
@@ -885,14 +885,14 @@ class Profile(contact.Contact, Singleton):
             self.update()
             return
         elif friend.status is None and is_resend:
-            raise Exception()
+            raise RuntimeError()
         st = SendFromBuffer(self._tox, friend.number, data, file_name)
         self._file_transfers[(friend.number, st.get_file_number())] = st
         tm = TransferMessage(MESSAGE_OWNER['ME'],
                              time.time(),
                              FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_FRIEND'],  # OUTGOING NOT STARTED
                              len(data),
-                             'toxygen_inline.png',
+                             file_name,
                              friend.number,
                              st.get_file_number())
         item = self.create_file_transfer_item(tm)
@@ -905,6 +905,7 @@ class Profile(contact.Contact, Singleton):
         Send file to current active friend
         :param path: file path
         :param number: friend_number
+        :param is_resend: is 'offline' message
         """
         friend_number = number or self.get_active_number()
         friend = self.get_friend_by_number(friend_number)
@@ -914,7 +915,7 @@ class Profile(contact.Contact, Singleton):
             self.update()
             return
         elif friend.status is None and is_resend:
-            raise Exception()
+            raise RuntimeError()
         st = SendTransfer(path, self._tox, friend_number)
         self._file_transfers[(friend_number, st.get_file_number())] = st
         tm = TransferMessage(MESSAGE_OWNER['ME'],
@@ -973,6 +974,7 @@ class Profile(contact.Contact, Singleton):
                                                                                       FILE_TRANSFER_MESSAGE_STATUS['FINISHED'],
                                                                                       inline)
                         #self.update()
+                        # TODO: fix
                     else:
                         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                       FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])

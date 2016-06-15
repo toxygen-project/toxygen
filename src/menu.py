@@ -673,8 +673,10 @@ class PluginsSettings(CenteredWidget):
             self.window.show()
         else:
             msgBox = QtGui.QMessageBox()
-            text = (QtGui.QApplication.translate("PluginsForm", 'No GUI found for this plugin', None,
-                                                 QtGui.QApplication.UnicodeUTF8))
+            text = QtGui.QApplication.translate("PluginsForm", 'No GUI found for this plugin', None,
+                                                QtGui.QApplication.UnicodeUTF8)
+            msgBox.setWindowTitle(QtGui.QApplication.translate("PluginsForm", 'Error', None,
+                                                               QtGui.QApplication.UnicodeUTF8))
             msgBox.setText(text)
             msgBox.exec_()
 
