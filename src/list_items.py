@@ -98,7 +98,7 @@ class MessageItem(QtGui.QWidget):
     """
     Message in messages list
     """
-    def __init__(self, text, time, user='', message_type=TOX_MESSAGE_TYPE['NORMAL'], parent=None):
+    def __init__(self, text, time, user='', sent=True, message_type=TOX_MESSAGE_TYPE['NORMAL'], parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.name = DataLabel(self)
         self.name.setGeometry(QtCore.QRect(0, 2, 95, 20))
@@ -118,8 +118,13 @@ class MessageItem(QtGui.QWidget):
         font.setPointSize(10)
         font.setBold(False)
         self.time.setFont(font)
-        self.time.setObjectName("time")
-        self.time.setText(time)
+
+        if not sent:
+            movie = QtGui.QMovie(curr_directory() + '/images/spinner.gif')
+            self.time.setMovie(movie)
+            movie.start()
+        else:
+            self.time.setText(time)
 
         self.message = MessageEdit(text, parent.width() - 150, self)
         self.message.setGeometry(QtCore.QRect(100, 0, parent.width() - 150, self.message.height()))

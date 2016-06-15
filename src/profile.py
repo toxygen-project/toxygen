@@ -166,7 +166,7 @@ class Profile(contact.Contact, Singleton):
                         data = message.get_data()
                         self.create_message_item(data[0],
                                                  convert_time(data[2]),
-                                                 friend.name if data[1] == MESSAGE_OWNER['FRIEND'] else self._name,
+                                                 data[1],
                                                  data[3])
                     elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:
                         if message.get_status() is None:
@@ -350,8 +350,7 @@ class Profile(contact.Contact, Singleton):
         :param message: text of message
         """
         if friend_num == self.get_active_number():  # add message to list
-            user_name = Profile.get_instance().get_active_name()
-            self.create_message_item(message.decode('utf-8'), curr_time(), user_name, message_type)
+            self.create_message_item(message.decode('utf-8'), curr_time(), MESSAGE_OWNER['FRIEND'], message_type)
             self._messages.scrollToBottom()
             self._friends[self._active_friend].append_message(
                 TextMessage(message.decode('utf-8'), MESSAGE_OWNER['FRIEND'], time.time(), message_type))
@@ -378,13 +377,13 @@ class Profile(contact.Contact, Singleton):
             else:
                 message_type = TOX_MESSAGE_TYPE['NORMAL']
             friend = self._friends[self._active_friend]
+            friend.inc_receipts()
             if friend.status is not None:
                 self.split_and_send(friend.number, message_type, text.encode('utf-8'))
-            self.create_message_item(text, curr_time(), self._name, message_type)
+            self.create_message_item(text, curr_time(), MESSAGE_OWNER['NOT_SENT'], message_type)
             self._screen.messageEdit.clear()
             self._messages.scrollToBottom()
             friend.append_message(TextMessage(text, MESSAGE_OWNER['NOT_SENT'], time.time(), message_type))
-            friend.inc_receipts()
 
     # -----------------------------------------------------------------------------------------------------------------
     # History support
@@ -440,7 +439,7 @@ class Profile(contact.Contact, Singleton):
                 data = message.get_data()
                 self.create_message_item(data[0],
                                          convert_time(data[2]),
-                                         friend.name if data[1] == MESSAGE_OWNER['FRIEND'] else self._name,
+                                         data[1],
                                          data[3],
                                          False)
             elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:
@@ -479,8 +478,9 @@ class Profile(contact.Contact, Singleton):
         self._screen.friends_list.setItemWidget(elem, item)
         return item
 
-    def create_message_item(self, text, time, name, message_type, append=True):
-        item = MessageItem(text, time, name, message_type, self._messages)
+    def create_message_item(self, text, time, owner, message_type, append=True):
+        name = self.get_active_name() if owner == MESSAGE_OWNER['FRIEND'] else self.name
+        item = MessageItem(text, time, name, owner != MESSAGE_OWNER['NOT_SENT'], message_type, self._messages)
         elem = QtGui.QListWidgetItem()
         elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
         if append:

@@ -148,7 +148,10 @@ def friend_typing(tox, friend_number, typing, user_data):
 
 
 def friend_read_receipt(tox, friend_number, message_id, user_data):
-    Profile.get_instance().get_friend_by_number(friend_number).dec_receipt()
+    profile = Profile.get_instance()
+    profile.get_friend_by_number(friend_number).dec_receipt()
+    if friend_number == profile.get_active_number():
+        invoke_in_main_thread(profile.update)  # TODO: improve
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - file transfers
