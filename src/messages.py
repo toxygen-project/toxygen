@@ -8,16 +8,6 @@ MESSAGE_TYPE = {
     'INFO_MESSAGE': 4
 }
 
-FILE_TRANSFER_MESSAGE_STATUS = {
-    'FINISHED': 0,
-    'CANCELLED': 1,
-    'OUTGOING': 2,
-    'INCOMING_NOT_STARTED': 3,
-    'INCOMING_STARTED': 4,
-    'PAUSED_BY_FRIEND': 5,
-    'PAUSED_BY_USER': 6
-}
-
 
 class Message(object):
 
@@ -62,7 +52,7 @@ class TransferMessage(Message):
         self._friend_number, self._file_number = friend_number, file_number
 
     def is_active(self, file_number):
-        return self._file_number == file_number and self._status > 1
+        return self._file_number == file_number and self._status not in (2, 3)
 
     def get_friend_number(self):
         return self._friend_number

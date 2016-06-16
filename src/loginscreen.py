@@ -7,7 +7,7 @@ except ImportError:
 from widgets import *
 
 
-class NickEdit(QtGui.QPlainTextEdit):
+class NickEdit(LineEdit):
 
     def __init__(self, parent):
         super(NickEdit, self).__init__(parent)
@@ -71,6 +71,7 @@ class LoginScreen(CenteredWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
+        self.new_name.setPlaceholderText(QtGui.QApplication.translate("login", "Profile name", None, QtGui.QApplication.UnicodeUTF8))
         self.setWindowTitle(QtGui.QApplication.translate("login", "Log in", None, QtGui.QApplication.UnicodeUTF8))
         self.new_profile.setText(QtGui.QApplication.translate("login", "Create", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("login", "Profile name:", None, QtGui.QApplication.UnicodeUTF8))

@@ -29,6 +29,17 @@ class CenteredWidget(QtGui.QWidget):
         self.move(qr.topLeft())
 
 
+class LineEdit(QtGui.QLineEdit):
+
+    def __init__(self, parent=None):
+        super(LineEdit, self).__init__(parent)
+
+    def contextMenuEvent(self, event):
+        menu = create_menu(self.createStandardContextMenu())
+        menu.exec_(event.globalPos())
+        del menu
+
+
 class QRightClickButton(QtGui.QPushButton):
     """
     Button with right click support

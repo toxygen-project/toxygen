@@ -9,17 +9,28 @@ try:
 except ImportError:
     from PyQt4 import QtCore
 
+# TODO: threads!
+
 
 TOX_FILE_TRANSFER_STATE = {
     'RUNNING': 0,
-    'PAUSED': 1,
-    'CANCELED': 2,
+    'PAUSED_BY_USER': 1,
+    'CANCELLED': 2,
     'FINISHED': 3,
-    'PAUSED_BY_FRIEND': 4
+    'PAUSED_BY_FRIEND': 4,
+    'INCOMING_NOT_STARTED': 5
 }
 
+ACTIVE_FILE_TRANSFERS = (0, 1, 4, 5)
 
-# TODO: rewrite
+PAUSED_FILE_TRANSFERS = (1, 4, 5)
+
+DO_NOT_SHOW_ACCEPT_BUTTON = (2, 3, 4)
+
+SHOW_PROGRESS_BAR = (0, 1, 4)
+
+ALLOWED_FILES = ('toxygen_inline.png', 'utox-inline.png', 'sticker.png')
+
 
 class StateSignal(QtCore.QObject):
     try:
@@ -64,14 +75,14 @@ class FileTransfer(QtCore.QObject):
         self.send_control(TOX_FILE_CONTROL['CANCEL'])
         if hasattr(self, '_file'):
             self._file.close()
-        self._state_changed.signal.emit(self.state, 1)
+        self.signal()
 
     def cancelled(self):
         if hasattr(self, '_file'):
             sleep(0.1)
             self._file.close()
-        self.state = TOX_FILE_TRANSFER_STATE['CANCELED']
-        self._state_changed.signal.emit(self.state, 1)
+        self.state = TOX_FILE_TRANSFER_STATE['CANCELLED']
+        self.signal()
 
     def pause(self, by_friend):
         if not by_friend:
@@ -102,6 +113,7 @@ class SendTransfer(FileTransfer):
         else:
             size = 0
         super(SendTransfer, self).__init__(path, tox, friend_number, size)
+        self.state = TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND']
         self._file_number = tox.file_send(friend_number, kind, size, file_id,
                                           basename(path).encode('utf-8') if path else '')
 
@@ -121,7 +133,7 @@ class SendTransfer(FileTransfer):
             if hasattr(self, '_file'):
                 self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self._state_changed.signal.emit(self.state, 1)
+            self.signal()
 
 
 class SendAvatar(SendTransfer):
@@ -145,6 +157,7 @@ class SendFromBuffer(FileTransfer):
 
     def __init__(self, tox, friend_number, data, file_name):
         super(SendFromBuffer, self).__init__(None, tox, friend_number, len(data))
+        self.state = TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND']
         self._data = data
         self._file_number = tox.file_send(friend_number, TOX_FILE_KIND['DATA'], len(data), None, file_name)
 

@@ -136,10 +136,10 @@ class Friend(contact.Contact):
             tr = filter(lambda x: x.get_type() == MESSAGE_TYPE['FILE_TRANSFER'] and x.is_active(file_number),
                         self._corr)[0]
             tr.set_status(status)
+            i = self._corr.index(tr)
             if inline:  # inline was loaded
-                i = self._corr.index(tr)
                 self._corr.insert(i, inline)
-                return i - len(self._corr)
+            return i - len(self._corr)
         except:
             pass
 

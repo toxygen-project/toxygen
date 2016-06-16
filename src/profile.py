@@ -173,7 +173,7 @@ class Profile(contact.Contact, Singleton):
                             self.create_unsent_file_item(message)
                             continue
                         item = self.create_file_transfer_item(message)
-                        if message.get_status() >= 2:  # active file transfer
+                        if message.get_status() in ACTIVE_FILE_TRANSFERS:  # active file transfer
                             try:
                                 ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
                                 ft.set_state_changed_handler(item.update)
@@ -453,7 +453,7 @@ class Profile(contact.Contact, Singleton):
                     self.create_unsent_file_item(message)
                     continue
                 item = self.create_file_transfer_item(message, False)
-                if message.get_status() >= 2:  # active file transfer
+                if message.get_status() in ACTIVE_FILE_TRANSFERS:  # active file transfer
                     ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
                     ft.set_state_changed_handler(item.update)
             elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline
@@ -757,12 +757,12 @@ class Profile(contact.Contact, Singleton):
         settings = Settings.get_instance()
         friend = self.get_friend_by_number(friend_number)
         auto = settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']
-        inline = (file_name in ('toxygen_inline.png', 'utox-inline.png', 'sticker.png')) and settings['allow_inline']
+        inline = (file_name in ALLOWED_FILES) and settings['allow_inline']
         if inline and size < 1024 * 1024:
             self.accept_transfer(None, '', friend_number, file_number, size, True)
             tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
                                  time.time(),
-                                 FILE_TRANSFER_MESSAGE_STATUS['INCOMING_STARTED'],
+                                 TOX_FILE_TRANSFER_STATE['RUNNING'],
                                  size,
                                  file_name,
                                  friend_number,
@@ -783,7 +783,7 @@ class Profile(contact.Contact, Singleton):
             self.accept_transfer(None, path + '/' + new_file_name, friend_number, file_number, size)
             tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
                                  time.time(),
-                                 FILE_TRANSFER_MESSAGE_STATUS['INCOMING_STARTED'],
+                                 TOX_FILE_TRANSFER_STATE['RUNNING'],
                                  size,
                                  new_file_name,
                                  friend_number,
@@ -791,7 +791,7 @@ class Profile(contact.Contact, Singleton):
         else:
             tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
                                  time.time(),
-                                 FILE_TRANSFER_MESSAGE_STATUS['INCOMING_NOT_STARTED'],
+                                 TOX_FILE_TRANSFER_STATE['INCOMING_NOT_STARTED'],
                                  size,
                                  file_name,
                                  friend_number,
@@ -813,8 +813,8 @@ class Profile(contact.Contact, Singleton):
         :param file_number: file number
         :param already_cancelled: was cancelled by friend
         """
-        self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                      FILE_TRANSFER_MESSAGE_STATUS['CANCELLED'])
+        i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+                                                                          TOX_FILE_TRANSFER_STATE['CANCELLED'])
         if (friend_number, file_number) in self._file_transfers:
             tr = self._file_transfers[(friend_number, file_number)]
             if not already_cancelled:
@@ -825,7 +825,12 @@ class Profile(contact.Contact, Singleton):
                 del tr
                 del self._file_transfers[(friend_number, file_number)]
         else:
-            self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
+            if not already_cancelled:
+                self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
+            if friend_number == self.get_active_number():
+                tmp = self._messages.count() + i
+                if tmp >= 0:
+                    self._messages.itemWidget(self._messages.item(tmp)).update(TOX_FILE_TRANSFER_STATE['CANCELLED'], 0)
 
     def cancel_not_started_transfer(self, time):
         self._friends[self._active_friend].delete_one_unsent_file(time)
@@ -837,7 +842,7 @@ class Profile(contact.Contact, Singleton):
         """
         tr = self._file_transfers[(friend_number, file_number)]
         tr.pause(by_friend)
-        t = FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_FRIEND'] if by_friend else FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_USER']
+        t = TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND'] if by_friend else TOX_FILE_TRANSFER_STATE['PAUSED_BY_USER']
         self.get_friend_by_number(friend_number).update_transfer_data(file_number, t)
 
     def resume_transfer(self, friend_number, file_number, by_friend=False):
@@ -845,7 +850,7 @@ class Profile(contact.Contact, Singleton):
         Resume transfer with specified data
         """
         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                      FILE_TRANSFER_MESSAGE_STATUS['OUTGOING'])
+                                                                      TOX_FILE_TRANSFER_STATE['RUNNING'])
         tr = self._file_transfers[(friend_number, file_number)]
         if by_friend:
             tr.state = TOX_FILE_TRANSFER_STATE['RUNNING']
@@ -871,7 +876,7 @@ class Profile(contact.Contact, Singleton):
         if item is not None:
             rt.set_state_changed_handler(item.update)
         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                      FILE_TRANSFER_MESSAGE_STATUS['INCOMING_STARTED'])
+                                                                      TOX_FILE_TRANSFER_STATE['RUNNING'])
 
     def send_screenshot(self, data):
         """
@@ -899,7 +904,7 @@ class Profile(contact.Contact, Singleton):
         self._file_transfers[(friend.number, st.get_file_number())] = st
         tm = TransferMessage(MESSAGE_OWNER['ME'],
                              time.time(),
-                             FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_FRIEND'],  # OUTGOING NOT STARTED
+                             TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND'],  # OUTGOING NOT STARTED
                              len(data),
                              file_name,
                              friend.number,
@@ -929,7 +934,7 @@ class Profile(contact.Contact, Singleton):
         self._file_transfers[(friend_number, st.get_file_number())] = st
         tm = TransferMessage(MESSAGE_OWNER['ME'],
                              time.time(),
-                             FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_FRIEND'],  # OUTGOING NOT STARTED
+                             TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND'],  # OUTGOING NOT STARTED
                              os.path.getsize(path),
                              os.path.basename(path),
                              friend_number,
@@ -946,25 +951,26 @@ class Profile(contact.Contact, Singleton):
         if (friend_number, file_number) in self._file_transfers:
             transfer = self._file_transfers[(friend_number, file_number)]
             transfer.write_chunk(position, data)
-            if transfer.state in (2, 3):  # finished or cancelled
+            if transfer.state not in ACTIVE_FILE_TRANSFERS:  # finished or cancelled
                 if type(transfer) is ReceiveAvatar:
                     self.get_friend_by_number(friend_number).load_avatar()
                     self.set_active(None)
                 elif type(transfer) is ReceiveToBuffer:  # inline image
                     inline = InlineImage(transfer.get_data())
                     i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                                      FILE_TRANSFER_MESSAGE_STATUS['FINISHED'],
+                                                                                      TOX_FILE_TRANSFER_STATE['FINISHED'],
                                                                                       inline)
                     if friend_number == self.get_active_number():
                         count = self._messages.count()
-                        item = InlineImageItem(transfer.get_data(), self._messages.width())
-                        elem = QtGui.QListWidgetItem()
-                        elem.setSizeHint(QtCore.QSize(600, item.height()))
-                        self._messages.insertItem(count + i + 1, elem)
-                        self._messages.setItemWidget(elem, item)
+                        if count + i + 1 >= 0:
+                            item = InlineImageItem(transfer.get_data(), self._messages.width())
+                            elem = QtGui.QListWidgetItem()
+                            elem.setSizeHint(QtCore.QSize(600, item.height()))
+                            self._messages.insertItem(count + i + 1, elem)
+                            self._messages.setItemWidget(elem, item)
                 else:
                     self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                                  FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])
+                                                                                  TOX_FILE_TRANSFER_STATE['FINISHED'])
                 del self._file_transfers[(friend_number, file_number)]
 
     def outgoing_chunk(self, friend_number, file_number, position, size):
@@ -974,18 +980,26 @@ class Profile(contact.Contact, Singleton):
         if (friend_number, file_number) in self._file_transfers:
             transfer = self._file_transfers[(friend_number, file_number)]
             transfer.send_chunk(position, size)
-            if transfer.state in (2, 3):  # finished or cancelled
+            if transfer.state not in ACTIVE_FILE_TRANSFERS:  # finished or cancelled
                 del self._file_transfers[(friend_number, file_number)]
                 if type(transfer) is not SendAvatar:
                     if type(transfer) is SendFromBuffer and Settings.get_instance()['allow_inline']:  # inline
                         inline = InlineImage(transfer.get_data())
-                        self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                                      FILE_TRANSFER_MESSAGE_STATUS['FINISHED'],
-                                                                                      inline)
-                        self.update()  # not load all messages?
+                        i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+                                                                                          TOX_FILE_TRANSFER_STATE[
+                                                                                              'FINISHED'],
+                                                                                          inline)
+                        if friend_number == self.get_active_number():
+                            count = self._messages.count()
+                            if count + i + 1 >= 0:
+                                item = InlineImageItem(transfer.get_data(), self._messages.width())
+                                elem = QtGui.QListWidgetItem()
+                                elem.setSizeHint(QtCore.QSize(600, item.height()))
+                                self._messages.insertItem(count + i + 1, elem)
+                                self._messages.setItemWidget(elem, item)
                     else:
                         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                                      FILE_TRANSFER_MESSAGE_STATUS['FINISHED'])
+                                                                                      TOX_FILE_TRANSFER_STATE['FINISHED'])
 
     # -----------------------------------------------------------------------------------------------------------------
     # Avatars support
@@ -1009,7 +1023,7 @@ class Profile(contact.Contact, Singleton):
         :param size: size of avatar or 0 (default avatar)
         """
         ra = ReceiveAvatar(self._tox, friend_number, size, file_number)
-        if ra.state != TOX_FILE_TRANSFER_STATE['CANCELED']:
+        if ra.state != TOX_FILE_TRANSFER_STATE['CANCELLED']:
             self._file_transfers[(friend_number, file_number)] = ra
         else:
             self.get_friend_by_number(friend_number).load_avatar()

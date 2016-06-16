@@ -3,7 +3,7 @@
 from menu import *
 from profile import *
 from list_items import *
-from widgets import MultilineEdit
+from widgets import MultilineEdit, LineEdit
 import plugin_support
 from mainscreen_widgets import *
 
@@ -147,10 +147,11 @@ class MainWindow(QtGui.QMainWindow):
         self.search_label.setScaledContents(False)
         self.search_label.setPixmap(pixmap)
 
-        self.contact_name = QtGui.QLineEdit(Form)
+        self.contact_name = LineEdit(Form)
         self.contact_name.setGeometry(QtCore.QRect(0, 0, 150, 25))
         self.contact_name.setObjectName("contact_name")
         self.contact_name.textChanged.connect(self.filtering)
+
         self.online_contacts = QtGui.QComboBox(Form)
         self.online_contacts.setGeometry(QtCore.QRect(150, 0, 120, 25))
         self.online_contacts.activated[int].connect(lambda x: self.filtering())

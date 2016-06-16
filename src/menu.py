@@ -5,7 +5,7 @@ except ImportError:
 from settings import *
 from profile import Profile
 from util import curr_directory
-from widgets import CenteredWidget, DataLabel
+from widgets import CenteredWidget, DataLabel, LineEdit
 import pyaudio
 import toxencryptsave
 import plugin_support
@@ -27,7 +27,7 @@ class AddContact(CenteredWidget):
         self.sendRequestButton.setBaseSize(QtCore.QSize(0, 0))
         self.sendRequestButton.setObjectName("sendRequestButton")
         self.sendRequestButton.clicked.connect(self.add_friend)
-        self.tox_id = QtGui.QLineEdit(self)
+        self.tox_id = LineEdit(self)
         self.tox_id.setGeometry(QtCore.QRect(50, 40, 471, 27))
         self.tox_id.setObjectName("lineEdit")
         self.tox_id.setText(tox_id)
@@ -85,12 +85,12 @@ class ProfileSettings(CenteredWidget):
         self.setObjectName("ProfileSettingsForm")
         self.setMinimumSize(QtCore.QSize(650, 520))
         self.setMaximumSize(QtCore.QSize(650, 520))
-        self.nick = QtGui.QLineEdit(self)
+        self.nick = LineEdit(self)
         self.nick.setGeometry(QtCore.QRect(30, 60, 350, 27))
         self.nick.setObjectName("nick")
         profile = Profile.get_instance()
         self.nick.setText(profile.name)
-        self.status = QtGui.QLineEdit(self)
+        self.status = LineEdit(self)
         self.status.setGeometry(QtCore.QRect(30, 130, 350, 27))
         self.status.setObjectName("status")
         self.status.setText(profile.status_message)
@@ -138,12 +138,12 @@ class ProfileSettings(CenteredWidget):
         self.profile_pass.setGeometry(QtCore.QRect(40, 300, 300, 50))
         font.setPointSize(18)
         self.profile_pass.setFont(font)
-        self.password = QtGui.QLineEdit(self)
+        self.password = LineEdit(self)
         self.password.setGeometry(QtCore.QRect(30, 350, 300, 30))
         self.password.setEchoMode(QtGui.QLineEdit.EchoMode.Password)
         self.leave_blank = QtGui.QLabel(self)
         self.leave_blank.setGeometry(QtCore.QRect(340, 350, 300, 30))
-        self.confirm_password = QtGui.QLineEdit(self)
+        self.confirm_password = LineEdit(self)
         self.confirm_password.setGeometry(QtCore.QRect(30, 400, 300, 30))
         self.confirm_password.setEchoMode(QtGui.QLineEdit.EchoMode.Password)
         self.set_password = QtGui.QPushButton(self)
@@ -262,10 +262,10 @@ class NetworkSettings(CenteredWidget):
         self.http = QtGui.QCheckBox(self)
         self.http.setGeometry(QtCore.QRect(20, 70, 97, 22))
         self.proxy.setObjectName("proxy")
-        self.proxyip = QtGui.QLineEdit(self)
+        self.proxyip = LineEdit(self)
         self.proxyip.setGeometry(QtCore.QRect(40, 130, 231, 27))
         self.proxyip.setObjectName("proxyip")
-        self.proxyport = QtGui.QLineEdit(self)
+        self.proxyport = LineEdit(self)
         self.proxyport.setGeometry(QtCore.QRect(40, 190, 231, 27))
         self.proxyport.setObjectName("proxyport")
         self.label = QtGui.QLabel(self)

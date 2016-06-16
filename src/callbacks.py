@@ -226,11 +226,11 @@ def file_recv_control(tox, friend_number, file_number, file_control, user_data):
     Friend cancelled, paused or resumed file transfer
     """
     if file_control == TOX_FILE_CONTROL['CANCEL']:
-        Profile.get_instance().cancel_transfer(friend_number, file_number, True)
+        invoke_in_main_thread(Profile.get_instance().cancel_transfer, friend_number, file_number, True)
     elif file_control == TOX_FILE_CONTROL['PAUSE']:
-        Profile.get_instance().pause_transfer(friend_number, file_number, True)
+        invoke_in_main_thread(Profile.get_instance().pause_transfer, friend_number, file_number, True)
     elif file_control == TOX_FILE_CONTROL['RESUME']:
-        Profile.get_instance().resume_transfer(friend_number, file_number, True)
+        invoke_in_main_thread(Profile.get_instance().resume_transfer, friend_number, file_number, True)
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - custom packets
