@@ -101,14 +101,13 @@ class MessageItem(QtGui.QWidget):
     def __init__(self, text, time, user='', sent=True, message_type=TOX_MESSAGE_TYPE['NORMAL'], parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.name = DataLabel(self)
-        self.name.setGeometry(QtCore.QRect(0, 2, 95, 20))
+        self.name.setGeometry(QtCore.QRect(2, 2, 95, 20))
         self.name.setTextFormat(QtCore.Qt.PlainText)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(11)
         font.setBold(True)
         self.name.setFont(font)
-        self.name.setObjectName("name")
         self.name.setText(user)
 
         self.time = QtGui.QLabel(self)
@@ -140,7 +139,6 @@ class MessageItem(QtGui.QWidget):
     def mark_as_sent(self):
         if hasattr(self, 't'):
             self.time.setText(self.t)
-            self.time.repaint()
             del self.t
             return True
         return False
@@ -164,16 +162,13 @@ class ContactItem(QtGui.QWidget):
         font.setPointSize(12)
         font.setBold(True)
         self.name.setFont(font)
-        self.name.setObjectName("name")
         self.status_message = DataLabel(self)
         self.status_message.setGeometry(QtCore.QRect(75, 30, 180, 20))
         font.setPointSize(10)
         font.setBold(False)
         self.status_message.setFont(font)
-        self.status_message.setObjectName("status_message")
         self.connection_status = StatusCircle(self)
         self.connection_status.setGeometry(QtCore.QRect(243, 5, 32, 32))
-        self.connection_status.setObjectName("connection_status")
 
 
 class StatusCircle(QtGui.QWidget):

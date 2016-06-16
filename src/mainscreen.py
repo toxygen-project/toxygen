@@ -109,7 +109,6 @@ class MainWindow(QtGui.QMainWindow):
         self.online_contacts.setCurrentIndex(int(Settings.get_instance()['show_online_friends']))
 
     def setup_right_bottom(self, Form):
-        Form.setObjectName("right_bottom")
         Form.resize(650, 60)
         self.messageEdit = MessageArea(Form, self)
         self.messageEdit.setGeometry(QtCore.QRect(0, 3, 450, 55))
@@ -160,7 +159,6 @@ class MainWindow(QtGui.QMainWindow):
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def setup_left_top(self, Form):
-        Form.setObjectName("left_top")
         Form.setCursor(QtCore.Qt.PointingHandCursor)
         Form.setMinimumSize(QtCore.QSize(270, 100))
         Form.setMaximumSize(QtCore.QSize(270, 100))
@@ -191,7 +189,6 @@ class MainWindow(QtGui.QMainWindow):
         Form.connection_status.setObjectName("connection_status")
 
     def setup_right_top(self, Form):
-        Form.setObjectName("Form")
         Form.resize(650, 100)
         self.account_avatar = QtGui.QLabel(Form)
         self.account_avatar.setGeometry(QtCore.QRect(10, 30, 64, 64))
@@ -268,33 +265,27 @@ class MainWindow(QtGui.QMainWindow):
         main_list = QtGui.QWidget()
         messages = QtGui.QWidget()
         message_buttons = QtGui.QWidget()
+        self.setup_left_center_menu(search)
+        self.setup_left_top(name)
+        self.setup_right_center(messages)
+        self.setup_right_top(info)
+        self.setup_right_bottom(message_buttons)
+        self.setup_left_center(main_list)
         if not Settings.get_instance()['mirror_mode']:
-            self.setup_left_center_menu(search)
             grid.addWidget(search, 1, 0)
-            self.setup_left_top(name)
             grid.addWidget(name, 0, 0)
-            self.setup_right_center(messages)
             grid.addWidget(messages, 1, 1, 2, 1)
-            self.setup_right_top(info)
             grid.addWidget(info, 0, 1)
-            self.setup_right_bottom(message_buttons)
             grid.addWidget(message_buttons, 3, 1)
-            self.setup_left_center(main_list)
             grid.addWidget(main_list, 2, 0, 2, 1)
             grid.setColumnMinimumWidth(1, 500)
             grid.setColumnMinimumWidth(0, 270)
         else:
-            self.setup_left_center_menu(search)
             grid.addWidget(search, 1, 1)
-            self.setup_left_top(name)
             grid.addWidget(name, 0, 1)
-            self.setup_right_center(messages)
             grid.addWidget(messages, 1, 0, 2, 1)
-            self.setup_right_top(info)
             grid.addWidget(info, 0, 0)
-            self.setup_right_bottom(message_buttons)
             grid.addWidget(message_buttons, 3, 0)
-            self.setup_left_center(main_list)
             grid.addWidget(main_list, 2, 1, 2, 1)
             grid.setColumnMinimumWidth(0, 500)
             grid.setColumnMinimumWidth(1, 280)
@@ -388,10 +379,7 @@ class MainWindow(QtGui.QMainWindow):
         self.audio_s.show()
 
     def show_menu(self):
-        if hasattr(self, 'menu') and self.menu.isVisible():
-            self.menu.hide()
-            return
-        elif not hasattr(self, 'menu'):
+        if not hasattr(self, 'menu'):
             self.menu = DropdownMenu(self)
         self.menu.setGeometry(QtCore.QRect(0 if Settings.get_instance()['mirror_mode'] else 270,
                                            self.height() - 100,
