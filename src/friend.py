@@ -22,7 +22,7 @@ class Friend(contact.Contact):
         self._message_getter = message_getter
         self._corr = []
         self._unsaved_messages = 0
-        self._history_loaded = False
+        self._history_loaded = self._new_actions = False
         self._receipts = 0
         self._curr_text = ''
 
@@ -39,7 +39,7 @@ class Friend(contact.Contact):
     def get_receipts(self):
         return self._receipts
 
-    receipts = property(get_receipts)
+    receipts = property(get_receipts)  # read receipts
 
     def inc_receipts(self):
         self._receipts += 1
@@ -184,15 +184,28 @@ class Friend(contact.Contact):
     # Unread messages from friend
     # -----------------------------------------------------------------------------------------------------------------
 
+    def get_actions(self):
+        return self._new_actions
+
+    def set_actions(self, value):
+        self._new_actions = value
+        self._widget.connection_status.update(self.status, value)
+
+    actions = property(get_actions, set_actions)  # unread messages, incoming files, av calls
+
     def get_messages(self):
         return self._new_messages
 
     def inc_messages(self):
         self._new_messages += 1
+        self._new_actions = True
         self._widget.connection_status.update(self.status, True)
+        self._widget.messages.update(self._new_messages)
 
     def reset_messages(self):
+        self._new_actions = False
         self._new_messages = 0
+        self._widget.messages.update(self._new_messages)
         self._widget.connection_status.update(self.status, False)
 
     messages = property(get_messages)

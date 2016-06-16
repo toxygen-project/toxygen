@@ -236,6 +236,7 @@ class Profile(contact.Contact, Singleton):
             message = QtGui.QApplication.translate("MainWindow", 'User {} is now known as {}', None, QtGui.QApplication.UnicodeUTF8)
             message = message.format(tmp, name)
             friend.append_message(InfoMessage(message, time.time()))
+            friend.actions = True
             if friend.number == self.get_active_number():
                 self.create_message_item(message, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
                 self._messages.scrollToBottom()
@@ -801,7 +802,7 @@ class Profile(contact.Contact, Singleton):
                 self._file_transfers[(friend_number, file_number)].set_state_changed_handler(item.update)
             self._messages.scrollToBottom()
         else:
-            friend.inc_messages()
+            friend.actions = True
 
         friend.append_message(tm)
 
@@ -1070,7 +1071,7 @@ class Profile(contact.Contact, Singleton):
             self.create_message_item(text, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
             self._messages.scrollToBottom()
         else:
-            friend.inc_messages()
+            friend.actions = True
         self._call_widget = avwidgets.IncomingCallWidget(friend_number, text, friend.name)
         self._call_widget.set_pixmap(friend.get_pixmap())
         self._call_widget.show()

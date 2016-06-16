@@ -169,6 +169,8 @@ class ContactItem(QtGui.QWidget):
         self.status_message.setFont(font)
         self.connection_status = StatusCircle(self)
         self.connection_status.setGeometry(QtCore.QRect(243, 5, 32, 32))
+        self.messages = UnreadMessagesCount(self)
+        self.messages.setGeometry(QtCore.QRect(52, 50, 30, 20))
 
 
 class StatusCircle(QtGui.QWidget):
@@ -199,6 +201,30 @@ class StatusCircle(QtGui.QWidget):
             name += '_notification'
         pixmap = QtGui.QPixmap(curr_directory() + '/images/{}.png'.format(name))
         self.label.setPixmap(pixmap)
+
+
+class UnreadMessagesCount(QtGui.QWidget):
+
+    def __init__(self, parent=None):
+        super(UnreadMessagesCount, self).__init__(parent)
+        self.resize(30, 20)
+        self.label = QtGui.QLabel(self)
+        self.label.setGeometry(QtCore.QRect(0, 0, 30, 20))
+        self.label.setVisible(False)
+        font = QtGui.QFont()
+        font.setFamily("Times New Roman")
+        font.setPointSize(12)
+        font.setBold(True)
+        self.label.setFont(font)
+        self.label.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
+        self.label.setStyleSheet('QLabel { color: white; background-color: red; border-radius: 10; }')
+
+    def update(self, messages_count):
+        if messages_count:
+            self.label.setVisible(True)
+            self.label.setText(str(messages_count))
+        else:
+            self.label.setVisible(False)
 
 
 class FileTransferItem(QtGui.QListWidget):
@@ -356,6 +382,9 @@ class FileTransferItem(QtGui.QListWidget):
                 self.setStyleSheet('QListWidget { border: 1px solid green; }')
                 self.state = state
 
+    def mark_as_sent(self):
+        return False
+
 
 class UnsentFileItem(FileTransferItem):
 
@@ -390,6 +419,9 @@ class InlineImageItem(QtGui.QWidget):
             pixmap = self.pixmap.scaled(max_size, max_size, QtCore.Qt.KeepAspectRatio)
             self._image_label.setPixmap(pixmap)
             self.resize(QtCore.QSize(max_size, pixmap.height()))
+
+    def mark_as_sent(self):
+        return False
 
 
 
