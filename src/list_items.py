@@ -140,6 +140,8 @@ class MessageItem(QtGui.QWidget):
     def mark_as_sent(self):
         if hasattr(self, 't'):
             self.time.setText(self.t)
+            self.time.repaint()
+            del self.t
             return True
         return False
 
@@ -170,7 +172,7 @@ class ContactItem(QtGui.QWidget):
         self.status_message.setFont(font)
         self.status_message.setObjectName("status_message")
         self.connection_status = StatusCircle(self)
-        self.connection_status.setGeometry(QtCore.QRect(220, 5, 32, 32))
+        self.connection_status.setGeometry(QtCore.QRect(243, 5, 32, 32))
         self.connection_status.setObjectName("connection_status")
 
 
@@ -178,40 +180,30 @@ class StatusCircle(QtGui.QWidget):
     """
     Connection status
     """
-    # TODO: rewrite
     def __init__(self, parent):
         QtGui.QWidget.__init__(self, parent)
         self.setGeometry(0, 0, 32, 32)
-        self.data = None
-        self.messages = False
+        self.label = QtGui.QLabel(self)
+        self.label.setGeometry(QtCore.QRect(0, 0, 32, 32))
+        self.unread = False
 
-    def paintEvent(self, event):
-        paint = QtGui.QPainter()
-        paint.begin(self)
-        paint.setRenderHint(QtGui.QPainter.Antialiasing)
-        k = 16
-        rad_x = rad_y = 5
-        if self.data is None:
-            color = QtCore.Qt.transparent
+    def update(self, status, unread_messages=None):
+        if unread_messages is None:
+            unread_messages = self.unread
         else:
-            if self.data == TOX_USER_STATUS['NONE']:
-                color = QtGui.QColor(50, 205, 50)
-            elif self.data == TOX_USER_STATUS['AWAY']:
-                color = QtGui.QColor(255, 200, 50)
-            else:  # self.data == TOX_USER_STATUS['BUSY']:
-                color = QtGui.QColor(255, 50, 0)
-
-        paint.setPen(color)
-        center = QtCore.QPoint(k, k)
-        paint.setBrush(color)
-        paint.drawEllipse(center, rad_x, rad_y)
-        if self.messages:
-            if color == QtCore.Qt.transparent:
-                color = QtCore.Qt.darkRed
-            paint.setBrush(QtCore.Qt.transparent)
-            paint.setPen(color)
-            paint.drawEllipse(center, rad_x + 3, rad_y + 3)
-        paint.end()
+            self.unread = unread_messages
+        if status == TOX_USER_STATUS['NONE']:
+            name = 'online'
+        elif status == TOX_USER_STATUS['AWAY']:
+            name = 'idle'
+        elif status == TOX_USER_STATUS['BUSY']:
+            name = 'busy'
+        else:
+            name = 'offline'
+        if unread_messages:
+            name += '_notification'
+        pixmap = QtGui.QPixmap(curr_directory() + '/images/{}.png'.format(name))
+        self.label.setPixmap(pixmap)
 
 
 class FileTransferItem(QtGui.QListWidget):
@@ -376,6 +368,7 @@ class UnsentFileItem(FileTransferItem):
         super(UnsentFileItem, self).__init__(file_name, size, time, user, -1, -1,
                                              FILE_TRANSFER_MESSAGE_STATUS['PAUSED_BY_FRIEND'], width, parent)
         self._time = time
+        self.pb.setVisible(False)
 
     def cancel_transfer(self, *args):
         pr = profile.Profile.get_instance()

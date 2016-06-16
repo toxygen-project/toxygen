@@ -64,8 +64,8 @@ class Contact(object):
         return self._status
 
     def set_status(self, value):
-        self._widget.connection_status.data = self._status = value
-        self._widget.connection_status.repaint()
+        self._status = value
+        self._widget.connection_status.update(value)
 
     status = property(get_status, set_status)
 

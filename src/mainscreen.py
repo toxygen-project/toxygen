@@ -183,10 +183,7 @@ class MainWindow(QtGui.QMainWindow):
         Form.status_message.setFont(font)
         Form.status_message.setObjectName("status_message")
         self.connection_status = Form.connection_status = StatusCircle(Form)
-        Form.connection_status.setGeometry(QtCore.QRect(230, 29, 64, 64))
-        Form.connection_status.setMinimumSize(QtCore.QSize(32, 32))
-        Form.connection_status.setMaximumSize(QtCore.QSize(32, 32))
-        Form.connection_status.setBaseSize(QtCore.QSize(32, 32))
+        Form.connection_status.setGeometry(QtCore.QRect(245, 35, 32, 32))
         self.avatar_label.mouseReleaseEvent = self.profile_settings
         self.status_message.mouseReleaseEvent = self.profile_settings
         self.name.mouseReleaseEvent = self.profile_settings

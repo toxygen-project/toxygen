@@ -188,12 +188,12 @@ class Friend(contact.Contact):
         return self._new_messages
 
     def inc_messages(self):
-        self._widget.connection_status.messages = self._new_messages + 1
-        self._widget.connection_status.repaint()
+        self._new_messages += 1
+        self._widget.connection_status.update(self.status, True)
 
     def reset_messages(self):
-        self._widget.connection_status.messages = self._new_messages = 0
-        self._widget.connection_status.repaint()
+        self._new_messages = 0
+        self._widget.connection_status.update(self.status, False)
 
     messages = property(get_messages)
 
