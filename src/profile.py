@@ -251,8 +251,6 @@ class Profile(contact.Contact, Singleton):
     # -----------------------------------------------------------------------------------------------------------------
 
     def send_files(self, friend_number):
-        # for key in filter(lambda x: x[0] == friend_number, self._file_transfers.keys()):
-        #     self.resume_transfer(key[0], key[1], True)
         friend = self.get_friend_by_number(friend_number)
         files = friend.get_unsent_files()
         try:
@@ -277,11 +275,6 @@ class Profile(contact.Contact, Singleton):
         self.friend_typing(friend_number, False)
         if friend_number in self._call:
             self._call.finish_call(friend_number, True)
-        # for key in filter(lambda x: x[0] == friend_number, self._file_transfers.keys()):
-        #     if type(self._file_transfers[key]) in (ReceiveAvatar, SendAvatar):
-        #         self._file_transfers[key].cancelled()
-        #     else:
-        #         self._file_transfers[key].pause(False)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications
@@ -454,8 +447,12 @@ class Profile(contact.Contact, Singleton):
                     continue
                 item = self.create_file_transfer_item(message, False)
                 if message.get_status() in ACTIVE_FILE_TRANSFERS:  # active file transfer
-                    ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
-                    ft.set_state_changed_handler(item.update)
+                    try:
+                        ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
+                        ft.set_state_changed_handler(item.update)
+                        ft.signal()
+                    except:
+                        print 'Incoming not started transfer - no info found'
             elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline
                 self.create_inline_item(message.get_data())
             else:  # info message

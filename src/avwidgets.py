@@ -70,20 +70,22 @@ class IncomingCallWidget(widgets.CenteredWidget):
 
                     def __init__(self, fl):
                         self.stop = False
-                        self.wf = wave.open(fl, 'rb')
+                        self.fl = fl
+                        self.wf = wave.open(self.fl, 'rb')
                         self.p = pyaudio.PyAudio()
                         self.stream = self.p.open(
                             format=self.p.get_format_from_width(self.wf.getsampwidth()),
                             channels=self.wf.getnchannels(),
                             rate=self.wf.getframerate(),
-                            output=True
-                        )
+                            output=True)
 
                     def play(self):
-                        data = self.wf.readframes(self.chunk)
-                        while data and not self.stop:
-                            self.stream.write(data)
+                        while not self.stop:
                             data = self.wf.readframes(self.chunk)
+                            while data and not self.stop:
+                                self.stream.write(data)
+                                data = self.wf.readframes(self.chunk)
+                            self.wf = wave.open(self.fl, 'rb')
 
                     def close(self):
                         self.stream.close()
