@@ -182,7 +182,7 @@ class MainWindow(QtGui.QMainWindow):
         Form.status_message.setFont(font)
         Form.status_message.setObjectName("status_message")
         self.connection_status = Form.connection_status = StatusCircle(Form)
-        Form.connection_status.setGeometry(QtCore.QRect(245, 35, 32, 32))
+        Form.connection_status.setGeometry(QtCore.QRect(230, 35, 32, 32))
         self.avatar_label.mouseReleaseEvent = self.profile_settings
         self.status_message.mouseReleaseEvent = self.profile_settings
         self.name.mouseReleaseEvent = self.profile_settings
@@ -256,7 +256,8 @@ class MainWindow(QtGui.QMainWindow):
 
     def initUI(self, tox):
         self.setMinimumSize(920, 500)
-        self.setGeometry(400, 400, 920, 500)
+        s = Settings.get_instance()
+        self.setGeometry(s['x'], s['y'], s['width'], s['height'])
         self.setWindowTitle('Toxygen')
         os.chdir(curr_directory() + '/images/')
         main = QtGui.QWidget()
@@ -311,6 +312,12 @@ class MainWindow(QtGui.QMainWindow):
     def closeEvent(self, *args, **kwargs):
         self.profile.save_history()
         self.profile.close()
+        s = Settings.get_instance()
+        s['x'] = self.pos().x()
+        s['y'] = self.pos().y()
+        s['width'] = self.width()
+        s['height'] = self.height()
+        s.save()
         QtGui.QApplication.closeAllWindows()
 
     def resizeEvent(self, *args, **kwargs):

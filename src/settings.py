@@ -86,7 +86,11 @@ class Settings(Singleton, dict):
             'notes': {},
             'smileys': True,
             'smiley_pack': 'default',
-            'mirror_mode': False
+            'mirror_mode': False,
+            'width': 920,
+            'height': 500,
+            'x': 400,
+            'y': 400
         }
 
     @staticmethod

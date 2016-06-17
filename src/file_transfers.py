@@ -35,9 +35,9 @@ ALLOWED_FILES = ('toxygen_inline.png', 'utox-inline.png', 'sticker.png')
 
 class StateSignal(QtCore.QObject):
     try:
-        signal = QtCore.Signal(int, float)  # state and progress
+        signal = QtCore.Signal(int, float, int)  # state and progress
     except:
-        signal = QtCore.pyqtSignal(int, float)  # state and progress - pyqt4
+        signal = QtCore.pyqtSignal(int, float, int)  # state and progress - pyqt4
 
 
 class FileTransfer(QtCore.QObject):
@@ -64,7 +64,12 @@ class FileTransfer(QtCore.QObject):
         self._state_changed.signal.connect(handler)
 
     def signal(self):
-        self._state_changed.signal.emit(self.state, self._done / self._size if self._size else 0)
+        percentage = self._done / self._size if self._size else 0
+        if self._creation_time is None or not percentage:
+            t = -1
+        else:
+            t = ((time() - self._creation_time) / percentage) * (1 - percentage)
+        self._state_changed.signal.emit(self.state, percentage, int(t))
 
     def get_file_number(self):
         return self._file_number
@@ -124,6 +129,8 @@ class SendTransfer(FileTransfer):
         :param position: start position in file
         :param size: chunk max size
         """
+        if self._creation_time is None:
+            self._creation_time = time()
         if size:
             self._file.seek(position)
             data = self._file.read(size)
@@ -166,6 +173,8 @@ class SendFromBuffer(FileTransfer):
         return self._data
 
     def send_chunk(self, position, size):
+        if self._creation_time is None:
+            self._creation_time = time()
         if size:
             data = self._data[position:position + size]
             self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
@@ -210,11 +219,13 @@ class ReceiveTransfer(FileTransfer):
         :param position: position in file to save data
         :param data: raw data (string)
         """
+        if self._creation_time is None:
+            self._creation_time = time()
         if data is None:
             self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
             self._state_changed.signal.emit(self.state, 1)
-        else:
+        else:  # TODO: improve
             data = ''.join(chr(x) for x in data)
             if self._file_size < position:
                 self._file.seek(0, 2)
@@ -243,6 +254,8 @@ class ReceiveToBuffer(FileTransfer):
         return self._data
 
     def write_chunk(self, position, data):
+        if self._creation_time is None:
+            self._creation_time = time()
         if data is None:
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
             self._state_changed.signal.emit(self.state, 1)

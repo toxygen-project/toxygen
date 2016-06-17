@@ -155,19 +155,19 @@ class ContactItem(QtGui.QWidget):
         self.avatar_label.setGeometry(QtCore.QRect(3, 3, 64, 64))
         self.avatar_label.setScaledContents(True)
         self.name = DataLabel(self)
-        self.name.setGeometry(QtCore.QRect(75, 10, 160, 25))
+        self.name.setGeometry(QtCore.QRect(75, 10, 150, 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(12)
         font.setBold(True)
         self.name.setFont(font)
         self.status_message = DataLabel(self)
-        self.status_message.setGeometry(QtCore.QRect(75, 30, 180, 20))
+        self.status_message.setGeometry(QtCore.QRect(75, 30, 170, 20))
         font.setPointSize(10)
         font.setBold(False)
         self.status_message.setFont(font)
         self.connection_status = StatusCircle(self)
-        self.connection_status.setGeometry(QtCore.QRect(243, 5, 32, 32))
+        self.connection_status.setGeometry(QtCore.QRect(230, 5, 32, 32))
         self.messages = UnreadMessagesCount(self)
         self.messages.setGeometry(QtCore.QRect(52, 50, 30, 20))
 
@@ -291,7 +291,7 @@ class FileTransferItem(QtGui.QListWidget):
         self.pb.setVisible(state in SHOW_PROGRESS_BAR)
 
         self.file_name = DataLabel(self)
-        self.file_name.setGeometry(QtCore.QRect(210, 7, width - 400, 20))
+        self.file_name.setGeometry(QtCore.QRect(210, 7, width - 440, 20))
         font.setPointSize(12)
         self.file_name.setFont(font)
         file_size = size / 1024
@@ -305,6 +305,11 @@ class FileTransferItem(QtGui.QListWidget):
         self.file_name.setText(file_data)
         self.file_name.setToolTip(file_name)
         self.saved_name = file_name
+        self.time_left = QtGui.QLabel(self)
+        self.time_left.setGeometry(QtCore.QRect(width - 83, 7, 30, 20))
+        font.setPointSize(10)
+        self.time_left.setFont(font)
+        self.time_left.setVisible(state == TOX_FILE_TRANSFER_STATE['RUNNING'])
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         self.paused = False
 
@@ -345,9 +350,12 @@ class FileTransferItem(QtGui.QListWidget):
         self.accept_or_pause.setIcon(icon)
         self.accept_or_pause.setIconSize(QtCore.QSize(30, 30))
 
-    @QtCore.Slot(int, float)
-    def update(self, state, progress):
+    @QtCore.Slot(int, float, int)
+    def update(self, state, progress, time):
         self.pb.setValue(int(progress * 100))
+        if time + 1:
+            m, s = divmod(time, 60)
+            self.time_left.setText('{0:02d}:{0:02d}'.format(m, s))
         if self.state != state:
             if state == TOX_FILE_TRANSFER_STATE['CANCELLED']:
                 self.setStyleSheet('QListWidget { border: 1px solid #B40404; }')
@@ -355,29 +363,36 @@ class FileTransferItem(QtGui.QListWidget):
                 self.accept_or_pause.setVisible(False)
                 self.pb.setVisible(False)
                 self.state = state
+                self.time_left.setVisible(False)
             elif state == TOX_FILE_TRANSFER_STATE['FINISHED']:
                 self.accept_or_pause.setVisible(False)
                 self.pb.setVisible(False)
                 self.cancel.setVisible(False)
                 self.setStyleSheet('QListWidget { border: 1px solid green; }')
                 self.state = state
+                self.time_left.setVisible(False)
             elif state == TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND']:
                 self.accept_or_pause.setVisible(False)
                 self.setStyleSheet('QListWidget { border: 1px solid #FF8000; }')
                 self.state = state
+                self.time_left.setVisible(False)
             elif state == TOX_FILE_TRANSFER_STATE['PAUSED_BY_USER']:
                 self.button_update('resume')  # setup button continue
                 self.setStyleSheet('QListWidget { border: 1px solid green; }')
                 self.state = state
+                self.time_left.setVisible(False)
             elif state == TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']:
                 self.setStyleSheet('QListWidget { border: 1px solid #FF8000; }')
                 self.accept_or_pause.setVisible(False)
+                self.time_left.setVisible(False)
                 self.pb.setVisible(False)
             elif not self.paused:  # active
+                self.pb.setVisible(True)
                 self.accept_or_pause.setVisible(True)  # setup to pause
                 self.button_update('pause')
                 self.setStyleSheet('QListWidget { border: 1px solid green; }')
                 self.state = state
+                self.time_left.setVisible(True)
 
     def mark_as_sent(self):
         return False
