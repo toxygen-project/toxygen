@@ -273,8 +273,8 @@ class Profile(contact.Contact, Singleton):
             friend.clear_unsent_files()
             if friend_number == self.get_active_number():
                 self.update()
-        except:
-            pass
+        except Exception as ex:
+            print 'Exception in file sending: ' + str(ex)
 
     def friend_exit(self, friend_number):
         """
@@ -492,7 +492,12 @@ class Profile(contact.Contact, Singleton):
         return item
 
     def create_message_item(self, text, time, owner, message_type, append=True):
-        name = self.get_active_name() if owner == MESSAGE_OWNER['FRIEND'] else self.name
+        if message_type == MESSAGE_TYPE['INFO_MESSAGE']:
+            name = ''
+        elif owner == MESSAGE_OWNER['FRIEND']:
+            name = self.get_active_name()
+        else:
+            name = self._name
         item = MessageItem(text, time, name, owner != MESSAGE_OWNER['NOT_SENT'], message_type, self._messages)
         elem = QtGui.QListWidgetItem()
         elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
@@ -558,7 +563,6 @@ class Profile(contact.Contact, Singleton):
         title = QtGui.QApplication.translate('MainWindow',
                                              'Set alias',
                                              None, QtGui.QApplication.UnicodeUTF8)
-
         text, ok = QtGui.QInputDialog.getText(None,
                                               title,
                                               dialog,
@@ -837,7 +841,8 @@ class Profile(contact.Contact, Singleton):
             if friend_number == self.get_active_number():
                 tmp = self._messages.count() + i
                 if tmp >= 0:
-                    self._messages.itemWidget(self._messages.item(tmp)).update(TOX_FILE_TRANSFER_STATE['CANCELLED'], 0)
+                    self._messages.itemWidget(self._messages.item(tmp)).update(TOX_FILE_TRANSFER_STATE['CANCELLED'],
+                                                                               0, -1)
 
     def cancel_not_started_transfer(self, time):
         self._friends[self._active_friend].delete_one_unsent_file(time)

@@ -126,14 +126,13 @@ class MessageItem(QtGui.QWidget):
             self.time.setText(time)
 
         self.message = MessageEdit(text, parent.width() - 150, self)
-        self.message.setGeometry(QtCore.QRect(100, 0, parent.width() - 150, self.message.height()))
-        self.setFixedHeight(self.message.height())
-
         if message_type != TOX_MESSAGE_TYPE['NORMAL']:
             self.name.setStyleSheet("QLabel { color: #5CB3FF; }")
             self.message.setStyleSheet("QTextEdit { color: #5CB3FF; font: italic; font-size: 20px; }")
             self.message.setAlignment(QtCore.Qt.AlignCenter)
             self.time.setStyleSheet("QLabel { color: #5CB3FF; }")
+        self.message.setGeometry(QtCore.QRect(100, 0, parent.width() - 150, self.message.height()))
+        self.setFixedHeight(self.message.height())
 
     def mark_as_sent(self):
         if hasattr(self, 't'):

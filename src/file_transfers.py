@@ -259,7 +259,7 @@ class ReceiveToBuffer(FileTransfer):
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
             self.signal()
         else:
-            data = bytearray(data)
+            data = ''.join(chr(x) for x in data)
             l = len(data)
             if self._data_size < position:
                 self._data += ('\0' * (position - self._data_size))
