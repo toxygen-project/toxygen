@@ -77,8 +77,18 @@ class Profile(contact.Contact, Singleton):
             self._tox.self_set_status(status)
 
     def set_name(self, value):
+        tmp = self.name
         super(Profile, self).set_name(value)
         self._tox.self_set_name(self._name.encode('utf-8'))
+        if tmp != value:
+            message = QtGui.QApplication.translate("MainWindow", 'User {} is now known as {}', None,
+                                                   QtGui.QApplication.UnicodeUTF8)
+            message = message.format(tmp, value)
+            for friend in self._friends:
+                friend.append_message(InfoMessage(message, time.time()))
+            if self._active_friend + 1:
+                self.create_message_item(message, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+                self._messages.scrollToBottom()
 
     def set_status_message(self, value):
         super(Profile, self).set_status_message(value)
@@ -104,7 +114,7 @@ class Profile(contact.Contact, Singleton):
         filter_str = filter_str.lower()
         for index, friend in enumerate(self._friends):
             friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name.lower())
-            friend.visibility = friend.visibility or friend.messages
+            friend.visibility = friend.visibility or friend.messages or friend.actions
             if friend.visibility:
                 self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 70))
             else:
@@ -237,7 +247,7 @@ class Profile(contact.Contact, Singleton):
             message = message.format(tmp, name)
             friend.append_message(InfoMessage(message, time.time()))
             friend.actions = True
-            if friend.number == self.get_active_number():
+            if number == self.get_active_number():
                 self.create_message_item(message, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
                 self._messages.scrollToBottom()
             self.set_active(None)

@@ -94,9 +94,8 @@ def friend_name(tox, friend_num, name, size, user_data):
     Friend changed his name
     """
     profile = Profile.get_instance()
-    print 'New name: ', str(friend_num), str(name)
-    if profile.get_active_number() == friend_num:
-        invoke_in_main_thread(profile.new_name, friend_num, name)
+    print 'New name: ', friend_num, name
+    invoke_in_main_thread(profile.new_name, friend_num, name)
 
 
 def friend_status_message(tox, friend_num, status_message, size, user_data):

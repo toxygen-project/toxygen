@@ -224,15 +224,14 @@ class ReceiveTransfer(FileTransfer):
         if data is None:
             self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self._state_changed.signal.emit(self.state, 1)
-        else:  # TODO: improve
-            data = ''.join(chr(x) for x in data)
+            self.signal()
+        else:
+            data = bytearray(data)
             if self._file_size < position:
                 self._file.seek(0, 2)
                 self._file.write('\0' * (position - self._file_size))
             self._file.seek(position)
             self._file.write(data)
-            self._file.flush()
             l = len(data)
             if position + l > self._file_size:
                 self._file_size = position + l
@@ -258,9 +257,9 @@ class ReceiveToBuffer(FileTransfer):
             self._creation_time = time()
         if data is None:
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self._state_changed.signal.emit(self.state, 1)
+            self.signal()
         else:
-            data = ''.join(chr(x) for x in data)
+            data = bytearray(data)
             l = len(data)
             if self._data_size < position:
                 self._data += ('\0' * (position - self._data_size))

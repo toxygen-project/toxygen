@@ -291,7 +291,7 @@ class FileTransferItem(QtGui.QListWidget):
         self.pb.setVisible(state in SHOW_PROGRESS_BAR)
 
         self.file_name = DataLabel(self)
-        self.file_name.setGeometry(QtCore.QRect(210, 7, width - 440, 20))
+        self.file_name.setGeometry(QtCore.QRect(210, 7, width - 420, 20))
         font.setPointSize(12)
         self.file_name.setFont(font)
         file_size = size / 1024
@@ -306,7 +306,7 @@ class FileTransferItem(QtGui.QListWidget):
         self.file_name.setToolTip(file_name)
         self.saved_name = file_name
         self.time_left = QtGui.QLabel(self)
-        self.time_left.setGeometry(QtCore.QRect(width - 83, 7, 30, 20))
+        self.time_left.setGeometry(QtCore.QRect(width - 87, 7, 30, 20))
         font.setPointSize(10)
         self.time_left.setFont(font)
         self.time_left.setVisible(state == TOX_FILE_TRANSFER_STATE['RUNNING'])
