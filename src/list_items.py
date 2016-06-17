@@ -110,7 +110,7 @@ class MessageItem(QtGui.QWidget):
         self.name.setText(user)
 
         self.time = QtGui.QLabel(self)
-        self.time.setGeometry(QtCore.QRect(parent.width() - 50, 0, 50, 25))
+        self.time.setGeometry(QtCore.QRect(parent.width() - 50, 0, 50, 20))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPointSize(10)
@@ -277,9 +277,6 @@ class FileTransferItem(QtGui.QListWidget):
         elif state == TOX_FILE_TRANSFER_STATE['PAUSED_BY_USER']:  # setup for continue
             self.accept_or_pause.setVisible(True)
             self.button_update('resume')
-        elif state not in ACTIVE_FILE_TRANSFERS:
-            self.accept_or_pause.setVisible(False)
-            self.cancel.setVisible(False)
         else:  # pause
             self.accept_or_pause.setVisible(True)
             self.button_update('pause')
@@ -372,6 +369,10 @@ class FileTransferItem(QtGui.QListWidget):
                 self.button_update('resume')  # setup button continue
                 self.setStyleSheet('QListWidget { border: 1px solid green; }')
                 self.state = state
+            elif state == TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']:
+                self.setStyleSheet('QListWidget { border: 1px solid #FF8000; }')
+                self.accept_or_pause.setVisible(False)
+                self.pb.setVisible(False)
             elif not self.paused:  # active
                 self.accept_or_pause.setVisible(True)  # setup to pause
                 self.button_update('pause')

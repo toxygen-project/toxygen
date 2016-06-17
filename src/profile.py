@@ -904,7 +904,7 @@ class Profile(contact.Contact, Singleton):
         self._file_transfers[(friend.number, st.get_file_number())] = st
         tm = TransferMessage(MESSAGE_OWNER['ME'],
                              time.time(),
-                             TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND'],  # OUTGOING NOT STARTED
+                             TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED'],
                              len(data),
                              file_name,
                              friend.number,
@@ -934,7 +934,7 @@ class Profile(contact.Contact, Singleton):
         self._file_transfers[(friend_number, st.get_file_number())] = st
         tm = TransferMessage(MESSAGE_OWNER['ME'],
                              time.time(),
-                             TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND'],  # OUTGOING NOT STARTED
+                             TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED'],
                              os.path.getsize(path),
                              os.path.basename(path),
                              friend_number,

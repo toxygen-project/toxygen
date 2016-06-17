@@ -242,6 +242,7 @@ class MainWindow(QtGui.QMainWindow):
         self.messages = QtGui.QListWidget(widget)
         self.messages.setGeometry(0, 0, 620, 310)
         self.messages.setObjectName("messages")
+        self.messages.setSpacing(1)
         self.messages.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.messages.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.messages.setFocusPolicy(QtCore.Qt.NoFocus)
@@ -398,35 +399,39 @@ class MainWindow(QtGui.QMainWindow):
 
     def send_file(self):
         self.menu.hide()
-        choose_file = QtGui.QApplication.translate("MainWindow", 'Choose file', None, QtGui.QApplication.UnicodeUTF8)
-        choose = QtGui.QApplication.translate("MainWindow", choose_file, None, QtGui.QApplication.UnicodeUTF8)
-        name = QtGui.QFileDialog.getOpenFileName(self, choose)
-        if name[0]:
-            self.profile.send_file(name[0])
+        if self.profile.active_friend + 1:
+            choose = QtGui.QApplication.translate("MainWindow", 'Choose file', None, QtGui.QApplication.UnicodeUTF8)
+            name = QtGui.QFileDialog.getOpenFileName(self, choose)
+            if name[0]:
+                self.profile.send_file(name[0])
 
     def send_screenshot(self, hide=False):
         self.menu.hide()
-        self.sw = ScreenShotWindow(self)
-        self.sw.show()
-        if hide:
-            self.hide()
+        if self.profile.active_friend + 1:
+            self.sw = ScreenShotWindow(self)
+            self.sw.show()
+            if hide:
+                self.hide()
 
     def send_smiley(self):
         self.menu.hide()
-        self.smiley = SmileyWindow(self)
-        self.smiley.setGeometry(QtCore.QRect(self.x() if Settings.get_instance()['mirror_mode'] else 270 + self.x(),
-                                             self.y() + self.height() - 200,
-                                             self.smiley.width(),
-                                             self.smiley.height()))
-        self.smiley.show()
+        if self.profile.active_friend + 1:
+            self.smiley = SmileyWindow(self)
+            self.smiley.setGeometry(QtCore.QRect(self.x() if Settings.get_instance()['mirror_mode'] else 270 + self.x(),
+                                                 self.y() + self.height() - 200,
+                                                 self.smiley.width(),
+                                                 self.smiley.height()))
+            self.smiley.show()
 
     def send_sticker(self):
-        self.sticker = StickerWindow(self)
-        self.sticker.setGeometry(QtCore.QRect(self.x() if Settings.get_instance()['mirror_mode'] else 270 + self.x(),
-                                             self.y() + self.height() - 200,
-                                             self.sticker.width(),
-                                             self.sticker.height()))
-        self.sticker.show()
+        self.menu.hide()
+        if self.profile.active_friend + 1:
+            self.sticker = StickerWindow(self)
+            self.sticker.setGeometry(QtCore.QRect(self.x() if Settings.get_instance()['mirror_mode'] else 270 + self.x(),
+                                                 self.y() + self.height() - 200,
+                                                 self.sticker.width(),
+                                                 self.sticker.height()))
+            self.sticker.show()
 
     def active_call(self):
         self.update_call_state('finish_call')

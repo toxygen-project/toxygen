@@ -18,14 +18,15 @@ TOX_FILE_TRANSFER_STATE = {
     'CANCELLED': 2,
     'FINISHED': 3,
     'PAUSED_BY_FRIEND': 4,
-    'INCOMING_NOT_STARTED': 5
+    'INCOMING_NOT_STARTED': 5,
+    'OUTGOING_NOT_STARTED': 6
 }
 
-ACTIVE_FILE_TRANSFERS = (0, 1, 4, 5)
+ACTIVE_FILE_TRANSFERS = (0, 1, 4, 5, 6)
 
-PAUSED_FILE_TRANSFERS = (1, 4, 5)
+PAUSED_FILE_TRANSFERS = (1, 4, 5, 6)
 
-DO_NOT_SHOW_ACCEPT_BUTTON = (2, 3, 4)
+DO_NOT_SHOW_ACCEPT_BUTTON = (2, 3, 4, 6)
 
 SHOW_PROGRESS_BAR = (0, 1, 4)
 
@@ -51,7 +52,7 @@ class FileTransfer(QtCore.QObject):
         self._friend_number = friend_number
         self.state = TOX_FILE_TRANSFER_STATE['RUNNING']
         self._file_number = file_number
-        self._creation_time = time()
+        self._creation_time = None
         self._size = float(size)
         self._done = 0
         self._state_changed = StateSignal()
@@ -113,7 +114,7 @@ class SendTransfer(FileTransfer):
         else:
             size = 0
         super(SendTransfer, self).__init__(path, tox, friend_number, size)
-        self.state = TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND']
+        self.state = TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
         self._file_number = tox.file_send(friend_number, kind, size, file_id,
                                           basename(path).encode('utf-8') if path else '')
 
@@ -157,7 +158,7 @@ class SendFromBuffer(FileTransfer):
 
     def __init__(self, tox, friend_number, data, file_name):
         super(SendFromBuffer, self).__init__(None, tox, friend_number, len(data))
-        self.state = TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND']
+        self.state = TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
         self._data = data
         self._file_number = tox.file_send(friend_number, TOX_FILE_KIND['DATA'], len(data), None, file_name)
 
@@ -169,10 +170,10 @@ class SendFromBuffer(FileTransfer):
             data = self._data[position:position + size]
             self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
             self._done += size
-            self._state_changed.signal.emit(self.state, self._done / self._size)
+            self.signal()
         else:
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self._state_changed.signal.emit(self.state, 1)
+            self.signal()
 
 
 class SendFromFileBuffer(SendTransfer):
