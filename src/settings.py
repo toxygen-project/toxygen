@@ -14,7 +14,7 @@ class Settings(Singleton, dict):
     """
 
     def __init__(self, name):
-        self.path = ProfileHelper.get_path() + str(name) + '.json'
+        self.path = ProfileHelper.get_path() + unicode(name) + '.json'
         self.name = name
         if os.path.isfile(self.path):
             with open(self.path, 'rb') as fl:
@@ -46,13 +46,42 @@ class Settings(Singleton, dict):
             auto = json.loads(data)
             if 'path' in auto and 'name' in auto:
                 return unicode(auto['path']), unicode(auto['name'])
+        return '', ''
 
     @staticmethod
     def set_auto_profile(path, name):
         p = Settings.get_default_path() + 'toxygen.json'
-        data = json.dumps({'path': unicode(path.decode(locale.getpreferredencoding())), 'name': unicode(name)})
+        with open(p) as fl:
+            data = fl.read()
+        data = json.loads(data)
+        data['path'] = unicode(path.decode(locale.getpreferredencoding()))
+        data['name'] = unicode(name)
         with open(p, 'w') as fl:
-            fl.write(data)
+            fl.write(json.dumps(data))
+
+    @staticmethod
+    def reset_auto_profile():
+        p = Settings.get_default_path() + 'toxygen.json'
+        with open(p) as fl:
+            data = fl.read()
+        data = json.loads(data)
+        if 'path' in data:
+            del data['path']
+            del data['name']
+        with open(p, 'w') as fl:
+            fl.write(json.dumps(data))
+
+    @staticmethod
+    def is_active_profile(path, name):
+        path = path.decode(locale.getpreferredencoding()) + name + '.tox'
+        settings = Settings.get_default_path() + 'toxygen.json'
+        if os.path.isfile(settings):
+            with open(settings) as fl:
+                data = fl.read()
+            data = json.loads(data)
+            if 'active_profile' in data:
+                return path in data['active_profile']
+        return False
 
     @staticmethod
     def get_default_settings():
@@ -224,18 +253,6 @@ class ProfileHelper(Singleton):
                 name = fl[:-4]
                 result.append((path + '/', name))
         return result
-
-    @staticmethod
-    def is_active_profile(path, name):
-        path = path.decode(locale.getpreferredencoding()) + name + '.tox'
-        settings = Settings.get_default_path() + 'toxygen.json'
-        if os.path.isfile(settings):
-            with open(settings) as fl:
-                data = fl.read()
-            data = json.loads(data)
-            if 'active_profile' in data:
-                return path in data['active_profile']
-        return False
 
     @staticmethod
     def get_path():

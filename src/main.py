@@ -71,7 +71,7 @@ class Toxygen(object):
             self.tox = tox_factory(data, settings)
         else:
             auto_profile = Settings.get_auto_profile()
-            if not auto_profile:
+            if not auto_profile[0]:
                 # show login screen if default profile not found
                 current_locale = QtCore.QLocale()
                 curr_lang = current_locale.languageToString(current_locale.language())
@@ -119,7 +119,7 @@ class Toxygen(object):
                 settings = Settings(name)
                 self.tox = tox_factory(data, settings)
 
-        if ProfileHelper.is_active_profile(path, name):  # profile is in use
+        if Settings.is_active_profile(path, name):  # profile is in use
             reply = QtGui.QMessageBox.question(None,
                                                'Profile {}'.format(name),
                                                QtGui.QApplication.translate("login", 'Looks like other instance of Toxygen uses this profile! Continue?', None, QtGui.QApplication.UnicodeUTF8),

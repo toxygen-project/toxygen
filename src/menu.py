@@ -83,17 +83,17 @@ class ProfileSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("ProfileSettingsForm")
-        self.setMinimumSize(QtCore.QSize(650, 520))
-        self.setMaximumSize(QtCore.QSize(650, 520))
+        self.setMinimumSize(QtCore.QSize(700, 600))
+        self.setMaximumSize(QtCore.QSize(700, 600))
         self.nick = LineEdit(self)
         self.nick.setGeometry(QtCore.QRect(30, 60, 350, 27))
-        self.nick.setObjectName("nick")
         profile = Profile.get_instance()
         self.nick.setText(profile.name)
-        self.status = LineEdit(self)
-        self.status.setGeometry(QtCore.QRect(30, 130, 350, 27))
-        self.status.setObjectName("status")
-        self.status.setText(profile.status_message)
+        self.status = QtGui.QComboBox(self)
+        self.status.setGeometry(QtCore.QRect(400, 60, 200, 27))
+        self.status_message = LineEdit(self)
+        self.status_message.setGeometry(QtCore.QRect(30, 130, 350, 27))
+        self.status_message.setText(profile.status_message)
         self.label = QtGui.QLabel(self)
         self.label.setGeometry(QtCore.QRect(40, 30, 91, 25))
         font = QtGui.QFont()
@@ -101,62 +101,66 @@ class ProfileSettings(CenteredWidget):
         font.setWeight(75)
         font.setBold(True)
         self.label.setFont(font)
-        self.label.setObjectName("label")
         self.label_2 = QtGui.QLabel(self)
         self.label_2.setGeometry(QtCore.QRect(40, 100, 100, 25))
         self.label_2.setFont(font)
-        self.label_2.setObjectName("label_2")
         self.label_3 = QtGui.QLabel(self)
         self.label_3.setGeometry(QtCore.QRect(40, 180, 100, 25))
         self.label_3.setFont(font)
-        self.label_3.setObjectName("label_3")
         self.tox_id = QtGui.QLabel(self)
         self.tox_id.setGeometry(QtCore.QRect(10, 210, self.width(), 21))
         font.setPointSize(10)
         self.tox_id.setFont(font)
-        self.tox_id.setObjectName("tox_id")
         s = profile.tox_id
         self.tox_id.setText(s)
         self.copyId = QtGui.QPushButton(self)
-        self.copyId.setGeometry(QtCore.QRect(40, 250, 160, 30))
-        self.copyId.setObjectName("copyId")
+        self.copyId.setGeometry(QtCore.QRect(40, 250, 180, 30))
         self.copyId.clicked.connect(self.copy)
         self.export = QtGui.QPushButton(self)
-        self.export.setGeometry(QtCore.QRect(210, 250, 160, 30))
-        self.export.setObjectName("export")
+        self.export.setGeometry(QtCore.QRect(230, 250, 180, 30))
         self.export.clicked.connect(self.export_profile)
         self.new_nospam = QtGui.QPushButton(self)
-        self.new_nospam.setGeometry(QtCore.QRect(380, 250, 160, 30))
+        self.new_nospam.setGeometry(QtCore.QRect(420, 250, 180, 30))
         self.new_nospam.clicked.connect(self.new_no_spam)
+
         self.new_avatar = QtGui.QPushButton(self)
-        self.new_avatar.setGeometry(QtCore.QRect(400, 50, 200, 50))
+        self.new_avatar.setGeometry(QtCore.QRect(40, 300, 180, 30))
         self.delete_avatar = QtGui.QPushButton(self)
-        self.delete_avatar.setGeometry(QtCore.QRect(400, 120, 200, 50))
+        self.delete_avatar.setGeometry(QtCore.QRect(230, 300, 180, 30))
         self.delete_avatar.clicked.connect(self.reset_avatar)
         self.new_avatar.clicked.connect(self.set_avatar)
         self.profile_pass = QtGui.QLabel(self)
-        self.profile_pass.setGeometry(QtCore.QRect(40, 300, 300, 50))
+        self.profile_pass.setGeometry(QtCore.QRect(40, 340, 300, 30))
         font.setPointSize(18)
         self.profile_pass.setFont(font)
         self.password = LineEdit(self)
-        self.password.setGeometry(QtCore.QRect(30, 350, 300, 30))
+        self.password.setGeometry(QtCore.QRect(40, 380, 300, 30))
         self.password.setEchoMode(QtGui.QLineEdit.EchoMode.Password)
         self.leave_blank = QtGui.QLabel(self)
-        self.leave_blank.setGeometry(QtCore.QRect(340, 350, 300, 30))
+        self.leave_blank.setGeometry(QtCore.QRect(350, 380, 300, 30))
         self.confirm_password = LineEdit(self)
-        self.confirm_password.setGeometry(QtCore.QRect(30, 400, 300, 30))
+        self.confirm_password.setGeometry(QtCore.QRect(40, 420, 300, 30))
         self.confirm_password.setEchoMode(QtGui.QLineEdit.EchoMode.Password)
         self.set_password = QtGui.QPushButton(self)
-        self.set_password.setGeometry(QtCore.QRect(30, 450, 300, 30))
+        self.set_password.setGeometry(QtCore.QRect(40, 470, 300, 30))
         self.set_password.clicked.connect(self.new_password)
         self.not_match = QtGui.QLabel(self)
-        self.not_match.setGeometry(QtCore.QRect(340, 400, 300, 30))
+        self.not_match.setGeometry(QtCore.QRect(340, 420, 300, 30))
         self.not_match.setVisible(False)
         self.not_match.setStyleSheet('QLabel { color: #F70D1A; }')
         self.warning = QtGui.QLabel(self)
-        self.warning.setGeometry(QtCore.QRect(30, 490, 500, 30))
+        self.warning.setGeometry(QtCore.QRect(40, 510, 500, 30))
         self.warning.setStyleSheet('QLabel { color: #F70D1A; }')
+        self.default = QtGui.QPushButton(self)
+        self.default.setGeometry(QtCore.QRect(40, 550, 400, 30))
+        path, name = Settings.get_auto_profile()
+        self.auto = path + name == ProfileHelper.get_path() + Settings.get_instance().name
+        self.default.clicked.connect(self.auto_profile)
         self.retranslateUi()
+        if profile.status is not None:
+            self.status.setCurrentIndex(profile.status)
+        else:
+            self.status.setVisible(False)
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
@@ -176,6 +180,27 @@ class ProfileSettings(CenteredWidget):
         self.not_match.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Passwords do not match", None, QtGui.QApplication.UnicodeUTF8))
         self.leave_blank.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Leaving blank will reset current password", None, QtGui.QApplication.UnicodeUTF8))
         self.warning.setText(QtGui.QApplication.translate("ProfileSettingsForm", "There is no way to recover lost passwords", None, QtGui.QApplication.UnicodeUTF8))
+        self.status.addItem(QtGui.QApplication.translate("ProfileSettingsForm", "Online", None, QtGui.QApplication.UnicodeUTF8))
+        self.status.addItem(QtGui.QApplication.translate("ProfileSettingsForm", "Away", None, QtGui.QApplication.UnicodeUTF8))
+        self.status.addItem(QtGui.QApplication.translate("ProfileSettingsForm", "Busy", None, QtGui.QApplication.UnicodeUTF8))
+        if self.auto:
+            self.default.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Mark as not default profile", None, QtGui.QApplication.UnicodeUTF8))
+        else:
+            self.default.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Mark as default profile", None, QtGui.QApplication.UnicodeUTF8))
+
+    def auto_profile(self):
+        if self.auto:
+            Settings.reset_auto_profile()
+        else:
+            Settings.set_auto_profile(ProfileHelper.get_path(), Settings.get_instance().name)
+        self.auto = not self.auto
+        if self.auto:
+            self.default.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Mark as not default profile", None,
+                                                              QtGui.QApplication.UnicodeUTF8))
+        else:
+            self.default.setText(
+                QtGui.QApplication.translate("ProfileSettingsForm", "Mark as default profile", None,
+                                             QtGui.QApplication.UnicodeUTF8))
 
     def new_password(self):
         if self.password.text() == self.confirm_password.text():
@@ -210,7 +235,7 @@ class ProfileSettings(CenteredWidget):
 
     def set_avatar(self):
         choose = QtGui.QApplication.translate("ProfileSettingsForm", "Choose avatar", None, QtGui.QApplication.UnicodeUTF8)
-        name = QtGui.QFileDialog.getOpenFileName(self, choose, None, 'Image Files (*.png)')
+        name = QtGui.QFileDialog.getOpenFileName(self, choose, None, 'Images (*.png)')
         if name[0]:
             bitmap = QtGui.QPixmap(name[0])
             bitmap.scaled(QtCore.QSize(128, 128), aspectMode=QtCore.Qt.KeepAspectRatio,
@@ -234,7 +259,8 @@ class ProfileSettings(CenteredWidget):
     def closeEvent(self, event):
         profile = Profile.get_instance()
         profile.set_name(self.nick.text().encode('utf-8'))
-        profile.set_status_message(self.status.text().encode('utf-8'))
+        profile.set_status_message(self.status_message.text().encode('utf-8'))
+        profile.set_status(self.status.currentIndex())
 
 
 class NetworkSettings(CenteredWidget):
