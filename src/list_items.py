@@ -9,6 +9,7 @@ from util import curr_directory, convert_time
 from widgets import DataLabel, create_menu
 import cgi
 import smileys
+import settings
 
 
 class MessageEdit(QtGui.QTextBrowser):
@@ -32,7 +33,7 @@ class MessageEdit(QtGui.QTextBrowser):
             self.setHtml(text)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
-        font.setPixelSize(14)
+        font.setPixelSize(settings.Settings.get_instance()['message_font_size'])
         font.setBold(False)
         self.setFont(font)
         self.resize(width, self.document().size().height())

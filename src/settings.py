@@ -119,7 +119,8 @@ class Settings(Singleton, dict):
             'width': 920,
             'height': 500,
             'x': 400,
-            'y': 400
+            'y': 400,
+            'message_font_size': 14
         }
 
     @staticmethod

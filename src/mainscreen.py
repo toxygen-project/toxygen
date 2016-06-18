@@ -291,7 +291,7 @@ class MainWindow(QtGui.QMainWindow):
             grid.addWidget(message_buttons, 3, 0)
             grid.addWidget(main_list, 2, 1, 2, 1)
             grid.setColumnMinimumWidth(0, 500)
-            grid.setColumnMinimumWidth(1, 280)
+            grid.setColumnMinimumWidth(1, 270)
         grid.setSpacing(0)
         grid.setContentsMargins(0, 0, 0, 0)
         grid.setRowMinimumHeight(0, 100)

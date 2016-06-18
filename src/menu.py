@@ -365,18 +365,13 @@ class PrivacySettings(CenteredWidget):
         self.setMaximumSize(QtCore.QSize(350, 550))
         self.saveHistory = QtGui.QCheckBox(self)
         self.saveHistory.setGeometry(QtCore.QRect(10, 20, 291, 22))
-        self.saveHistory.setObjectName("saveHistory")
         self.fileautoaccept = QtGui.QCheckBox(self)
         self.fileautoaccept.setGeometry(QtCore.QRect(10, 60, 271, 22))
-        self.fileautoaccept.setObjectName("fileautoaccept")
+
         self.typingNotifications = QtGui.QCheckBox(self)
         self.typingNotifications.setGeometry(QtCore.QRect(10, 100, 350, 30))
-        self.typingNotifications.setObjectName("typingNotifications")
         self.inlines = QtGui.QCheckBox(self)
         self.inlines.setGeometry(QtCore.QRect(10, 140, 350, 30))
-        self.inlines.setObjectName("inlines")
-
-
         self.auto_path = QtGui.QLabel(self)
         self.auto_path.setGeometry(QtCore.QRect(10, 190, 350, 30))
         self.path = QtGui.QPlainTextEdit(self)
@@ -416,7 +411,7 @@ class PrivacySettings(CenteredWidget):
         self.auto_path.setText(QtGui.QApplication.translate("privacySettings", "Auto accept default path:", None, QtGui.QApplication.UnicodeUTF8))
         self.change_path.setText(QtGui.QApplication.translate("privacySettings", "Change", None, QtGui.QApplication.UnicodeUTF8))
         self.inlines.setText(QtGui.QApplication.translate("privacySettings", "Allow inlines", None, QtGui.QApplication.UnicodeUTF8))
-        self.block_user_label.setText(QtGui.QApplication.translate("privacySettings", "Block by TOX ID:", None, QtGui.QApplication.UnicodeUTF8))
+        self.block_user_label.setText(QtGui.QApplication.translate("privacySettings", "Block by public key:", None, QtGui.QApplication.UnicodeUTF8))
         self.blocked_users_label.setText(QtGui.QApplication.translate("privacySettings", "Blocked users:", None, QtGui.QApplication.UnicodeUTF8))
         self.unblock.setText(QtGui.QApplication.translate("privacySettings", "Unblock", None, QtGui.QApplication.UnicodeUTF8))
         self.block.setText(QtGui.QApplication.translate("privacySettings", "Block user", None, QtGui.QApplication.UnicodeUTF8))
@@ -469,9 +464,9 @@ class NotificationsSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("notificationsForm")
-        self.resize(350, 200)
-        self.setMinimumSize(QtCore.QSize(350, 200))
-        self.setMaximumSize(QtCore.QSize(350, 200))
+        self.resize(350, 180)
+        self.setMinimumSize(QtCore.QSize(350, 180))
+        self.setMaximumSize(QtCore.QSize(350, 180))
         self.enableNotifications = QtGui.QCheckBox(self)
         self.enableNotifications.setGeometry(QtCore.QRect(10, 20, 340, 18))
         self.callsSound = QtGui.QCheckBox(self)
@@ -480,7 +475,6 @@ class NotificationsSettings(CenteredWidget):
         self.soundNotifications.setGeometry(QtCore.QRect(10, 70, 340, 18))
         font = QtGui.QFont()
         font.setPointSize(12)
-        font.setBold(True)
         self.callsSound.setFont(font)
         self.soundNotifications.setFont(font)
         self.enableNotifications.setFont(font)
@@ -514,10 +508,9 @@ class InterfaceSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("interfaceForm")
-        self.resize(300, 320)
-        self.setMinimumSize(QtCore.QSize(300, 320))
-        self.setMaximumSize(QtCore.QSize(300, 320))
-        self.setBaseSize(QtCore.QSize(300, 320))
+        self.setMinimumSize(QtCore.QSize(300, 420))
+        self.setMaximumSize(QtCore.QSize(300, 420))
+        self.setBaseSize(QtCore.QSize(300, 420))
         self.label = QtGui.QLabel(self)
         self.label.setGeometry(QtCore.QRect(30, 10, 100, 20))
         font = QtGui.QFont()
@@ -525,10 +518,8 @@ class InterfaceSettings(CenteredWidget):
         font.setWeight(75)
         font.setBold(True)
         self.label.setFont(font)
-        self.label.setObjectName("label")
         self.themeSelect = QtGui.QComboBox(self)
         self.themeSelect.setGeometry(QtCore.QRect(30, 40, 160, 30))
-        self.themeSelect.setObjectName("themeSelect")
         list_of_themes = ['dark']
         self.themeSelect.addItems(list_of_themes)
         settings = Settings.get_instance()
@@ -540,7 +531,6 @@ class InterfaceSettings(CenteredWidget):
         self.themeSelect.setCurrentIndex(index)
         self.lang_choose = QtGui.QComboBox(self)
         self.lang_choose.setGeometry(QtCore.QRect(30, 110, 160, 30))
-        self.lang_choose.setObjectName("comboBox")
         supported = Settings.supported_languages()
         for elem in supported:
             self.lang_choose.addItem(elem[0])
@@ -563,12 +553,19 @@ class InterfaceSettings(CenteredWidget):
         self.smiley_pack.setGeometry(QtCore.QRect(30, 260, 160, 30))
         sm = smileys.SmileyLoader.get_instance()
         self.smiley_pack.addItems(sm.get_packs_list())
-        print sm.get_packs_list()
         try:
             ind = sm.get_packs_list().index(settings['smiley_pack'])
         except:
             ind = sm.get_packs_list().index('default')
         self.smiley_pack.setCurrentIndex(ind)
+        self.messages_font_size_label = QtGui.QLabel(self)
+        self.messages_font_size_label.setGeometry(QtCore.QRect(30, 300, 270, 20))
+        self.messages_font_size_label.setFont(font)
+        self.messages_font_size = QtGui.QComboBox(self)
+        self.messages_font_size.setGeometry(QtCore.QRect(30, 330, 160, 30))
+        self.messages_font_size.addItems([str(x) for x in range(10, 19)])
+        self.messages_font_size.setCurrentIndex(settings['message_font_size'] - 10)
+
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -579,12 +576,21 @@ class InterfaceSettings(CenteredWidget):
         self.smileys.setText(QtGui.QApplication.translate("interfaceForm", "Smileys", None, QtGui.QApplication.UnicodeUTF8))
         self.smiley_pack_label.setText(QtGui.QApplication.translate("interfaceForm", "Smiley pack:", None, QtGui.QApplication.UnicodeUTF8))
         self.mirror_mode.setText(QtGui.QApplication.translate("interfaceForm", "Mirror mode", None, QtGui.QApplication.UnicodeUTF8))
+        self.messages_font_size_label.setText(QtGui.QApplication.translate("interfaceForm", "Messages font size:", None, QtGui.QApplication.UnicodeUTF8))
 
     def closeEvent(self, event):
         settings = Settings.get_instance()
         settings['theme'] = str(self.themeSelect.currentText())
         settings['smileys'] = self.smileys.isChecked()
-        settings['mirror_mode'] = self.mirror_mode.isChecked()
+        if settings['mirror_mode'] != self.mirror_mode.isChecked():
+            settings['mirror_mode'] = self.mirror_mode.isChecked()
+            msgBox = QtGui.QMessageBox()
+            text = QtGui.QApplication.translate("interfaceForm", 'Restart app to apply settings', None,
+                                                QtGui.QApplication.UnicodeUTF8)
+            msgBox.setWindowTitle(QtGui.QApplication.translate("interfaceForm", 'Restart required', None,
+                                                               QtGui.QApplication.UnicodeUTF8))
+            msgBox.setText(text)
+            msgBox.exec_()
         settings['smiley_pack'] = self.smiley_pack.currentText()
         smileys.SmileyLoader.get_instance().load_pack()
         language = self.lang_choose.currentText()
@@ -596,6 +602,8 @@ class InterfaceSettings(CenteredWidget):
             app.removeTranslator(app.translator)
             app.translator.load(curr_directory() + '/translations/' + path)
             app.installTranslator(app.translator)
+        settings['message_font_size'] = self.messages_font_size.currentIndex() + 10
+        Profile.get_instance().update()
         settings.save()
 
 
