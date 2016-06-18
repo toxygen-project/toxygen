@@ -125,11 +125,11 @@ class Settings(Singleton, dict):
 
     @staticmethod
     def supported_languages():
-        return [
-            ('English', 'en_EN'),
-            ('Russian', 'ru_RU'),
-            ('French', 'fr_FR')
-        ]
+        return {
+            'English': 'en_EN',
+            'Russian': 'ru_RU',
+            'French': 'fr_FR'
+        }
 
     def upgrade(self):
         default = Settings.get_default_settings()

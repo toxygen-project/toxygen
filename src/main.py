@@ -76,8 +76,8 @@ class Toxygen(object):
                 current_locale = QtCore.QLocale()
                 curr_lang = current_locale.languageToString(current_locale.language())
                 langs = Settings.supported_languages()
-                if curr_lang in map(lambda x: x[0], langs):
-                    lang_path = filter(lambda x: x[0] == curr_lang, langs)[0][1]
+                if curr_lang in langs:
+                    lang_path = langs[curr_lang]
                     translator = QtCore.QTranslator()
                     translator.load(curr_directory() + '/translations/' + lang_path)
                     app.installTranslator(translator)
@@ -130,7 +130,7 @@ class Toxygen(object):
         else:
             settings.set_active_profile()
 
-        lang = filter(lambda x: x[0] == settings['language'], Settings.supported_languages())[0]
+        lang = Settings.supported_languages()[settings['language']]
         translator = QtCore.QTranslator()
         translator.load(curr_directory() + '/translations/' + lang[1])
         app.installTranslator(translator)

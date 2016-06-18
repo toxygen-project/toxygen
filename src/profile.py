@@ -163,7 +163,10 @@ class Profile(contact.Contact, Singleton):
             self._screen.typing.setVisible(False)
             if value is not None:
                 if self._active_friend + 1:
-                    self._friends[self._active_friend].curr_text = self._screen.messageEdit.toPlainText()
+                    try:
+                        self._friends[self._active_friend].curr_text = self._screen.messageEdit.toPlainText()
+                    except:
+                        pass
                 self._active_friend = value
                 friend = self._friends[value]
                 self._friends[value].reset_messages()

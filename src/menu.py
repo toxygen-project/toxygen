@@ -532,11 +532,10 @@ class InterfaceSettings(CenteredWidget):
         self.lang_choose = QtGui.QComboBox(self)
         self.lang_choose.setGeometry(QtCore.QRect(30, 110, 160, 30))
         supported = Settings.supported_languages()
-        for elem in supported:
-            self.lang_choose.addItem(elem[0])
-        lang = settings['language']
-        index = map(lambda x: x[0], supported).index(lang)
-        self.lang_choose.setCurrentIndex(index)
+        for key in supported:
+            self.lang_choose.insertItem(0, key)
+            if settings['language'] == key:
+                self.lang_choose.setCurrentIndex(0)
         self.lang = QtGui.QLabel(self)
         self.lang.setGeometry(QtCore.QRect(30, 80, 121, 20))
         self.lang.setFont(font)
@@ -596,8 +595,8 @@ class InterfaceSettings(CenteredWidget):
         language = self.lang_choose.currentText()
         if settings['language'] != language:
             settings['language'] = language
-            index = self.lang_choose.currentIndex()
-            path = Settings.supported_languages()[index][1]
+            text = self.lang_choose.currentText()
+            path = Settings.supported_languages()[text]
             app = QtGui.QApplication.instance()
             app.removeTranslator(app.translator)
             app.translator.load(curr_directory() + '/translations/' + path)
