@@ -13,7 +13,7 @@ import smileys
 
 class MessageEdit(QtGui.QTextBrowser):
 
-    def __init__(self, text, width, parent=None):
+    def __init__(self, text, width, message_type, parent=None):
         super(MessageEdit, self).__init__(parent)
         self.urls = {}
         self.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
@@ -25,13 +25,17 @@ class MessageEdit(QtGui.QTextBrowser):
         self.setOpenLinks(False)
         self.setSearchPaths([smileys.SmileyLoader.get_instance().get_smileys_path()])
         self.document().setDefaultStyleSheet('a { color: #306EFF; }')
-        self.setDecoratedText(text)
+        text = self.decoratedText(text)
+        if message_type == TOX_MESSAGE_TYPE['ACTION']:
+            self.setHtml('<p style="color: #5CB3FF; font: italic; font-size: 20px;" >' + text + '</p>')
+        else:
+            self.setHtml(text)
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
         font.setPixelSize(14)
         font.setBold(False)
         self.setFont(font)
-        self.setFixedHeight(self.document().size().height())
+        self.resize(width, self.document().size().height())
         self.setTextInteractionFlags(QtCore.Qt.TextSelectableByMouse | QtCore.Qt.LinksAccessibleByMouse)
         self.anchorClicked.connect(self.on_anchor_clicked)
 
@@ -64,7 +68,7 @@ class MessageEdit(QtGui.QTextBrowser):
                                     movie.currentPixmap())
         self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
 
-    def setDecoratedText(self, text):
+    def decoratedText(self, text):
         text = cgi.escape(text)  # replace < and >
         exp = QtCore.QRegExp(
             '('
@@ -90,7 +94,7 @@ class MessageEdit(QtGui.QTextBrowser):
                 arr[i] = '<font color="green"><b>' + arr[i][4:] + '</b></font>'
         text = '<br>'.join(arr)
         text = smileys.SmileyLoader.get_instance().add_smileys_to_text(text, self)  # smileys
-        self.setHtml(text)
+        return text
 
 
 class MessageItem(QtGui.QWidget):
@@ -125,10 +129,9 @@ class MessageItem(QtGui.QWidget):
         else:
             self.time.setText(time)
 
-        self.message = MessageEdit(text, parent.width() - 150, self)
+        self.message = MessageEdit(text, parent.width() - 150, message_type, self)
         if message_type != TOX_MESSAGE_TYPE['NORMAL']:
             self.name.setStyleSheet("QLabel { color: #5CB3FF; }")
-            self.message.setStyleSheet("QTextEdit { color: #5CB3FF; font: italic; font-size: 20px; }")
             self.message.setAlignment(QtCore.Qt.AlignCenter)
             self.time.setStyleSheet("QLabel { color: #5CB3FF; }")
         self.message.setGeometry(QtCore.QRect(100, 0, parent.width() - 150, self.message.height()))
