@@ -132,7 +132,7 @@ class Toxygen(object):
 
         lang = Settings.supported_languages()[settings['language']]
         translator = QtCore.QTranslator()
-        translator.load(curr_directory() + '/translations/' + lang[1])
+        translator.load(curr_directory() + '/translations/' + lang)
         app.installTranslator(translator)
         app.translator = translator
 
