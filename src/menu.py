@@ -108,7 +108,7 @@ class ProfileSettings(CenteredWidget):
         self.label_3.setGeometry(QtCore.QRect(40, 180, 100, 25))
         self.label_3.setFont(font)
         self.tox_id = QtGui.QLabel(self)
-        self.tox_id.setGeometry(QtCore.QRect(10, 210, self.width(), 21))
+        self.tox_id.setGeometry(QtCore.QRect(15, 210, 685, 21))
         font.setPointSize(10)
         self.tox_id.setFont(font)
         s = profile.tox_id
@@ -152,7 +152,7 @@ class ProfileSettings(CenteredWidget):
         self.warning.setGeometry(QtCore.QRect(40, 510, 500, 30))
         self.warning.setStyleSheet('QLabel { color: #F70D1A; }')
         self.default = QtGui.QPushButton(self)
-        self.default.setGeometry(QtCore.QRect(40, 550, 400, 30))
+        self.default.setGeometry(QtCore.QRect(40, 550, 620, 30))
         path, name = Settings.get_auto_profile()
         self.auto = path + name == ProfileHelper.get_path() + Settings.get_instance().name
         self.default.clicked.connect(self.auto_profile)
