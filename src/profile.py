@@ -540,8 +540,8 @@ class Profile(contact.Contact, Singleton):
         self._messages.setItemWidget(elem, item)
 
     def create_inline_item(self, data, append=True):
-        item = InlineImageItem(data, self._messages.width())
         elem = QtGui.QListWidgetItem()
+        item = InlineImageItem(data, self._messages.width(), elem)
         elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
         if append:
             self._messages.addItem(elem)
@@ -866,6 +866,10 @@ class Profile(contact.Contact, Singleton):
         """
         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                       TOX_FILE_TRANSFER_STATE['RUNNING'])
+        # if (friend_number, file_number) not in self._file_transfers:
+        #     print self._file_transfers
+        #     print (friend_number, file_number)
+        #     return
         tr = self._file_transfers[(friend_number, file_number)]
         if by_friend:
             tr.state = TOX_FILE_TRANSFER_STATE['RUNNING']
@@ -944,6 +948,7 @@ class Profile(contact.Contact, Singleton):
             self.update()
             return
         elif friend.status is None and is_resend:
+            print 'Error in sending'
             raise RuntimeError()
         st = SendTransfer(path, self._tox, friend_number)
         self._file_transfers[(friend_number, st.get_file_number())] = st
@@ -978,9 +983,9 @@ class Profile(contact.Contact, Singleton):
                     if friend_number == self.get_active_number():
                         count = self._messages.count()
                         if count + i + 1 >= 0:
-                            item = InlineImageItem(transfer.get_data(), self._messages.width())
                             elem = QtGui.QListWidgetItem()
-                            elem.setSizeHint(QtCore.QSize(600, item.height()))
+                            item = InlineImageItem(transfer.get_data(), self._messages.width(), elem)
+                            elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
                             self._messages.insertItem(count + i + 1, elem)
                             self._messages.setItemWidget(elem, item)
                 else:
@@ -1007,9 +1012,9 @@ class Profile(contact.Contact, Singleton):
                         if friend_number == self.get_active_number():
                             count = self._messages.count()
                             if count + i + 1 >= 0:
-                                item = InlineImageItem(transfer.get_data(), self._messages.width())
                                 elem = QtGui.QListWidgetItem()
-                                elem.setSizeHint(QtCore.QSize(600, item.height()))
+                                item = InlineImageItem(transfer.get_data(), self._messages.width(), elem)
+                                elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
                                 self._messages.insertItem(count + i + 1, elem)
                                 self._messages.setItemWidget(elem, item)
                     else:

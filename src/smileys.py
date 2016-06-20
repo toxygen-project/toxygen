@@ -1,6 +1,7 @@
 import util
 import json
 import os
+from collections import OrderedDict
 try:
     from PySide import QtCore
 except ImportError:
@@ -16,7 +17,7 @@ class SmileyLoader(util.Singleton):
         self._settings = settings
         self._curr_pack = None  # current pack name
         self._smileys = {}  # smileys dict. key - smiley (str), value - path to image (str)
-        self._set = {}  # smileys dict without duplicates
+        self._list = []  # smileys list without duplicates
         self.load_pack()
 
     def load_pack(self):
@@ -30,16 +31,20 @@ class SmileyLoader(util.Singleton):
             try:
                 with open(path) as fl:
                     self._smileys = json.loads(fl.read())
-                print 'Smiley pack', pack_name, 'loaded'
-                self._set = {}
-                for key, value in self._smileys.items():
+                    fl.seek(0)
+                    tmp = json.loads(fl.read(), object_pairs_hook=OrderedDict)
+                print 'Smiley pack {} loaded'.format(pack_name)
+                keys, values, self._list = [], [], []
+                for key, value in tmp.items():
                     value = self.get_smileys_path() + value
-                    if value not in self._set.values():
-                        self._set[key] = value
-            except:
+                    if value not in values:
+                        keys.append(key)
+                        values.append(value)
+                self._list = zip(keys, values)
+            except Exception as ex:
                 self._smileys = {}
-                self._set = {}
-                print 'Smiley pack', pack_name, 'was not loaded'
+                self._list = []
+                print 'Smiley pack {} was not loaded. Error: {}'.format(pack_name, ex)
 
     def get_smileys_path(self):
         return util.curr_directory() + '/smileys/' + self._curr_pack + '/'
@@ -49,7 +54,7 @@ class SmileyLoader(util.Singleton):
         return [x[1] for x in os.walk(d)][0]
 
     def get_smileys(self):
-        return list(self._set.items())
+        return self._list[:]
 
     def add_smileys_to_text(self, text, edit):
         """

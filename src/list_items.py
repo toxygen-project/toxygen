@@ -5,7 +5,7 @@ except ImportError:
     from PyQt4 import QtCore, QtGui
 import profile
 from file_transfers import TOX_FILE_TRANSFER_STATE, PAUSED_FILE_TRANSFERS, DO_NOT_SHOW_ACCEPT_BUTTON, ACTIVE_FILE_TRANSFERS, SHOW_PROGRESS_BAR
-from util import curr_directory, convert_time
+from util import curr_directory, convert_time, curr_time
 from widgets import DataLabel, create_menu
 import cgi
 import smileys
@@ -408,32 +408,67 @@ class UnsentFileItem(FileTransferItem):
                                              TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND'], width, parent)
         self._time = time
         self.pb.setVisible(False)
+        movie = QtGui.QMovie(curr_directory() + '/images/spinner.gif')
+        self.time.setMovie(movie)
+        movie.start()
 
     def cancel_transfer(self, *args):
         pr = profile.Profile.get_instance()
         pr.cancel_not_started_transfer(self._time)
 
 
-class InlineImageItem(QtGui.QWidget):
+class InlineImageItem(QtGui.QScrollArea):
 
-    def __init__(self, data, width, parent=None):
+    def __init__(self, data, width, elem):
 
-        QtGui.QWidget.__init__(self, parent)
-        self.resize(QtCore.QSize(width, 500))
+        QtGui.QScrollArea.__init__(self)
+        self.setFocusPolicy(QtCore.Qt.NoFocus)
+        self._elem = elem
         self._image_label = QtGui.QLabel(self)
         self._image_label.raise_()
-        self._image_label.setAutoFillBackground(True)
+        self.setWidget(self._image_label)
         self._image_label.setScaledContents(False)
-        self.pixmap = QtGui.QPixmap()
-        self.pixmap.loadFromData(QtCore.QByteArray(data), "PNG")
-        max_size = width - 40
-        if self.pixmap.width() <= max_size:
-            self._image_label.setPixmap(self.pixmap)
-            self.resize(QtCore.QSize(max_size, self.pixmap.height()))
+        self._pixmap = QtGui.QPixmap()
+        self._pixmap.loadFromData(QtCore.QByteArray(data), "PNG")
+        self._max_size = width - 30
+        self._resize_needed = not (self._pixmap.width() <= self._max_size)
+        self._full_size = not self._resize_needed
+        if not self._resize_needed:
+            self._image_label.setPixmap(self._pixmap)
+            self.resize(QtCore.QSize(self._max_size + 5, self._pixmap.height()))
+            self._image_label.setGeometry(5, 0, self._max_size + 5, self._pixmap.height())
         else:
-            pixmap = self.pixmap.scaled(max_size, max_size, QtCore.Qt.KeepAspectRatio)
+            pixmap = self._pixmap.scaled(self._max_size, self._max_size, QtCore.Qt.KeepAspectRatio)
             self._image_label.setPixmap(pixmap)
-            self.resize(QtCore.QSize(max_size, pixmap.height()))
+            self.resize(QtCore.QSize(self._max_size, pixmap.height()))
+            self._image_label.setGeometry(5, 0, self._max_size + 5, pixmap.height())
+        self._elem.setSizeHint(QtCore.QSize(self.width(), self.height()))
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == QtCore.Qt.LeftButton and self._resize_needed:
+            if self._full_size:
+                pixmap = self._pixmap.scaled(self._max_size, self._max_size, QtCore.Qt.KeepAspectRatio)
+                self._image_label.setPixmap(pixmap)
+                self.resize(QtCore.QSize(self._max_size, pixmap.height()))
+                self._image_label.setGeometry(5, 0, self._max_size + 5, pixmap.height())
+            else:
+                self._image_label.setPixmap(self._pixmap)
+                self.resize(QtCore.QSize(self._max_size, self._pixmap.height() + 15))
+                self._image_label.setGeometry(5, 0, self._pixmap.width(), self._pixmap.height() + 15)
+            self._full_size = not self._full_size
+            self._elem.setSizeHint(QtCore.QSize(self.width(), self.height()))
+        elif event.button() == QtCore.Qt.RightButton:
+            directory = QtGui.QFileDialog.getExistingDirectory(self,
+                                                               QtGui.QApplication.translate("MainWindow",
+                                                                                            'Choose folder', None,
+                                                                                            QtGui.QApplication.UnicodeUTF8),
+                                                               curr_directory(),
+                                                               QtGui.QFileDialog.ShowDirsOnly)
+            if directory:
+                fl = QtCore.QFile(directory + '/toxygen_inline_' + curr_time().replace(':', '_') + '.png')
+                self._pixmap.save(fl, 'PNG')
+
+        return False
 
     def mark_as_sent(self):
         return False
