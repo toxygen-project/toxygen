@@ -40,27 +40,27 @@
         <translation>Отправить запрос</translation>
     </message>
     <message>
-        <location filename="menu.py" line="295"/>
+        <location filename="menu.py" line="321"/>
         <source>IPv6</source>
         <translation>IPv6</translation>
     </message>
     <message>
-        <location filename="menu.py" line="296"/>
+        <location filename="menu.py" line="322"/>
         <source>UDP</source>
         <translation>UDP</translation>
     </message>
     <message>
-        <location filename="menu.py" line="297"/>
+        <location filename="menu.py" line="323"/>
         <source>Proxy</source>
         <translation>Прокси</translation>
     </message>
     <message>
-        <location filename="menu.py" line="298"/>
+        <location filename="menu.py" line="324"/>
         <source>IP:</source>
         <translation>IP:</translation>
     </message>
     <message>
-        <location filename="menu.py" line="299"/>
+        <location filename="menu.py" line="325"/>
         <source>Port:</source>
         <translation>Порт:</translation>
     </message>
@@ -70,12 +70,12 @@
         <translation type="obsolete">Контакты в сети</translation>
     </message>
     <message>
-        <location filename="menu.py" line="301"/>
+        <location filename="menu.py" line="327"/>
         <source>HTTP</source>
         <translation>HTTP</translation>
     </message>
     <message>
-        <location filename="menu.py" line="303"/>
+        <location filename="menu.py" line="329"/>
         <source>WARNING:
 using proxy with enabled UDP
 can produce IP leak</source>
@@ -87,104 +87,104 @@ can produce IP leak</source>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="mainscreen.py" line="126"/>
+        <location filename="mainscreen.py" line="95"/>
         <source>Profile</source>
         <translation>Профиль</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="132"/>
+        <location filename="mainscreen.py" line="101"/>
         <source>Settings</source>
         <translation>Настройки</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="376"/>
+        <location filename="mainscreen.py" line="353"/>
         <source>About</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="125"/>
+        <location filename="mainscreen.py" line="94"/>
         <source>Add contact</source>
         <translation>Добавить контакт</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="127"/>
+        <location filename="mainscreen.py" line="96"/>
         <source>Privacy</source>
         <translation>Приватность</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="128"/>
+        <location filename="mainscreen.py" line="97"/>
         <source>Interface</source>
         <translation>Интерфейс</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="129"/>
+        <location filename="mainscreen.py" line="98"/>
         <source>Notifications</source>
         <translation>Уведомления</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="130"/>
+        <location filename="mainscreen.py" line="99"/>
         <source>Network</source>
         <translation>Сеть</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="131"/>
+        <location filename="mainscreen.py" line="100"/>
         <source>About program</source>
         <translation>О программе</translation>
     </message>
     <message>
-        <location filename="profile.py" line="907"/>
+        <location filename="profile.py" line="725"/>
         <source>User {} wants to add you to contact list. Message:
 {}</source>
         <translation>Пользователь {} хочет добавить Вас в список контактов. Сообщение:
 {}</translation>
     </message>
     <message>
-        <location filename="profile.py" line="909"/>
+        <location filename="profile.py" line="727"/>
         <source>Friend request</source>
         <translation>Запрос на добавление в друзья</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="424"/>
+        <location filename="mainscreen.py" line="411"/>
         <source>Choose file</source>
         <translation>Выберите файл</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="465"/>
+        <location filename="mainscreen.py" line="474"/>
         <source>Disallow auto accept</source>
         <translation>Запретить автоматическое получение файлов</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="466"/>
+        <location filename="mainscreen.py" line="475"/>
         <source>Allow auto accept</source>
         <translation>Разрешить автоматическое получение файлов</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="468"/>
+        <location filename="mainscreen.py" line="477"/>
         <source>Set alias</source>
         <translation>Изменить псевдоним</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="469"/>
+        <location filename="mainscreen.py" line="478"/>
         <source>Clear history</source>
         <translation>Очистить историю</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="470"/>
+        <location filename="mainscreen.py" line="479"/>
         <source>Copy public key</source>
         <translation>Копировать публичный ключ</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="472"/>
+        <location filename="mainscreen.py" line="481"/>
         <source>Remove friend</source>
         <translation>Удалить друга</translation>
     </message>
     <message>
-        <location filename="profile.py" line="748"/>
+        <location filename="profile.py" line="565"/>
         <source>Enter new alias for friend {} or leave empty to use friend&apos;s name:</source>
         <translation>Введите новый псевдоним для друга {} или оставьте пустым для использования его имени:</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="133"/>
+        <location filename="mainscreen.py" line="102"/>
         <source>Audio</source>
         <translation>Аудио</translation>
     </message>
@@ -194,136 +194,189 @@ can produce IP leak</source>
         <translation type="obsolete">Найти контакт</translation>
     </message>
     <message>
-        <location filename="profile.py" line="879"/>
+        <location filename="profile.py" line="697"/>
         <source>Friend added</source>
         <translation>Друг добавлен</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="377"/>
+        <location filename="mainscreen.py" line="354"/>
         <source>Toxygen is Tox client written on Python.
 Version: </source>
         <translation>Toxygen - клиент для мессенджера Tox, написанный на Python. Версия: </translation>
     </message>
     <message>
-        <location filename="profile.py" line="880"/>
+        <location filename="profile.py" line="698"/>
         <source>Friend added without sending friend request</source>
         <translation>Друг добавлен без отправки запроса на добавление в друзья</translation>
     </message>
     <message>
-        <location filename="list_items.py" line="275"/>
+        <location filename="list_items.py" line="464"/>
         <source>Choose folder</source>
         <translation>Выбрать папку</translation>
     </message>
     <message>
         <location filename="mainscreen.py" line="135"/>
         <source>Send screenshot</source>
-        <translation>Отправить снимок экрана</translation>
+        <translation type="obsolete">Отправить снимок экрана</translation>
     </message>
     <message>
         <location filename="mainscreen.py" line="136"/>
         <source>Send file</source>
-        <translation>Отправить файл</translation>
+        <translation type="obsolete">Отправить файл</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="137"/>
+        <location filename="mainscreen.py" line="104"/>
         <source>Send message</source>
         <translation>Отправить сообщение</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="138"/>
+        <location filename="mainscreen.py" line="105"/>
         <source>Start audio call with friend</source>
         <translation>Начать аудиозвонок с другом</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="477"/>
+        <location filename="mainscreen.py" line="486"/>
         <source>Plugins</source>
         <translation>Плагины</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="121"/>
+        <location filename="mainscreen.py" line="90"/>
         <source>List of plugins</source>
         <translation>Список плагинов</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="134"/>
+        <location filename="mainscreen.py" line="103"/>
         <source>Search</source>
         <translation>Поиск</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="140"/>
+        <location filename="mainscreen.py" line="107"/>
         <source>All</source>
         <translation>Все</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="141"/>
+        <location filename="mainscreen.py" line="108"/>
         <source>Online</source>
         <translation>Онлайн</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="473"/>
+        <location filename="mainscreen.py" line="482"/>
         <source>Notes</source>
         <translation>Заметки</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="493"/>
+        <location filename="mainscreen.py" line="502"/>
         <source>Notes about user</source>
         <translation>Заметки о пользователе</translation>
     </message>
     <message>
-        <location filename="widgets.py" line="64"/>
+        <location filename="widgets.py" line="84"/>
         <source>Copy link location</source>
         <translation>Копировать адрес ссылки</translation>
     </message>
     <message>
-        <location filename="widgets.py" line="67"/>
+        <location filename="widgets.py" line="87"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="widgets.py" line="70"/>
+        <location filename="widgets.py" line="90"/>
         <source>Select all</source>
         <translation>Выделить всё</translation>
     </message>
     <message>
-        <location filename="widgets.py" line="73"/>
+        <location filename="widgets.py" line="93"/>
         <source>Delete</source>
         <translation>Удалить</translation>
     </message>
     <message>
-        <location filename="widgets.py" line="76"/>
+        <location filename="widgets.py" line="96"/>
         <source>Paste</source>
         <translation>Вставить</translation>
     </message>
     <message>
-        <location filename="widgets.py" line="79"/>
+        <location filename="widgets.py" line="99"/>
         <source>Cut</source>
         <translation>Вырезать</translation>
     </message>
     <message>
-        <location filename="widgets.py" line="82"/>
+        <location filename="widgets.py" line="102"/>
         <source>Undo</source>
         <translation>Отменить</translation>
     </message>
     <message>
-        <location filename="widgets.py" line="85"/>
+        <location filename="widgets.py" line="105"/>
         <source>Redo</source>
         <translation>Повторить</translation>
     </message>
     <message>
-        <location filename="widgets.py" line="106"/>
+        <location filename="widgets.py" line="126"/>
         <source>Save</source>
         <translation>Сохранить</translation>
+    </message>
+    <message>
+        <location filename="profile.py" line="250"/>
+        <source>User {} is now known as {}</source>
+        <translation>Пользователь {} сейчас известен как {}</translation>
+    </message>
+</context>
+<context>
+    <name>MenuWindow</name>
+    <message>
+        <location filename="avwidgets.py" line="121"/>
+        <source>Send audio message to friend {}</source>
+        <translation>Отправить аудиосообщение другу</translation>
+    </message>
+    <message>
+        <location filename="avwidgets.py" line="126"/>
+        <source>Start recording</source>
+        <translation>Начать запись</translation>
+    </message>
+    <message>
+        <location filename="avwidgets.py" line="135"/>
+        <source>Stop recording</source>
+        <translation>Остановить запись</translation>
+    </message>
+    <message>
+        <location filename="mainscreen_widgets.py" line="247"/>
+        <source>Send screenshot</source>
+        <translation>Отправить снимок экрана</translation>
+    </message>
+    <message>
+        <location filename="mainscreen_widgets.py" line="248"/>
+        <source>Send file</source>
+        <translation>Отправить файл</translation>
+    </message>
+    <message>
+        <location filename="mainscreen_widgets.py" line="249"/>
+        <source>Send audio message</source>
+        <translation>Отправить аудиосообщение</translation>
+    </message>
+    <message>
+        <location filename="mainscreen_widgets.py" line="250"/>
+        <source>Send video message</source>
+        <translation>Отправить видеосообщение</translation>
+    </message>
+    <message>
+        <location filename="mainscreen_widgets.py" line="251"/>
+        <source>Add smiley</source>
+        <translation>Добавить смайлик</translation>
+    </message>
+    <message>
+        <location filename="mainscreen_widgets.py" line="252"/>
+        <source>Send sticker</source>
+        <translation>Отправить стикер</translation>
     </message>
 </context>
 <context>
     <name>NetworkSettings</name>
     <message>
-        <location filename="menu.py" line="294"/>
+        <location filename="menu.py" line="320"/>
         <source>Network settings</source>
         <translation>Настройки сети</translation>
     </message>
     <message>
-        <location filename="menu.py" line="300"/>
+        <location filename="menu.py" line="326"/>
         <source>Restart TOX core</source>
         <translation>Перезапустить ядро TOX</translation>
     </message>
@@ -344,70 +397,75 @@ Version: </source>
 <context>
     <name>PluginsForm</name>
     <message>
-        <location filename="menu.py" line="632"/>
+        <location filename="menu.py" line="697"/>
         <source>Plugins</source>
         <translation>Плагины</translation>
     </message>
     <message>
-        <location filename="menu.py" line="633"/>
+        <location filename="menu.py" line="698"/>
         <source>Open selected plugin</source>
         <translation>Открыть выбранный плагин</translation>
     </message>
     <message>
-        <location filename="menu.py" line="645"/>
+        <location filename="menu.py" line="711"/>
         <source>No GUI found for this plugin</source>
         <translation>GUI для данного плагина не найден</translation>
     </message>
     <message>
-        <location filename="menu.py" line="660"/>
+        <location filename="menu.py" line="727"/>
         <source>No description available</source>
         <translation>Описание недоступно</translation>
     </message>
     <message>
-        <location filename="menu.py" line="676"/>
+        <location filename="menu.py" line="743"/>
         <source>Disable plugin</source>
         <translation>Отключить плагин</translation>
     </message>
     <message>
-        <location filename="menu.py" line="678"/>
+        <location filename="menu.py" line="745"/>
         <source>Enable plugin</source>
         <translation>Включить плагин</translation>
     </message>
     <message>
-        <location filename="menu.py" line="668"/>
+        <location filename="menu.py" line="735"/>
         <source>No plugins found</source>
         <translation>Плагины не найдены</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="712"/>
+        <source>Error</source>
+        <translation>Ошибка</translation>
     </message>
 </context>
 <context>
     <name>ProfileSettingsForm</name>
     <message>
-        <location filename="menu.py" line="163"/>
+        <location filename="menu.py" line="167"/>
         <source>Export profile</source>
         <translation>Экспорт профиля</translation>
     </message>
     <message>
-        <location filename="menu.py" line="164"/>
+        <location filename="menu.py" line="168"/>
         <source>Profile settings</source>
         <translation>Настройки профиля</translation>
     </message>
     <message>
-        <location filename="menu.py" line="165"/>
+        <location filename="menu.py" line="169"/>
         <source>Name:</source>
         <translation>Имя:</translation>
     </message>
     <message>
-        <location filename="menu.py" line="166"/>
+        <location filename="menu.py" line="170"/>
         <source>Status:</source>
         <translation>Статус:</translation>
     </message>
     <message>
-        <location filename="menu.py" line="167"/>
+        <location filename="menu.py" line="171"/>
         <source>TOX ID:</source>
         <translation>TOX ID:</translation>
     </message>
     <message>
-        <location filename="menu.py" line="168"/>
+        <location filename="menu.py" line="172"/>
         <source>Copy TOX ID</source>
         <translation>Копировать TOX ID</translation>
     </message>
@@ -417,80 +475,105 @@ Version: </source>
         <translation type="obsolete">Язык:</translation>
     </message>
     <message>
-        <location filename="menu.py" line="169"/>
+        <location filename="menu.py" line="173"/>
         <source>New avatar</source>
         <translation>Новый аватар</translation>
     </message>
     <message>
-        <location filename="menu.py" line="170"/>
+        <location filename="menu.py" line="174"/>
         <source>Reset avatar</source>
         <translation>Сбросить аватар</translation>
     </message>
     <message>
-        <location filename="menu.py" line="171"/>
+        <location filename="menu.py" line="175"/>
         <source>New NoSpam</source>
         <translation>Новый NoSpam</translation>
     </message>
     <message>
-        <location filename="menu.py" line="172"/>
+        <location filename="menu.py" line="176"/>
         <source>Profile password</source>
         <translation>Пароль профиля</translation>
     </message>
     <message>
-        <location filename="menu.py" line="173"/>
+        <location filename="menu.py" line="177"/>
         <source>Password (at least 8 symbols)</source>
         <translation>Пароль (минимум 8 символов)</translation>
     </message>
     <message>
-        <location filename="menu.py" line="174"/>
+        <location filename="menu.py" line="178"/>
         <source>Confirm password</source>
         <translation>Подтверждение пароля</translation>
     </message>
     <message>
-        <location filename="menu.py" line="175"/>
+        <location filename="menu.py" line="179"/>
         <source>Set password</source>
         <translation>Изменить пароль</translation>
     </message>
     <message>
-        <location filename="menu.py" line="193"/>
+        <location filename="menu.py" line="218"/>
         <source>Passwords do not match</source>
         <translation>Пароли не совпадают</translation>
     </message>
     <message>
-        <location filename="menu.py" line="177"/>
+        <location filename="menu.py" line="181"/>
         <source>Leaving blank will reset current password</source>
         <translation>Пустое поле сбросит текущий пароль</translation>
     </message>
     <message>
-        <location filename="menu.py" line="178"/>
+        <location filename="menu.py" line="182"/>
         <source>There is no way to recover lost passwords</source>
         <translation>Восстановление забытых паролей не поддерживается</translation>
     </message>
     <message>
-        <location filename="menu.py" line="189"/>
+        <location filename="menu.py" line="214"/>
         <source>Password must be at least 8 symbols</source>
         <translation>Пароль должен быть длиной не менее 8 символов</translation>
     </message>
     <message>
-        <location filename="menu.py" line="213"/>
+        <location filename="menu.py" line="238"/>
         <source>Choose avatar</source>
         <translation>Выбрать аватар</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="183"/>
+        <source>Online</source>
+        <translation>Онлайн</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="184"/>
+        <source>Away</source>
+        <translation>Нет на месте</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="185"/>
+        <source>Busy</source>
+        <translation>Занят</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="199"/>
+        <source>Mark as not default profile</source>
+        <translation>Отключить автозагрузку профиля</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="203"/>
+        <source>Mark as default profile</source>
+        <translation>Сделать профилем по умолчанию</translation>
     </message>
 </context>
 <context>
     <name>audioSettingsForm</name>
     <message>
-        <location filename="menu.py" line="592"/>
+        <location filename="menu.py" line="654"/>
         <source>Audio settings</source>
         <translation>Настройки аудио</translation>
     </message>
     <message>
-        <location filename="menu.py" line="593"/>
+        <location filename="menu.py" line="655"/>
         <source>Input device:</source>
         <translation>Устройство ввода:</translation>
     </message>
     <message>
-        <location filename="menu.py" line="594"/>
+        <location filename="menu.py" line="656"/>
         <source>Output device:</source>
         <translation>Устройство вывода:</translation>
     </message>
@@ -498,101 +581,156 @@ Version: </source>
 <context>
     <name>incoming_call</name>
     <message>
-        <location filename="profile.py" line="1222"/>
+        <location filename="profile.py" line="1098"/>
         <source>Incoming video call</source>
         <translation>Входящий видеозвонок</translation>
     </message>
     <message>
-        <location filename="profile.py" line="1224"/>
+        <location filename="profile.py" line="1101"/>
         <source>Incoming audio call</source>
         <translation>Входящий аудиозвонок</translation>
+    </message>
+    <message>
+        <location filename="profile.py" line="1081"/>
+        <source>Outgoing video call</source>
+        <translation>Исходящий видеозвонок</translation>
+    </message>
+    <message>
+        <location filename="profile.py" line="1084"/>
+        <source>Outgoing audio call</source>
+        <translation>Исходящий аудиозвонок</translation>
+    </message>
+    <message>
+        <location filename="profile.py" line="1130"/>
+        <source>Call declined</source>
+        <translation>Звонок отменен</translation>
+    </message>
+    <message>
+        <location filename="profile.py" line="1132"/>
+        <source>Call finished</source>
+        <translation>Звонок завершен</translation>
     </message>
 </context>
 <context>
     <name>interfaceForm</name>
     <message>
-        <location filename="menu.py" line="529"/>
+        <location filename="menu.py" line="572"/>
         <source>Interface settings</source>
         <translation>Настройки интерфейса</translation>
     </message>
     <message>
-        <location filename="menu.py" line="530"/>
+        <location filename="menu.py" line="573"/>
         <source>Theme:</source>
         <translation>Тема:</translation>
     </message>
     <message>
-        <location filename="menu.py" line="531"/>
+        <location filename="menu.py" line="574"/>
         <source>Language:</source>
         <translation>Язык:</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="575"/>
+        <source>Smileys</source>
+        <translation>Смайлики</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="576"/>
+        <source>Smiley pack:</source>
+        <translation>Набор смайликов</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="577"/>
+        <source>Mirror mode</source>
+        <translation>Зеркальный режим</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="578"/>
+        <source>Messages font size:</source>
+        <translation>Размер шрифта сообщений:</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="589"/>
+        <source>Restart app to apply settings</source>
+        <translation>Для применения настроек необходимо перезапустить приложение</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="590"/>
+        <source>Restart required</source>
+        <translation>Требуется перезапуск</translation>
     </message>
 </context>
 <context>
     <name>login</name>
     <message>
-        <location filename="loginscreen.py" line="74"/>
+        <location filename="loginscreen.py" line="75"/>
         <source>Log in</source>
         <translation>Вход</translation>
     </message>
     <message>
-        <location filename="loginscreen.py" line="75"/>
+        <location filename="loginscreen.py" line="76"/>
         <source>Create</source>
         <translation>Создать</translation>
     </message>
     <message>
-        <location filename="loginscreen.py" line="76"/>
+        <location filename="loginscreen.py" line="77"/>
         <source>Profile name:</source>
         <translation>Имя профиля:</translation>
     </message>
     <message>
-        <location filename="loginscreen.py" line="77"/>
+        <location filename="loginscreen.py" line="78"/>
         <source>Load profile</source>
         <translation>Загрузить профиль</translation>
     </message>
     <message>
-        <location filename="loginscreen.py" line="78"/>
+        <location filename="loginscreen.py" line="79"/>
         <source>Use as default</source>
         <translation>По умолчанию</translation>
     </message>
     <message>
-        <location filename="loginscreen.py" line="79"/>
+        <location filename="loginscreen.py" line="80"/>
         <source>Load existing profile</source>
         <translation>Загрузить профиль</translation>
     </message>
     <message>
-        <location filename="loginscreen.py" line="80"/>
+        <location filename="loginscreen.py" line="81"/>
         <source>Create new profile</source>
         <translation>Создать новый профиль</translation>
     </message>
     <message>
-        <location filename="loginscreen.py" line="81"/>
+        <location filename="loginscreen.py" line="82"/>
         <source>toxygen</source>
         <translation>toxygen</translation>
     </message>
     <message>
-        <location filename="main.py" line="118"/>
+        <location filename="main.py" line="125"/>
         <source>Looks like other instance of Toxygen uses this profile! Continue?</source>
         <translation>Похоже, что этот профиль используется другим экземпляром Toxygen! Продолжить?</translation>
+    </message>
+    <message>
+        <location filename="loginscreen.py" line="74"/>
+        <source>Profile name</source>
+        <translation>Имя профиля</translation>
     </message>
 </context>
 <context>
     <name>notificationsForm</name>
     <message>
-        <location filename="menu.py" line="469"/>
+        <location filename="menu.py" line="489"/>
         <source>Notification settings</source>
         <translation>Настройки уведомлений</translation>
     </message>
     <message>
-        <location filename="menu.py" line="470"/>
+        <location filename="menu.py" line="490"/>
         <source>Enable notifications</source>
         <translation>Включить уведомления</translation>
     </message>
     <message>
-        <location filename="menu.py" line="471"/>
+        <location filename="menu.py" line="491"/>
         <source>Enable call&apos;s sound</source>
         <translation>Включить звук звонка</translation>
     </message>
     <message>
-        <location filename="menu.py" line="472"/>
+        <location filename="menu.py" line="492"/>
         <source>Enable sound notifications</source>
         <translation>Включить звуковые уведомления
 </translation>
@@ -601,110 +739,115 @@ Version: </source>
 <context>
     <name>privacySettings</name>
     <message>
-        <location filename="menu.py" line="386"/>
+        <location filename="menu.py" line="407"/>
         <source>Privacy settings</source>
         <translation>Настройки приватности</translation>
     </message>
     <message>
-        <location filename="menu.py" line="387"/>
+        <location filename="menu.py" line="408"/>
         <source>Save chat history</source>
         <translation>Сохранять историю переписки</translation>
     </message>
     <message>
-        <location filename="menu.py" line="388"/>
+        <location filename="menu.py" line="409"/>
         <source>Allow file auto accept</source>
         <translation>Разрешить автополучение файлов</translation>
     </message>
     <message>
-        <location filename="menu.py" line="389"/>
+        <location filename="menu.py" line="410"/>
         <source>Send typing notifications</source>
         <translation>Посылать уведомления о наборе текста</translation>
     </message>
     <message>
-        <location filename="menu.py" line="390"/>
+        <location filename="menu.py" line="411"/>
         <source>Auto accept default path:</source>
         <translation>Путь автоприема файлов:</translation>
     </message>
     <message>
-        <location filename="menu.py" line="391"/>
+        <location filename="menu.py" line="412"/>
         <source>Change</source>
         <translation>Изменить</translation>
     </message>
     <message>
-        <location filename="menu.py" line="392"/>
+        <location filename="menu.py" line="413"/>
         <source>Allow inlines</source>
         <translation>Разрешать инлайны</translation>
     </message>
     <message>
-        <location filename="menu.py" line="415"/>
+        <location filename="menu.py" line="436"/>
         <source>Chat history</source>
         <translation>История чата</translation>
     </message>
     <message>
-        <location filename="menu.py" line="418"/>
+        <location filename="menu.py" line="439"/>
         <source>History will be cleaned! Continue?</source>
         <translation>История переписки будет очищена! Продолжить?</translation>
     </message>
     <message>
-        <location filename="menu.py" line="394"/>
+        <location filename="menu.py" line="415"/>
         <source>Blocked users:</source>
         <translation>Заблокированные пользователи:</translation>
     </message>
     <message>
-        <location filename="menu.py" line="395"/>
+        <location filename="menu.py" line="416"/>
         <source>Unblock</source>
         <translation>Разблокировать</translation>
     </message>
     <message>
-        <location filename="menu.py" line="396"/>
+        <location filename="menu.py" line="417"/>
         <source>Block user</source>
         <translation>Заблокировать пользователя</translation>
     </message>
     <message>
-        <location filename="menu.py" line="402"/>
+        <location filename="menu.py" line="423"/>
         <source>Add to friend list</source>
         <translation>Добавить в список друзей</translation>
     </message>
     <message>
-        <location filename="menu.py" line="403"/>
+        <location filename="menu.py" line="424"/>
         <source>Do you want to add this user to friend list?</source>
         <translation>Добавить этого пользователя в список друзей?</translation>
     </message>
     <message>
         <location filename="menu.py" line="393"/>
         <source>Block by TOX ID:</source>
-        <translation>Блокировать по TOX ID:</translation>
+        <translation type="obsolete">Блокировать по TOX ID:</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="414"/>
+        <source>Block by public key:</source>
+        <translation>Блокировать по публичному ключу</translation>
     </message>
 </context>
 <context>
     <name>tray</name>
     <message>
-        <location filename="main.py" line="166"/>
+        <location filename="main.py" line="173"/>
         <source>Open Toxygen</source>
         <translation>Открыть Toxygen</translation>
     </message>
     <message>
-        <location filename="main.py" line="175"/>
+        <location filename="main.py" line="182"/>
         <source>Exit</source>
         <translation>Выход</translation>
     </message>
     <message>
-        <location filename="main.py" line="167"/>
+        <location filename="main.py" line="174"/>
         <source>Set status</source>
         <translation>Изменить статус</translation>
     </message>
     <message>
-        <location filename="main.py" line="168"/>
+        <location filename="main.py" line="175"/>
         <source>Online</source>
         <translation>Онлайн</translation>
     </message>
     <message>
-        <location filename="main.py" line="169"/>
+        <location filename="main.py" line="176"/>
         <source>Away</source>
         <translation>Нет на месте</translation>
     </message>
     <message>
-        <location filename="main.py" line="170"/>
+        <location filename="main.py" line="177"/>
         <source>Busy</source>
         <translation>Занят</translation>
     </message>
