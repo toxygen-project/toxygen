@@ -286,17 +286,19 @@ class StickerWindow(QtGui.QWidget):
     def __init__(self, parent):
         super(StickerWindow, self).__init__()
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        self.setMaximumSize(150, 200)
-        self.setMinimumSize(150, 200)
+        self.setMaximumSize(250, 200)
+        self.setMinimumSize(250, 200)
         self.list = QtGui.QListWidget(self)
-        self.list.setGeometry(QtCore.QRect(0, 0, 150, 200))
+        self.list.setGeometry(QtCore.QRect(0, 0, 250, 200))
         self.arr = smileys.sticker_loader()
         for sticker in self.arr:
             item = StickerItem(sticker)
             elem = QtGui.QListWidgetItem()
-            elem.setSizeHint(QtCore.QSize(150, item.height()))
+            elem.setSizeHint(QtCore.QSize(250, item.height()))
             self.list.addItem(elem)
             self.list.setItemWidget(elem, item)
+        self.list.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.list.setSpacing(3)
         self.list.clicked.connect(self.click)
         self.parent = parent
 

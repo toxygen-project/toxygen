@@ -85,6 +85,6 @@ def sticker_loader():
     for key in keys:
         path = d + key + '/'
         files = filter(lambda f: f.endswith('.png'), os.listdir(path))
-        files = map(lambda f: path + f, files)
+        files = map(lambda f: unicode(path + f), files)
         result.extend(files)
     return result

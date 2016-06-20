@@ -435,29 +435,29 @@ class InlineImageItem(QtGui.QScrollArea):
         self._full_size = not self._resize_needed
         if not self._resize_needed:
             self._image_label.setPixmap(self._pixmap)
-            self.resize(QtCore.QSize(self._max_size + 5, self._pixmap.height()))
-            self._image_label.setGeometry(5, 0, self._max_size + 5, self._pixmap.height())
+            self.resize(QtCore.QSize(self._max_size + 5, self._pixmap.height() + 5))
+            self._image_label.setGeometry(5, 0, self._pixmap.width(), self._pixmap.height())
         else:
             pixmap = self._pixmap.scaled(self._max_size, self._max_size, QtCore.Qt.KeepAspectRatio)
             self._image_label.setPixmap(pixmap)
-            self.resize(QtCore.QSize(self._max_size, pixmap.height()))
+            self.resize(QtCore.QSize(self._max_size + 5, pixmap.height()))
             self._image_label.setGeometry(5, 0, self._max_size + 5, pixmap.height())
         self._elem.setSizeHint(QtCore.QSize(self.width(), self.height()))
 
     def mouseReleaseEvent(self, event):
-        if event.button() == QtCore.Qt.LeftButton and self._resize_needed:
+        if event.button() == QtCore.Qt.LeftButton and self._resize_needed:  # scale inline
             if self._full_size:
                 pixmap = self._pixmap.scaled(self._max_size, self._max_size, QtCore.Qt.KeepAspectRatio)
                 self._image_label.setPixmap(pixmap)
                 self.resize(QtCore.QSize(self._max_size, pixmap.height()))
-                self._image_label.setGeometry(5, 0, self._max_size + 5, pixmap.height())
+                self._image_label.setGeometry(5, 0, pixmap.width(), pixmap.height())
             else:
                 self._image_label.setPixmap(self._pixmap)
-                self.resize(QtCore.QSize(self._max_size, self._pixmap.height() + 15))
-                self._image_label.setGeometry(5, 0, self._pixmap.width(), self._pixmap.height() + 15)
+                self.resize(QtCore.QSize(self._max_size, self._pixmap.height() + 17))
+                self._image_label.setGeometry(5, 0, self._pixmap.width(), self._pixmap.height())
             self._full_size = not self._full_size
             self._elem.setSizeHint(QtCore.QSize(self.width(), self.height()))
-        elif event.button() == QtCore.Qt.RightButton:
+        elif event.button() == QtCore.Qt.RightButton:  # save inline
             directory = QtGui.QFileDialog.getExistingDirectory(self,
                                                                QtGui.QApplication.translate("MainWindow",
                                                                                             'Choose folder', None,
