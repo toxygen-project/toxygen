@@ -2,7 +2,7 @@ import os
 import time
 
 
-program_version = '0.1.3'
+program_version = '0.2.0'
 
 
 def log(data):
