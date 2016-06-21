@@ -75,13 +75,9 @@ def node_generator():
         "5625A62618CB4FCA70E147A71B29695F38CC65FF0CBD68AD46254585BE564802",
         "31910C0497D347FF160D6F3A6C0E317BAFA71E8E03BC4CBB2A185C9D4FB8B31E"
     ]
-    for i in xrange(len(ips)):
+    for i in range(len(ips)):
         nodes.append(Node(ips[i], ports[i], ids[i], random.randint(0, 1000000)))
     arr = sorted(nodes, key=lambda x: x.rand)[:4]
     for elem in arr:
         yield elem.get_data()
 
-
-if __name__ == "__main__":
-    for elem in node_generator():
-        print str(elem)

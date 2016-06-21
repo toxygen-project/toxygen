@@ -23,11 +23,11 @@ class ToxOptions(Structure):
 
 
 def string_to_bin(tox_id):
-    return c_char_p(tox_id.decode('hex')) if tox_id is not None else None
+    return c_char_p(bytes.fromhex(tox_id)) if tox_id is not None else None
 
 
 def bin_to_string(raw_id, length):
-    res = ''.join('{:02x}'.format(ord(raw_id[i])) for i in xrange(length))
+    res = ''.join('{:02x}'.format(ord(raw_id[i])) for i in range(length))
     return res.upper()
 
 
@@ -382,7 +382,7 @@ class Tox(object):
         if name is None:
             name = create_string_buffer(self.self_get_name_size())
         Tox.libtoxcore.tox_self_get_name(self._tox_pointer, name)
-        return name.value.decode('utf8')
+        return str(name.value, 'utf-8')
 
     def self_set_status_message(self, status_message):
         """
@@ -430,7 +430,7 @@ class Tox(object):
         if status_message is None:
             status_message = create_string_buffer(self.self_get_status_message_size())
         Tox.libtoxcore.tox_self_get_status_message(self._tox_pointer, status_message)
-        return status_message.value.decode('utf8')
+        return str(status_message.value, 'utf-8')
 
     def self_set_status(self, status):
         """
@@ -688,7 +688,7 @@ class Tox(object):
                                            byref(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
-            return name.value.decode('utf8')
+            return str(name.value, 'utf-8')
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['NULL']:
             raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
                                 ' the `_self_` variants of these functions, which have no effect when a parameter is'
@@ -752,7 +752,7 @@ class Tox(object):
                                                      byref(tox_err_friend_query))
         tox_err_friend_query = tox_err_friend_query.value
         if tox_err_friend_query == TOX_ERR_FRIEND_QUERY['OK']:
-            return status_message.value.decode('utf8')
+            return str(status_message.value, 'utf-8')
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['NULL']:
             raise ArgumentError('The pointer parameter for storing the query result (name, message) was NULL. Unlike'
                                 ' the `_self_` variants of these functions, which have no effect when a parameter is'
@@ -1200,7 +1200,9 @@ class Tox(object):
         """
         tox_err_file_send = c_int()
         result = self.libtoxcore.tox_file_send(self._tox_pointer, c_uint32(friend_number), c_uint32(kind),
-                                               c_uint64(file_size), string_to_bin(file_id), c_char_p(filename),
+                                               c_uint64(file_size),
+                                               string_to_bin(file_id),
+                                               c_char_p(bytes(filename, 'utf-8')),
                                                c_size_t(len(filename)), byref(tox_err_file_send))
         tox_err_file_send = tox_err_file_send.value
         if tox_err_file_send == TOX_ERR_FILE_SEND['OK']:

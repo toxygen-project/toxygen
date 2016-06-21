@@ -70,6 +70,7 @@ class MessageEdit(QtGui.QTextBrowser):
         self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
 
     def decoratedText(self, text):
+        text = text.replace("&", "&amp;")
         text = cgi.escape(text)  # replace < and >
         exp = QtCore.QRegExp(
             '('
@@ -297,14 +298,14 @@ class FileTransferItem(QtGui.QListWidget):
         self.file_name.setGeometry(QtCore.QRect(210, 7, width - 420, 20))
         font.setPointSize(12)
         self.file_name.setFont(font)
-        file_size = size / 1024
+        file_size = size // 1024
         if not file_size:
             file_size = '{}B'.format(size)
         elif file_size >= 1024:
-            file_size = '{}MB'.format(file_size / 1024)
+            file_size = '{}MB'.format(file_size // 1024)
         else:
             file_size = '{}KB'.format(file_size)
-        file_data = u'{} {}'.format(file_size, file_name)
+        file_data = '{} {}'.format(file_size, file_name)
         self.file_name.setText(file_data)
         self.file_name.setToolTip(file_name)
         self.saved_name = file_name

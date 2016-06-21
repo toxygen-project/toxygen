@@ -57,8 +57,9 @@ class PasswordScreen(CenteredWidget):
             try:
                 self._encrypt.set_password(self.password.text())
                 new_data = self._encrypt.pass_decrypt(self._data[0])
-            except Exception:
+            except Exception as ex:
                 self.warning.setVisible(True)
+                print('Decryption error:', ex)
             else:
                 self._data[0] = new_data
                 self.close()

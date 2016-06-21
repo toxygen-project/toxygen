@@ -121,7 +121,7 @@ class SendTransfer(FileTransfer):
         super(SendTransfer, self).__init__(path, tox, friend_number, size)
         self.state = TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
         self._file_number = tox.file_send(friend_number, kind, size, file_id,
-                                          basename(path).encode('utf-8') if path else '')
+                                          basename(path) if path else '')
 
     def send_chunk(self, position, size):
         """
@@ -177,7 +177,7 @@ class SendFromBuffer(FileTransfer):
             self._creation_time = time()
         if size:
             data = self._data[position:position + size]
-            self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
+            self._tox.file_send_chunk(self._friend_number, self._file_number, position, bytes(data, 'utf-8'))
             self._done += size
             self.signal()
         else:
@@ -290,7 +290,7 @@ class ReceiveAvatar(ReceiveTransfer):
             remove(path + '.tmp')
         elif exists(path):
             hash = self.get_file_id()
-            with open(path) as fl:
+            with open(path, 'rb') as fl:
                 data = fl.read()
             existing_hash = Tox.hash(data)
             if hash == existing_hash:

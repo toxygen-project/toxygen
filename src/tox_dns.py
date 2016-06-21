@@ -1,5 +1,5 @@
 import json
-import urllib2
+import urllib.request
 from util import log
 
 
@@ -20,9 +20,9 @@ def tox_dns(email):
 
 
 def send_request(url, data):
-    req = urllib2.Request(url)
+    req = urllib.request.Request(url)
     req.add_header('Content-Type', 'application/json')
-    response = urllib2.urlopen(req, json.dumps(data))
+    response = urllib.request.urlopen(req, json.dumps(data))
     res = json.loads(response.read())
     if not res['c']:
         return res['tox_id']

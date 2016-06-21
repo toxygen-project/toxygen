@@ -306,7 +306,7 @@ class NetworkSettings(CenteredWidget):
         self.udp.setChecked(settings['udp_enabled'])
         self.proxy.setChecked(settings['proxy_type'])
         self.proxyip.setText(settings['proxy_host'])
-        self.proxyport.setText(unicode(settings['proxy_port']))
+        self.proxyport.setText(str(settings['proxy_port']))
         self.http.setChecked(settings['proxy_type'] == 1)
         self.warning = QtGui.QLabel(self)
         self.warning.setGeometry(QtCore.QRect(5, 270, 290, 60))
@@ -637,13 +637,13 @@ class AudioSettings(CenteredWidget):
         p = pyaudio.PyAudio()
         settings = Settings.get_instance()
         self.in_indexes, self.out_indexes = [], []
-        for i in xrange(p.get_device_count()):
+        for i in range(p.get_device_count()):
             device = p.get_device_info_by_index(i)
             if device["maxInputChannels"]:
-                self.input.addItem(unicode(device["name"]))
+                self.input.addItem(str(device["name"]))
                 self.in_indexes.append(i)
             if device["maxOutputChannels"]:
-                self.output.addItem(unicode(device["name"]))
+                self.output.addItem(str(device["name"]))
                 self.out_indexes.append(i)
         self.input.setCurrentIndex(self.in_indexes.index(settings.audio['input']))
         self.output.setCurrentIndex(self.out_indexes.index(settings.audio['output']))

@@ -99,7 +99,6 @@ class ScreenShotWindow(QtGui.QWidget):
         if self.rubberband.isVisible():
             self.rubberband.hide()
             rect = self.rubberband.geometry()
-            print rect
             if rect.width() and rect.height():
                 p = QtGui.QPixmap.grabWindow(QtGui.QApplication.desktop().winId(),
                                              rect.x() + 4,

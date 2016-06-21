@@ -43,7 +43,7 @@ def self_connection_status(tox_link):
     Current user changed connection status (offline, UDP, TCP)
     """
     def wrapped(tox, connection, user_data):
-        print 'Connection status: ', str(connection)
+        print('Connection status: ', str(connection))
         profile = Profile.get_instance()
         if profile.status is None:
             status = tox_link.self_get_status()
@@ -62,7 +62,7 @@ def friend_status(tox, friend_num, new_status, user_data):
     """
     Check friend's status (none, busy, away)
     """
-    print "Friend's #{} status changed! New status: {}".format(friend_num, new_status)
+    print("Friend's #{} status changed! New status: {}".format(friend_num, new_status))
     profile = Profile.get_instance()
     friend = profile.get_friend_by_number(friend_num)
     if friend.status is None and Settings.get_instance()['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
@@ -76,7 +76,7 @@ def friend_connection_status(tox, friend_num, new_status, user_data):
     """
     Check friend's connection status (offline, udp, tcp)
     """
-    print "Friend #{} connection status: {}".format(friend_num, new_status)
+    print("Friend #{} connection status: {}".format(friend_num, new_status))
     profile = Profile.get_instance()
     friend = profile.get_friend_by_number(friend_num)
     if new_status == TOX_CONNECTION['NONE']:
@@ -94,7 +94,7 @@ def friend_name(tox, friend_num, name, size, user_data):
     Friend changed his name
     """
     profile = Profile.get_instance()
-    print 'New name: ', friend_num, name
+    print('New name: ', friend_num, name)
     invoke_in_main_thread(profile.new_name, friend_num, name)
 
 
@@ -106,7 +106,7 @@ def friend_status_message(tox, friend_num, status_message, size, user_data):
     profile = Profile.get_instance()
     friend = profile.get_friend_by_number(friend_num)
     invoke_in_main_thread(friend.set_status_message, status_message)
-    print 'User #{} has new status: {}'.format(friend_num, status_message)
+    print('User #{} has new status: {}'.format(friend_num, status_message))
     invoke_in_main_thread(profile.send_messages, friend_num)
     if profile.get_active_number() == friend_num:
         invoke_in_main_thread(profile.set_active)
@@ -119,11 +119,12 @@ def friend_message(window, tray):
     def wrapped(tox, friend_number, message_type, message, size, user_data):
         profile = Profile.get_instance()
         settings = Settings.get_instance()
+        message = str(message, 'utf-8')
         invoke_in_main_thread(profile.new_message, friend_number, message_type, message)
         if not window.isActiveWindow():
             friend = profile.get_friend_by_number(friend_number)
             if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
-                invoke_in_main_thread(tray_notification, friend.name, message.decode('utf8'), tray, window)
+                invoke_in_main_thread(tray_notification, friend.name, message, tray, window)
             if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                 sound_notification(SOUND_NOTIFICATION['MESSAGE'])
             invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
@@ -134,12 +135,12 @@ def friend_request(tox, public_key, message, message_size, user_data):
     """
     Called when user get new friend request
     """
-    print 'Friend request'
+    print('Friend request')
     profile = Profile.get_instance()
     key = ''.join(chr(x) for x in public_key[:TOX_PUBLIC_KEY_SIZE])
     tox_id = bin_to_string(key, TOX_PUBLIC_KEY_SIZE)
     if tox_id not in Settings.get_instance()['blocked']:
-        invoke_in_main_thread(profile.process_friend_request, tox_id, message.decode('utf-8'))
+        invoke_in_main_thread(profile.process_friend_request, tox_id, message)
 
 
 def friend_typing(tox, friend_number, typing, user_data):
@@ -165,11 +166,11 @@ def tox_file_recv(window, tray):
         profile = Profile.get_instance()
         settings = Settings.get_instance()
         if file_type == TOX_FILE_KIND['DATA']:
-            print 'file'
+            print('File')
             try:
-                file_name = unicode(file_name[:file_name_size].decode('utf-8'))
+                file_name = str(file_name[:file_name_size], 'utf-8')
             except:
-                file_name = u'toxygen_file'
+                file_name = 'toxygen_file'
             invoke_in_main_thread(profile.incoming_file_transfer,
                                   friend_number,
                                   file_number,
@@ -184,7 +185,7 @@ def tox_file_recv(window, tray):
                     sound_notification(SOUND_NOTIFICATION['FILE_TRANSFER'])
                 invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
         else:  # AVATAR
-            print 'Avatar'
+            print ('Avatar')
             invoke_in_main_thread(profile.incoming_avatar,
                                   friend_number,
                                   file_number,
@@ -260,7 +261,7 @@ def call_state(toxav, friend_number, mask, user_data):
     """
     New call state
     """
-    print friend_number, mask
+    print(friend_number, mask)
     if mask == TOXAV_FRIEND_CALL_STATE['FINISHED'] or mask == TOXAV_FRIEND_CALL_STATE['ERROR']:
         invoke_in_main_thread(Profile.get_instance().stop_call, friend_number, True)
     else:
@@ -271,7 +272,7 @@ def call(toxav, friend_number, audio, video, user_data):
     """
     Incoming call from friend
     """
-    print friend_number, audio, video
+    print(friend_number, audio, video)
     invoke_in_main_thread(Profile.get_instance().incoming_call, audio, video, friend_number)
 
 

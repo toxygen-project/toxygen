@@ -125,11 +125,12 @@ class PluginSuperClass(object):
         New command. On 'help' this method should provide user list of available commands
         :param command: string with command
         """
-        msgbox = QtGui.QMessageBox()
-        title = QtGui.QApplication.translate("PluginWindow", "List of commands for plugin {}", None, QtGui.QApplication.UnicodeUTF8)
-        msgbox.setWindowTitle(title.format(self._name))
-        msgbox.setText(QtGui.QApplication.translate("PluginWindow", "No commands available", None, QtGui.QApplication.UnicodeUTF8))
-        msgbox.exec_()
+        if command == 'help':
+            msgbox = QtGui.QMessageBox()
+            title = QtGui.QApplication.translate("PluginWindow", "List of commands for plugin {}", None, QtGui.QApplication.UnicodeUTF8)
+            msgbox.setWindowTitle(title.format(self._name))
+            msgbox.setText(QtGui.QApplication.translate("PluginWindow", "No commands available", None, QtGui.QApplication.UnicodeUTF8))
+            msgbox.exec_()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Translations support
@@ -142,11 +143,11 @@ class PluginSuperClass(object):
         app = QtGui.QApplication.instance()
         langs = self._settings.supported_languages()
         curr_lang = self._settings['language']
-        if curr_lang in map(lambda x: x[0], langs):
+        if curr_lang in langs:
             if self._translator is not None:
                 app.removeTranslator(self._translator)
             self._translator = QtCore.QTranslator()
-            lang_path = filter(lambda x: x[0] == curr_lang, langs)[0][1]
+            lang_path = langs[curr_lang]
             self._translator.load(path_to_data(self._short_name) + lang_path)
             app.installTranslator(self._translator)
 

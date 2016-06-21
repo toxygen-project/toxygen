@@ -283,7 +283,7 @@ class Toxygen(object):
                     self.tox.bootstrap(*data)
             except:
                 pass
-            for _ in xrange(10):
+            for _ in range(10):
                 if self.stop:
                     return
                 self.msleep(1000)

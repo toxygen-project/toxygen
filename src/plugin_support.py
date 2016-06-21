@@ -10,6 +10,7 @@ import toxencryptsave
 class PluginLoader(util.Singleton):
 
     def __init__(self, tox, settings):
+        PluginLoader._instance = self
         self._profile = profile.Profile.get_instance()
         self._settings = settings
         self._plugins = {}  # dict. key - plugin unique short name, value - tuple (plugin instance, is active)
@@ -48,7 +49,7 @@ class PluginLoader(util.Singleton):
             for elem in dir(module):
                 obj = getattr(module, elem)
                 if inspect.isclass(obj) and issubclass(obj, pl.PluginSuperClass):  # looking for plugin class in module
-                    print 'Plugin', elem
+                    print('Plugin', elem)
                     try:  # create instance of plugin class
                         inst = obj(self._tox, self._profile, self._settings, self._encr)
                         autostart = inst.get_short_name() in self._settings['plugins']

@@ -499,7 +499,7 @@ class MainWindow(QtGui.QMainWindow):
         s = Settings.get_instance()
         note = s['notes'][friend.tox_id] if friend.tox_id in s['notes'] else ''
         user = QtGui.QApplication.translate("MainWindow", 'Notes about user', None, QtGui.QApplication.UnicodeUTF8)
-        user = u'{} {}'.format(user, friend.name)
+        user = '{} {}'.format(user, friend.name)
 
         def save_note(text):
             if friend.tox_id in s['notes']:
