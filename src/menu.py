@@ -508,13 +508,12 @@ class InterfaceSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("interfaceForm")
-        self.setMinimumSize(QtCore.QSize(400, 420))
-        self.setMaximumSize(QtCore.QSize(400, 420))
+        self.setMinimumSize(QtCore.QSize(400, 450))
+        self.setMaximumSize(QtCore.QSize(400, 450))
         self.label = QtGui.QLabel(self)
         self.label.setGeometry(QtCore.QRect(30, 10, 370, 20))
         font = QtGui.QFont()
-        font.setPointSize(16)
-        font.setWeight(75)
+        font.setPointSize(14)
         font.setBold(True)
         self.label.setFont(font)
         self.themeSelect = QtGui.QComboBox(self)
@@ -564,6 +563,10 @@ class InterfaceSettings(CenteredWidget):
         self.messages_font_size.addItems([str(x) for x in range(10, 19)])
         self.messages_font_size.setCurrentIndex(settings['message_font_size'] - 10)
 
+        self.unread = QtGui.QPushButton(self)
+        self.unread.setGeometry(QtCore.QRect(30, 380, 340, 40))
+        self.unread.clicked.connect(self.select_color)
+
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -575,6 +578,16 @@ class InterfaceSettings(CenteredWidget):
         self.smiley_pack_label.setText(QtGui.QApplication.translate("interfaceForm", "Smiley pack:", None, QtGui.QApplication.UnicodeUTF8))
         self.mirror_mode.setText(QtGui.QApplication.translate("interfaceForm", "Mirror mode", None, QtGui.QApplication.UnicodeUTF8))
         self.messages_font_size_label.setText(QtGui.QApplication.translate("interfaceForm", "Messages font size:", None, QtGui.QApplication.UnicodeUTF8))
+        self.unread.setText(QtGui.QApplication.translate("interfaceForm", "Select unread messages notification color", None, QtGui.QApplication.UnicodeUTF8))
+
+    def select_color(self):
+        col = QtGui.QColorDialog.getColor()
+
+        if col.isValid():
+            settings = Settings.get_instance()
+            name = col.name()
+            settings['unread_color'] = name
+            settings.save()
 
     def closeEvent(self, event):
         settings = Settings.get_instance()

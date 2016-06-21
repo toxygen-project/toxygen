@@ -27,7 +27,7 @@ class MessageEdit(QtGui.QTextBrowser):
         self.setSearchPaths([smileys.SmileyLoader.get_instance().get_smileys_path()])
         self.document().setDefaultStyleSheet('a { color: #306EFF; }')
         text = self.decoratedText(text)
-        if message_type == TOX_MESSAGE_TYPE['ACTION']:
+        if message_type != TOX_MESSAGE_TYPE['NORMAL']:
             self.setHtml('<p style="color: #5CB3FF; font: italic; font-size: 20px;" >' + text + '</p>')
         else:
             self.setHtml(text)
@@ -201,6 +201,9 @@ class StatusCircle(QtGui.QWidget):
             name = 'offline'
         if unread_messages:
             name += '_notification'
+            self.label.setGeometry(QtCore.QRect(0, 0, 32, 32))
+        else:
+            self.label.setGeometry(QtCore.QRect(2, 0, 32, 32))
         pixmap = QtGui.QPixmap(curr_directory() + '/images/{}.png'.format(name))
         self.label.setPixmap(pixmap)
 
@@ -219,9 +222,12 @@ class UnreadMessagesCount(QtGui.QWidget):
         font.setBold(True)
         self.label.setFont(font)
         self.label.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
-        self.label.setStyleSheet('QLabel { color: white; background-color: red; border-radius: 10; }')
+        color = settings.Settings.get_instance()['unread_color']
+        self.label.setStyleSheet('QLabel { color: white; background-color: ' + color + '; border-radius: 10; }')
 
     def update(self, messages_count):
+        color = settings.Settings.get_instance()['unread_color']
+        self.label.setStyleSheet('QLabel { color: white; background-color: ' + color + '; border-radius: 10; }')
         if messages_count:
             self.label.setVisible(True)
             self.label.setText(str(messages_count))
