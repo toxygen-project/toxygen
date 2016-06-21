@@ -177,7 +177,7 @@ class SendFromBuffer(FileTransfer):
             self._creation_time = time()
         if size:
             data = self._data[position:position + size]
-            self._tox.file_send_chunk(self._friend_number, self._file_number, position, bytes(data, 'utf-8'))
+            self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
             self._done += size
             self.signal()
         else:

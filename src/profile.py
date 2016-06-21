@@ -84,7 +84,7 @@ class Profile(contact.Contact, Singleton):
         if tmp != value:
             message = QtGui.QApplication.translate("MainWindow", 'User {} is now known as {}', None,
                                                    QtGui.QApplication.UnicodeUTF8)
-            message = message.format(tmp, value)
+            message = message.format(tmp, str(value, 'utf-8'))
             for friend in self._friends:
                 friend.append_message(InfoMessage(message, time.time()))
             if self._active_friend + 1:
@@ -246,6 +246,7 @@ class Profile(contact.Contact, Singleton):
         friend = self.get_friend_by_number(number)
         tmp = friend.name
         friend.set_name(name)
+        name = str(name, 'utf-8')
         if friend.name == name and tmp != name:
             message = QtGui.QApplication.translate("MainWindow", 'User {} is now known as {}', None, QtGui.QApplication.UnicodeUTF8)
             message = message.format(tmp, name)
@@ -977,6 +978,7 @@ class Profile(contact.Contact, Singleton):
                     self.get_friend_by_number(friend_number).load_avatar()
                     self.set_active(None)
                 elif type(transfer) is ReceiveToBuffer:  # inline image
+                    print('inline')
                     inline = InlineImage(transfer.get_data())
                     i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                       TOX_FILE_TRANSFER_STATE['FINISHED'],
@@ -1006,6 +1008,7 @@ class Profile(contact.Contact, Singleton):
                 if type(transfer) is not SendAvatar:
                     if type(transfer) is SendFromBuffer and Settings.get_instance()['allow_inline']:  # inline
                         inline = InlineImage(transfer.get_data())
+                        print('inline')
                         i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                           TOX_FILE_TRANSFER_STATE[
                                                                                               'FINISHED'],

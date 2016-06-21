@@ -55,7 +55,7 @@ class SmileyLoader(util.Singleton):
         return [x[1] for x in os.walk(d)][0]
 
     def get_smileys(self):
-        return self._list[:]
+        return list(self._list)[:]
 
     def add_smileys_to_text(self, text, edit):
         """

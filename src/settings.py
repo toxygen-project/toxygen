@@ -144,9 +144,11 @@ class Settings(dict, Singleton):
         text = json.dumps(self)
         inst = LibToxEncryptSave.get_instance()
         if inst.has_password():
-            text = inst.pass_encrypt(text)
+            text = bytes(inst.pass_encrypt(bytes(text, 'utf-8')))
+        else:
+            text = bytes(text, 'utf-8')
         with open(self.path, 'wb') as fl:
-            fl.write(bytes(text, 'UTF-8'))
+            fl.write(text)
 
     def close(self):
         path = Settings.get_default_path() + 'toxygen.json'

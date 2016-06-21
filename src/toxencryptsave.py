@@ -62,9 +62,9 @@ class LibToxEncryptSave(util.Singleton):
         """
         out = create_string_buffer(len(data) + TOX_PASS_ENCRYPTION_EXTRA_LENGTH)
         tox_err_encryption = c_int()
-        self.libtoxencryptsave.tox_pass_encrypt(c_char_p(bytes(data)),
+        self.libtoxencryptsave.tox_pass_encrypt(c_char_p(data),
                                                 c_size_t(len(data)),
-                                                c_char_p(bytes(self._passphrase)),
+                                                c_char_p(bytes(self._passphrase, 'utf-8')),
                                                 c_size_t(len(self._passphrase)),
                                                 out,
                                                 byref(tox_err_encryption))
@@ -89,7 +89,7 @@ class LibToxEncryptSave(util.Singleton):
         tox_err_decryption = c_int()
         self.libtoxencryptsave.tox_pass_decrypt(c_char_p(bytes(data)),
                                                 c_size_t(len(data)),
-                                                c_char_p(bytes(self._passphrase)),
+                                                c_char_p(bytes(self._passphrase, 'utf-8')),
                                                 c_size_t(len(self._passphrase)),
                                                 out,
                                                 byref(tox_err_decryption))

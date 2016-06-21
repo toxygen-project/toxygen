@@ -45,7 +45,7 @@ class History(object):
             path = settings.ProfileHelper.get_path() + self._name + '.hstr'
             with open(path, 'rb') as fin:
                 data = fin.read()
-            data = encr.pass_encrypt(data)
+            data = encr.pass_encrypt(bytes(data))
             with open(path, 'wb') as fout:
                 fout.write(data)
 

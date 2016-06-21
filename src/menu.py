@@ -715,7 +715,7 @@ class PluginsSettings(CenteredWidget):
     def update_list(self):
         self.comboBox.clear()
         data = self.pl_loader.get_plugins_list()
-        self.comboBox.addItems(map(lambda x: x[0], data))
+        self.comboBox.addItems(list(map(lambda x: x[0], data)))
         self.data = data
 
     def show_data(self):
