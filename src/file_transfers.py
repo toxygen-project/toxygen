@@ -230,7 +230,7 @@ class ReceiveTransfer(FileTransfer):
             data = bytearray(data)
             if self._file_size < position:
                 self._file.seek(0, 2)
-                self._file.write('\0' * (position - self._file_size))
+                self._file.write(b'\0' * (position - self._file_size))
             self._file.seek(position)
             self._file.write(data)
             l = len(data)
@@ -281,12 +281,14 @@ class ReceiveAvatar(ReceiveTransfer):
         super(ReceiveAvatar, self).__init__(path + '.tmp', tox, friend_number, size, file_number)
         if size > self.MAX_AVATAR_SIZE:
             self.send_control(TOX_FILE_CONTROL['CANCEL'])
+            self._file.close()
             remove(path + '.tmp')
         elif not size:
             self.send_control(TOX_FILE_CONTROL['CANCEL'])
             self._file.close()
             if exists(path):
                 remove(path)
+            self._file.close()
             remove(path + '.tmp')
         elif exists(path):
             hash = self.get_file_id()
@@ -295,6 +297,7 @@ class ReceiveAvatar(ReceiveTransfer):
             existing_hash = Tox.hash(data)
             if hash == existing_hash:
                 self.send_control(TOX_FILE_CONTROL['CANCEL'])
+                self._file.close()
                 remove(path + '.tmp')
             else:
                 self.send_control(TOX_FILE_CONTROL['RESUME'])
@@ -309,5 +312,3 @@ class ReceiveAvatar(ReceiveTransfer):
                 chdir(dirname(avatar_path))
                 remove(avatar_path)
             rename(self._path, avatar_path)
-
-

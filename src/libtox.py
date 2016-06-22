@@ -1,5 +1,6 @@
 from platform import system
 from ctypes import CDLL
+import util
 
 
 class LibToxCore:
@@ -9,7 +10,7 @@ class LibToxCore:
             # libtoxcore and libsodium must be installed in your os
             self._libtoxcore = CDLL('libtoxcore.so')
         elif system() == 'Windows':
-            self._libtoxcore = CDLL('libs/libtox.dll')
+            self._libtoxcore = CDLL(util.curr_directory() + '/libs/libtox.dll')
         else:
             raise OSError('Unknown system.')
 
@@ -25,7 +26,7 @@ class LibToxAV:
             self._libtoxav = CDLL('libtoxav.so')
         elif system() == 'Windows':
             # on Windows av api is in libtox.dll
-            self._libtoxav = CDLL('libs/libtox.dll')
+            self._libtoxav = CDLL(util.curr_directory() + '/libs/libtox.dll')
         else:
             raise OSError('Unknown system.')
 
@@ -41,7 +42,7 @@ class LibToxEncryptSave:
             self._lib_tox_encrypt_save = CDLL('libtoxencryptsave.so')
         elif system() == 'Windows':
             # on Windows profile encryption api is in libtox.dll
-            self._lib_tox_encrypt_save = CDLL('libs/libtox.dll')
+            self._lib_tox_encrypt_save = CDLL(util.curr_directory() + '/libs/libtox.dll')
         else:
             raise OSError('Unknown system.')
 
