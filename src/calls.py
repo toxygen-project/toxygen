@@ -13,7 +13,7 @@ CALL_TYPE = {
 }
 
 
-class AV(object):
+class AV:
 
     def __init__(self, toxav):
         self._toxav = toxav

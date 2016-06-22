@@ -31,7 +31,7 @@ def bin_to_string(raw_id, length):
     return res.upper()
 
 
-class Tox(object):
+class Tox:
 
     libtoxcore = LibToxCore()
     

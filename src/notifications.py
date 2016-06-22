@@ -35,7 +35,7 @@ def tray_notification(title, text, tray, window):
         tray.connect(tray, QtCore.SIGNAL("messageClicked()"), message_clicked)
 
 
-class AudioFile(object):
+class AudioFile:
     chunk = 1024
 
     def __init__(self, fl):

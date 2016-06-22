@@ -7,7 +7,7 @@ except ImportError:
 from toxcore_enums_and_consts import TOX_PUBLIC_KEY_SIZE
 
 
-class Contact(object):
+class Contact:
     """
     Class encapsulating TOX contact
     Properties: name (alias of contact or name), status_message, status (connection status)

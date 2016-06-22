@@ -1,7 +1,7 @@
 import random
 
 
-class Node(object):
+class Node:
     def __init__(self, ip, port, tox_key, rand):
         self._ip, self._port, self._tox_key, self.rand = ip, port, tox_key, rand
 

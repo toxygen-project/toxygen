@@ -4,7 +4,7 @@ from libtox import LibToxAV
 from toxav_enums import *
 
 
-class ToxAV(object):
+class ToxAV:
     """
     The ToxAV instance type. Each ToxAV instance can be bound to only one Tox instance, and Tox instance can have only
     one ToxAV instance. One must make sure to close ToxAV instance prior closing Tox instance otherwise undefined

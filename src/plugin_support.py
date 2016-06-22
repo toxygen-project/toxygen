@@ -1,16 +1,17 @@
 import util
 import profile
 import os
-import imp
+import importlib
 import inspect
 import plugins.plugin_super_class as pl
 import toxencryptsave
+import sys
 
 
 class PluginLoader(util.Singleton):
 
     def __init__(self, tox, settings):
-        PluginLoader._instance = self
+        super().__init__()
         self._profile = profile.Profile.get_instance()
         self._settings = settings
         self._plugins = {}  # dict. key - plugin unique short name, value - tuple (plugin instance, is active)
@@ -33,13 +34,15 @@ class PluginLoader(util.Singleton):
         if not os.path.exists(path):
             util.log('Plugin dir not found')
             return
+        else:
+            sys.path.append(path)
         files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f))]
         for fl in files:
             if fl in ('plugin_super_class.py', '__init__.py') or not fl.endswith('.py'):
                 continue
             name = fl[:-3]  # module name without .py
             try:
-                module = imp.load_source('plugins.' + name, path + fl)  # import plugin
+                module = importlib.import_module(name)  # import plugin
             except ImportError:
                 util.log('Import error in module ' + name)
                 continue
@@ -48,7 +51,7 @@ class PluginLoader(util.Singleton):
                 continue
             for elem in dir(module):
                 obj = getattr(module, elem)
-                if inspect.isclass(obj) and issubclass(obj, pl.PluginSuperClass):  # looking for plugin class in module
+                if inspect.isclass(obj) and hasattr(obj, 'is_plugin') and obj.is_plugin:  # looking for plugin class in module
                     print('Plugin', elem)
                     try:  # create instance of plugin class
                         inst = obj(self._tox, self._profile, self._settings, self._encr)
@@ -148,6 +151,6 @@ class PluginLoader(util.Singleton):
         """
         App is closing, stop all plugins
         """
-        for key in self._plugins.keys():
+        for key in list(self._plugins.keys()):
             self._plugins[key][0].close()
             del self._plugins[key]

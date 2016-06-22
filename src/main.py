@@ -18,7 +18,7 @@ import profile
 from plugin_support import PluginLoader
 
 
-class Toxygen(object):
+class Toxygen:
 
     def __init__(self, path_or_uri=None):
         super(Toxygen, self).__init__()
@@ -322,7 +322,7 @@ class Toxygen(object):
                 self.toxav.iterate()
                 self.msleep(self.toxav.iteration_interval())
 
-    class Login(object):
+    class Login:
 
         def __init__(self, arr):
             self.arr = arr

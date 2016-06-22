@@ -39,7 +39,7 @@ class LibToxEncryptSave(util.Singleton):
     libtoxencryptsave = libtox.LibToxEncryptSave()
 
     def __init__(self):
-        LibToxEncryptSave._instance = self
+        super().__init__()
         self._passphrase = None
 
     def set_password(self, passphrase):

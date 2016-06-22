@@ -14,7 +14,7 @@ class SmileyLoader(util.Singleton):
     """
 
     def __init__(self, settings):
-        SmileyLoader._instance = self
+        super().__init__()
         self._settings = settings
         self._curr_pack = None  # current pack name
         self._smileys = {}  # smileys dict. key - smiley (str), value - path to image (str)

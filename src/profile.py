@@ -26,11 +26,12 @@ class Profile(contact.Contact, Singleton):
         :param tox: tox instance
         :param screen: ref to main screen
         """
-        super(Profile, self).__init__(tox.self_get_name(),
-                                      tox.self_get_status_message(),
-                                      screen.user_info,
-                                      tox.self_get_address())
-        Profile._instance = self
+        contact.Contact.__init__(self,
+                                 tox.self_get_name(),
+                                 tox.self_get_status_message(),
+                                 screen.user_info,
+                                 tox.self_get_address())
+        Singleton.__init__(self)
         self._screen = screen
         self._messages = screen.messages
         self._tox = tox

@@ -2,7 +2,7 @@ from platform import system
 from ctypes import CDLL
 
 
-class LibToxCore(object):
+class LibToxCore:
 
     def __init__(self):
         if system() == 'Linux':
@@ -17,7 +17,7 @@ class LibToxCore(object):
         return self._libtoxcore.__getattr__(item)
 
 
-class LibToxAV(object):
+class LibToxAV:
 
     def __init__(self):
         if system() == 'Linux':
@@ -33,7 +33,7 @@ class LibToxAV(object):
         return self._libtoxav.__getattr__(item)
 
 
-class LibToxEncryptSave(object):
+class LibToxEncryptSave:
 
     def __init__(self):
         if system() == 'Linux':

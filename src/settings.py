@@ -14,7 +14,7 @@ class Settings(dict, Singleton):
     """
 
     def __init__(self, name):
-        Settings._instance = self
+        Singleton.__init__(self)
         self.path = ProfileHelper.get_path() + str(name) + '.json'
         self.name = name
         if os.path.isfile(self.path):
@@ -201,7 +201,7 @@ class ProfileHelper(Singleton):
     Class with methods for search, load and save profiles
     """
     def __init__(self, path, name):
-        ProfileHelper._instance = self
+        Singleton.__init__(self)
         self._path = path + name + '.tox'
         self._directory = path
         # create /avatars if not exists:

@@ -29,6 +29,9 @@ def convert_time(t):
 class Singleton:
     _instance = None
 
+    def __init__(self):
+        self.__class__._instance = self
+
     @classmethod
     def get_instance(cls):
         return cls._instance
