@@ -430,7 +430,7 @@ class InlineImageItem(QtGui.QScrollArea):
         self.setWidget(self._image_label)
         self._image_label.setScaledContents(False)
         self._pixmap = QtGui.QPixmap()
-        self._pixmap.loadFromData(QtCore.QByteArray(str(data)), "PNG")
+        self._pixmap.loadFromData(data, 'PNG')
         self._max_size = width - 30
         self._resize_needed = not (self._pixmap.width() <= self._max_size)
         self._full_size = not self._resize_needed

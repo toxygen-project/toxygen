@@ -1202,7 +1202,7 @@ class Tox(object):
         result = self.libtoxcore.tox_file_send(self._tox_pointer, c_uint32(friend_number), c_uint32(kind),
                                                c_uint64(file_size),
                                                string_to_bin(file_id),
-                                               c_char_p(bytes(filename, 'utf-8')),
+                                               c_char_p(filename),
                                                c_size_t(len(filename)), byref(tox_err_file_send))
         tox_err_file_send = tox_err_file_send.value
         if tox_err_file_send == TOX_ERR_FILE_SEND['OK']:

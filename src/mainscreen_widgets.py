@@ -109,7 +109,7 @@ class ScreenShotWindow(QtGui.QWidget):
                 buffer = QtCore.QBuffer(byte_array)
                 buffer.open(QtCore.QIODevice.WriteOnly)
                 p.save(buffer, 'PNG')
-                Profile.get_instance().send_screenshot(str(byte_array.data()))
+                Profile.get_instance().send_screenshot(bytes(byte_array.data()))
             self.close()
 
     def keyPressEvent(self, event):

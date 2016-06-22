@@ -121,7 +121,7 @@ class SendTransfer(FileTransfer):
         super(SendTransfer, self).__init__(path, tox, friend_number, size)
         self.state = TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
         self._file_number = tox.file_send(friend_number, kind, size, file_id,
-                                          basename(path) if path else '')
+                                          bytes(basename(path), 'utf-8') if path else '')
 
     def send_chunk(self, position, size):
         """
@@ -167,7 +167,8 @@ class SendFromBuffer(FileTransfer):
         super(SendFromBuffer, self).__init__(None, tox, friend_number, len(data))
         self.state = TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
         self._data = data
-        self._file_number = tox.file_send(friend_number, TOX_FILE_KIND['DATA'], len(data), None, file_name)
+        self._file_number = tox.file_send(friend_number, TOX_FILE_KIND['DATA'],
+                                          len(data), None, bytes(file_name, 'utf-8'))
 
     def get_data(self):
         return self._data
@@ -246,7 +247,7 @@ class ReceiveToBuffer(FileTransfer):
 
     def __init__(self, tox, friend_number, size, file_number):
         super(ReceiveToBuffer, self).__init__(None, tox, friend_number, size, file_number)
-        self._data = ''
+        self._data = bytes()
         self._data_size = 0
 
     def get_data(self):
@@ -257,17 +258,16 @@ class ReceiveToBuffer(FileTransfer):
             self._creation_time = time()
         if data is None:
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self.signal()
         else:
-            data = ''.join(chr(x) for x in data)
+            data = bytes(data)
             l = len(data)
             if self._data_size < position:
-                self._data += ('\0' * (position - self._data_size))
+                self._data += (b'\0' * (position - self._data_size))
             self._data = self._data[:position] + data + self._data[position + l:]
             if position + l > self._data_size:
                 self._data_size = position + l
             self._done += l
-            self.signal()
+        self.signal()
 
 
 class ReceiveAvatar(ReceiveTransfer):
