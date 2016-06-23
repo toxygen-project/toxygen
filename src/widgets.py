@@ -8,12 +8,11 @@ class DataLabel(QtGui.QLabel):
     """
     Label with elided text
     """
-
-    def paintEvent(self, event):
-        painter = QtGui.QPainter(self)
+    def setText(self, text):
+        text = ''.join(c if c <= '\u10FFFF' else '\u25AF' for c in text)
         metrics = QtGui.QFontMetrics(self.font())
-        text = metrics.elidedText(self.text(), QtCore.Qt.ElideRight, self.width())
-        painter.drawText(self.rect(), self.alignment(), text)
+        text = metrics.elidedText(text, QtCore.Qt.ElideRight, self.width())
+        super().setText(text)
 
 
 class CenteredWidget(QtGui.QWidget):

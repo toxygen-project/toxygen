@@ -79,18 +79,18 @@ class Profile(contact.Contact, Singleton):
             self._tox.self_set_status(status)
 
     def set_name(self, value):
-        tmp = self.name
+        if self.name == value:
+            return
         super(Profile, self).set_name(value)
         self._tox.self_set_name(self._name.encode('utf-8'))
-        if tmp != value:
-            message = QtGui.QApplication.translate("MainWindow", 'User {} is now known as {}', None,
-                                                   QtGui.QApplication.UnicodeUTF8)
-            message = message.format(tmp, str(value, 'utf-8'))
-            for friend in self._friends:
-                friend.append_message(InfoMessage(message, time.time()))
-            if self._active_friend + 1:
-                self.create_message_item(message, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
-                self._messages.scrollToBottom()
+        message = QtGui.QApplication.translate("MainWindow", 'User {} is now known as {}', None,
+                                               QtGui.QApplication.UnicodeUTF8)
+        message = message.format(tmp, str(value, 'utf-8'))
+        for friend in self._friends:
+            friend.append_message(InfoMessage(message, time.time()))
+        if self._active_friend + 1:
+            self.create_message_item(message, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+            self._messages.scrollToBottom()
 
     def set_status_message(self, value):
         super(Profile, self).set_status_message(value)
