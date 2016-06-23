@@ -913,7 +913,6 @@ class Profile(contact.Contact, Singleton):
         self.send_inline(data, 'sticker.png')
 
     def send_inline(self, data, file_name, friend_number=None, is_resend=False):
-        print('Send inline:' + str(type(data)))
         friend_number = friend_number or self.get_active_number()
         friend = self.get_friend_by_number(friend_number)
         if friend.status is None and not is_resend:

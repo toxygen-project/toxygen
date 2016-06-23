@@ -133,10 +133,10 @@ class SmileyWindow(QtGui.QWidget):
         count = len(self.data)
         self.page_size = int(pow(count / 8, 0.5) + 1) * 8  # smileys per page
         if count % self.page_size == 0:
-            self.page_count = count / self.page_size
+            self.page_count = count // self.page_size
         else:
             self.page_count = int(count / float(self.page_size) + 0.5)
-        self.page = 0
+        self.page = -1
         self.radio = []
         self.parent = parent
         for i in range(self.page_count):  # buttons with smileys
