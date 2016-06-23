@@ -121,7 +121,7 @@ class SendTransfer(FileTransfer):
         super(SendTransfer, self).__init__(path, tox, friend_number, size)
         self.state = TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
         self._file_number = tox.file_send(friend_number, kind, size, file_id,
-                                          bytes(basename(path), 'utf-8') if path else '')
+                                          bytes(basename(path), 'utf-8') if path else b'')
 
     def send_chunk(self, position, size):
         """

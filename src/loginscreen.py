@@ -83,7 +83,7 @@ class LoginScreen(CenteredWidget):
 
     def create_profile(self):
         self.type = 1
-        self.name = self.new_name.toPlainText()
+        self.name = self.new_name.text()
         self.close()
 
     def load_ex_profile(self):

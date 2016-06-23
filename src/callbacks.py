@@ -140,7 +140,7 @@ def friend_request(tox, public_key, message, message_size, user_data):
     key = ''.join(chr(x) for x in public_key[:TOX_PUBLIC_KEY_SIZE])
     tox_id = bin_to_string(key, TOX_PUBLIC_KEY_SIZE)
     if tox_id not in Settings.get_instance()['blocked']:
-        invoke_in_main_thread(profile.process_friend_request, tox_id, message)
+        invoke_in_main_thread(profile.process_friend_request, tox_id, str(message, 'utf-8'))
 
 
 def friend_typing(tox, friend_number, typing, user_data):
