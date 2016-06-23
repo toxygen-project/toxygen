@@ -50,7 +50,7 @@ class Profile(contact.Contact, Singleton):
             if not self._history.friend_exists_in_db(tox_id):
                 self._history.add_friend_to_db(tox_id)
             try:
-                alias = filter(lambda x: x[0] == tox_id, aliases)[0][1]
+                alias = list(filter(lambda x: x[0] == tox_id, aliases))[0][1]
             except:
                 alias = ''
             item = self.create_friend_item()
@@ -225,7 +225,7 @@ class Profile(contact.Contact, Singleton):
             self._screen.account_avatar.setPixmap(pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio))
             self._screen.account_avatar.repaint()  # comment?
         except Exception as ex:  # no friend found. ignore
-            log('Incorrect friend value: ' + str(value))
+            log('Friend value: ' + str(value))
             log('Error: ' + str(ex))
             raise
 
@@ -331,6 +331,7 @@ class Profile(contact.Contact, Singleton):
         try:
             for message in messages:
                 self.split_and_send(friend_number, message.get_data()[-1], message.get_data()[0].encode('utf-8'))
+                friend.inc_receipts()
         except:
             pass
 
@@ -561,7 +562,7 @@ class Profile(contact.Contact, Singleton):
         Set new alias for friend
         """
         friend = self._friends[num]
-        name = friend.name.encode('utf-8')
+        name = friend.name
         dialog = QtGui.QApplication.translate('MainWindow',
                                               "Enter new alias for friend {} or leave empty to use friend's name:",
                                               None, QtGui.QApplication.UnicodeUTF8)
@@ -578,23 +579,24 @@ class Profile(contact.Contact, Singleton):
             settings = Settings.get_instance()
             aliases = settings['friends_aliases']
             if text:
-                friend.name = text.encode('utf-8')
+                friend.name = bytes(text, 'utf-8')
                 try:
-                    index = map(lambda x: x[0], aliases).index(friend.tox_id)
+                    index = list(map(lambda x: x[0], aliases)).index(friend.tox_id)
                     aliases[index] = (friend.tox_id, text)
                 except:
                     aliases.append((friend.tox_id, text))
                 friend.set_alias(text)
             else:  # use default name
-                friend.name = self._tox.friend_get_name(friend.number).encode('utf-8')
+                friend.name = bytes(self._tox.friend_get_name(friend.number), 'utf-8')
                 friend.set_alias('')
                 try:
-                    index = map(lambda x: x[0], aliases).index(friend.tox_id)
+                    index = list(map(lambda x: x[0], aliases)).index(friend.tox_id)
                     del aliases[index]
                 except:
                     pass
             settings.save()
-            self.set_active()
+        if num == self.get_active_number():
+            self.update()
 
     def friend_public_key(self, num):
         return self._friends[num].tox_id
@@ -607,7 +609,7 @@ class Profile(contact.Contact, Singleton):
         friend = self._friends[num]
         settings = Settings.get_instance()
         try:
-            index = map(lambda x: x[0], settings['friends_aliases']).index(friend.tox_id)
+            index = list(map(lambda x: x[0], settings['friends_aliases'])).index(friend.tox_id)
             del settings['friends_aliases'][index]
         except:
             pass

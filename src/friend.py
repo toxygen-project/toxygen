@@ -75,7 +75,7 @@ class Friend(contact.Contact):
         return list(map(lambda x: x.get_data(), list(messages[-self._unsaved_messages:]))) if self._unsaved_messages else []
 
     def get_corr(self):
-        return list(self._corr[:])
+        return self._corr[:]
 
     def append_message(self, message):
         """
