@@ -15,23 +15,13 @@ class Friend(contact.Contact):
         :param message_getter: gets messages from db
         :param number: number of friend.
         """
-        super(Friend, self).__init__(*args)
+        super(Friend, self).__init__(message_getter, *args)
         self._number = number
-        self._new_messages = False
-        self._visible = True
         self._alias = False
-        self._message_getter = message_getter
-        self._corr = []
-        self._unsaved_messages = 0
-        self._history_loaded = self._new_actions = False
         self._receipts = 0
-        self._curr_text = ''
 
     def __del__(self):
-        self.set_visibility(False)
-        del self._widget
-        if hasattr(self, '_message_getter'):
-            del self._message_getter
+        super().__del__()
 
     # -----------------------------------------------------------------------------------------------------------------
     # History support
@@ -187,48 +177,6 @@ class Friend(contact.Contact):
 
     def set_alias(self, alias):
         self._alias = bool(alias)
-
-    # -----------------------------------------------------------------------------------------------------------------
-    # Visibility in friends' list
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def get_visibility(self):
-        return self._visible
-
-    def set_visibility(self, value):
-        self._visible = value
-
-    visibility = property(get_visibility, set_visibility)
-
-    # -----------------------------------------------------------------------------------------------------------------
-    # Unread messages from friend
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def get_actions(self):
-        return self._new_actions
-
-    def set_actions(self, value):
-        self._new_actions = value
-        self._widget.connection_status.update(self.status, value)
-
-    actions = property(get_actions, set_actions)  # unread messages, incoming files, av calls
-
-    def get_messages(self):
-        return self._new_messages
-
-    def inc_messages(self):
-        self._new_messages += 1
-        self._new_actions = True
-        self._widget.connection_status.update(self.status, True)
-        self._widget.messages.update(self._new_messages)
-
-    def reset_messages(self):
-        self._new_actions = False
-        self._new_messages = 0
-        self._widget.messages.update(self._new_messages)
-        self._widget.connection_status.update(self.status, False)
-
-    messages = property(get_messages)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Friend's number (can be used in toxcore)

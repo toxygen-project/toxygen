@@ -15,9 +15,10 @@ import time
 import calls
 import avwidgets
 import plugin_support
+import basecontact
 
 
-class Profile(contact.Contact, Singleton):
+class Profile(basecontact.BaseContact, Singleton):
     """
     Profile of current toxygen user. Contains friends list, tox instance
     """
