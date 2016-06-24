@@ -74,18 +74,19 @@ class Profile(contact.Contact, Singleton):
             self.set_status((self._status + 1) % 3)
 
     def set_status(self, status):
-        super(Profile, self).set_status(status)
-        if status is not None:
+        if self._status is not None:
+            super(Profile, self).set_status(status)
             self._tox.self_set_status(status)
 
     def set_name(self, value):
         if self.name == value:
             return
-        super(Profile, self).set_name(value)
+        tmp = self.name
+        super(Profile, self).set_name(value.encode('utf-8'))
         self._tox.self_set_name(self._name.encode('utf-8'))
         message = QtGui.QApplication.translate("MainWindow", 'User {} is now known as {}', None,
                                                QtGui.QApplication.UnicodeUTF8)
-        message = message.format(tmp, str(value, 'utf-8'))
+        message = message.format(tmp, value)
         for friend in self._friends:
             friend.append_message(InfoMessage(message, time.time()))
         if self._active_friend + 1:
