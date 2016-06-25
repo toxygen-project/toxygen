@@ -74,8 +74,8 @@ class Profile(contact.Contact, Singleton):
             self.set_status((self._status + 1) % 3)
 
     def set_status(self, status):
-        if self._status is not None:
-            super(Profile, self).set_status(status)
+        super(Profile, self).set_status(status)
+        if status is not None:
             self._tox.self_set_status(status)
 
     def set_name(self, value):
