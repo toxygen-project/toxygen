@@ -7,7 +7,7 @@ except ImportError:
 from toxcore_enums_and_consts import TOX_PUBLIC_KEY_SIZE
 
 
-class Contact(object):
+class Contact:
     """
     Class encapsulating TOX contact
     Properties: name (alias of contact or name), status_message, status (connection status)
@@ -36,7 +36,7 @@ class Contact(object):
         return self._name
 
     def set_name(self, value):
-        self._name = value.decode('utf-8')
+        self._name = str(value, 'utf-8')
         self._widget.name.setText(self._name)
         self._widget.name.repaint()
 
@@ -50,7 +50,7 @@ class Contact(object):
         return self._status_message
 
     def set_status_message(self, value):
-        self._status_message = value.decode('utf-8')
+        self._status_message = str(value, 'utf-8')
         self._widget.status_message.setText(self._status_message)
         self._widget.status_message.repaint()
 

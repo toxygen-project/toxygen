@@ -8,13 +8,14 @@ from toxencryptsave import LibToxEncryptSave
 import smileys
 
 
-class Settings(Singleton, dict):
+class Settings(dict, Singleton):
     """
     Settings of current profile + global app settings
     """
 
     def __init__(self, name):
-        self.path = ProfileHelper.get_path() + unicode(name) + '.json'
+        Singleton.__init__(self)
+        self.path = ProfileHelper.get_path() + str(name) + '.json'
         self.name = name
         if os.path.isfile(self.path):
             with open(self.path, 'rb') as fl:
@@ -23,7 +24,7 @@ class Settings(Singleton, dict):
             try:
                 if inst.is_data_encrypted(data):
                     data = inst.pass_decrypt(data)
-                info = json.loads(data)
+                info = json.loads(str(data, 'utf-8'))
             except Exception as ex:
                 info = Settings.get_default_settings()
                 log('Parsing settings error: ' + str(ex))
@@ -45,7 +46,7 @@ class Settings(Singleton, dict):
                 data = fl.read()
             auto = json.loads(data)
             if 'path' in auto and 'name' in auto:
-                return unicode(auto['path']), unicode(auto['name'])
+                return str(auto['path']), str(auto['name'])
         return '', ''
 
     @staticmethod
@@ -54,8 +55,8 @@ class Settings(Singleton, dict):
         with open(p) as fl:
             data = fl.read()
         data = json.loads(data)
-        data['path'] = unicode(path.decode(locale.getpreferredencoding()))
-        data['name'] = unicode(name)
+        data['path'] = str(path)
+        data['name'] = str(name)
         with open(p, 'w') as fl:
             fl.write(json.dumps(data))
 
@@ -73,7 +74,7 @@ class Settings(Singleton, dict):
 
     @staticmethod
     def is_active_profile(path, name):
-        path = path.decode(locale.getpreferredencoding()) + name + '.tox'
+        path = path + name + '.tox'
         settings = Settings.get_default_path() + 'toxygen.json'
         if os.path.isfile(settings):
             with open(settings) as fl:
@@ -136,7 +137,7 @@ class Settings(Singleton, dict):
         default = Settings.get_default_settings()
         for key in default:
             if key not in self:
-                print key
+                print(key)
                 self[key] = default[key]
         self.save()
 
@@ -144,7 +145,9 @@ class Settings(Singleton, dict):
         text = json.dumps(self)
         inst = LibToxEncryptSave.get_instance()
         if inst.has_password():
-            text = inst.pass_encrypt(text)
+            text = bytes(inst.pass_encrypt(bytes(text, 'utf-8')))
+        else:
+            text = bytes(text, 'utf-8')
         with open(self.path, 'wb') as fl:
             fl.write(text)
 
@@ -155,7 +158,7 @@ class Settings(Singleton, dict):
                 data = fl.read()
             app_settings = json.loads(data)
             try:
-                app_settings['active_profile'].remove(unicode(ProfileHelper.get_path() + self.name + '.tox'))
+                app_settings['active_profile'].remove(str(ProfileHelper.get_path() + self.name + '.tox'))
             except:
                 pass
             data = json.dumps(app_settings)
@@ -176,7 +179,7 @@ class Settings(Singleton, dict):
         if 'active_profile' not in app_settings:
             app_settings['active_profile'] = []
         profile_path = ProfileHelper.get_path()
-        app_settings['active_profile'].append(unicode(profile_path + str(self.name) + '.tox'))
+        app_settings['active_profile'].append(str(profile_path + str(self.name) + '.tox'))
         data = json.dumps(app_settings)
         with open(path, 'w') as fl:
             fl.write(data)
@@ -199,7 +202,7 @@ class ProfileHelper(Singleton):
     Class with methods for search, load and save profiles
     """
     def __init__(self, path, name):
-        path = path.decode(locale.getpreferredencoding())
+        Singleton.__init__(self)
         self._path = path + name + '.tox'
         self._directory = path
         # create /avatars if not exists:
@@ -224,7 +227,7 @@ class ProfileHelper(Singleton):
             data = inst.pass_encrypt(data)
         with open(self._path, 'wb') as fl:
             fl.write(data)
-        print 'Profile saved successfully'
+        print('Profile saved successfully')
 
     def export_profile(self, new_path):
         new_path += os.path.basename(self._path)
@@ -232,7 +235,7 @@ class ProfileHelper(Singleton):
             data = fin.read()
         with open(new_path, 'wb') as fout:
             fout.write(data)
-        print 'Profile exported successfully'
+        print('Profile exported successfully')
 
     @staticmethod
     def find_profiles():

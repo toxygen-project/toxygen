@@ -11,14 +11,13 @@ from profile import tox_factory
 from callbacks import init_callbacks
 from util import curr_directory
 import styles.style
-import locale
 import toxencryptsave
 from passwordscreen import PasswordScreen
 import profile
 from plugin_support import PluginLoader
 
 
-class Toxygen(object):
+class Toxygen:
 
     def __init__(self, path_or_uri=None):
         super(Toxygen, self).__init__()
@@ -62,8 +61,8 @@ class Toxygen(object):
         encrypt_save = toxencryptsave.LibToxEncryptSave()
 
         if self.path is not None:
-            path = os.path.dirname(self.path.encode(locale.getpreferredencoding())) + '/'
-            name = os.path.basename(self.path.encode(locale.getpreferredencoding()))[:-4]
+            path = os.path.dirname(self.path) + '/'
+            name = os.path.basename(self.path)[:-4]
             data = ProfileHelper(path, name).open_profile()
             if encrypt_save.is_data_encrypted(data):
                 data = self.enter_pass(data)
@@ -94,10 +93,11 @@ class Toxygen(object):
                 if not _login.t:
                     return
                 elif _login.t == 1:  # create new profile
+                    _login.name = _login.name.strip()
                     name = _login.name if _login.name else 'toxygen_user'
                     self.tox = tox_factory()
-                    self.tox.self_set_name(_login.name if _login.name else 'Toxygen User')
-                    self.tox.self_set_status_message('Toxing on Toxygen')
+                    self.tox.self_set_name(bytes(_login.name, 'utf-8') if _login.name else b'Toxygen User')
+                    self.tox.self_set_status_message(b'Toxing on Toxygen')
                     ProfileHelper(Settings.get_default_path(), name).save_profile(self.tox.get_savedata())
                     path = Settings.get_default_path()
                     settings = Settings(name)
@@ -112,7 +112,6 @@ class Toxygen(object):
                     self.tox = tox_factory(data, settings)
             else:
                 path, name = auto_profile
-                path = path.encode(locale.getpreferredencoding())
                 data = ProfileHelper(path, name).open_profile()
                 if encrypt_save.is_data_encrypted(data):
                     data = self.enter_pass(data)
@@ -283,7 +282,7 @@ class Toxygen(object):
                     self.tox.bootstrap(*data)
             except:
                 pass
-            for _ in xrange(10):
+            for _ in range(10):
                 if self.stop:
                     return
                 self.msleep(1000)
@@ -322,7 +321,7 @@ class Toxygen(object):
                 self.toxav.iterate()
                 self.msleep(self.toxav.iteration_interval())
 
-    class Login(object):
+    class Login:
 
         def __init__(self, arr):
             self.arr = arr

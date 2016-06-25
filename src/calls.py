@@ -13,7 +13,7 @@ CALL_TYPE = {
 }
 
 
-class AV(object):
+class AV:
 
     def __init__(self, toxav):
         self._toxav = toxav
@@ -30,7 +30,7 @@ class AV(object):
         self._audio_rate = 8000
         self._audio_channels = 1
         self._audio_duration = 60
-        self._audio_sample_count = self._audio_rate * self._audio_channels * self._audio_duration / 1000
+        self._audio_sample_count = self._audio_rate * self._audio_channels * self._audio_duration // 1000
 
     def __contains__(self, friend_number):
         return friend_number in self._calls

@@ -26,10 +26,12 @@ class Profile(contact.Contact, Singleton):
         :param tox: tox instance
         :param screen: ref to main screen
         """
-        super(Profile, self).__init__(tox.self_get_name(),
-                                      tox.self_get_status_message(),
-                                      screen.user_info,
-                                      tox.self_get_address())
+        contact.Contact.__init__(self,
+                                 tox.self_get_name(),
+                                 tox.self_get_status_message(),
+                                 screen.user_info,
+                                 tox.self_get_address())
+        Singleton.__init__(self)
         self._screen = screen
         self._messages = screen.messages
         self._tox = tox
@@ -48,7 +50,7 @@ class Profile(contact.Contact, Singleton):
             if not self._history.friend_exists_in_db(tox_id):
                 self._history.add_friend_to_db(tox_id)
             try:
-                alias = filter(lambda x: x[0] == tox_id, aliases)[0][1]
+                alias = list(filter(lambda x: x[0] == tox_id, aliases))[0][1]
             except:
                 alias = ''
             item = self.create_friend_item()
@@ -77,18 +79,19 @@ class Profile(contact.Contact, Singleton):
             self._tox.self_set_status(status)
 
     def set_name(self, value):
+        if self.name == value:
+            return
         tmp = self.name
-        super(Profile, self).set_name(value)
+        super(Profile, self).set_name(value.encode('utf-8'))
         self._tox.self_set_name(self._name.encode('utf-8'))
-        if tmp != value:
-            message = QtGui.QApplication.translate("MainWindow", 'User {} is now known as {}', None,
-                                                   QtGui.QApplication.UnicodeUTF8)
-            message = message.format(tmp, value)
-            for friend in self._friends:
-                friend.append_message(InfoMessage(message, time.time()))
-            if self._active_friend + 1:
-                self.create_message_item(message, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
-                self._messages.scrollToBottom()
+        message = QtGui.QApplication.translate("MainWindow", 'User {} is now known as {}', None,
+                                               QtGui.QApplication.UnicodeUTF8)
+        message = message.format(tmp, value)
+        for friend in self._friends:
+            friend.append_message(InfoMessage(message, time.time()))
+        if self._active_friend + 1:
+            self.create_message_item(message, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+            self._messages.scrollToBottom()
 
     def set_status_message(self, value):
         super(Profile, self).set_status_message(value)
@@ -131,7 +134,7 @@ class Profile(contact.Contact, Singleton):
         self.filtration(self._show_online, self._filter_string)
 
     def get_friend_by_number(self, num):
-        return filter(lambda x: x.number == num, self._friends)[0]
+        return list(filter(lambda x: x.number == num, self._friends))[0]
 
     def get_friend(self, num):
         return self._friends[num]
@@ -192,7 +195,7 @@ class Profile(contact.Contact, Singleton):
                                 ft.set_state_changed_handler(item.update)
                                 ft.signal()
                             except:
-                                print 'Incoming not started transfer - no info found'
+                                print('Incoming not started transfer - no info found')
                     elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline
                         self.create_inline_item(message.get_data())
                     else:  # info message
@@ -222,8 +225,9 @@ class Profile(contact.Contact, Singleton):
             self._screen.account_avatar.setScaledContents(False)
             self._screen.account_avatar.setPixmap(pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio))
             self._screen.account_avatar.repaint()  # comment?
-        except:  # no friend found. ignore
-            log('Incorrect friend value: ' + str(value))
+        except Exception as ex:  # no friend found. ignore
+            log('Friend value: ' + str(value))
+            log('Error: ' + str(ex))
             raise
 
     active_friend = property(get_active, set_active)
@@ -244,7 +248,7 @@ class Profile(contact.Contact, Singleton):
         friend = self.get_friend_by_number(number)
         tmp = friend.name
         friend.set_name(name)
-        name = name.decode('utf-8')
+        name = str(name, 'utf-8')
         if friend.name == name and tmp != name:
             message = QtGui.QApplication.translate("MainWindow", 'User {} is now known as {}', None, QtGui.QApplication.UnicodeUTF8)
             message = message.format(tmp, name)
@@ -277,7 +281,7 @@ class Profile(contact.Contact, Singleton):
             if friend_number == self.get_active_number():
                 self.update()
         except Exception as ex:
-            print 'Exception in file sending: ' + str(ex)
+            print('Exception in file sending: ' + str(ex))
 
     def friend_exit(self, friend_number):
         """
@@ -328,6 +332,7 @@ class Profile(contact.Contact, Singleton):
         try:
             for message in messages:
                 self.split_and_send(friend_number, message.get_data()[-1], message.get_data()[0].encode('utf-8'))
+                friend.inc_receipts()
         except:
             pass
 
@@ -362,15 +367,15 @@ class Profile(contact.Contact, Singleton):
         :param message: text of message
         """
         if friend_num == self.get_active_number():  # add message to list
-            self.create_message_item(message.decode('utf-8'), curr_time(), MESSAGE_OWNER['FRIEND'], message_type)
+            self.create_message_item(message, curr_time(), MESSAGE_OWNER['FRIEND'], message_type)
             self._messages.scrollToBottom()
             self._friends[self._active_friend].append_message(
-                TextMessage(message.decode('utf-8'), MESSAGE_OWNER['FRIEND'], time.time(), message_type))
+                TextMessage(message, MESSAGE_OWNER['FRIEND'], time.time(), message_type))
         else:
             friend = self.get_friend_by_number(friend_num)
             friend.inc_messages()
             friend.append_message(
-                TextMessage(message.decode('utf-8'), MESSAGE_OWNER['FRIEND'], time.time(), message_type))
+                TextMessage(message, MESSAGE_OWNER['FRIEND'], time.time(), message_type))
             if not friend.visibility:
                 self.update_filtration()
 
@@ -429,7 +434,7 @@ class Profile(contact.Contact, Singleton):
                 self._history.delete_messages(friend.tox_id)
                 self._history.delete_friend_from_db(friend.tox_id)
         else:  # clear all history
-            for number in xrange(len(self._friends)):
+            for number in range(len(self._friends)):
                 self.clear_history(number)
         if num is None or num == self.get_active_number():
             self._messages.clear()
@@ -465,7 +470,7 @@ class Profile(contact.Contact, Singleton):
                         ft.set_state_changed_handler(item.update)
                         ft.signal()
                     except:
-                        print 'Incoming not started transfer - no info found'
+                        print('Incoming not started transfer - no info found')
             elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline
                 self.create_inline_item(message.get_data())
             else:  # info message
@@ -558,11 +563,11 @@ class Profile(contact.Contact, Singleton):
         Set new alias for friend
         """
         friend = self._friends[num]
-        name = friend.name.encode('utf-8')
+        name = friend.name
         dialog = QtGui.QApplication.translate('MainWindow',
                                               "Enter new alias for friend {} or leave empty to use friend's name:",
                                               None, QtGui.QApplication.UnicodeUTF8)
-        dialog = dialog.format(name.decode('utf-8'))
+        dialog = dialog.format(name)
         title = QtGui.QApplication.translate('MainWindow',
                                              'Set alias',
                                              None, QtGui.QApplication.UnicodeUTF8)
@@ -570,28 +575,29 @@ class Profile(contact.Contact, Singleton):
                                               title,
                                               dialog,
                                               QtGui.QLineEdit.Normal,
-                                              name.decode('utf-8'))
+                                              name)
         if ok:
             settings = Settings.get_instance()
             aliases = settings['friends_aliases']
             if text:
-                friend.name = text.encode('utf-8')
+                friend.name = bytes(text, 'utf-8')
                 try:
-                    index = map(lambda x: x[0], aliases).index(friend.tox_id)
+                    index = list(map(lambda x: x[0], aliases)).index(friend.tox_id)
                     aliases[index] = (friend.tox_id, text)
                 except:
                     aliases.append((friend.tox_id, text))
                 friend.set_alias(text)
             else:  # use default name
-                friend.name = self._tox.friend_get_name(friend.number).encode('utf-8')
+                friend.name = bytes(self._tox.friend_get_name(friend.number), 'utf-8')
                 friend.set_alias('')
                 try:
-                    index = map(lambda x: x[0], aliases).index(friend.tox_id)
+                    index = list(map(lambda x: x[0], aliases)).index(friend.tox_id)
                     del aliases[index]
                 except:
                     pass
             settings.save()
-            self.set_active()
+        if num == self.get_active_number():
+            self.update()
 
     def friend_public_key(self, num):
         return self._friends[num].tox_id
@@ -604,7 +610,7 @@ class Profile(contact.Contact, Singleton):
         friend = self._friends[num]
         settings = Settings.get_instance()
         try:
-            index = map(lambda x: x[0], settings['friends_aliases']).index(friend.tox_id)
+            index = list(map(lambda x: x[0], settings['friends_aliases'])).index(friend.tox_id)
             del settings['friends_aliases'][index]
         except:
             pass
@@ -905,7 +911,7 @@ class Profile(contact.Contact, Singleton):
         self.send_inline(data, 'toxygen_inline.png')
 
     def send_sticker(self, path):
-        with open(path) as fl:
+        with open(path, 'rb') as fl:
             data = fl.read()
         self.send_inline(data, 'sticker.png')
 
@@ -948,7 +954,7 @@ class Profile(contact.Contact, Singleton):
             self.update()
             return
         elif friend.status is None and is_resend:
-            print 'Error in sending'
+            print('Error in sending')
             raise RuntimeError()
         st = SendTransfer(path, self._tox, friend_number)
         self._file_transfers[(friend_number, st.get_file_number())] = st
@@ -976,6 +982,7 @@ class Profile(contact.Contact, Singleton):
                     self.get_friend_by_number(friend_number).load_avatar()
                     self.set_active(None)
                 elif type(transfer) is ReceiveToBuffer:  # inline image
+                    print('inline')
                     inline = InlineImage(transfer.get_data())
                     i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                       TOX_FILE_TRANSFER_STATE['FINISHED'],
@@ -1005,6 +1012,7 @@ class Profile(contact.Contact, Singleton):
                 if type(transfer) is not SendAvatar:
                     if type(transfer) is SendFromBuffer and Settings.get_instance()['allow_inline']:  # inline
                         inline = InlineImage(transfer.get_data())
+                        print('inline')
                         i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                                           TOX_FILE_TRANSFER_STATE[
                                                                                               'FINISHED'],
@@ -1151,7 +1159,7 @@ def tox_factory(data=None, settings=None):
     tox_options = Tox.options_new()
     tox_options.contents.udp_enabled = settings['udp_enabled']
     tox_options.contents.proxy_type = settings['proxy_type']
-    tox_options.contents.proxy_host = settings['proxy_host']
+    tox_options.contents.proxy_host = bytes(settings['proxy_host'], 'UTF-8')
     tox_options.contents.proxy_port = settings['proxy_port']
     tox_options.contents.start_port = settings['start_port']
     tox_options.contents.end_port = settings['end_port']

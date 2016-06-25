@@ -121,7 +121,7 @@ class SendTransfer(FileTransfer):
         super(SendTransfer, self).__init__(path, tox, friend_number, size)
         self.state = TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
         self._file_number = tox.file_send(friend_number, kind, size, file_id,
-                                          basename(path).encode('utf-8') if path else '')
+                                          bytes(basename(path), 'utf-8') if path else b'')
 
     def send_chunk(self, position, size):
         """
@@ -167,7 +167,8 @@ class SendFromBuffer(FileTransfer):
         super(SendFromBuffer, self).__init__(None, tox, friend_number, len(data))
         self.state = TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
         self._data = data
-        self._file_number = tox.file_send(friend_number, TOX_FILE_KIND['DATA'], len(data), None, file_name)
+        self._file_number = tox.file_send(friend_number, TOX_FILE_KIND['DATA'],
+                                          len(data), None, bytes(file_name, 'utf-8'))
 
     def get_data(self):
         return self._data
@@ -229,7 +230,7 @@ class ReceiveTransfer(FileTransfer):
             data = bytearray(data)
             if self._file_size < position:
                 self._file.seek(0, 2)
-                self._file.write('\0' * (position - self._file_size))
+                self._file.write(b'\0' * (position - self._file_size))
             self._file.seek(position)
             self._file.write(data)
             l = len(data)
@@ -246,7 +247,7 @@ class ReceiveToBuffer(FileTransfer):
 
     def __init__(self, tox, friend_number, size, file_number):
         super(ReceiveToBuffer, self).__init__(None, tox, friend_number, size, file_number)
-        self._data = ''
+        self._data = bytes()
         self._data_size = 0
 
     def get_data(self):
@@ -257,17 +258,16 @@ class ReceiveToBuffer(FileTransfer):
             self._creation_time = time()
         if data is None:
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self.signal()
         else:
-            data = ''.join(chr(x) for x in data)
+            data = bytes(data)
             l = len(data)
             if self._data_size < position:
-                self._data += ('\0' * (position - self._data_size))
+                self._data += (b'\0' * (position - self._data_size))
             self._data = self._data[:position] + data + self._data[position + l:]
             if position + l > self._data_size:
                 self._data_size = position + l
             self._done += l
-            self.signal()
+        self.signal()
 
 
 class ReceiveAvatar(ReceiveTransfer):
@@ -281,20 +281,23 @@ class ReceiveAvatar(ReceiveTransfer):
         super(ReceiveAvatar, self).__init__(path + '.tmp', tox, friend_number, size, file_number)
         if size > self.MAX_AVATAR_SIZE:
             self.send_control(TOX_FILE_CONTROL['CANCEL'])
+            self._file.close()
             remove(path + '.tmp')
         elif not size:
             self.send_control(TOX_FILE_CONTROL['CANCEL'])
             self._file.close()
             if exists(path):
                 remove(path)
+            self._file.close()
             remove(path + '.tmp')
         elif exists(path):
             hash = self.get_file_id()
-            with open(path) as fl:
+            with open(path, 'rb') as fl:
                 data = fl.read()
             existing_hash = Tox.hash(data)
             if hash == existing_hash:
                 self.send_control(TOX_FILE_CONTROL['CANCEL'])
+                self._file.close()
                 remove(path + '.tmp')
             else:
                 self.send_control(TOX_FILE_CONTROL['RESUME'])
@@ -309,5 +312,3 @@ class ReceiveAvatar(ReceiveTransfer):
                 chdir(dirname(avatar_path))
                 remove(avatar_path)
             rename(self._path, avatar_path)
-
-

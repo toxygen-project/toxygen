@@ -423,7 +423,8 @@ class MainWindow(QtGui.QMainWindow):
     def send_smiley(self):
         self.menu.hide()
         if self.profile.active_friend + 1:
-            self.smiley = SmileyWindow(self)
+            if not hasattr(self, 'smiley'):
+                self.smiley = SmileyWindow(self)
             self.smiley.setGeometry(QtCore.QRect(self.x() if Settings.get_instance()['mirror_mode'] else 270 + self.x(),
                                                  self.y() + self.height() - 200,
                                                  self.smiley.width(),
@@ -499,7 +500,7 @@ class MainWindow(QtGui.QMainWindow):
         s = Settings.get_instance()
         note = s['notes'][friend.tox_id] if friend.tox_id in s['notes'] else ''
         user = QtGui.QApplication.translate("MainWindow", 'Notes about user', None, QtGui.QApplication.UnicodeUTF8)
-        user = u'{} {}'.format(user, friend.name)
+        user = '{} {}'.format(user, friend.name)
 
         def save_note(text):
             if friend.tox_id in s['notes']:

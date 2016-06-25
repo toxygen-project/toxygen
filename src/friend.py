@@ -55,12 +55,12 @@ class Friend(contact.Contact):
         """
         if (first_time and self._history_loaded) or (not hasattr(self, '_message_getter')):
             return
-        data = self._message_getter.get(PAGE_SIZE)
+        data = list(self._message_getter.get(PAGE_SIZE))
         if data is not None and len(data):
             data.reverse()
         else:
             return
-        data = map(lambda tupl: TextMessage(*tupl), data)
+        data = list(map(lambda tupl: TextMessage(*tupl), data))
         self._corr = data + self._corr
         self._history_loaded = True
 
@@ -71,8 +71,8 @@ class Friend(contact.Contact):
         """
         if hasattr(self, '_message_getter'):
             del self._message_getter
-        messages = filter(lambda x: x.get_type() <= 1, self._corr)
-        return map(lambda x: x.get_data(), messages[-self._unsaved_messages:]) if self._unsaved_messages else []
+        messages = list(filter(lambda x: x.get_type() <= 1, self._corr))
+        return list(map(lambda x: x.get_data(), list(messages[-self._unsaved_messages:]))) if self._unsaved_messages else []
 
     def get_corr(self):
         return self._corr[:]
@@ -86,7 +86,7 @@ class Friend(contact.Contact):
             self._unsaved_messages += 1
 
     def get_last_message_text(self):
-        messages = filter(lambda x: x.get_type() <= 1 and x.get_owner() != MESSAGE_OWNER['FRIEND'], self._corr)
+        messages = list(filter(lambda x: x.get_type() <= 1 and x.get_owner() != MESSAGE_OWNER['FRIEND'], self._corr))
         if messages:
             return messages[-1].get_data()[0]
         else:
@@ -97,11 +97,11 @@ class Friend(contact.Contact):
         :return list of unsent messages
         """
         messages = filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr)
-        return messages
+        return list(messages)
 
     def mark_as_sent(self):
         try:
-            message = filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr)[0]
+            message = list(filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr))[0]
             message.mark_as_sent()
         except Exception as ex:
             util.log('Mark as sent ex: ' + str(ex))
@@ -113,7 +113,7 @@ class Friend(contact.Contact):
         if hasattr(self, '_message_getter'):
             del self._message_getter
         # don't delete data about active file transfer
-        self._corr = filter(lambda x: x.get_type() in (2, 3) and x.get_status() >= 2, self._corr)
+        self._corr = list(filter(lambda x: x.get_type() in (2, 3) and x.get_status() >= 2, self._corr))
         self._unsaved_messages = 0
 
     def get_curr_text(self):
@@ -133,8 +133,8 @@ class Friend(contact.Contact):
         Update status of active transfer and load inline if needed
         """
         try:
-            tr = filter(lambda x: x.get_type() == MESSAGE_TYPE['FILE_TRANSFER'] and x.is_active(file_number),
-                        self._corr)[0]
+            tr = list(filter(lambda x: x.get_type() == MESSAGE_TYPE['FILE_TRANSFER'] and x.is_active(file_number),
+                        self._corr))[0]
             tr.set_status(status)
             i = self._corr.index(tr)
             if inline:  # inline was loaded
@@ -148,10 +148,10 @@ class Friend(contact.Contact):
         return messages
 
     def clear_unsent_files(self):
-        self._corr = filter(lambda x: type(x) is not UnsentFile, self._corr)
+        self._corr = list(filter(lambda x: type(x) is not UnsentFile, self._corr))
 
     def delete_one_unsent_file(self, time):
-        self._corr = filter(lambda x: not (type(x) is UnsentFile and x.get_data()[2] == time), self._corr)
+        self._corr = list(filter(lambda x: not (type(x) is UnsentFile and x.get_data()[2] == time), self._corr))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Alias support

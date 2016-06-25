@@ -26,12 +26,11 @@ def convert_time(t):
     return '%02d:%02d' % (h, m)
 
 
-class Singleton(object):
+class Singleton:
+    _instance = None
 
-    def __new__(cls, *args, **kwargs):
-        if not hasattr(cls, '_instance'):
-            cls._instance = super(Singleton, cls).__new__(cls, *args, **kwargs)
-        return cls._instance
+    def __init__(self):
+        self.__class__._instance = self
 
     @classmethod
     def get_instance(cls):

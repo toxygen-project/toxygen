@@ -99,7 +99,6 @@ class ScreenShotWindow(QtGui.QWidget):
         if self.rubberband.isVisible():
             self.rubberband.hide()
             rect = self.rubberband.geometry()
-            print rect
             if rect.width() and rect.height():
                 p = QtGui.QPixmap.grabWindow(QtGui.QApplication.desktop().winId(),
                                              rect.x() + 4,
@@ -110,7 +109,7 @@ class ScreenShotWindow(QtGui.QWidget):
                 buffer = QtCore.QBuffer(byte_array)
                 buffer.open(QtCore.QIODevice.WriteOnly)
                 p.save(buffer, 'PNG')
-                Profile.get_instance().send_screenshot(str(byte_array.data()))
+                Profile.get_instance().send_screenshot(bytes(byte_array.data()))
             self.close()
 
     def keyPressEvent(self, event):
@@ -134,10 +133,10 @@ class SmileyWindow(QtGui.QWidget):
         count = len(self.data)
         self.page_size = int(pow(count / 8, 0.5) + 1) * 8  # smileys per page
         if count % self.page_size == 0:
-            self.page_count = count / self.page_size
+            self.page_count = count // self.page_size
         else:
             self.page_count = int(count / float(self.page_size) + 0.5)
-        self.page = 0
+        self.page = -1
         self.radio = []
         self.parent = parent
         for i in range(self.page_count):  # buttons with smileys
@@ -145,13 +144,13 @@ class SmileyWindow(QtGui.QWidget):
             elem.setGeometry(QtCore.QRect(i * 20 + 5, 180, 20, 20))
             elem.clicked.connect(lambda i=i: self.checked(i))
             self.radio.append(elem)
-        width = max(self.page_count * 20 + 30, (self.page_size + 5) * 8 / 10)
+        width = max(self.page_count * 20 + 30, (self.page_size + 5) * 8 // 10)
         self.setMaximumSize(width, 200)
         self.setMinimumSize(width, 200)
         self.buttons = []
         for i in range(self.page_size):  # pages - radio buttons
             b = QtGui.QPushButton(self)
-            b.setGeometry(QtCore.QRect((i / 8) * 20 + 5, (i % 8) * 20, 20, 20))
+            b.setGeometry(QtCore.QRect((i // 8) * 20 + 5, (i % 8) * 20, 20, 20))
             b.clicked.connect(lambda i=i: self.clicked(i))
             self.buttons.append(b)
         self.checked(0)

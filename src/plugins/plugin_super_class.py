@@ -26,13 +26,14 @@ def log(name, data):
     :param data: data for saving in log
     """
     with open(path_to_data(name) + 'logs.txt', 'a') as fl:
-        fl.write(str(data) + '\n')
+        fl.write(bytes(data, 'utf-8') + b'\n')
 
 
-class PluginSuperClass(object):
+class PluginSuperClass:
     """
     Superclass for all plugins. Plugin is python module with at least one class derived from PluginSuperClass.
     """
+    is_plugin = True
 
     def __init__(self, name, short_name, tox=None, profile=None, settings=None, encrypt_save=None):
         """
@@ -159,9 +160,9 @@ class PluginSuperClass(object):
         """
         This method loads settings of plugin and returns raw data
         """
-        with open(path_to_data(self._short_name) + 'settings.json') as fl:
+        with open(path_to_data(self._short_name) + 'settings.json', 'rb') as fl:
             data = fl.read()
-        return data
+        return str(data, 'utf-8')
 
     def save_settings(self, data):
         """
@@ -169,7 +170,7 @@ class PluginSuperClass(object):
         :param data: string with data
         """
         with open(path_to_data(self._short_name) + 'settings.json', 'wb') as fl:
-            fl.write(data)
+            fl.write(bytes(data, 'utf-8'))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Callbacks
@@ -212,8 +213,10 @@ class PluginSuperClass(object):
             data = ''
         try:
             return self._tox.friend_send_lossless_packet(friend_number,
-                                                         chr(len(self._short_name) + LOSSLESS_FIRST_BYTE) +
-                                                         self._short_name + str(data))
+                                                         bytes([ord(x) for x in
+                                                                chr(len(self._short_name) + LOSSLESS_FIRST_BYTE) +
+                                                                self._short_name + str(data)
+                                                                ]))
         except:
             return False
 
@@ -228,7 +231,9 @@ class PluginSuperClass(object):
             data = ''
         try:
             return self._tox.friend_send_lossy_packet(friend_number,
-                                                      chr(len(self._short_name) + LOSSY_FIRST_BYTE) +
-                                                      self._short_name + str(data))
+                                                      bytes([ord(x) for x in
+                                                             chr(len(self._short_name) + LOSSY_FIRST_BYTE) +
+                                                             self._short_name + str(data)
+                                                             ]))
         except:
             return False

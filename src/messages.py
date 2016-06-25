@@ -9,7 +9,7 @@ MESSAGE_TYPE = {
 }
 
 
-class Message(object):
+class Message:
 
     def __init__(self, message_type, owner, time):
         self._time = time

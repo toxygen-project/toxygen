@@ -14,6 +14,7 @@ class SmileyLoader(util.Singleton):
     """
 
     def __init__(self, settings):
+        super().__init__()
         self._settings = settings
         self._curr_pack = None  # current pack name
         self._smileys = {}  # smileys dict. key - smiley (str), value - path to image (str)
@@ -33,18 +34,18 @@ class SmileyLoader(util.Singleton):
                     self._smileys = json.loads(fl.read())
                     fl.seek(0)
                     tmp = json.loads(fl.read(), object_pairs_hook=OrderedDict)
-                print 'Smiley pack {} loaded'.format(pack_name)
+                print('Smiley pack {} loaded'.format(pack_name))
                 keys, values, self._list = [], [], []
                 for key, value in tmp.items():
                     value = self.get_smileys_path() + value
                     if value not in values:
                         keys.append(key)
                         values.append(value)
-                self._list = zip(keys, values)
+                self._list = list(zip(keys, values))
             except Exception as ex:
                 self._smileys = {}
                 self._list = []
-                print 'Smiley pack {} was not loaded. Error: {}'.format(pack_name, ex)
+                print('Smiley pack {} was not loaded. Error: {}'.format(pack_name, ex))
 
     def get_smileys_path(self):
         return util.curr_directory() + '/smileys/' + self._curr_pack + '/'
@@ -54,7 +55,7 @@ class SmileyLoader(util.Singleton):
         return [x[1] for x in os.walk(d)][0]
 
     def get_smileys(self):
-        return self._list[:]
+        return list(self._list)
 
     def add_smileys_to_text(self, text, edit):
         """
@@ -69,7 +70,7 @@ class SmileyLoader(util.Singleton):
         for i in range(len(arr)):
             if arr[i] in self._smileys:
                 file_name = self._smileys[arr[i]]  # image name
-                arr[i] = u'<img title=\"{}\" src=\"{}\" />'.format(arr[i], file_name)
+                arr[i] = '<img title=\"{}\" src=\"{}\" />'.format(arr[i], file_name)
                 if file_name.endswith('.gif'):  # animated smiley
                     edit.addAnimation(QtCore.QUrl(file_name), self.get_smileys_path() + file_name)
         return ' '.join(arr)
@@ -85,6 +86,6 @@ def sticker_loader():
     for key in keys:
         path = d + key + '/'
         files = filter(lambda f: f.endswith('.png'), os.listdir(path))
-        files = map(lambda f: unicode(path + f), files)
+        files = map(lambda f: str(path + f), files)
         result.extend(files)
     return result

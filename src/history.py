@@ -15,7 +15,7 @@ MESSAGE_OWNER = {
 }
 
 
-class History(object):
+class History:
 
     def __init__(self, name):
         self._name = name
@@ -45,7 +45,7 @@ class History(object):
             path = settings.ProfileHelper.get_path() + self._name + '.hstr'
             with open(path, 'rb') as fin:
                 data = fin.read()
-            data = encr.pass_encrypt(data)
+            data = encr.pass_encrypt(bytes(data))
             with open(path, 'wb') as fout:
                 fout.write(data)
 
@@ -148,7 +148,7 @@ class History(object):
     def messages_getter(self, tox_id):
         return History.MessageGetter(self._name, tox_id)
 
-    class MessageGetter(object):
+    class MessageGetter:
         def __init__(self, name, tox_id):
             chdir(settings.ProfileHelper.get_path())
             self._db = connect(name + '.hstr')

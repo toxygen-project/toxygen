@@ -3,13 +3,7 @@
 You can compile Toxygen using [PyInstaller](http://www.pyinstaller.org/)
 
 Install PyInstaller: 
-``pip install pyinstaller``
-
-On Linux:
-
-``pyinstaller --windowed main.py``
-
-On Windows:
+``pip3 install pyinstaller``
 
 ``pyinstaller --windowed --icon images/icon.ico main.py``
 

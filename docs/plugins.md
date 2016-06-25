@@ -1,6 +1,6 @@
 #Plugins
 
-Toxygen is the first [Tox](https://tox.chat/) client with plugins support. Plugin is Python module (.py file) and directory with plugin's data which provide some additional functionality. 
+Toxygen is the first [Tox](https://tox.chat/) client with plugins support. Plugin is Python 3.4 module (.py file) and directory with plugin's data which provide some additional functionality. 
 
 #How to write plugin
 
