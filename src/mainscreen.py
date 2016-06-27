@@ -423,8 +423,7 @@ class MainWindow(QtGui.QMainWindow):
     def send_smiley(self):
         self.menu.hide()
         if self.profile.active_friend + 1:
-            if not hasattr(self, 'smiley'):
-                self.smiley = SmileyWindow(self)
+            self.smiley = SmileyWindow(self)
             self.smiley.setGeometry(QtCore.QRect(self.x() if Settings.get_instance()['mirror_mode'] else 270 + self.x(),
                                                  self.y() + self.height() - 200,
                                                  self.smiley.width(),

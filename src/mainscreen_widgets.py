@@ -131,11 +131,13 @@ class SmileyWindow(QtGui.QWidget):
         inst = smileys.SmileyLoader.get_instance()
         self.data = inst.get_smileys()
         count = len(self.data)
+        if not count:
+            self.close()
         self.page_size = int(pow(count / 8, 0.5) + 1) * 8  # smileys per page
         if count % self.page_size == 0:
             self.page_count = count // self.page_size
         else:
-            self.page_count = int(count / float(self.page_size) + 0.5)
+            self.page_count = round(count / self.page_size + 0.5)
         self.page = -1
         self.radio = []
         self.parent = parent

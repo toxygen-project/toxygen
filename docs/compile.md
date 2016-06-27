@@ -7,4 +7,4 @@ Install PyInstaller:
 
 ``pyinstaller --windowed --icon images/icon.ico main.py``
 
-Don't forget to copy /images/, /sounds/, /translations/, /styles/, to /dist/main/
+Don't forget to copy /images/, /sounds/, /translations/, /styles/, /smileys/, /stickers/ to /dist/main/

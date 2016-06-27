@@ -7,7 +7,7 @@ import profile
 from file_transfers import TOX_FILE_TRANSFER_STATE, PAUSED_FILE_TRANSFERS, DO_NOT_SHOW_ACCEPT_BUTTON, ACTIVE_FILE_TRANSFERS, SHOW_PROGRESS_BAR
 from util import curr_directory, convert_time, curr_time
 from widgets import DataLabel, create_menu
-import cgi
+import html as h
 import smileys
 import settings
 
@@ -70,8 +70,7 @@ class MessageEdit(QtGui.QTextBrowser):
         self.setLineWrapColumnOrWidth(self.lineWrapColumnOrWidth())
 
     def decoratedText(self, text):
-        text = text.replace("&", "&amp;")
-        text = cgi.escape(text)  # replace < and >
+        text = h.escape(text)  # replace < and >
         exp = QtCore.QRegExp(
             '('
             '(?:\\b)((www\\.)|(http[s]?|ftp)://)'
