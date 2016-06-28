@@ -28,7 +28,7 @@
 
 Dependencies:
 
-1. Install Python3.4: 
+1. Install latest Python3.4: 
 ``sudo apt-get install python3``
 2. [Install PySide](https://wiki.qt.io/PySide_Binaries_Linux) (recommended) or [PyQt4](https://riverbankcomputing.com/software/pyqt/download)
 3. Install [toxcore](https://github.com/irungentoo/toxcore/blob/master/INSTALL.md) with toxav support in your system (install in /usr/lib/)

@@ -30,7 +30,7 @@ class SmileyLoader(util.Singleton):
             self._curr_pack = pack_name
             path = self.get_smileys_path() + 'config.json'
             try:
-                with open(path) as fl:
+                with open(path, encoding='utf8') as fl:
                     self._smileys = json.loads(fl.read())
                     fl.seek(0)
                     tmp = json.loads(fl.read(), object_pairs_hook=OrderedDict)

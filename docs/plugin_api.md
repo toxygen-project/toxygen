@@ -1,6 +1,6 @@
 #Plugins API
 
-In Toxygen plugin is single python module (.py file) and directory with data associated with it. 
+In Toxygen plugin is single python (supported Python 3.0 - 3.4) module (.py file) and directory with data associated with it. 
 Every module must contain one class derived from PluginSuperClass defined in [plugin_super_class.py](/src/plugins/plugin_super_class.py). Instance of this class will be created by PluginLoader class (defined in [plugin_support.py](/src/plugin_support.py) ). This class can enable/disable plugins and send data to it. 
 
 Every plugin has it's own full name and unique short name (1-5 symbols). Main app can get it using special methods. 
@@ -37,11 +37,11 @@ Other methods:
 
 About import:
 
-import statement will not work in case you import module that wasn't previously imported by main program and user use precompiled binary. It's recommended to use imp module and dynamic import instead.
+import statement will not work in case you import module that wasn't previously imported by main program and user use precompiled binary. It's recommended to use dynamic import instead.
 
 About GUI:
 
-It's strictly recommended to support both PySide and PyQt4 in GUI.
+It's strictly recommended to support both PySide and PyQt4 in GUI. Plugin can not have GUI at all.
 
 Exceptions:
 
