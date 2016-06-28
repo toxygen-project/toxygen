@@ -70,10 +70,8 @@ class Friend(contact.Contact):
         Get data to save in db
         :return: list of unsaved messages or []
         """
-        if hasattr(self, '_message_getter'):
-            del self._message_getter
         messages = list(filter(lambda x: x.get_type() <= 1, self._corr))
-        return list(map(lambda x: x.get_data(), list(messages[-self._unsaved_messages:]))) if self._unsaved_messages else []
+        return list(map(lambda x: x.get_data(), messages[-self._unsaved_messages:])) if self._unsaved_messages else []
 
     def get_corr(self):
         return self._corr[:]
@@ -104,15 +102,13 @@ class Friend(contact.Contact):
         """
         :return list of unsent messages for saving
         """
-        if self._unsaved_messages:
-            messages = filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr[-self._unsaved_messages:])
-            return list(map(lambda x: x.get_data(), messages))
-        else:
-            return []
+        messages = filter(lambda x: x.get_type() <= 1 and x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr)
+        return list(map(lambda x: x.get_data(), messages))
 
     def delete_message(self, time):
         elem = list(filter(lambda x: type(x) is TextMessage and x.get_data()[2] == time, self._corr))[0]
-        if elem in self.get_corr_for_saving():
+        tmp = list(filter(lambda x: x.get_type() <= 1, self._corr))
+        if elem in tmp[-self._unsaved_messages:]:
             self._unsaved_messages -= 1
         self._corr.remove(elem)
 

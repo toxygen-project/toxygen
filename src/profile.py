@@ -422,12 +422,13 @@ class Profile(contact.Contact, Singleton):
         if hasattr(self, '_history'):
             if s['save_history']:
                 for friend in self._friends:
+                    if not self._history.friend_exists_in_db(friend.tox_id):
+                        self._history.add_friend_to_db(friend.tox_id)
                     if not s['save_unsent_only']:
                         messages = friend.get_corr_for_saving()
                     else:
                         messages = friend.get_unsent_messages_for_saving()
-                    if not self._history.friend_exists_in_db(friend.tox_id):
-                        self._history.add_friend_to_db(friend.tox_id)
+                        self._history.delete_messages(friend.tox_id)
                     self._history.save_messages_to_db(friend.tox_id, messages)
                     unsent_messages = friend.get_unsent_messages()
                     unsent_time = unsent_messages[0].get_data()[2] if len(unsent_messages) else time.time() + 1
@@ -772,6 +773,8 @@ class Profile(contact.Contact, Singleton):
         if hasattr(self, '_call'):
             self._call.stop()
             del self._call
+        for i in range(len(self._friends)):
+            del self._friends[0]
 
     # -----------------------------------------------------------------------------------------------------------------
     # File transfers support
