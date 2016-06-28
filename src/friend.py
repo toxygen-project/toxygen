@@ -2,6 +2,7 @@ import contact
 from messages import *
 from history import *
 import util
+import file_transfers as ft
 
 
 class Friend(contact.Contact):
@@ -92,12 +93,28 @@ class Friend(contact.Contact):
         else:
             return ''
 
-    def unsent_messages(self):
+    def get_unsent_messages(self):
         """
         :return list of unsent messages
         """
         messages = filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr)
         return list(messages)
+
+    def get_unsent_messages_for_saving(self):
+        """
+        :return list of unsent messages for saving
+        """
+        if self._unsaved_messages:
+            messages = filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr[-self._unsaved_messages:])
+            return list(map(lambda x: x.get_data(), messages))
+        else:
+            return []
+
+    def delete_message(self, time):
+        elem = list(filter(lambda x: type(x) is TextMessage and x.get_data()[2] == time, self._corr))[0]
+        if elem in self.get_corr_for_saving():
+            self._unsaved_messages -= 1
+        self._corr.remove(elem)
 
     def mark_as_sent(self):
         try:
@@ -106,15 +123,22 @@ class Friend(contact.Contact):
         except Exception as ex:
             util.log('Mark as sent ex: ' + str(ex))
 
-    def clear_corr(self):
+    def clear_corr(self, save_unsent=False):
         """
         Clear messages list
         """
         if hasattr(self, '_message_getter'):
             del self._message_getter
         # don't delete data about active file transfer
-        self._corr = list(filter(lambda x: x.get_type() in (2, 3) and x.get_status() >= 2, self._corr))
-        self._unsaved_messages = 0
+        if not save_unsent:
+            self._corr = list(filter(lambda x: x.get_type() in (2, 3) and
+                                               x.get_status() in ft.ACTIVE_FILE_TRANSFERS, self._corr))
+            self._unsaved_messages = 0
+        else:
+            self._corr = list(filter(lambda x: (x.get_type() in (2, 3) and x.get_status() in ft.ACTIVE_FILE_TRANSFERS)
+                                     or (x.get_type() <= 1 and x.get_owner() == MESSAGE_OWNER['NOT_SENT']),
+                                     self._corr))
+            self._unsaved_messages = len(self.get_unsent_messages())
 
     def get_curr_text(self):
         return self._curr_text

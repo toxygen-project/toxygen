@@ -121,14 +121,15 @@ class MessageItem(QtGui.QWidget):
         font.setPointSize(10)
         font.setBold(False)
         self.time.setFont(font)
-
+        self._time = time
         if not sent:
             movie = QtGui.QMovie(curr_directory() + '/images/spinner.gif')
             self.time.setMovie(movie)
             movie.start()
-            self.t = time
+            self.t = True
         else:
-            self.time.setText(time)
+            self.time.setText(convert_time(time))
+            self.t = False
 
         self.message = MessageEdit(text, parent.width() - 150, message_type, self)
         if message_type != TOX_MESSAGE_TYPE['NORMAL']:
@@ -138,10 +139,23 @@ class MessageItem(QtGui.QWidget):
         self.message.setGeometry(QtCore.QRect(100, 0, parent.width() - 150, self.message.height()))
         self.setFixedHeight(self.message.height())
 
+    def mouseReleaseEvent(self, event):
+        if event.button() == QtCore.Qt.RightButton and event.x() > self.time.x():
+            self.listMenu = QtGui.QMenu()
+            delete_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Delete message', None, QtGui.QApplication.UnicodeUTF8))
+            self.connect(delete_item, QtCore.SIGNAL("triggered()"), self.delete)
+            parent_position = self.time.mapToGlobal(QtCore.QPoint(0, 0))
+            self.listMenu.move(parent_position)
+            self.listMenu.show()
+
+    def delete(self):
+        pr = profile.Profile.get_instance()
+        pr.delete_message(self._time)
+
     def mark_as_sent(self):
-        if hasattr(self, 't'):
-            self.time.setText(self.t)
-            del self.t
+        if self.t:
+            self.time.setText(convert_time(self._time))
+            self.t = False
             return True
         return False
 

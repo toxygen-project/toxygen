@@ -360,45 +360,51 @@ class PrivacySettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("privacySettings")
-        self.resize(350, 550)
-        self.setMinimumSize(QtCore.QSize(350, 550))
-        self.setMaximumSize(QtCore.QSize(350, 550))
+        self.resize(350, 600)
+        self.setMinimumSize(QtCore.QSize(350, 600))
+        self.setMaximumSize(QtCore.QSize(350, 600))
         self.saveHistory = QtGui.QCheckBox(self)
         self.saveHistory.setGeometry(QtCore.QRect(10, 20, 291, 22))
+        self.saveUnsentOnly = QtGui.QCheckBox(self)
+        self.saveUnsentOnly.setGeometry(QtCore.QRect(10, 60, 291, 22))
+
         self.fileautoaccept = QtGui.QCheckBox(self)
-        self.fileautoaccept.setGeometry(QtCore.QRect(10, 60, 271, 22))
+        self.fileautoaccept.setGeometry(QtCore.QRect(10, 100, 271, 22))
 
         self.typingNotifications = QtGui.QCheckBox(self)
-        self.typingNotifications.setGeometry(QtCore.QRect(10, 100, 350, 30))
+        self.typingNotifications.setGeometry(QtCore.QRect(10, 140, 350, 30))
         self.inlines = QtGui.QCheckBox(self)
-        self.inlines.setGeometry(QtCore.QRect(10, 140, 350, 30))
+        self.inlines.setGeometry(QtCore.QRect(10, 180, 350, 30))
         self.auto_path = QtGui.QLabel(self)
-        self.auto_path.setGeometry(QtCore.QRect(10, 190, 350, 30))
+        self.auto_path.setGeometry(QtCore.QRect(10, 230, 350, 30))
         self.path = QtGui.QPlainTextEdit(self)
-        self.path.setGeometry(QtCore.QRect(10, 225, 330, 45))
+        self.path.setGeometry(QtCore.QRect(10, 265, 330, 45))
         self.change_path = QtGui.QPushButton(self)
-        self.change_path.setGeometry(QtCore.QRect(10, 280, 330, 30))
+        self.change_path.setGeometry(QtCore.QRect(10, 320, 330, 30))
         settings = Settings.get_instance()
         self.typingNotifications.setChecked(settings['typing_notifications'])
         self.fileautoaccept.setChecked(settings['allow_auto_accept'])
         self.saveHistory.setChecked(settings['save_history'])
         self.inlines.setChecked(settings['allow_inline'])
+        self.saveUnsentOnly.setChecked(settings['save_unsent_only'])
+        self.saveUnsentOnly.setEnabled(settings['save_history'])
+        self.saveHistory.stateChanged.connect(self.update)
         self.path.setPlainText(settings['auto_accept_path'] or curr_directory())
         self.change_path.clicked.connect(self.new_path)
         self.block_user_label = QtGui.QLabel(self)
-        self.block_user_label.setGeometry(QtCore.QRect(10, 320, 330, 30))
+        self.block_user_label.setGeometry(QtCore.QRect(10, 360, 330, 30))
         self.block_id = QtGui.QPlainTextEdit(self)
-        self.block_id.setGeometry(QtCore.QRect(10, 350, 330, 30))
+        self.block_id.setGeometry(QtCore.QRect(10, 390, 330, 30))
         self.block = QtGui.QPushButton(self)
-        self.block.setGeometry(QtCore.QRect(10, 390, 330, 30))
+        self.block.setGeometry(QtCore.QRect(10, 430, 330, 30))
         self.block.clicked.connect(lambda: Profile.get_instance().block_user(self.block_id.toPlainText()) or self.close())
         self.blocked_users_label = QtGui.QLabel(self)
-        self.blocked_users_label.setGeometry(QtCore.QRect(10, 430, 330, 30))
+        self.blocked_users_label.setGeometry(QtCore.QRect(10, 470, 330, 30))
         self.comboBox = QtGui.QComboBox(self)
-        self.comboBox.setGeometry(QtCore.QRect(10, 460, 330, 30))
+        self.comboBox.setGeometry(QtCore.QRect(10, 500, 330, 30))
         self.comboBox.addItems(settings['blocked'])
         self.unblock = QtGui.QPushButton(self)
-        self.unblock.setGeometry(QtCore.QRect(10, 500, 330, 30))
+        self.unblock.setGeometry(QtCore.QRect(10, 540, 330, 30))
         self.unblock.clicked.connect(lambda: self.unblock_user())
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -415,6 +421,12 @@ class PrivacySettings(CenteredWidget):
         self.blocked_users_label.setText(QtGui.QApplication.translate("privacySettings", "Blocked users:", None, QtGui.QApplication.UnicodeUTF8))
         self.unblock.setText(QtGui.QApplication.translate("privacySettings", "Unblock", None, QtGui.QApplication.UnicodeUTF8))
         self.block.setText(QtGui.QApplication.translate("privacySettings", "Block user", None, QtGui.QApplication.UnicodeUTF8))
+        self.saveUnsentOnly.setText(QtGui.QApplication.translate("privacySettings", "Save unsent messages only", None, QtGui.QApplication.UnicodeUTF8))
+
+    def update(self, new_state):
+        self.saveUnsentOnly.setEnabled(new_state)
+        if not new_state:
+            self.saveUnsentOnly.setChecked(False)
 
     def unblock_user(self):
         if not self.comboBox.count():
@@ -429,6 +441,7 @@ class PrivacySettings(CenteredWidget):
         settings = Settings.get_instance()
         settings['typing_notifications'] = self.typingNotifications.isChecked()
         settings['allow_auto_accept'] = self.fileautoaccept.isChecked()
+
         if settings['save_history'] and not self.saveHistory.isChecked():  # clear history
             reply = QtGui.QMessageBox.question(None,
                                                QtGui.QApplication.translate("privacySettings",
@@ -444,6 +457,21 @@ class PrivacySettings(CenteredWidget):
                 settings['save_history'] = self.saveHistory.isChecked()
         else:
             settings['save_history'] = self.saveHistory.isChecked()
+        if self.saveUnsentOnly.isChecked() and not settings['save_unsent_only']:
+            reply = QtGui.QMessageBox.question(None,
+                                               QtGui.QApplication.translate("privacySettings",
+                                                                            'Chat history',
+                                                                            None, QtGui.QApplication.UnicodeUTF8),
+                                               QtGui.QApplication.translate("privacySettings",
+                                                                            'History will be cleaned! Continue?',
+                                                                            None, QtGui.QApplication.UnicodeUTF8),
+                                               QtGui.QMessageBox.Yes,
+                                               QtGui.QMessageBox.No)
+            if reply == QtGui.QMessageBox.Yes:
+                Profile.get_instance().clear_history(None, True)
+                settings['save_unsent_only'] = self.saveUnsentOnly.isChecked()
+        else:
+            settings['save_unsent_only'] = self.saveUnsentOnly.isChecked()
         settings['auto_accept_path'] = self.path.toPlainText()
         settings['allow_inline'] = self.inlines.isChecked()
         settings.save()

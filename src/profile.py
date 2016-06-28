@@ -7,7 +7,7 @@ from friend import *
 from settings import *
 from toxcore_enums_and_consts import *
 from ctypes import *
-from util import curr_time, log, Singleton, curr_directory, convert_time
+from util import log, Singleton, curr_directory
 from tox_dns import tox_dns
 from history import *
 from file_transfers import *
@@ -90,7 +90,7 @@ class Profile(contact.Contact, Singleton):
         for friend in self._friends:
             friend.append_message(InfoMessage(message, time.time()))
         if self._active_friend + 1:
-            self.create_message_item(message, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+            self.create_message_item(message, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
             self._messages.scrollToBottom()
 
     def set_status_message(self, value):
@@ -181,7 +181,7 @@ class Profile(contact.Contact, Singleton):
                     if message.get_type() <= 1:
                         data = message.get_data()
                         self.create_message_item(data[0],
-                                                 convert_time(data[2]),
+                                                 data[2],
                                                  data[1],
                                                  data[3])
                     elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:
@@ -201,7 +201,7 @@ class Profile(contact.Contact, Singleton):
                     else:  # info message
                         data = message.get_data()
                         self.create_message_item(data[0],
-                                                 convert_time(data[2]),
+                                                 data[2],
                                                  '',
                                                  data[3])
                 self._messages.scrollToBottom()
@@ -255,7 +255,7 @@ class Profile(contact.Contact, Singleton):
             friend.append_message(InfoMessage(message, time.time()))
             friend.actions = True
             if number == self.get_active_number():
-                self.create_message_item(message, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+                self.create_message_item(message, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
                 self._messages.scrollToBottom()
             self.set_active(None)
 
@@ -328,7 +328,7 @@ class Profile(contact.Contact, Singleton):
         """
         friend = self.get_friend_by_number(friend_number)
         friend.load_corr()
-        messages = friend.unsent_messages()
+        messages = friend.get_unsent_messages()
         try:
             for message in messages:
                 self.split_and_send(friend_number, message.get_data()[-1], message.get_data()[0].encode('utf-8'))
@@ -367,10 +367,11 @@ class Profile(contact.Contact, Singleton):
         :param message: text of message
         """
         if friend_num == self.get_active_number():  # add message to list
-            self.create_message_item(message, curr_time(), MESSAGE_OWNER['FRIEND'], message_type)
+            t = time.time()
+            self.create_message_item(message, t, MESSAGE_OWNER['FRIEND'], message_type)
             self._messages.scrollToBottom()
             self._friends[self._active_friend].append_message(
-                TextMessage(message, MESSAGE_OWNER['FRIEND'], time.time(), message_type))
+                TextMessage(message, MESSAGE_OWNER['FRIEND'], t, message_type))
         else:
             friend = self.get_friend_by_number(friend_num)
             friend.inc_messages()
@@ -397,10 +398,17 @@ class Profile(contact.Contact, Singleton):
             friend.inc_receipts()
             if friend.status is not None:
                 self.split_and_send(friend.number, message_type, text.encode('utf-8'))
-            self.create_message_item(text, curr_time(), MESSAGE_OWNER['NOT_SENT'], message_type)
+            t = time.time()
+            self.create_message_item(text, t, MESSAGE_OWNER['NOT_SENT'], message_type)
             self._screen.messageEdit.clear()
             self._messages.scrollToBottom()
-            friend.append_message(TextMessage(text, MESSAGE_OWNER['NOT_SENT'], time.time(), message_type))
+            friend.append_message(TextMessage(text, MESSAGE_OWNER['NOT_SENT'], t, message_type))
+
+    def delete_message(self, time):
+        friend = self._friends[self._active_friend]
+        friend.delete_message(time)
+        self._history.delete_message(friend.tox_id, time)
+        self.update()
 
     # -----------------------------------------------------------------------------------------------------------------
     # History support
@@ -410,35 +418,38 @@ class Profile(contact.Contact, Singleton):
         """
         Save history to db
         """
+        s = Settings.get_instance()
         if hasattr(self, '_history'):
-            if Settings.get_instance()['save_history']:
+            if s['save_history']:
                 for friend in self._friends:
-                    messages = friend.get_corr_for_saving()
+                    if not s['save_unsent_only']:
+                        messages = friend.get_corr_for_saving()
+                    else:
+                        messages = friend.get_unsent_messages_for_saving()
                     if not self._history.friend_exists_in_db(friend.tox_id):
                         self._history.add_friend_to_db(friend.tox_id)
                     self._history.save_messages_to_db(friend.tox_id, messages)
-                    unsent_messages = friend.unsent_messages()
+                    unsent_messages = friend.get_unsent_messages()
                     unsent_time = unsent_messages[0].get_data()[2] if len(unsent_messages) else time.time() + 1
                     self._history.update_messages(friend.tox_id, unsent_time)
             self._history.save()
             del self._history
 
-    def clear_history(self, num=None):
+    def clear_history(self, num=None, save_unsent=False):
         """
         Clear chat history
         """
         if num is not None:
             friend = self._friends[num]
-            friend.clear_corr()
+            friend.clear_corr(save_unsent)
             if self._history.friend_exists_in_db(friend.tox_id):
                 self._history.delete_messages(friend.tox_id)
                 self._history.delete_friend_from_db(friend.tox_id)
         else:  # clear all history
             for number in range(len(self._friends)):
-                self.clear_history(number)
+                self.clear_history(number, save_unsent)
         if num is None or num == self.get_active_number():
-            self._messages.clear()
-            self._messages.repaint()
+            self.update()
 
     def load_history(self):
         """
@@ -455,7 +466,7 @@ class Profile(contact.Contact, Singleton):
             if message.get_type() <= 1:  # text message
                 data = message.get_data()
                 self.create_message_item(data[0],
-                                         convert_time(data[2]),
+                                         data[2],
                                          data[1],
                                          data[3],
                                          False)
@@ -476,7 +487,7 @@ class Profile(contact.Contact, Singleton):
             else:  # info message
                 data = message.get_data()
                 self.create_message_item(data[0],
-                                         convert_time(data[2]),
+                                         data[2],
                                          '',
                                          data[3])
 
@@ -1090,7 +1101,7 @@ class Profile(contact.Contact, Singleton):
                 text = QtGui.QApplication.translate("incoming_call", "Outgoing audio call", None,
                                                     QtGui.QApplication.UnicodeUTF8)
             self._friends[self._active_friend].append_message(InfoMessage(text, time.time()))
-            self.create_message_item(text, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+            self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
             self._messages.scrollToBottom()
         elif num in self._call:  # finish or cancel call if you call with active friend
             self.stop_call(num, False)
@@ -1110,7 +1121,7 @@ class Profile(contact.Contact, Singleton):
         self._incoming_calls.add(friend_number)
         if friend_number == self.get_active_number():
             self._screen.incoming_call()
-            self.create_message_item(text, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+            self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
             self._messages.scrollToBottom()
         else:
             friend.actions = True
@@ -1144,7 +1155,7 @@ class Profile(contact.Contact, Singleton):
         friend = self.get_friend_by_number(friend_number)
         friend.append_message(InfoMessage(text, time.time()))
         if friend_number == self.get_active_number():
-            self.create_message_item(text, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+            self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
             self._messages.scrollToBottom()
 
 

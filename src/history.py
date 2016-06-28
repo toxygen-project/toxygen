@@ -132,6 +132,19 @@ class History:
             db.close()
         pass
 
+    def delete_message(self, tox_id, time):
+        chdir(settings.ProfileHelper.get_path())
+        db = connect(self._name + '.hstr')
+        try:
+            cursor = db.cursor()
+            cursor.execute('DELETE FROM id' + tox_id + ' WHERE unix_time = ' + str(time) + ';')
+            db.commit()
+        except:
+            db.rollback()
+            raise
+        finally:
+            db.close()
+
     def delete_messages(self, tox_id):
         chdir(settings.ProfileHelper.get_path())
         db = connect(self._name + '.hstr')

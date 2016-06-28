@@ -122,7 +122,8 @@ class Settings(dict, Singleton):
             'x': 400,
             'y': 400,
             'message_font_size': 14,
-            'unread_color': 'red'
+            'unread_color': 'red',
+            'save_unsent_only': False
         }
 
     @staticmethod
