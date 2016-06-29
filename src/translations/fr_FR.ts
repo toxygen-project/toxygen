@@ -26,7 +26,7 @@
 <context>
     <name>Callback</name>
     <message>
-        <location filename="callbacks.py" line="182"/>
+        <location filename="callbacks.py" line="183"/>
         <source>File from</source>
         <translation type="unfinished"></translation>
     </message>
@@ -129,13 +129,13 @@ can produce IP leak</source>
         <translation>À propos du programme</translation>
     </message>
     <message>
-        <location filename="profile.py" line="725"/>
+        <location filename="profile.py" line="743"/>
         <source>User {} wants to add you to contact list. Message:
 {}</source>
         <translation>L&apos;Utilisateur {} veut vout rajouter à sa liste de contacts. Message : {}</translation>
     </message>
     <message>
-        <location filename="profile.py" line="727"/>
+        <location filename="profile.py" line="745"/>
         <source>Friend request</source>
         <translation>Demande d&apos;amis</translation>
     </message>
@@ -180,7 +180,7 @@ can produce IP leak</source>
         <translation>Retirer un ami</translation>
     </message>
     <message>
-        <location filename="profile.py" line="565"/>
+        <location filename="profile.py" line="582"/>
         <source>Enter new alias for friend {} or leave empty to use friend&apos;s name:</source>
         <translation>Entrez un nouvel alias pour l&apos;ami {} ou laissez vide pour garder son nom de base :</translation>
     </message>
@@ -195,7 +195,7 @@ can produce IP leak</source>
         <translation type="obsolete">Trouver le contact</translation>
     </message>
     <message>
-        <location filename="profile.py" line="697"/>
+        <location filename="profile.py" line="715"/>
         <source>Friend added</source>
         <translation>Ami rajouté</translation>
     </message>
@@ -207,12 +207,12 @@ Version: </source>
 Version :</translation>
     </message>
     <message>
-        <location filename="profile.py" line="698"/>
+        <location filename="profile.py" line="716"/>
         <source>Friend added without sending friend request</source>
         <translation>Ami rajouté sans avoir envoyé de demande</translation>
     </message>
     <message>
-        <location filename="list_items.py" line="464"/>
+        <location filename="list_items.py" line="484"/>
         <source>Choose folder</source>
         <translation>Choisir le dossier</translation>
     </message>
@@ -272,53 +272,58 @@ Version :</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="widgets.py" line="84"/>
+        <location filename="widgets.py" line="83"/>
         <source>Copy link location</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="widgets.py" line="87"/>
+        <location filename="widgets.py" line="86"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="widgets.py" line="90"/>
+        <location filename="widgets.py" line="89"/>
         <source>Select all</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="widgets.py" line="93"/>
+        <location filename="widgets.py" line="92"/>
         <source>Delete</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="widgets.py" line="96"/>
+        <location filename="widgets.py" line="95"/>
         <source>Paste</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="widgets.py" line="99"/>
+        <location filename="widgets.py" line="98"/>
         <source>Cut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="widgets.py" line="102"/>
+        <location filename="widgets.py" line="101"/>
         <source>Undo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="widgets.py" line="105"/>
+        <location filename="widgets.py" line="104"/>
         <source>Redo</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="widgets.py" line="126"/>
+        <location filename="widgets.py" line="125"/>
         <source>Save</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="profile.py" line="250"/>
+        <location filename="profile.py" line="254"/>
         <source>User {} is now known as {}</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="list_items.py" line="145"/>
+        <source>Delete message</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -340,32 +345,32 @@ Version :</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="247"/>
+        <location filename="mainscreen_widgets.py" line="248"/>
         <source>Send screenshot</source>
         <translation type="unfinished">Envoyer une capture d&apos;écran</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="248"/>
+        <location filename="mainscreen_widgets.py" line="249"/>
         <source>Send file</source>
         <translation type="unfinished">Envoyer le fichier</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="249"/>
+        <location filename="mainscreen_widgets.py" line="250"/>
         <source>Send audio message</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="250"/>
+        <location filename="mainscreen_widgets.py" line="251"/>
         <source>Send video message</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="251"/>
+        <location filename="mainscreen_widgets.py" line="252"/>
         <source>Add smiley</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="252"/>
+        <location filename="mainscreen_widgets.py" line="253"/>
         <source>Send sticker</source>
         <translation type="unfinished"></translation>
     </message>
@@ -386,12 +391,12 @@ Version :</translation>
 <context>
     <name>PluginWindow</name>
     <message>
-        <location filename="plugins/plugin_super_class.py" line="130"/>
+        <location filename="plugins/plugin_super_class.py" line="132"/>
         <source>List of commands for plugin {}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="plugins/plugin_super_class.py" line="131"/>
+        <location filename="plugins/plugin_super_class.py" line="133"/>
         <source>No commands available</source>
         <translation type="unfinished"></translation>
     </message>
@@ -399,42 +404,42 @@ Version :</translation>
 <context>
     <name>PluginsForm</name>
     <message>
-        <location filename="menu.py" line="697"/>
+        <location filename="menu.py" line="737"/>
         <source>Plugins</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="698"/>
+        <location filename="menu.py" line="738"/>
         <source>Open selected plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="711"/>
+        <location filename="menu.py" line="751"/>
         <source>No GUI found for this plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="727"/>
+        <location filename="menu.py" line="767"/>
         <source>No description available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="743"/>
+        <location filename="menu.py" line="783"/>
         <source>Disable plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="745"/>
+        <location filename="menu.py" line="785"/>
         <source>Enable plugin</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="735"/>
+        <location filename="menu.py" line="775"/>
         <source>No plugins found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="712"/>
+        <location filename="menu.py" line="752"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
@@ -560,17 +565,17 @@ Version :</translation>
 <context>
     <name>audioSettingsForm</name>
     <message>
-        <location filename="menu.py" line="654"/>
+        <location filename="menu.py" line="694"/>
         <source>Audio settings</source>
         <translation>Paramètres audio</translation>
     </message>
     <message>
-        <location filename="menu.py" line="655"/>
+        <location filename="menu.py" line="695"/>
         <source>Input device:</source>
         <translation>Péripherique d&apos;entrée :</translation>
     </message>
     <message>
-        <location filename="menu.py" line="656"/>
+        <location filename="menu.py" line="696"/>
         <source>Output device:</source>
         <translation>Péripherique de sortie :</translation>
     </message>
@@ -578,32 +583,32 @@ Version :</translation>
 <context>
     <name>incoming_call</name>
     <message>
-        <location filename="profile.py" line="1098"/>
+        <location filename="profile.py" line="1120"/>
         <source>Incoming video call</source>
         <translation>Appel vidéo entrant</translation>
     </message>
     <message>
-        <location filename="profile.py" line="1101"/>
+        <location filename="profile.py" line="1123"/>
         <source>Incoming audio call</source>
         <translation>Appel audio entrant</translation>
     </message>
     <message>
-        <location filename="profile.py" line="1081"/>
+        <location filename="profile.py" line="1103"/>
         <source>Outgoing video call</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="profile.py" line="1084"/>
+        <location filename="profile.py" line="1106"/>
         <source>Outgoing audio call</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="profile.py" line="1130"/>
+        <location filename="profile.py" line="1152"/>
         <source>Call declined</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="profile.py" line="1132"/>
+        <location filename="profile.py" line="1154"/>
         <source>Call finished</source>
         <translation type="unfinished"></translation>
     </message>
@@ -611,48 +616,53 @@ Version :</translation>
 <context>
     <name>interfaceForm</name>
     <message>
-        <location filename="menu.py" line="572"/>
+        <location filename="menu.py" line="602"/>
         <source>Interface settings</source>
         <translation>Paramêtres de l&apos;interface</translation>
     </message>
     <message>
-        <location filename="menu.py" line="573"/>
+        <location filename="menu.py" line="603"/>
         <source>Theme:</source>
         <translation>Thème :</translation>
     </message>
     <message>
-        <location filename="menu.py" line="574"/>
+        <location filename="menu.py" line="604"/>
         <source>Language:</source>
         <translation>Langue :</translation>
     </message>
     <message>
-        <location filename="menu.py" line="575"/>
+        <location filename="menu.py" line="605"/>
         <source>Smileys</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="576"/>
+        <location filename="menu.py" line="606"/>
         <source>Smiley pack:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="577"/>
+        <location filename="menu.py" line="607"/>
         <source>Mirror mode</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="578"/>
+        <location filename="menu.py" line="608"/>
         <source>Messages font size:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="589"/>
+        <location filename="menu.py" line="629"/>
         <source>Restart app to apply settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="590"/>
+        <location filename="menu.py" line="630"/>
         <source>Restart required</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="609"/>
+        <source>Select unread messages notification color</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -699,7 +709,7 @@ Version :</translation>
         <translation>toxygen</translation>
     </message>
     <message>
-        <location filename="main.py" line="125"/>
+        <location filename="main.py" line="124"/>
         <source>Looks like other instance of Toxygen uses this profile! Continue?</source>
         <translation>Il semble qu&apos;une autre instance de Toxygen utilise ce profil ! Continuer ?</translation>
     </message>
@@ -712,22 +722,22 @@ Version :</translation>
 <context>
     <name>notificationsForm</name>
     <message>
-        <location filename="menu.py" line="489"/>
+        <location filename="menu.py" line="517"/>
         <source>Notification settings</source>
         <translation>Paramêtres de notification</translation>
     </message>
     <message>
-        <location filename="menu.py" line="490"/>
+        <location filename="menu.py" line="518"/>
         <source>Enable notifications</source>
         <translation>Activer les notifications</translation>
     </message>
     <message>
-        <location filename="menu.py" line="491"/>
+        <location filename="menu.py" line="519"/>
         <source>Enable call&apos;s sound</source>
         <translation>Activer les sons d&apos;appel</translation>
     </message>
     <message>
-        <location filename="menu.py" line="492"/>
+        <location filename="menu.py" line="520"/>
         <source>Enable sound notifications</source>
         <translation>Activer les sons de notifications</translation>
     </message>
@@ -735,72 +745,72 @@ Version :</translation>
 <context>
     <name>privacySettings</name>
     <message>
-        <location filename="menu.py" line="407"/>
+        <location filename="menu.py" line="413"/>
         <source>Privacy settings</source>
         <translation>Paramêtres de confidentialité</translation>
     </message>
     <message>
-        <location filename="menu.py" line="408"/>
+        <location filename="menu.py" line="414"/>
         <source>Save chat history</source>
         <translation>Sauvegarder l&apos;historique de chat</translation>
     </message>
     <message>
-        <location filename="menu.py" line="409"/>
+        <location filename="menu.py" line="415"/>
         <source>Allow file auto accept</source>
         <translation>Autoriser les fichier automatiquement</translation>
     </message>
     <message>
-        <location filename="menu.py" line="410"/>
+        <location filename="menu.py" line="416"/>
         <source>Send typing notifications</source>
         <translation>Notifier la frappe</translation>
     </message>
     <message>
-        <location filename="menu.py" line="411"/>
+        <location filename="menu.py" line="417"/>
         <source>Auto accept default path:</source>
         <translation>Chemin d&apos;accès des fichiers acceptés automatiquement :</translation>
     </message>
     <message>
-        <location filename="menu.py" line="412"/>
+        <location filename="menu.py" line="418"/>
         <source>Change</source>
         <translation>Modifier</translation>
     </message>
     <message>
-        <location filename="menu.py" line="413"/>
+        <location filename="menu.py" line="419"/>
         <source>Allow inlines</source>
         <translation>Activer l&apos;auto-réception</translation>
     </message>
     <message>
-        <location filename="menu.py" line="436"/>
+        <location filename="menu.py" line="464"/>
         <source>Chat history</source>
         <translation>Historique de chat</translation>
     </message>
     <message>
-        <location filename="menu.py" line="439"/>
+        <location filename="menu.py" line="467"/>
         <source>History will be cleaned! Continue?</source>
         <translation>L&apos;Historique va être nettoyé ! Confirmer ?</translation>
     </message>
     <message>
-        <location filename="menu.py" line="415"/>
+        <location filename="menu.py" line="421"/>
         <source>Blocked users:</source>
         <translation>Utilisateurs bloqués :</translation>
     </message>
     <message>
-        <location filename="menu.py" line="416"/>
+        <location filename="menu.py" line="422"/>
         <source>Unblock</source>
         <translation>Débloquer</translation>
     </message>
     <message>
-        <location filename="menu.py" line="417"/>
+        <location filename="menu.py" line="423"/>
         <source>Block user</source>
         <translation>Bloquer l&apos;utilisateur</translation>
     </message>
     <message>
-        <location filename="menu.py" line="423"/>
+        <location filename="menu.py" line="435"/>
         <source>Add to friend list</source>
         <translation>Ajouter à la liste des amis</translation>
     </message>
     <message>
-        <location filename="menu.py" line="424"/>
+        <location filename="menu.py" line="436"/>
         <source>Do you want to add this user to friend list?</source>
         <translation>Voulez vous rajouter cet utilisateur à votre liste d&apos;amis ?</translation>
     </message>
@@ -810,40 +820,45 @@ Version :</translation>
         <translation type="obsolete">Bloquer l&apos;ID TOX :</translation>
     </message>
     <message>
-        <location filename="menu.py" line="414"/>
+        <location filename="menu.py" line="420"/>
         <source>Block by public key:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="424"/>
+        <source>Save unsent messages only</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>tray</name>
     <message>
-        <location filename="main.py" line="173"/>
+        <location filename="main.py" line="172"/>
         <source>Open Toxygen</source>
         <translation>Ouvrir Toxygen</translation>
     </message>
     <message>
-        <location filename="main.py" line="182"/>
+        <location filename="main.py" line="181"/>
         <source>Exit</source>
         <translation>Quitter</translation>
     </message>
     <message>
-        <location filename="main.py" line="174"/>
+        <location filename="main.py" line="173"/>
         <source>Set status</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="175"/>
+        <location filename="main.py" line="174"/>
         <source>Online</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="176"/>
+        <location filename="main.py" line="175"/>
         <source>Away</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="main.py" line="177"/>
+        <location filename="main.py" line="176"/>
         <source>Busy</source>
         <translation type="unfinished"></translation>
     </message>

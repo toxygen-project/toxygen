@@ -47,8 +47,6 @@ class Profile(contact.Contact, Singleton):
         self._friends, self._active_friend = [], -1
         for i in data:  # creates list of friends
             tox_id = tox.friend_get_public_key(i)
-            if not self._history.friend_exists_in_db(tox_id):
-                self._history.add_friend_to_db(tox_id)
             try:
                 alias = list(filter(lambda x: x[0] == tox_id, aliases))[0][1]
             except:
