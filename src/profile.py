@@ -54,11 +54,14 @@ class Profile(contact.Contact, Singleton):
             item = self.create_friend_item()
             name = alias or tox.friend_get_name(i) or tox_id
             status_message = tox.friend_get_status_message(i)
+            if not self._history.friend_exists_in_db(tox_id):
+                self._history.add_friend_to_db(tox_id)
             message_getter = self._history.messages_getter(tox_id)
             friend = Friend(message_getter, i, name, status_message, item, tox_id)
             friend.set_alias(alias)
             self._friends.append(friend)
         self.filtration(self._show_online)
+
 
     # -----------------------------------------------------------------------------------------------------------------
     # Edit current user's data
