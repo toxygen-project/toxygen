@@ -592,8 +592,12 @@ class InterfaceSettings(CenteredWidget):
         self.messages_font_size.setCurrentIndex(settings['message_font_size'] - 10)
 
         self.unread = QtGui.QPushButton(self)
-        self.unread.setGeometry(QtCore.QRect(30, 380, 340, 40))
+        self.unread.setGeometry(QtCore.QRect(30, 380, 340, 30))
         self.unread.clicked.connect(self.select_color)
+
+        self.compact_mode = QtGui.QCheckBox(self)
+        self.compact_mode.setGeometry(QtCore.QRect(30, 425, 370, 20))
+        self.compact_mode.setChecked(settings['compact_mode'])
 
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -607,6 +611,7 @@ class InterfaceSettings(CenteredWidget):
         self.mirror_mode.setText(QtGui.QApplication.translate("interfaceForm", "Mirror mode", None, QtGui.QApplication.UnicodeUTF8))
         self.messages_font_size_label.setText(QtGui.QApplication.translate("interfaceForm", "Messages font size:", None, QtGui.QApplication.UnicodeUTF8))
         self.unread.setText(QtGui.QApplication.translate("interfaceForm", "Select unread messages notification color", None, QtGui.QApplication.UnicodeUTF8))
+        self.compact_mode.setText(QtGui.QApplication.translate("interfaceForm", "Compact contact list", None, QtGui.QApplication.UnicodeUTF8))
 
     def select_color(self):
         col = QtGui.QColorDialog.getColor()
@@ -621,15 +626,13 @@ class InterfaceSettings(CenteredWidget):
         settings = Settings.get_instance()
         settings['theme'] = str(self.themeSelect.currentText())
         settings['smileys'] = self.smileys.isChecked()
+        restart = False
         if settings['mirror_mode'] != self.mirror_mode.isChecked():
             settings['mirror_mode'] = self.mirror_mode.isChecked()
-            msgBox = QtGui.QMessageBox()
-            text = QtGui.QApplication.translate("interfaceForm", 'Restart app to apply settings', None,
-                                                QtGui.QApplication.UnicodeUTF8)
-            msgBox.setWindowTitle(QtGui.QApplication.translate("interfaceForm", 'Restart required', None,
-                                                               QtGui.QApplication.UnicodeUTF8))
-            msgBox.setText(text)
-            msgBox.exec_()
+            restart = True
+        if settings['compact_mode'] != self.compact_mode.isChecked():
+            settings['compact_mode'] = self.compact_mode.isChecked()
+            restart = True
         settings['smiley_pack'] = self.smiley_pack.currentText()
         smileys.SmileyLoader.get_instance().load_pack()
         language = self.lang_choose.currentText()
@@ -644,6 +647,14 @@ class InterfaceSettings(CenteredWidget):
         settings['message_font_size'] = self.messages_font_size.currentIndex() + 10
         Profile.get_instance().update()
         settings.save()
+        if restart:
+            msgBox = QtGui.QMessageBox()
+            text = QtGui.QApplication.translate("interfaceForm", 'Restart app to apply settings', None,
+                                                QtGui.QApplication.UnicodeUTF8)
+            msgBox.setWindowTitle(QtGui.QApplication.translate("interfaceForm", 'Restart required', None,
+                                                               QtGui.QApplication.UnicodeUTF8))
+            msgBox.setText(text)
+            msgBox.exec_()
 
 
 class AudioSettings(CenteredWidget):

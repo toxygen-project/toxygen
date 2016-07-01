@@ -62,7 +62,6 @@ class Profile(contact.Contact, Singleton):
             self._friends.append(friend)
         self.filtration(self._show_online)
 
-
     # -----------------------------------------------------------------------------------------------------------------
     # Edit current user's data
     # -----------------------------------------------------------------------------------------------------------------
@@ -116,15 +115,16 @@ class Profile(contact.Contact, Singleton):
         :param filter_str: show contacts which name contains this substring
         """
         filter_str = filter_str.lower()
+        settings = Settings.get_instance()
         for index, friend in enumerate(self._friends):
             friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name.lower())
             friend.visibility = friend.visibility or friend.messages or friend.actions
             if friend.visibility:
-                self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 70))
+                self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250,
+                                                                               40 if settings['compact_mode'] else 70))
             else:
                 self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 0))
         self._show_online, self._filter_string = show_online, filter_str
-        settings = Settings.get_instance()
         settings['show_online_friends'] = self._show_online
         settings.save()
 
@@ -507,7 +507,7 @@ class Profile(contact.Contact, Singleton):
         """
         item = ContactItem()
         elem = QtGui.QListWidgetItem(self._screen.friends_list)
-        elem.setSizeHint(QtCore.QSize(250, 70))
+        elem.setSizeHint(QtCore.QSize(250, item.height()))
         self._screen.friends_list.addItem(elem)
         self._screen.friends_list.setItemWidget(elem, item)
         return item

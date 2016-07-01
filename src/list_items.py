@@ -167,26 +167,28 @@ class ContactItem(QtGui.QWidget):
 
     def __init__(self, parent=None):
         QtGui.QWidget.__init__(self, parent)
-        self.setBaseSize(QtCore.QSize(250, 70))
+        mode = settings.Settings.get_instance()['compact_mode']
+        self.setBaseSize(QtCore.QSize(250, 40 if mode else 70))
         self.avatar_label = QtGui.QLabel(self)
-        self.avatar_label.setGeometry(QtCore.QRect(3, 3, 64, 64))
+        size = 32 if mode else 64
+        self.avatar_label.setGeometry(QtCore.QRect(3, 4, size, size))
         self.avatar_label.setScaledContents(True)
         self.name = DataLabel(self)
-        self.name.setGeometry(QtCore.QRect(75, 10, 150, 25))
+        self.name.setGeometry(QtCore.QRect(50 if mode else 75, 3 if mode else 10, 150, 15 if mode else 25))
         font = QtGui.QFont()
         font.setFamily("Times New Roman")
-        font.setPointSize(12)
+        font.setPointSize(10 if mode else 12)
         font.setBold(True)
         self.name.setFont(font)
         self.status_message = DataLabel(self)
-        self.status_message.setGeometry(QtCore.QRect(75, 30, 170, 20))
+        self.status_message.setGeometry(QtCore.QRect(50 if mode else 75, 20 if mode else 30, 170, 15 if mode else 20))
         font.setPointSize(10)
         font.setBold(False)
         self.status_message.setFont(font)
         self.connection_status = StatusCircle(self)
-        self.connection_status.setGeometry(QtCore.QRect(230, 5, 32, 32))
+        self.connection_status.setGeometry(QtCore.QRect(230, -2 if mode else 5, 32, 32))
         self.messages = UnreadMessagesCount(self)
-        self.messages.setGeometry(QtCore.QRect(52, 50, 30, 20))
+        self.messages.setGeometry(QtCore.QRect(20 if mode else 52, 20 if mode else 50, 30, 20))
 
 
 class StatusCircle(QtGui.QWidget):
