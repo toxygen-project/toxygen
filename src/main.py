@@ -36,7 +36,7 @@ class Toxygen:
         Show password screen
         """
         tmp = [data]
-        p = PasswordScreen(toxencryptsave.LibToxEncryptSave.get_instance(), tmp)
+        p = PasswordScreen(toxencryptsave.ToxEncryptSave.get_instance(), tmp)
         p.show()
         self.app.connect(self.app, QtCore.SIGNAL("lastWindowClosed()"), self.app, QtCore.SLOT("quit()"))
         self.app.exec_()
@@ -58,7 +58,7 @@ class Toxygen:
             dark_style = fl.read()
         app.setStyleSheet(dark_style)
 
-        encrypt_save = toxencryptsave.LibToxEncryptSave()
+        encrypt_save = toxencryptsave.ToxEncryptSave()
 
         if self.path is not None:
             path = os.path.dirname(self.path) + '/'

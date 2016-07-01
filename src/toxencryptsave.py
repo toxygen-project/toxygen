@@ -34,7 +34,7 @@ TOX_ERR_DECRYPTION = {
 TOX_PASS_ENCRYPTION_EXTRA_LENGTH = 80
 
 
-class LibToxEncryptSave(util.Singleton):
+class ToxEncryptSave(util.Singleton):
 
     libtoxencryptsave = libtox.LibToxEncryptSave()
 

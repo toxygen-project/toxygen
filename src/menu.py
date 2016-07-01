@@ -205,7 +205,7 @@ class ProfileSettings(CenteredWidget):
     def new_password(self):
         if self.password.text() == self.confirm_password.text():
             if not len(self.password.text()) or len(self.password.text()) >= 8:
-                e = toxencryptsave.LibToxEncryptSave.get_instance()
+                e = toxencryptsave.ToxEncryptSave.get_instance()
                 e.set_password(self.password.text())
                 self.close()
             else:

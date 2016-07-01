@@ -3,7 +3,7 @@ from sqlite3 import connect
 import settings
 from os import chdir
 import os.path
-from toxencryptsave import LibToxEncryptSave
+from toxencryptsave import ToxEncryptSave
 
 
 PAGE_SIZE = 42
@@ -22,7 +22,7 @@ class History:
         chdir(settings.ProfileHelper.get_path())
         path = settings.ProfileHelper.get_path() + self._name + '.hstr'
         if os.path.exists(path):
-            decr = LibToxEncryptSave.get_instance()
+            decr = ToxEncryptSave.get_instance()
             try:
                 with open(path, 'rb') as fin:
                     data = fin.read()
@@ -40,7 +40,7 @@ class History:
         db.close()
 
     def save(self):
-        encr = LibToxEncryptSave.get_instance()
+        encr = ToxEncryptSave.get_instance()
         if encr.has_password():
             path = settings.ProfileHelper.get_path() + self._name + '.hstr'
             with open(path, 'rb') as fin:
@@ -54,7 +54,7 @@ class History:
         new_path = directory + self._name + '.hstr'
         with open(path, 'rb') as fin:
             data = fin.read()
-        encr = LibToxEncryptSave.get_instance()
+        encr = ToxEncryptSave.get_instance()
         if encr.has_password():
             data = encr.pass_encrypt(data)
         with open(new_path, 'wb') as fout:
