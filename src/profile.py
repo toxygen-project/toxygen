@@ -38,6 +38,7 @@ class Profile(contact.Contact, Singleton):
         self._file_transfers = {}  # dict of file transfers. key - tuple (friend_number, file_number)
         self._call = calls.AV(tox.AV)  # object with data about calls
         self._incoming_calls = set()
+        self._load_history = True
         settings = Settings.get_instance()
         self._show_online = settings['show_online_friends']
         screen.online_contacts.setCurrentIndex(int(self._show_online))
@@ -178,6 +179,7 @@ class Profile(contact.Contact, Singleton):
                 self._messages.clear()
                 friend.load_corr()
                 messages = friend.get_corr()[-PAGE_SIZE:]
+                self._load_history = False
                 for message in messages:
                     if message.get_type() <= 1:
                         data = message.get_data()
@@ -206,6 +208,7 @@ class Profile(contact.Contact, Singleton):
                                                  '',
                                                  data[3])
                 self._messages.scrollToBottom()
+                self._load_history = True
                 if value in self._call:
                     self._screen.active_call()
                 elif value in self._incoming_calls:
@@ -457,6 +460,9 @@ class Profile(contact.Contact, Singleton):
         """
         Tries to load next part of messages
         """
+        if not self._load_history:
+            return
+        self._load_history = False
         friend = self._friends[self._active_friend]
         friend.load_corr(False)
         data = friend.get_corr()
@@ -492,6 +498,7 @@ class Profile(contact.Contact, Singleton):
                                          data[2],
                                          '',
                                          data[3])
+        self._load_history = True
 
     def export_history(self, directory):
         self._history.export(directory)
@@ -760,8 +767,9 @@ class Profile(contact.Contact, Singleton):
         Recreate tox instance
         :param restart: method which calls restart and returns new tox instance
         """
-        for key in self._file_transfers.keys():
-            self._file_transfers[key].cancel()
+        # TODO: file transfers!!
+        for key in list(self._file_transfers.keys()):
+            self._file_transfers[key].cancelled()
             del self._file_transfers[key]
         self._call.stop()
         del self._tox
