@@ -378,7 +378,7 @@ class PrivacySettings(CenteredWidget):
         self.auto_path = QtGui.QLabel(self)
         self.auto_path.setGeometry(QtCore.QRect(10, 230, 350, 30))
         self.path = QtGui.QPlainTextEdit(self)
-        self.path.setGeometry(QtCore.QRect(10, 265, 330, 45))
+        self.path.setGeometry(QtCore.QRect(10, 265, 350, 45))
         self.change_path = QtGui.QPushButton(self)
         self.change_path.setGeometry(QtCore.QRect(10, 320, 350, 30))
         settings = Settings.get_instance()
@@ -557,7 +557,7 @@ class InterfaceSettings(CenteredWidget):
         self.themeSelect.setCurrentIndex(index)
         self.lang_choose = QtGui.QComboBox(self)
         self.lang_choose.setGeometry(QtCore.QRect(30, 110, 120, 30))
-        supported = Settings.supported_languages()
+        supported = sorted(Settings.supported_languages().keys(), reverse=True)
         for key in supported:
             self.lang_choose.insertItem(0, key)
             if settings['language'] == key:

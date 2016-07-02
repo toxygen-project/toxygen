@@ -393,6 +393,7 @@ class Profile(contact.Contact, Singleton):
             plugin_support.PluginLoader.get_instance().command(text[8:])
             self._screen.messageEdit.clear()
         elif text and self._active_friend + 1:
+            text = ''.join(c if c <= '\u10FFFF' else '\u25AF' for c in text)
             if text.startswith('/me '):
                 message_type = TOX_MESSAGE_TYPE['ACTION']
                 text = text[4:]

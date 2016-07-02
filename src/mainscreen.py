@@ -408,9 +408,9 @@ class MainWindow(QtGui.QMainWindow):
         if not hasattr(self, 'menu'):
             self.menu = DropdownMenu(self)
         self.menu.setGeometry(QtCore.QRect(0 if Settings.get_instance()['mirror_mode'] else 270,
-                                           self.height() - 100,
-                                           150,
-                                           100))
+                                           self.height() - 120,
+                                           180,
+                                           120))
         self.menu.show()
 
     # -----------------------------------------------------------------------------------------------------------------
