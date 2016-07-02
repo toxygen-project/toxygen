@@ -39,6 +39,18 @@ class TextMessage(Message):
         return self._message, self._owner, self._time, self._type
 
 
+class GroupChatTextMessage(TextMessage):
+
+    def __init__(self, friend_name, *args):
+        super().__init__(*args)
+        self._name = friend_name
+
+    def get_data(self):
+        data = list(super().get_data())
+        data.append(self._name)
+        return tuple(data)
+
+
 class TransferMessage(Message):
     """
     Message with info about file transfer
