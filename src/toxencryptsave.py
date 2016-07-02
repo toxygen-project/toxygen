@@ -48,6 +48,9 @@ class ToxEncryptSave(util.Singleton):
     def has_password(self):
         return bool(self._passphrase)
 
+    def is_password(self, password):
+        return self._passphrase == password
+
     def is_data_encrypted(self, data):
         func = self.libtoxencryptsave.tox_is_data_encrypted
         func.restype = c_bool

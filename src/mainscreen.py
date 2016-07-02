@@ -52,8 +52,10 @@ class MainWindow(QtGui.QMainWindow):
         self.actionSettings.setObjectName("actionSettings")
         self.audioSettings = QtGui.QAction(MainWindow)
         self.pluginData = QtGui.QAction(MainWindow)
+        self.lockApp = QtGui.QAction(MainWindow)
         self.menuProfile.addAction(self.actionAdd_friend)
         self.menuProfile.addAction(self.actionSettings)
+        self.menuProfile.addAction(self.lockApp)
         self.menuSettings.addAction(self.actionPrivacy_settings)
         self.menuSettings.addAction(self.actionInterface_settings)
         self.menuSettings.addAction(self.actionNotifications)
@@ -75,6 +77,7 @@ class MainWindow(QtGui.QMainWindow):
         self.actionNotifications.triggered.connect(self.notification_settings)
         self.audioSettings.triggered.connect(self.audio_settings)
         self.pluginData.triggered.connect(self.plugins_menu)
+        self.lockApp.triggered.connect(self.lock_app)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def languageChange(self, *args, **kwargs):
@@ -86,6 +89,7 @@ class MainWindow(QtGui.QMainWindow):
         return super(MainWindow, self).event(event)
 
     def retranslateUi(self):
+        self.lockApp.setText(QtGui.QApplication.translate("MainWindow", "Lock", None, QtGui.QApplication.UnicodeUTF8))
         self.menuPlugins.setTitle(QtGui.QApplication.translate("MainWindow", "Plugins", None, QtGui.QApplication.UnicodeUTF8))
         self.pluginData.setText(QtGui.QApplication.translate("MainWindow", "List of plugins", None, QtGui.QApplication.UnicodeUTF8))
         self.menuProfile.setTitle(QtGui.QApplication.translate("MainWindow", "Profile", None, QtGui.QApplication.UnicodeUTF8))
@@ -386,6 +390,19 @@ class MainWindow(QtGui.QMainWindow):
     def audio_settings(self):
         self.audio_s = AudioSettings()
         self.audio_s.show()
+
+    def lock_app(self):
+        if toxencryptsave.ToxEncryptSave.get_instance().has_password():
+            Settings.get_instance().locked = True
+            self.hide()
+        else:
+            msgBox = QtGui.QMessageBox()
+            msgBox.setWindowTitle(
+                QtGui.QApplication.translate("MainWindow", "Cannot lock app", None, QtGui.QApplication.UnicodeUTF8))
+            msgBox.setText(
+                QtGui.QApplication.translate("MainWindow", 'Error. Profile password is not set.', None,
+                                             QtGui.QApplication.UnicodeUTF8))
+            msgBox.exec_()
 
     def show_menu(self):
         if not hasattr(self, 'menu'):

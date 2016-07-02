@@ -19,12 +19,11 @@ class PasswordArea(LineEdit):
             super(PasswordArea, self).keyPressEvent(event)
 
 
-class PasswordScreen(CenteredWidget):
+class PasswordScreenBase(CenteredWidget):
 
-    def __init__(self, encrypt, data):
-        super(PasswordScreen, self).__init__()
+    def __init__(self, encrypt):
+        super(PasswordScreenBase, self).__init__()
         self._encrypt = encrypt
-        self._data = data
         self.initUI()
 
     def initUI(self):
@@ -53,6 +52,27 @@ class PasswordScreen(CenteredWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def button_click(self):
+        pass
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Enter:
+            self.button_click()
+        else:
+            super(PasswordScreenBase, self).keyPressEvent(event)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("pass", "Enter password", None, QtGui.QApplication.UnicodeUTF8))
+        self.enter_pass.setText(QtGui.QApplication.translate("pass", "Password:", None, QtGui.QApplication.UnicodeUTF8))
+        self.warning.setText(QtGui.QApplication.translate("pass", "Incorrect password", None, QtGui.QApplication.UnicodeUTF8))
+
+
+class PasswordScreen(PasswordScreenBase):
+
+    def __init__(self, encrypt, data):
+        super(PasswordScreen, self).__init__(encrypt)
+        self._data = data
+
+    def button_click(self):
         if self.password.text():
             try:
                 self._encrypt.set_password(self.password.text())
@@ -64,14 +84,19 @@ class PasswordScreen(CenteredWidget):
                 self._data[0] = new_data
                 self.close()
 
-    def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Enter:
-            self.button_click()
-        else:
-            super(PasswordScreen, self).keyPressEvent(event)
 
-    def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate("pass", "Enter password", None, QtGui.QApplication.UnicodeUTF8))
-        self.enter_pass.setText(QtGui.QApplication.translate("pass", "Password:", None, QtGui.QApplication.UnicodeUTF8))
-        self.warning.setText(QtGui.QApplication.translate("pass", "Incorrect password", None, QtGui.QApplication.UnicodeUTF8))
+class UnlockAppScreen(PasswordScreenBase):
 
+    def __init__(self, encrypt, callback):
+        super(UnlockAppScreen, self).__init__(encrypt)
+        self._callback = callback
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+
+    def button_click(self):
+        if self.password.text():
+            if self._encrypt.is_password(self.password.text()):
+                self._callback()
+                self.close()
+            else:
+                self.warning.setVisible(True)
+                print('Wrong password!')

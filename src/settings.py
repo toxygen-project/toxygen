@@ -35,6 +35,7 @@ class Settings(dict, Singleton):
             self.save()
         smileys.SmileyLoader(self)
         p = pyaudio.PyAudio()
+        self.locked = False
         self.audio = {'input': p.get_default_input_device_info()['index'],
                       'output': p.get_default_output_device_info()['index']}
 

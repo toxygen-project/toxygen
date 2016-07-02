@@ -62,7 +62,7 @@ def friend_status(tox, friend_num, new_status, user_data):
     """
     Check friend's status (none, busy, away)
     """
-    print("Friend's #{} status changed! New status: {}".format(friend_num, new_status))
+    print("Friend's #{} status changed!".format(friend_num))
     profile = Profile.get_instance()
     friend = profile.get_friend_by_number(friend_num)
     if friend.status is None and Settings.get_instance()['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
@@ -94,7 +94,7 @@ def friend_name(tox, friend_num, name, size, user_data):
     Friend changed his name
     """
     profile = Profile.get_instance()
-    print('New name: ', friend_num, name)
+    print('New name friend #' + str(friend_num))
     invoke_in_main_thread(profile.new_name, friend_num, name)
 
 
@@ -106,7 +106,7 @@ def friend_status_message(tox, friend_num, status_message, size, user_data):
     profile = Profile.get_instance()
     friend = profile.get_friend_by_number(friend_num)
     invoke_in_main_thread(friend.set_status_message, status_message)
-    print('User #{} has new status: {}'.format(friend_num, status_message))
+    print('User #{} has new status'.format(friend_num))
     invoke_in_main_thread(profile.send_messages, friend_num)
     if profile.get_active_number() == friend_num:
         invoke_in_main_thread(profile.set_active)
@@ -123,7 +123,7 @@ def friend_message(window, tray):
         invoke_in_main_thread(profile.new_message, friend_number, message_type, message)
         if not window.isActiveWindow():
             friend = profile.get_friend_by_number(friend_number)
-            if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
+            if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
                 invoke_in_main_thread(tray_notification, friend.name, message, tray, window)
             if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                 sound_notification(SOUND_NOTIFICATION['MESSAGE'])
@@ -178,14 +178,14 @@ def tox_file_recv(window, tray):
                                   file_name)
             if not window.isActiveWindow():
                 friend = profile.get_friend_by_number(friend_number)
-                if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
+                if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
                     file_from = QtGui.QApplication.translate("Callback", "File from", None, QtGui.QApplication.UnicodeUTF8)
                     invoke_in_main_thread(tray_notification, file_from + ' ' + friend.name, file_name, tray, window)
                 if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                     sound_notification(SOUND_NOTIFICATION['FILE_TRANSFER'])
                 invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
         else:  # AVATAR
-            print ('Avatar')
+            print('Avatar')
             invoke_in_main_thread(profile.incoming_avatar,
                                   friend_number,
                                   file_number,

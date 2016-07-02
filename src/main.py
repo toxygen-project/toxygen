@@ -12,7 +12,7 @@ from callbacks import init_callbacks
 from util import curr_directory
 import styles.style
 import toxencryptsave
-from passwordscreen import PasswordScreen
+from passwordscreen import PasswordScreen, UnlockAppScreen
 import profile
 from plugin_support import PluginLoader
 
@@ -151,7 +151,7 @@ class Toxygen:
             def aboutToShow(self):
                 status = profile.Profile.get_instance().status
                 act = self.act
-                if status is None:
+                if status is None or Settings.get_instance().locked:
                     self.actions()[1].setVisible(False)
                 else:
                     self.actions()[1].setVisible(True)
@@ -159,6 +159,7 @@ class Toxygen:
                     act.actions()[1].setChecked(False)
                     act.actions()[2].setChecked(False)
                     act.actions()[status].setChecked(True)
+                self.actions()[2].setVisible(not Settings.get_instance().locked)
 
             def languageChange(self, *args, **kwargs):
                 self.actions()[0].setText(QtGui.QApplication.translate('tray', 'Open Toxygen', None, QtGui.QApplication.UnicodeUTF8))
@@ -181,10 +182,19 @@ class Toxygen:
         exit = m.addAction(QtGui.QApplication.translate('tray', 'Exit', None, QtGui.QApplication.UnicodeUTF8))
 
         def show_window():
-            if not self.ms.isActiveWindow():
-                self.ms.setWindowState(self.ms.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
-                self.ms.activateWindow()
-            self.ms.show()
+            def show():
+                if not self.ms.isActiveWindow():
+                    self.ms.setWindowState(self.ms.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
+                    self.ms.activateWindow()
+                self.ms.show()
+            if not Settings.get_instance().locked:
+                show()
+            else:
+                def correct_pass():
+                    show()
+                    Settings.get_instance().locked = False
+                self.p = UnlockAppScreen(toxencryptsave.ToxEncryptSave.get_instance(), correct_pass)
+                self.p.show()
 
         m.connect(show, QtCore.SIGNAL("triggered()"), show_window)
         m.connect(exit, QtCore.SIGNAL("triggered()"), lambda: app.exit())
