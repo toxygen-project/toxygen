@@ -235,7 +235,8 @@ class ProfileSettings(CenteredWidget):
 
     def set_avatar(self):
         choose = QtGui.QApplication.translate("ProfileSettingsForm", "Choose avatar", None, QtGui.QApplication.UnicodeUTF8)
-        name = QtGui.QFileDialog.getOpenFileName(self, choose, None, 'Images (*.png)')
+        name = QtGui.QFileDialog.getOpenFileName(self, choose, None, 'Images (*.png)',
+                                                 options=QtGui.QFileDialog.DontUseNativeDialog)
         if name[0]:
             bitmap = QtGui.QPixmap(name[0])
             bitmap.scaled(QtCore.QSize(128, 128), aspectMode=QtCore.Qt.KeepAspectRatio,
@@ -248,7 +249,7 @@ class ProfileSettings(CenteredWidget):
             Profile.get_instance().set_avatar(str(byte_array.data()))
 
     def export_profile(self):
-        directory = QtGui.QFileDialog.getExistingDirectory() + '/'
+        directory = QtGui.QFileDialog.getExistingDirectory(options=QtGui.QFileDialog.DontUseNativeDialog) + '/'
         if directory != '/':
             ProfileHelper.get_instance().export_profile(directory)
             settings = Settings.get_instance()
@@ -477,7 +478,7 @@ class PrivacySettings(CenteredWidget):
         settings.save()
 
     def new_path(self):
-        directory = QtGui.QFileDialog.getExistingDirectory() + '/'
+        directory = QtGui.QFileDialog.getExistingDirectory(options=QtGui.QFileDialog.DontUseNativeDialog) + '/'
         if directory != '/':
             self.path.setPlainText(directory)
 

@@ -425,7 +425,7 @@ class MainWindow(QtGui.QMainWindow):
         self.menu.hide()
         if self.profile.active_friend + 1:
             choose = QtGui.QApplication.translate("MainWindow", 'Choose file', None, QtGui.QApplication.UnicodeUTF8)
-            name = QtGui.QFileDialog.getOpenFileName(self, choose)
+            name = QtGui.QFileDialog.getOpenFileName(self, choose, options=QtGui.QFileDialog.DontUseNativeDialog)
             if name[0]:
                 self.profile.send_file(name[0])
 

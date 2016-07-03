@@ -351,7 +351,7 @@ class FileTransferItem(QtGui.QListWidget):
             directory = QtGui.QFileDialog.getExistingDirectory(self,
                                                                QtGui.QApplication.translate("MainWindow", 'Choose folder', None, QtGui.QApplication.UnicodeUTF8),
                                                                curr_directory(),
-                                                               QtGui.QFileDialog.ShowDirsOnly)
+                                                               QtGui.QFileDialog.ShowDirsOnly | QtGui.QFileDialog.DontUseNativeDialog)
             self.pb.setVisible(True)
             if directory:
                 pr = profile.Profile.get_instance()
@@ -485,7 +485,7 @@ class InlineImageItem(QtGui.QScrollArea):
                                                                                             'Choose folder', None,
                                                                                             QtGui.QApplication.UnicodeUTF8),
                                                                curr_directory(),
-                                                               QtGui.QFileDialog.ShowDirsOnly)
+                                                               QtGui.QFileDialog.ShowDirsOnly | QtGui.QFileDialog.DontUseNativeDialog)
             if directory:
                 fl = QtCore.QFile(directory + '/toxygen_inline_' + curr_time().replace(':', '_') + '.png')
                 self._pixmap.save(fl, 'PNG')
