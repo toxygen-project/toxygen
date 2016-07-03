@@ -46,7 +46,7 @@ class Profile(basecontact.BaseContact, Singleton):
         aliases = settings['friends_aliases']
         data = tox.self_get_friend_list()
         self._history = History(tox.self_get_public_key())  # connection to db
-        self._friends, self._active_friend = [], -1
+        self._friends_and_gc, self._active_friend_or_gc = [], -1
         for i in data:  # creates list of friends
             tox_id = tox.friend_get_public_key(i)
             try:
@@ -61,7 +61,7 @@ class Profile(basecontact.BaseContact, Singleton):
             message_getter = self._history.messages_getter(tox_id)
             friend = Friend(message_getter, i, name, status_message, item, tox_id)
             friend.set_alias(alias)
-            self._friends.append(friend)
+            self._friends_and_gc.append(friend)
         self.filtration(self._show_online)
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -88,11 +88,11 @@ class Profile(basecontact.BaseContact, Singleton):
         self._tox.self_set_name(self._name.encode('utf-8'))
         message = QtGui.QApplication.translate("MainWindow", 'User {} is now known as {}', None,
                                                QtGui.QApplication.UnicodeUTF8)
-        message = message.format(tmp, value)
-        for friend in self._friends:
+        message = message.format(tmp, str(value, 'utf-8'))
+        for friend in self._friends_and_gc:
             friend.append_message(InfoMessage(message, time.time()))
-        if self._active_friend + 1:
-            self.create_message_item(message, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+        if self._active_friend_or_gc + 1:
+            self.create_message_item(message, curr_time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
             self._messages.scrollToBottom()
 
     def set_status_message(self, value):
@@ -118,7 +118,7 @@ class Profile(basecontact.BaseContact, Singleton):
         """
         filter_str = filter_str.lower()
         settings = Settings.get_instance()
-        for index, friend in enumerate(self._friends):
+        for index, friend in enumerate(self._friends_and_gc):
             friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name.lower())
             friend.visibility = friend.visibility or friend.messages or friend.actions
             if friend.visibility:
@@ -137,29 +137,29 @@ class Profile(basecontact.BaseContact, Singleton):
         self.filtration(self._show_online, self._filter_string)
 
     def get_friend_by_number(self, num):
-        return list(filter(lambda x: x.number == num, self._friends))[0]
+        return list(filter(lambda x: x.number == num, self._friends_and_gc))[0]
 
-    def get_friend(self, num):
-        return self._friends[num]
+    def get_friend_or_gc(self, num):
+        return self._friends_and_gc[num]
 
     # -----------------------------------------------------------------------------------------------------------------
     # Work with active friend
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_active(self):
-        return self._active_friend
+        return self._active_friend_or_gc
 
     def set_active(self, value=None):
         """
         Change current active friend or update info
         :param value: number of new active friend in friend's list or None to update active user's data
         """
-        if value is None and self._active_friend == -1:  # nothing to update
+        if value is None and self._active_friend_or_gc == -1:  # nothing to update
             return
         if value == -1:  # all friends were deleted
             self._screen.account_name.setText('')
             self._screen.account_status.setText('')
-            self._active_friend = -1
+            self._active_friend_or_gc = -1
             self._screen.account_avatar.setHidden(True)
             self._messages.clear()
             self._screen.messageEdit.clear()
@@ -168,26 +168,32 @@ class Profile(basecontact.BaseContact, Singleton):
             self.send_typing(False)
             self._screen.typing.setVisible(False)
             if value is not None:
-                if self._active_friend + 1:
+                if self._active_friend_or_gc + 1:
                     try:
-                        self._friends[self._active_friend].curr_text = self._screen.messageEdit.toPlainText()
+                        self._friends_and_gc[self._active_friend_or_gc].curr_text = self._screen.messageEdit.toPlainText()
                     except:
                         pass
-                self._active_friend = value
-                friend = self._friends[value]
-                self._friends[value].reset_messages()
-                self._screen.messageEdit.setPlainText(friend.curr_text)
+                self._active_friend_or_gc = value
+                friend_or_gc = self._friends_and_gc[value]
+                self._friends_and_gc[value].reset_messages()
+                self._screen.messageEdit.setPlainText(friend_or_gc.curr_text)
                 self._messages.clear()
                 friend.load_corr()
                 messages = friend.get_corr()[-PAGE_SIZE:]
                 self._load_history = False
+                friend_or_gc.load_corr()
+                messages = friend_or_gc.get_corr()[-PAGE_SIZE:]
+                self._load_history = False
+
                 for message in messages:
                     if message.get_type() <= 1:
                         data = message.get_data()
                         self.create_message_item(data[0],
                                                  data[2],
                                                  data[1],
-                                                 data[3])
+                                                 data[3],
+                                                 True,
+                                                 data[4] if len(data) == 5 else None)
                     elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:
                         if message.get_status() is None:
                             self.create_unsent_file_item(message)
@@ -217,11 +223,11 @@ class Profile(basecontact.BaseContact, Singleton):
                 else:
                     self._screen.call_finished()
             else:
-                friend = self._friends[self._active_friend]
+                friend_or_gc = self._friends_and_gc[self._active_friend_or_gc]
 
-            self._screen.account_name.setText(friend.name)
-            self._screen.account_status.setText(friend.status_message)
-            avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(friend.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+            self._screen.account_name.setText(friend_or_gc.name)
+            self._screen.account_status.setText(friend_or_gc.status_message)
+            avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(friend_or_gc.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
             if not os.path.isfile(avatar_path):  # load default image
                 avatar_path = curr_directory() + '/images/avatar.png'
             os.chdir(os.path.dirname(avatar_path))
@@ -238,17 +244,20 @@ class Profile(basecontact.BaseContact, Singleton):
 
     active_friend = property(get_active, set_active)
 
+    def is_active_a_friend(self):
+        return type(self._friends_and_gc[self._active_friend_or_gc]) is Friend
+
     def get_last_message(self):
-        return self._friends[self._active_friend].get_last_message_text()
+        return self._friends_and_gc[self._active_friend_or_gc].get_last_message_text()
 
     def get_active_number(self):
-        return self._friends[self._active_friend].number if self._active_friend + 1 else -1
+        return self._friends_and_gc[self._active_friend_or_gc].number if self._active_friend_or_gc + 1 else -1
 
     def get_active_name(self):
-        return self._friends[self._active_friend].name if self._active_friend + 1 else ''
+        return self._friends_and_gc[self._active_friend_or_gc].name if self._active_friend_or_gc + 1 else ''
 
     def is_active_online(self):
-        return self._active_friend + 1 and self._friends[self._active_friend].status is not None
+        return self._active_friend_or_gc + 1 and self._friends_and_gc[self._active_friend_or_gc].status is not None
 
     def new_name(self, number, name):
         friend = self.get_friend_by_number(number)
@@ -266,8 +275,8 @@ class Profile(basecontact.BaseContact, Singleton):
             self.set_active(None)
 
     def update(self):
-        if self._active_friend + 1:
-            self.set_active(self._active_friend)
+        if self._active_friend_or_gc + 1:
+            self.set_active(self._active_friend_or_gc)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Friend connection status callbacks
@@ -307,8 +316,8 @@ class Profile(basecontact.BaseContact, Singleton):
         """
         Send typing notification to a friend
         """
-        if Settings.get_instance()['typing_notifications'] and self._active_friend + 1:
-            friend = self._friends[self._active_friend]
+        if Settings.get_instance()['typing_notifications'] and self._active_friend_or_gc + 1:
+            friend = self._friends_and_gc[self._active_friend_or_gc]
             if friend.status is not None:
                 self._tox.self_set_typing(friend.number, typing)
 
@@ -376,7 +385,7 @@ class Profile(basecontact.BaseContact, Singleton):
             t = time.time()
             self.create_message_item(message, t, MESSAGE_OWNER['FRIEND'], message_type)
             self._messages.scrollToBottom()
-            self._friends[self._active_friend].append_message(
+            self._friends_and_gc[self._active_friend_or_gc].append_message(
                 TextMessage(message, MESSAGE_OWNER['FRIEND'], t, message_type))
         else:
             friend = self.get_friend_by_number(friend_num)
@@ -399,12 +408,17 @@ class Profile(basecontact.BaseContact, Singleton):
             self._screen.messageEdit.clear()
         elif text and friend_num + 1:
             text = ''.join(c if c <= '\u10FFFF' else '\u25AF' for c in text)
+
             if text.startswith('/me '):
                 message_type = TOX_MESSAGE_TYPE['ACTION']
                 text = text[4:]
             else:
                 message_type = TOX_MESSAGE_TYPE['NORMAL']
+
             friend = self.get_friend_by_number(friend_num)
+            # TODO: send to gc
+            # friend = self._friends_and_gc[self._active_friend_or_gc]
+
             friend.inc_receipts()
             if friend.status is not None:
                 self.split_and_send(friend.number, message_type, text.encode('utf-8'))
@@ -432,7 +446,7 @@ class Profile(basecontact.BaseContact, Singleton):
         s = Settings.get_instance()
         if hasattr(self, '_history'):
             if s['save_history']:
-                for friend in self._friends:
+                for friend in self._friends_and_gc
                     if not self._history.friend_exists_in_db(friend.tox_id):
                         self._history.add_friend_to_db(friend.tox_id)
                     if not s['save_unsent_only']:
@@ -452,14 +466,15 @@ class Profile(basecontact.BaseContact, Singleton):
         Clear chat history
         """
         if num is not None:
-            friend = self._friends[num]
+            friend = self._friends_and_gc[num]
             friend.clear_corr(save_unsent)
             if self._history.friend_exists_in_db(friend.tox_id):
                 self._history.delete_messages(friend.tox_id)
                 self._history.delete_friend_from_db(friend.tox_id)
         else:  # clear all history
-            for number in range(len(self._friends)):
+            for number in range(len(self._friends_and_gc))):
                 self.clear_history(number, save_unsent)
+
         if num is None or num == self.get_active_number():
             self.update()
 
@@ -470,9 +485,10 @@ class Profile(basecontact.BaseContact, Singleton):
         if not self._load_history:
             return
         self._load_history = False
-        friend = self._friends[self._active_friend]
-        friend.load_corr(False)
-        data = friend.get_corr()
+        friend_or_gc = self._friends_and_gc[self._active_friend_or_gc]
+
+        friend_or_gc.load_corr(False)
+        data = friend_or_gc.get_corr()
         if not data:
             return
         data.reverse()
@@ -526,11 +542,11 @@ class Profile(basecontact.BaseContact, Singleton):
         self._screen.friends_list.setItemWidget(elem, item)
         return item
 
-    def create_message_item(self, text, time, owner, message_type, append=True):
+    def create_message_item(self, text, time, owner, message_type, append=True, friend_name=None):
         if message_type == MESSAGE_TYPE['INFO_MESSAGE']:
             name = ''
         elif owner == MESSAGE_OWNER['FRIEND']:
-            name = self.get_active_name()
+            name = friend_name or self.get_active_name()
         else:
             name = self._name
         item = MessageItem(text, time, name, owner != MESSAGE_OWNER['NOT_SENT'], message_type, self._messages)
@@ -589,7 +605,7 @@ class Profile(basecontact.BaseContact, Singleton):
         """
         Set new alias for friend
         """
-        friend = self._friends[num]
+        friend = self._friends_and_gc[num]
         name = friend.name
         dialog = QtGui.QApplication.translate('MainWindow',
                                               "Enter new alias for friend {} or leave empty to use friend's name:",
@@ -627,14 +643,14 @@ class Profile(basecontact.BaseContact, Singleton):
             self.update()
 
     def friend_public_key(self, num):
-        return self._friends[num].tox_id
+        return self._friends_and_gc[num].tox_id
 
     def delete_friend(self, num):
         """
         Removes friend from contact list
         :param num: number of friend in list
         """
-        friend = self._friends[num]
+        friend = self._friends_and_gc[num]
         settings = Settings.get_instance()
         try:
             index = list(map(lambda x: x[0], settings['friends_aliases'])).index(friend.tox_id)
@@ -648,10 +664,10 @@ class Profile(basecontact.BaseContact, Singleton):
         if self._history.friend_exists_in_db(friend.tox_id):
             self._history.delete_friend_from_db(friend.tox_id)
         self._tox.friend_delete(friend.number)
-        del self._friends[num]
+        del self._friends_and_gc[num]
         self._screen.friends_list.takeItem(num)
-        if num == self._active_friend:  # active friend was deleted
-            if not len(self._friends):  # last friend was deleted
+        if num == self._active_friend_or_gc:  # active friend was deleted
+            if not len(self._friends_and_gc):  # last friend was deleted
                 self.set_active(-1)
             else:
                 self.set_active(0)
@@ -672,7 +688,7 @@ class Profile(basecontact.BaseContact, Singleton):
             log('Accept friend request failed! ' + str(ex))
             message_getter = None
         friend = Friend(message_getter, num, tox_id, '', item, tox_id)
-        self._friends.append(friend)
+        self._friends_and_gc.append(friend)
 
     def block_user(self, tox_id):
         """
@@ -739,7 +755,7 @@ class Profile(basecontact.BaseContact, Singleton):
                     self._history.add_friend_to_db(tox_id)
                 message_getter = self._history.messages_getter(tox_id)
                 friend = Friend(message_getter, result, tox_id, '', item, tox_id)
-                self._friends.append(friend)
+                self._friends_and_gc.append(friend)
             data = self._tox.get_savedata()
             ProfileHelper.get_instance().save_profile(data)
             return True
@@ -782,7 +798,7 @@ class Profile(basecontact.BaseContact, Singleton):
         del self._tox
         self._tox = restart()
         self.status = None
-        for friend in self._friends:
+        for friend in self._friends_and_gc:
             friend.status = None
         self.update_filtration()
 
@@ -875,7 +891,7 @@ class Profile(basecontact.BaseContact, Singleton):
                                                                                0, -1)
 
     def cancel_not_started_transfer(self, time):
-        self._friends[self._active_friend].delete_one_unsent_file(time)
+        self._friends_and_gc[self._active_friend_or_gc].delete_one_unsent_file(time)
         self.update()
 
     def pause_transfer(self, friend_number, file_number, by_friend=False):
@@ -998,7 +1014,7 @@ class Profile(basecontact.BaseContact, Singleton):
                              st.get_file_number())
         item = self.create_file_transfer_item(tm)
         st.set_state_changed_handler(item.update)
-        self._friends[self._active_friend].append_message(tm)
+        self._friends_and_gc[self._active_friend_or_gc].append_message(tm)
         self._messages.scrollToBottom()
 
     def incoming_chunk(self, friend_number, file_number, position, data):
@@ -1091,12 +1107,12 @@ class Profile(basecontact.BaseContact, Singleton):
 
     def reset_avatar(self):
         super(Profile, self).reset_avatar()
-        for friend in filter(lambda x: x.status is not None, self._friends):
+        for friend in filter(lambda x: x.status is not None, self._friends_and_gc):
             self.send_avatar(friend.number)
 
     def set_avatar(self, data):
         super(Profile, self).set_avatar(data)
-        for friend in filter(lambda x: x.status is not None, self._friends):
+        for friend in filter(lambda x: x.status is not None, self._friends_and_gc):
             self.send_avatar(friend.number)
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -1120,7 +1136,8 @@ class Profile(basecontact.BaseContact, Singleton):
             else:
                 text = QtGui.QApplication.translate("incoming_call", "Outgoing audio call", None,
                                                     QtGui.QApplication.UnicodeUTF8)
-            self._friends[self._active_friend].append_message(InfoMessage(text, time.time()))
+
+            self._friends_and_gc[self._active_friend_or_gc].append_message(InfoMessage(text, time.time()))
             self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
             self._messages.scrollToBottom()
         elif num in self._call:  # finish or cancel call if you call with active friend

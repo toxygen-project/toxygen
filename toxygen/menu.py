@@ -11,6 +11,38 @@ import toxencryptsave
 import plugin_support
 
 
+class AddGroupchat(QtGui.QWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.initUI()
+        self.retranslateUi()
+
+    def initUI(self):
+        self.setObjectName('AddGC')
+        self.resize(570, 320)
+        self.label = QtGui.QLabel(self)
+        self.label.setGeometry(QtCore.QRect(50, 20, 470, 20))
+        self.createGCButton = QtGui.QPushButton(self)
+        self.createGCButton.setGeometry(QtCore.QRect(50, 280, 470, 30))
+        self.name = LineEdit(self)
+        self.name.setGeometry(QtCore.QRect(50, 40, 470, 27))
+        self.privacy_type = QtGui.QLabel(self)
+        self.privacy_type.setGeometry(QtCore.QRect(50, 70, 470, 20))
+        self.privacy_combobox = QtGui.QComboBox(self)
+        self.privacy_combobox.setGeometry(QtCore.QRect(50, 100, 470, 30))
+
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate('AddGC', "Create groupchat", None, QtGui.QApplication.UnicodeUTF8))
+        self.createGCButton.setText(QtGui.QApplication.translate("AddGC", "Create", None, QtGui.QApplication.UnicodeUTF8))
+        self.label.setText(QtGui.QApplication.translate('AddGC', "Name:", None, QtGui.QApplication.UnicodeUTF8))
+        self.privacy_type.setText(QtGui.QApplication.translate('AddGC', "Privacy type:", None, QtGui.QApplication.UnicodeUTF8))
+        self.privacy_combobox.addItem(QtGui.QApplication.translate('AddGC', "Public", None, QtGui.QApplication.UnicodeUTF8))
+        self.privacy_combobox.addItem(QtGui.QApplication.translate('AddGC', "Private", None, QtGui.QApplication.UnicodeUTF8))
+
+
 class AddContact(CenteredWidget):
     """Add contact form"""
 

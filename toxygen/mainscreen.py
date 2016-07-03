@@ -29,6 +29,8 @@ class MainWindow(QtGui.QMainWindow):
 
         self.menuProfile = QtGui.QMenu(self.menubar)
         self.menuProfile.setObjectName("menuProfile")
+        self.menuGroupChats = QtGui.QMenu(self.menubar)
+        self.menuGroupChats.setObjectName("menuGroupChats")
         self.menuSettings = QtGui.QMenu(self.menubar)
         self.menuSettings.setObjectName("menuSettings")
         self.menuPlugins = QtGui.QMenu(self.menubar)
@@ -56,6 +58,10 @@ class MainWindow(QtGui.QMainWindow):
         self.pluginData = QtGui.QAction(MainWindow)
         self.importPlugin = QtGui.QAction(MainWindow)
         self.lockApp = QtGui.QAction(MainWindow)
+        self.createGC = QtGui.QAction(MainWindow)
+        self.gcRequests = QtGui.QAction(MainWindow)
+        self.menuGroupChats.addAction(self.createGC)
+        self.menuGroupChats.addAction(self.gcRequests)
         self.menuProfile.addAction(self.actionAdd_friend)
         self.menuProfile.addAction(self.actionSettings)
         self.menuProfile.addAction(self.lockApp)
@@ -68,6 +74,7 @@ class MainWindow(QtGui.QMainWindow):
         self.menuPlugins.addAction(self.importPlugin)
         self.menuAbout.addAction(self.actionAbout_program)
         self.menubar.addAction(self.menuProfile.menuAction())
+        self.menubar.addAction(self.menuGroupChats.menuAction())
         self.menubar.addAction(self.menuSettings.menuAction())
         self.menubar.addAction(self.menuPlugins.menuAction())
         self.menubar.addAction(self.menuAbout.menuAction())
@@ -81,8 +88,10 @@ class MainWindow(QtGui.QMainWindow):
         self.actionNotifications.triggered.connect(self.notification_settings)
         self.audioSettings.triggered.connect(self.audio_settings)
         self.pluginData.triggered.connect(self.plugins_menu)
+
         self.lockApp.triggered.connect(self.lock_app)
         self.importPlugin.triggered.connect(self.import_plugin)
+        self.createGC.triggered.connect(self.create_groupchat)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def languageChange(self, *args, **kwargs):
@@ -95,6 +104,9 @@ class MainWindow(QtGui.QMainWindow):
 
     def retranslateUi(self):
         self.lockApp.setText(QtGui.QApplication.translate("MainWindow", "Lock", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuGroupChats.setTitle(QtGui.QApplication.translate("MainWindow", "Groupchats", None, QtGui.QApplication.UnicodeUTF8))
+        self.createGC.setText(QtGui.QApplication.translate("MainWindow", "Create groupchat", None, QtGui.QApplication.UnicodeUTF8))
+        self.gcRequests.setText(QtGui.QApplication.translate("MainWindow", "Groupchat requests", None, QtGui.QApplication.UnicodeUTF8))
         self.menuPlugins.setTitle(QtGui.QApplication.translate("MainWindow", "Plugins", None, QtGui.QApplication.UnicodeUTF8))
         self.pluginData.setText(QtGui.QApplication.translate("MainWindow", "List of plugins", None, QtGui.QApplication.UnicodeUTF8))
         self.menuProfile.setTitle(QtGui.QApplication.translate("MainWindow", "Profile", None, QtGui.QApplication.UnicodeUTF8))
@@ -439,6 +451,10 @@ class MainWindow(QtGui.QMainWindow):
                                            120))
         self.menu.show()
 
+    def create_groupchat(self):
+        self.gc = AddGroupchat()
+        self.gc.show()
+
     # -----------------------------------------------------------------------------------------------------------------
     # Messages, calls and file transfers
     # -----------------------------------------------------------------------------------------------------------------
@@ -511,7 +527,7 @@ class MainWindow(QtGui.QMainWindow):
     def friend_right_click(self, pos):
         item = self.friends_list.itemAt(pos)
         num = self.friends_list.indexFromItem(item).row()
-        friend = Profile.get_instance().get_friend(num)
+        friend = Profile.get_instance().get_friend_or_gc(num)
         settings = Settings.get_instance()
         allowed = friend.tox_id in settings['auto_accept_from_friends']
         auto = QtGui.QApplication.translate("MainWindow", 'Disallow auto accept', None, QtGui.QApplication.UnicodeUTF8) if allowed else QtGui.QApplication.translate("MainWindow", 'Allow auto accept', None, QtGui.QApplication.UnicodeUTF8)
