@@ -101,6 +101,9 @@ class Toxygen:
                     ProfileHelper(Settings.get_default_path(), name).save_profile(self.tox.get_savedata())
                     path = Settings.get_default_path()
                     settings = Settings(name)
+                    if curr_lang in langs:
+                        settings['language'] = curr_lang
+                    settings.save()
                 else:  # load existing profile
                     path, name = _login.get_data()
                     if _login.default:
@@ -121,7 +124,7 @@ class Toxygen:
         if Settings.is_active_profile(path, name):  # profile is in use
             reply = QtGui.QMessageBox.question(None,
                                                'Profile {}'.format(name),
-                                               QtGui.QApplication.translate("login", 'Looks like other instance of Toxygen uses this profile! Continue?', None, QtGui.QApplication.UnicodeUTF8),
+                                               QtGui.QApplication.translate("login", 'Other instance of Toxygen uses this profile or profile was not properly closed. Continue?', None, QtGui.QApplication.UnicodeUTF8),
                                                QtGui.QMessageBox.Yes,
                                                QtGui.QMessageBox.No)
             if reply != QtGui.QMessageBox.Yes:
