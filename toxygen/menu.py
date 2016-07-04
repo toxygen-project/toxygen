@@ -11,36 +11,54 @@ import toxencryptsave
 import plugin_support
 
 
-class AddGroupchat(QtGui.QWidget):
+class AddGroupchat(CenteredWidget):
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self):
+        super().__init__()
         self.initUI()
         self.retranslateUi()
+        self.center()
 
     def initUI(self):
         self.setObjectName('AddGC')
-        self.resize(570, 320)
+        self.resize(570, 240)
+        self.setMaximumSize(QtCore.QSize(570, 240))
+        self.setMinimumSize(QtCore.QSize(570, 240))
         self.label = QtGui.QLabel(self)
         self.label.setGeometry(QtCore.QRect(50, 20, 470, 20))
         self.createGCButton = QtGui.QPushButton(self)
-        self.createGCButton.setGeometry(QtCore.QRect(50, 280, 470, 30))
+        self.createGCButton.setGeometry(QtCore.QRect(50, 190, 470, 30))
         self.name = LineEdit(self)
         self.name.setGeometry(QtCore.QRect(50, 40, 470, 27))
         self.privacy_type = QtGui.QLabel(self)
         self.privacy_type.setGeometry(QtCore.QRect(50, 70, 470, 20))
         self.privacy_combobox = QtGui.QComboBox(self)
-        self.privacy_combobox.setGeometry(QtCore.QRect(50, 100, 470, 30))
+        self.privacy_combobox.setGeometry(QtCore.QRect(50, 90, 470, 30))
+        self.pass_label = QtGui.QLabel(self)
+        self.pass_label.setGeometry(QtCore.QRect(50, 130, 470, 20))
+        self.password = LineEdit(self)
+        self.password.setGeometry(QtCore.QRect(50, 150, 470, 27))
 
+        self.createGCButton.clicked.connect(self.button_click)
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtGui.QApplication.translate('AddGC', "Create groupchat", None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate('AddGC', "Create group chat", None, QtGui.QApplication.UnicodeUTF8))
         self.createGCButton.setText(QtGui.QApplication.translate("AddGC", "Create", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate('AddGC', "Name:", None, QtGui.QApplication.UnicodeUTF8))
         self.privacy_type.setText(QtGui.QApplication.translate('AddGC', "Privacy type:", None, QtGui.QApplication.UnicodeUTF8))
         self.privacy_combobox.addItem(QtGui.QApplication.translate('AddGC', "Public", None, QtGui.QApplication.UnicodeUTF8))
         self.privacy_combobox.addItem(QtGui.QApplication.translate('AddGC', "Private", None, QtGui.QApplication.UnicodeUTF8))
+        self.name.setPlaceholderText(QtGui.QApplication.translate('AddGC', "Not empty group name", None, QtGui.QApplication.UnicodeUTF8))
+        self.password.setPlaceholderText(QtGui.QApplication.translate('AddGC', "Optional password", None, QtGui.QApplication.UnicodeUTF8))
+        self.pass_label.setText(QtGui.QApplication.translate('AddGC', "Password:", None, QtGui.QApplication.UnicodeUTF8))
+
+    def button_click(self):
+        if self.name.text():
+            Profile.get_instance().create_gc(self.name.text(),
+                                             self.privacy_combobox.currentIndex() == 0,
+                                             self.password.text())
+            self.close()
 
 
 class AddContact(CenteredWidget):

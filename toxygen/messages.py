@@ -83,6 +83,7 @@ class TransferMessage(Message):
 
 
 class UnsentFile(Message):
+
     def __init__(self, path, data, time):
         super(UnsentFile, self).__init__(MESSAGE_TYPE['FILE_TRANSFER'], 0, time)
         self._data, self._path = data, path

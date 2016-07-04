@@ -8,6 +8,8 @@ from toxencryptsave import ToxEncryptSave
 
 PAGE_SIZE = 42
 
+SAVE_MESSAGES = 150
+
 MESSAGE_OWNER = {
     'ME': 0,
     'FRIEND': 1,

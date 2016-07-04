@@ -87,8 +87,17 @@ class Contact(basecontact.BaseContact):
         if hasattr(self, '_message_getter'):
             del self._message_getter
         # don't delete data about active file transfer
-        self._corr = list(filter(lambda x: x.get_type() in (2, 3) and x.get_status() >= 2, self._corr))
+        self._corr = list(filter(lambda x: x.get_type() in (2, 3) and (x.get_status() >= 2 or x.get_status() is None),
+                                 self._corr))
         self._unsaved_messages = 0
+
+    def delete_old_messages(self):
+        old = filter(lambda x: x.get_type() in (2, 3) and (x.get_status() >= 2 or x.get_status() is None),
+                     self._corr[:-SAVE_MESSAGES])
+        old = list(old)
+        l = max(len(self._corr) - SAVE_MESSAGES, 0) - len(old)
+        self._unsaved_messages -= l
+        self._corr = old + self._corr[-SAVE_MESSAGES:]
 
     def get_curr_text(self):
         return self._curr_text

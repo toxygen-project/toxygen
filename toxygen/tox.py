@@ -1545,12 +1545,14 @@ class Tox:
         Otherwise a friend invite will be required to join the group.
         :param group_name: The name of the group. The name must be non-NULL.
 
-        :return groupnumber on success, UINT32_MAX on failure.
+        :return group number on success, UINT32_MAX on failure.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_new(self._tox_pointer, privacy_state, group_name,
-                                              len(group_name), byref(error))
+        func = Tox.libtoxcore.tox_group_new
+        func.restype = c_uint32
+        result = func(self._tox_pointer, privacy_state, group_name,
+                      len(group_name), byref(error))
         return result
 
     def group_join(self, chat_id, password):

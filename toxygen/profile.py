@@ -16,6 +16,7 @@ import calls
 import avwidgets
 import plugin_support
 import basecontact
+from groupchat import *
 
 
 class Profile(basecontact.BaseContact, Singleton):
@@ -175,7 +176,8 @@ class Profile(basecontact.BaseContact, Singleton):
                         pass
                 self._active_friend_or_gc = value
                 friend_or_gc = self._friends_and_gc[value]
-                self._friends_and_gc[value].reset_messages()
+                friend_or_gc.reset_messages()
+                friend_or_gc.delete_old_messages()
                 self._screen.messageEdit.setPlainText(friend_or_gc.curr_text)
                 self._messages.clear()
                 friend.load_corr()
@@ -1194,6 +1196,17 @@ class Profile(basecontact.BaseContact, Singleton):
         if friend_number == self.get_active_number():
             self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
             self._messages.scrollToBottom()
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Group chats support
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def create_gc(self, name, is_public, password):
+        privacy_state = TOX_GROUP_PRIVACY_STATE['TOX_GROUP_PRIVACY_STATE_PUBLIC'] if is_public else TOX_GROUP_PRIVACY_STATE['TOX_GROUP_PRIVACY_STATE_PRIVATE']
+        num = self._tox.group_new(privacy_state, bytes(name, 'utf-8'))
+        if password:
+            self._tox.group_founder_set_password(num, password)
+        # self._friends_and_gc.append(Groupchat(num, self._tox, ))
 
 
 def tox_factory(data=None, settings=None):
