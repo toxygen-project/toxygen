@@ -495,7 +495,11 @@ class MainWindow(QtGui.QMainWindow):
             self.listMenu = QtGui.QMenu()
             set_alias_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Set alias', None, QtGui.QApplication.UnicodeUTF8))
             clear_history_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Clear history', None, QtGui.QApplication.UnicodeUTF8))
-            copy_key_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Copy public key', None, QtGui.QApplication.UnicodeUTF8))
+            copy_menu = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Copy', None, QtGui.QApplication.UnicodeUTF8))
+            copy_name_item = copy_menu.addAction(QtGui.QApplication.translate("MainWindow", 'Name', None, QtGui.QApplication.UnicodeUTF8))
+            copy_status_item = copy_menu.addAction(QtGui.QApplication.translate("MainWindow", 'Status message', None, QtGui.QApplication.UnicodeUTF8))
+            copy_key_item = copy_menu.addAction(QtGui.QApplication.translate("MainWindow", 'Public key', None, QtGui.QApplication.UnicodeUTF8))
+
             auto_accept_item = self.listMenu.addAction(auto)
             remove_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Remove friend', None, QtGui.QApplication.UnicodeUTF8))
             notes_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Notes', None, QtGui.QApplication.UnicodeUTF8))
@@ -510,6 +514,8 @@ class MainWindow(QtGui.QMainWindow):
             self.connect(clear_history_item, QtCore.SIGNAL("triggered()"), lambda: self.clear_history(num))
             self.connect(auto_accept_item, QtCore.SIGNAL("triggered()"), lambda: self.auto_accept(num, not allowed))
             self.connect(notes_item, QtCore.SIGNAL("triggered()"), lambda: self.show_note(friend))
+            self.connect(copy_name_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_name(friend))
+            self.connect(copy_status_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_status(friend))
             parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
             self.listMenu.move(parent_position + pos)
             self.listMenu.show()
@@ -539,6 +545,14 @@ class MainWindow(QtGui.QMainWindow):
         tox_id = self.profile.friend_public_key(num)
         clipboard = QtGui.QApplication.clipboard()
         clipboard.setText(tox_id)
+
+    def copy_name(self, friend):
+        clipboard = QtGui.QApplication.clipboard()
+        clipboard.setText(friend.name)
+
+    def copy_status(self, friend):
+        clipboard = QtGui.QApplication.clipboard()
+        clipboard.setText(friend.status_message)
 
     def clear_history(self, num):
         self.profile.clear_history(num)

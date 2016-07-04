@@ -122,11 +122,13 @@ class ProfileSettings(CenteredWidget):
         self.new_nospam = QtGui.QPushButton(self)
         self.new_nospam.setGeometry(QtCore.QRect(420, 250, 180, 30))
         self.new_nospam.clicked.connect(self.new_no_spam)
-
+        self.copy_pk = QtGui.QPushButton(self)
+        self.copy_pk.setGeometry(QtCore.QRect(40, 300, 180, 30))
+        self.copy_pk.clicked.connect(self.copy_public_key)
         self.new_avatar = QtGui.QPushButton(self)
-        self.new_avatar.setGeometry(QtCore.QRect(40, 300, 180, 30))
+        self.new_avatar.setGeometry(QtCore.QRect(230, 300, 180, 30))
         self.delete_avatar = QtGui.QPushButton(self)
-        self.delete_avatar.setGeometry(QtCore.QRect(230, 300, 180, 30))
+        self.delete_avatar.setGeometry(QtCore.QRect(420, 300, 180, 30))
         self.delete_avatar.clicked.connect(self.reset_avatar)
         self.new_avatar.clicked.connect(self.set_avatar)
         self.profile_pass = QtGui.QLabel(self)
@@ -183,6 +185,7 @@ class ProfileSettings(CenteredWidget):
         self.status.addItem(QtGui.QApplication.translate("ProfileSettingsForm", "Online", None, QtGui.QApplication.UnicodeUTF8))
         self.status.addItem(QtGui.QApplication.translate("ProfileSettingsForm", "Away", None, QtGui.QApplication.UnicodeUTF8))
         self.status.addItem(QtGui.QApplication.translate("ProfileSettingsForm", "Busy", None, QtGui.QApplication.UnicodeUTF8))
+        self.copy_pk.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Copy public key", None, QtGui.QApplication.UnicodeUTF8))
         if self.auto:
             self.default.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Mark as not default profile", None, QtGui.QApplication.UnicodeUTF8))
         else:
@@ -226,6 +229,15 @@ class ProfileSettings(CenteredWidget):
         icon = QtGui.QIcon(pixmap)
         self.copyId.setIcon(icon)
         self.copyId.setIconSize(QtCore.QSize(10, 10))
+
+    def copy_public_key(self):
+        clipboard = QtGui.QApplication.clipboard()
+        profile = Profile.get_instance()
+        clipboard.setText(profile.tox_id[:64])
+        pixmap = QtGui.QPixmap(curr_directory() + '/images/accept.png')
+        icon = QtGui.QIcon(pixmap)
+        self.copy_pk.setIcon(icon)
+        self.copy_pk.setIconSize(QtCore.QSize(10, 10))
 
     def new_no_spam(self):
         self.tox_id.setText(Profile.get_instance().new_nospam())
