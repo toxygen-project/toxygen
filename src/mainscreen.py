@@ -16,6 +16,8 @@ class MainWindow(QtGui.QMainWindow):
         self.tray = tray
         self.setAcceptDrops(True)
         self.initUI(tox)
+        if settings.Settings.get_instance()['show_welcome_screen']:
+            self.ws = WelcomeScreen()
 
     def setup_menu(self, MainWindow):
         self.menubar = QtGui.QMenuBar(MainWindow)

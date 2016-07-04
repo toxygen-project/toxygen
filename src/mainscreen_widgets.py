@@ -2,7 +2,7 @@ try:
     from PySide import QtCore, QtGui
 except ImportError:
     from PyQt4 import QtCore, QtGui
-from widgets import RubberBand, create_menu, QRightClickButton
+from widgets import RubberBand, create_menu, QRightClickButton, CenteredWidget
 from profile import Profile
 import smileys
 import util
@@ -311,4 +311,68 @@ class StickerWindow(QtGui.QWidget):
     def leaveEvent(self, event):
         self.close()
 
+
+class WelcomeScreen(CenteredWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.setMaximumSize(250, 200)
+        self.setMinimumSize(250, 200)
+        self.center()
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
+        self.text = QtGui.QTextBrowser(self)
+        self.text.setGeometry(QtCore.QRect(0, 0, 250, 170))
+        self.text.setOpenExternalLinks(True)
+        self.checkbox = QtGui.QCheckBox(self)
+        self.checkbox.setGeometry(QtCore.QRect(5, 170, 240, 30))
+        self.checkbox.setText(QtGui.QApplication.translate('WelcomeScreen', "Don't show again",
+                                                           None, QtGui.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtGui.QApplication.translate('WelcomeScreen', 'Tip of the day',
+                                                         None, QtGui.QApplication.UnicodeUTF8))
+        import random
+        num = random.randint(0, 8)
+        if num == 0:
+            text = QtGui.QApplication.translate('WelcomeScreen', 'Press Esc if you want hide app to tray.',
+                                                None, QtGui.QApplication.UnicodeUTF8)
+        elif num == 1:
+            text = QtGui.QApplication.translate('WelcomeScreen',
+                                                'Right click on screenshot button hides app to tray during screenshot.',
+                                                None, QtGui.QApplication.UnicodeUTF8)
+        elif num == 2:
+            text = QtGui.QApplication.translate('WelcomeScreen',
+                                                'You can use Tox over Tor. For more info read <a href="https://wiki.tox.chat/users/tox_over_tor_tot">this post</a>',
+                                                None, QtGui.QApplication.UnicodeUTF8)
+        elif num == 3:
+            text = QtGui.QApplication.translate('WelcomeScreen',
+                                                'Use Settings -> Interface to customize interface.',
+                                                None, QtGui.QApplication.UnicodeUTF8)
+        elif num == 4:
+            text = QtGui.QApplication.translate('WelcomeScreen',
+                                                'Set profile password via Profile -> Settings. Password allows Toxygen encrypt your history and settings.',
+                                                None, QtGui.QApplication.UnicodeUTF8)
+        elif num == 5:
+            text = QtGui.QApplication.translate('WelcomeScreen',
+                                                'Since v0.1.3 Toxygen supports plugins. <a href="https://github.com/xveduk/toxygen/blob/master/docs/plugins.md">Read more</a>',
+                                                None, QtGui.QApplication.UnicodeUTF8)
+        elif num == 6:
+            text = QtGui.QApplication.translate('WelcomeScreen',
+                                                'New in Toxygen v0.2.2:<br>Users can lock application using profile password.<br>Compact contact list support<br>Bug fixes<br>Tox DNS improvements',
+                                                None, QtGui.QApplication.UnicodeUTF8)
+        elif num == 7:
+            text = QtGui.QApplication.translate('WelcomeScreen',
+                                                'Toxygen supports faux offline messages and file transfers. Send message or file to offline friend and he will get it later.',
+                                                None, QtGui.QApplication.UnicodeUTF8)
+        else:
+            text = QtGui.QApplication.translate('WelcomeScreen',
+                                                'Set new NoSpam to avoid spam friend requests: Profile -> Settings -> Set new NoSpam.',
+                                                None, QtGui.QApplication.UnicodeUTF8)
+        self.text.setHtml(text)
+        self.checkbox.stateChanged.connect(self.not_show)
+        QtCore.QTimer.singleShot(1000, self.show)
+
+    def not_show(self):
+        import settings
+        s = settings.Settings.get_instance()
+        s['show_welcome_screen'] = False
+        s.save()
 

@@ -229,6 +229,7 @@ class Profile(contact.Contact, Singleton):
             self._screen.account_avatar.setScaledContents(False)
             self._screen.account_avatar.setPixmap(pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio))
             self._screen.account_avatar.repaint()  # comment?
+            self.update_filtration()
         except Exception as ex:  # no friend found. ignore
             log('Friend value: ' + str(value))
             log('Error: ' + str(ex))
@@ -778,6 +779,7 @@ class Profile(contact.Contact, Singleton):
         self.status = None
         for friend in self._friends:
             friend.status = None
+        self.update_filtration()
 
     def close(self):
         if hasattr(self, '_call'):
