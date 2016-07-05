@@ -3,7 +3,7 @@ try:
 except ImportError:
     from PyQt4 import QtCore, QtGui
 import widgets
-import profile
+import profile_
 import util
 import pyaudio
 import wave
@@ -54,7 +54,7 @@ class IncomingCallWidget(widgets.CenteredWidget):
         self.setWindowTitle(text)
         self.name.setText(name)
         self.call_type.setText(text)
-        pr = profile.Profile.get_instance()
+        pr = profile_.Profile.get_instance()
         self.accept_audio.clicked.connect(lambda: pr.accept_call(friend_number, True, False) or self.stop())
         # self.accept_video.clicked.connect(lambda: pr.start_call(friend_number, True, True))
         self.decline.clicked.connect(lambda: pr.stop_call(friend_number, False) or self.stop())

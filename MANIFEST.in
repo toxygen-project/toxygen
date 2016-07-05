@@ -1,0 +1,17 @@
+include src/images/*.png
+include src/images/*.ico
+include src/images/*.gif
+include src/sounds/*.wav
+include src/stickers/tox/*.png
+include src/smileys/default/*.png
+include src/smileys/default/config.json
+include src/smileys/animated/*.gif
+include src/smileys/animated/config.json
+include src/smileys/starwars/*.gif
+include src/smileys/starwars/*.png
+include src/smileys/starwars/config.json
+include src/styles/style.qss
+include src/translations/*.qm
+include src/libs/libtox.dll
+include src/libs/libsodium.a
+

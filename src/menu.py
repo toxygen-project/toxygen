@@ -3,7 +3,7 @@ try:
 except ImportError:
     from PyQt4 import QtCore, QtGui
 from settings import *
-from profile import Profile
+from profile_ import Profile
 from util import curr_directory
 from widgets import CenteredWidget, DataLabel, LineEdit
 import pyaudio

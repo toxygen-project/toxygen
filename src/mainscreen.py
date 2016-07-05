@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from menu import *
-from profile import *
+from profile_ import *
 from list_items import *
 from widgets import MultilineEdit, LineEdit
 import plugin_support

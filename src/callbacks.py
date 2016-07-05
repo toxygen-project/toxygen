@@ -4,7 +4,7 @@ except ImportError:
     from PyQt4 import QtCore
 from notifications import *
 from settings import Settings
-from profile import Profile
+from profile_ import Profile
 from toxcore_enums_and_consts import *
 from toxav_enums import *
 from tox import bin_to_string

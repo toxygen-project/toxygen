@@ -1,5 +1,6 @@
 import sys
 from loginscreen import LoginScreen
+import profile_
 from settings import *
 try:
     from PySide import QtCore, QtGui
@@ -7,13 +8,11 @@ except ImportError:
     from PyQt4 import QtCore, QtGui
 from bootstrap import node_generator
 from mainscreen import MainWindow
-from profile import tox_factory
 from callbacks import init_callbacks
-from util import curr_directory
+from util import curr_directory, program_version
 import styles.style
 import toxencryptsave
 from passwordscreen import PasswordScreen, UnlockAppScreen
-import profile
 from plugin_support import PluginLoader
 
 
@@ -67,7 +66,7 @@ class Toxygen:
             if encrypt_save.is_data_encrypted(data):
                 data = self.enter_pass(data)
             settings = Settings(name)
-            self.tox = tox_factory(data, settings)
+            self.tox = profile_.tox_factory(data, settings)
         else:
             auto_profile = Settings.get_auto_profile()
             if not auto_profile[0]:
@@ -95,7 +94,7 @@ class Toxygen:
                 elif _login.t == 1:  # create new profile
                     _login.name = _login.name.strip()
                     name = _login.name if _login.name else 'toxygen_user'
-                    self.tox = tox_factory()
+                    self.tox = profile_.tox_factory()
                     self.tox.self_set_name(bytes(_login.name, 'utf-8') if _login.name else b'Toxygen User')
                     self.tox.self_set_status_message(b'Toxing on Toxygen')
                     ProfileHelper(Settings.get_default_path(), name).save_profile(self.tox.get_savedata())
@@ -112,14 +111,14 @@ class Toxygen:
                     if encrypt_save.is_data_encrypted(data):
                         data = self.enter_pass(data)
                     settings = Settings(name)
-                    self.tox = tox_factory(data, settings)
+                    self.tox = profile_.tox_factory(data, settings)
             else:
                 path, name = auto_profile
                 data = ProfileHelper(path, name).open_profile()
                 if encrypt_save.is_data_encrypted(data):
                     data = self.enter_pass(data)
                 settings = Settings(name)
-                self.tox = tox_factory(data, settings)
+                self.tox = profile_.tox_factory(data, settings)
 
         if Settings.is_active_profile(path, name):  # profile is in use
             reply = QtGui.QMessageBox.question(None,
@@ -147,12 +146,12 @@ class Toxygen:
         class Menu(QtGui.QMenu):
 
             def newStatus(self, status):
-                profile.Profile.get_instance().set_status(status)
+                profile_.Profile.get_instance().set_status(status)
                 self.aboutToShow()
                 self.hide()
 
             def aboutToShow(self):
-                status = profile.Profile.get_instance().status
+                status = profile_.Profile.get_instance().status
                 act = self.act
                 if status is None or Settings.get_instance().locked:
                     self.actions()[1].setVisible(False)
@@ -256,7 +255,7 @@ class Toxygen:
         ProfileHelper.get_instance().save_profile(data)
         del self.tox
         # create new tox instance
-        self.tox = tox_factory(data, Settings.get_instance())
+        self.tox = profile_.tox_factory(data, Settings.get_instance())
         # init thread
         self.init = self.InitThread(self.tox, self.ms, self.tray)
         self.init.start()
@@ -355,9 +354,22 @@ class Toxygen:
             return self.arr[self.num]
 
 
-if __name__ == '__main__':
+def main():
     if len(sys.argv) == 1:
         toxygen = Toxygen()
-    else:  # path to profile or tox: uri
-        toxygen = Toxygen(sys.argv[1])
+    else:  # path to profile or tox: uri or --version or --help
+        arg = sys.argv[1]
+        if arg == '--version':
+            print('Toxygen ' + program_version)
+            return
+        elif arg == '--help':
+            print('Usage:\ntoxygen path_to_profile\ntoxygen tox_id\ntoxygen --version')
+            return
+        else:
+            toxygen = Toxygen(arg)
     toxygen.main()
+
+
+if __name__ == '__main__':
+    main()
+

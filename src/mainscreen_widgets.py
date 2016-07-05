@@ -3,7 +3,7 @@ try:
 except ImportError:
     from PyQt4 import QtCore, QtGui
 from widgets import RubberBand, create_menu, QRightClickButton, CenteredWidget
-from profile import Profile
+from profile_ import Profile
 import smileys
 import util
 

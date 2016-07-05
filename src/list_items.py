@@ -3,7 +3,7 @@ try:
     from PySide import QtCore, QtGui
 except ImportError:
     from PyQt4 import QtCore, QtGui
-import profile
+import profile_
 from file_transfers import TOX_FILE_TRANSFER_STATE, PAUSED_FILE_TRANSFERS, DO_NOT_SHOW_ACCEPT_BUTTON, ACTIVE_FILE_TRANSFERS, SHOW_PROGRESS_BAR
 from util import curr_directory, convert_time, curr_time
 from widgets import DataLabel, create_menu
@@ -339,7 +339,7 @@ class FileTransferItem(QtGui.QListWidget):
         self.paused = False
 
     def cancel_transfer(self, friend_number, file_number):
-        pr = profile.Profile.get_instance()
+        pr = profile_.Profile.get_instance()
         pr.cancel_transfer(friend_number, file_number)
         self.setStyleSheet('QListWidget { border: 1px solid #B40404; }')
         self.cancel.setVisible(False)
@@ -354,18 +354,18 @@ class FileTransferItem(QtGui.QListWidget):
                                                                QtGui.QFileDialog.ShowDirsOnly | QtGui.QFileDialog.DontUseNativeDialog)
             self.pb.setVisible(True)
             if directory:
-                pr = profile.Profile.get_instance()
+                pr = profile_.Profile.get_instance()
                 pr.accept_transfer(self, directory + '/' + self.saved_name, friend_number, file_number, size)
                 self.button_update('pause')
         elif self.state == TOX_FILE_TRANSFER_STATE['PAUSED_BY_USER']:  # resume
             self.paused = False
-            profile.Profile.get_instance().resume_transfer(friend_number, file_number)
+            profile_.Profile.get_instance().resume_transfer(friend_number, file_number)
             self.button_update('pause')
             self.state = TOX_FILE_TRANSFER_STATE['RUNNING']
         else:  # pause
             self.paused = True
             self.state = TOX_FILE_TRANSFER_STATE['PAUSED_BY_USER']
-            profile.Profile.get_instance().pause_transfer(friend_number, file_number)
+            profile_.Profile.get_instance().pause_transfer(friend_number, file_number)
             self.button_update('resume')
         self.accept_or_pause.clearFocus()
 
@@ -435,7 +435,7 @@ class UnsentFileItem(FileTransferItem):
         movie.start()
 
     def cancel_transfer(self, *args):
-        pr = profile.Profile.get_instance()
+        pr = profile_.Profile.get_instance()
         pr.cancel_not_started_transfer(self._time)
 
 

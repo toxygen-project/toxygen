@@ -15,3 +15,9 @@ src/libs
 src/build
 src/dist
 *.spec
+dist/
+/src/avatars
+src/__pycache__
+/*.egg-info
+/*.egg
+

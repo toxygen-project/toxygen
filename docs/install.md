@@ -3,6 +3,22 @@
 ## Use precompiled binary:
 [Check our releases page](https://github.com/xveduk/toxygen/releases)
 
+##Using pip3
+
+### Windows  (32-bit interpreter)
+
+``pip3.4 install toxygen``
+Run app using ``toxygen`` command.
+
+##Linux
+
+1. Install [toxcore](https://github.com/irungentoo/toxcore/blob/master/INSTALL.md) with toxav support in your system (install in /usr/lib/)
+2. Install PortAudio: 
+``sudo apt-get install portaudio19-dev``
+3. Install toxygen: 
+``sudo pip3.4 install toxygen``
+4 Run toxygen using ``toxygen`` command.
+
 ## From source code (recommended for developers)
 
 ### Windows
