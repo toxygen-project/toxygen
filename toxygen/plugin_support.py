@@ -1,5 +1,5 @@
 import util
-import profile_
+import profile
 import os
 import importlib
 import inspect
@@ -12,7 +12,7 @@ class PluginLoader(util.Singleton):
 
     def __init__(self, tox, settings):
         super().__init__()
-        self._profile = profile_.Profile.get_instance()
+        self._profile = profile.Profile.get_instance()
         self._settings = settings
         self._plugins = {}  # dict. key - plugin unique short name, value - tuple (plugin instance, is active)
         self._tox = tox

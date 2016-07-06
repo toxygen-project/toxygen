@@ -1,43 +1,50 @@
 from setuptools import setup
 from setuptools.command.install import install
 from platform import system
-from ctypes import CDLL
+from subprocess import call
+from toxygen.util import program_version
 
 
-class DownloadScript(install):
+version = program_version + '.0'
+
+MODULES = ['PyAudio', 'PySocks']
+
+if system() == 'Windows':
+    MODULES.append('PySide')
+
+
+class InstallScript(install):
     """Install all required libs"""
+
     def run(self):
-        OS = system()
-        if OS == 'Linux':  # install libtoxcore
-            try:
-                libtoxcore = CDLL('libtoxcore.so')
-                libtoxencryptsave = CDLL('libtoxencryptsave.so')
-                libtoxav = CDLL('libtoxav.so')
-            except:  # toxcore is not installed
-                pass
         install.run(self)
+        OS = system()
+        if OS == 'Windows':
+            call(["toxygen", "--configure"])
+        elif OS == 'Linux':
+            call(["toxygen", "--clean"])
 
 setup(name='Toxygen',
-      version='0.2.1.50',
+      version=version,
       description='Toxygen - Tox client',
       long_description='Toxygen is powerful Tox client written in Python3',
       url='https://github.com/xveduk/toxygen/',
       keywords='toxygen tox',
       author='Ingvar',
       license='GPL3',
-      package_dir={'': 'src'},
-      packages=['', 'plugins', 'styles'],
-      install_requires=['PyAudio', 'PySide', 'PySocks'],
+      packages=['toxygen', 'toxygen.plugins', 'toxygen.styles'],
+      install_requires=MODULES,
       include_package_data=True,
       classifiers=[
           'Programming Language :: Python :: 3 :: Only',
+          'Programming Language :: Python :: 3.2',
           'Programming Language :: Python :: 3.3',
           'Programming Language :: Python :: 3.4',
       ],
       entry_points={
-          'console_scripts': ['toxygen=main:main'],
+          'console_scripts': ['toxygen=toxygen.main:main'],
       },
       cmdclass={
-          'install': DownloadScript,
+          'install': InstallScript,
       },
       )

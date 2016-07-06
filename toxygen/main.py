@@ -1,6 +1,6 @@
 import sys
 from loginscreen import LoginScreen
-import profile_
+import profile
 from settings import *
 try:
     from PySide import QtCore, QtGui
@@ -66,7 +66,7 @@ class Toxygen:
             if encrypt_save.is_data_encrypted(data):
                 data = self.enter_pass(data)
             settings = Settings(name)
-            self.tox = profile_.tox_factory(data, settings)
+            self.tox = profile.tox_factory(data, settings)
         else:
             auto_profile = Settings.get_auto_profile()
             if not auto_profile[0]:
@@ -94,7 +94,7 @@ class Toxygen:
                 elif _login.t == 1:  # create new profile
                     _login.name = _login.name.strip()
                     name = _login.name if _login.name else 'toxygen_user'
-                    self.tox = profile_.tox_factory()
+                    self.tox = profile.tox_factory()
                     self.tox.self_set_name(bytes(_login.name, 'utf-8') if _login.name else b'Toxygen User')
                     self.tox.self_set_status_message(b'Toxing on Toxygen')
                     ProfileHelper(Settings.get_default_path(), name).save_profile(self.tox.get_savedata())
@@ -111,14 +111,14 @@ class Toxygen:
                     if encrypt_save.is_data_encrypted(data):
                         data = self.enter_pass(data)
                     settings = Settings(name)
-                    self.tox = profile_.tox_factory(data, settings)
+                    self.tox = profile.tox_factory(data, settings)
             else:
                 path, name = auto_profile
                 data = ProfileHelper(path, name).open_profile()
                 if encrypt_save.is_data_encrypted(data):
                     data = self.enter_pass(data)
                 settings = Settings(name)
-                self.tox = profile_.tox_factory(data, settings)
+                self.tox = profile.tox_factory(data, settings)
 
         if Settings.is_active_profile(path, name):  # profile is in use
             reply = QtGui.QMessageBox.question(None,
@@ -146,12 +146,12 @@ class Toxygen:
         class Menu(QtGui.QMenu):
 
             def newStatus(self, status):
-                profile_.Profile.get_instance().set_status(status)
+                profile.Profile.get_instance().set_status(status)
                 self.aboutToShow()
                 self.hide()
 
             def aboutToShow(self):
-                status = profile_.Profile.get_instance().status
+                status = profile.Profile.get_instance().status
                 act = self.act
                 if status is None or Settings.get_instance().locked:
                     self.actions()[1].setVisible(False)
@@ -255,7 +255,7 @@ class Toxygen:
         ProfileHelper.get_instance().save_profile(data)
         del self.tox
         # create new tox instance
-        self.tox = profile_.tox_factory(data, Settings.get_instance())
+        self.tox = profile.tox_factory(data, Settings.get_instance())
         # init thread
         self.init = self.InitThread(self.tox, self.ms, self.tray)
         self.init.start()
@@ -354,6 +354,33 @@ class Toxygen:
             return self.arr[self.num]
 
 
+def clean():
+    d = curr_directory() + '/libs/'
+    for fl in ('libtox64.dll', 'libtox.dll', 'libsodium64.a', 'libsodium.a'):
+        if os.path.exists(d + fl):
+            os.remove(d + fl)
+
+
+def configure():
+    d = curr_directory() + '/libs/'
+    is_64bits = sys.maxsize > 2 ** 32
+    if not is_64bits:
+        if os.path.exists(d + 'libtox64.dll'):
+            os.remove(d + 'libtox64.dll')
+        if os.path.exists(d + 'libsodium64.a'):
+            os.remove(d + 'libsodium64.a')
+    else:
+        if os.path.exists(d + 'libtox.dll'):
+            os.remove(d + 'libtox.dll')
+        if os.path.exists(d + 'libsodium.a'):
+            os.remove(d + 'libsodium.a')
+        try:
+            os.rename(d + 'libtox64.dll', d + 'libtox.dll')
+            os.rename(d + 'libsodium64.a', d + 'libsodium.a')
+        except:
+            pass
+
+
 def main():
     if len(sys.argv) == 1:
         toxygen = Toxygen()
@@ -364,6 +391,12 @@ def main():
             return
         elif arg == '--help':
             print('Usage:\ntoxygen path_to_profile\ntoxygen tox_id\ntoxygen --version')
+            return
+        elif arg == '--configure':
+            configure()
+            return
+        elif arg == '--clean':
+            clean()
             return
         else:
             toxygen = Toxygen(arg)

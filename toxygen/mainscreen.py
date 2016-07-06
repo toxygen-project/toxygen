@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from menu import *
-from profile_ import *
+from profile import *
 from list_items import *
 from widgets import MultilineEdit, LineEdit
 import plugin_support
@@ -38,8 +38,8 @@ class MainWindow(QtGui.QMainWindow):
 
         self.actionAdd_friend = QtGui.QAction(MainWindow)
         self.actionAdd_friend.setObjectName("actionAdd_friend")
-        self.actionProfile_settings = QtGui.QAction(MainWindow)
-        self.actionProfile_settings.setObjectName("actionProfile_settings")
+        self.actionprofilesettings = QtGui.QAction(MainWindow)
+        self.actionprofilesettings.setObjectName("actionprofilesettings")
         self.actionPrivacy_settings = QtGui.QAction(MainWindow)
         self.actionPrivacy_settings.setObjectName("actionPrivacy_settings")
         self.actionInterface_settings = QtGui.QAction(MainWindow)
@@ -73,7 +73,7 @@ class MainWindow(QtGui.QMainWindow):
         self.actionAbout_program.triggered.connect(self.about_program)
         self.actionNetwork.triggered.connect(self.network_settings)
         self.actionAdd_friend.triggered.connect(self.add_contact)
-        self.actionSettings.triggered.connect(self.profile_settings)
+        self.actionSettings.triggered.connect(self.profilesettings)
         self.actionPrivacy_settings.triggered.connect(self.privacy_settings)
         self.actionInterface_settings.triggered.connect(self.interface_settings)
         self.actionNotifications.triggered.connect(self.notification_settings)
@@ -98,7 +98,7 @@ class MainWindow(QtGui.QMainWindow):
         self.menuSettings.setTitle(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.menuAbout.setTitle(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
         self.actionAdd_friend.setText(QtGui.QApplication.translate("MainWindow", "Add contact", None, QtGui.QApplication.UnicodeUTF8))
-        self.actionProfile_settings.setText(QtGui.QApplication.translate("MainWindow", "Profile", None, QtGui.QApplication.UnicodeUTF8))
+        self.actionprofilesettings.setText(QtGui.QApplication.translate("MainWindow", "Profile", None, QtGui.QApplication.UnicodeUTF8))
         self.actionPrivacy_settings.setText(QtGui.QApplication.translate("MainWindow", "Privacy", None, QtGui.QApplication.UnicodeUTF8))
         self.actionInterface_settings.setText(QtGui.QApplication.translate("MainWindow", "Interface", None, QtGui.QApplication.UnicodeUTF8))
         self.actionNotifications.setText(QtGui.QApplication.translate("MainWindow", "Notifications", None, QtGui.QApplication.UnicodeUTF8))
@@ -189,9 +189,9 @@ class MainWindow(QtGui.QMainWindow):
         Form.status_message.setObjectName("status_message")
         self.connection_status = Form.connection_status = StatusCircle(Form)
         Form.connection_status.setGeometry(QtCore.QRect(230, 35, 32, 32))
-        self.avatar_label.mouseReleaseEvent = self.profile_settings
-        self.status_message.mouseReleaseEvent = self.profile_settings
-        self.name.mouseReleaseEvent = self.profile_settings
+        self.avatar_label.mouseReleaseEvent = self.profilesettings
+        self.status_message.mouseReleaseEvent = self.profilesettings
+        self.name.mouseReleaseEvent = self.profilesettings
         self.connection_status.raise_()
         Form.connection_status.setObjectName("connection_status")
 
@@ -373,7 +373,7 @@ class MainWindow(QtGui.QMainWindow):
         self.a_c = AddContact(link)
         self.a_c.show()
 
-    def profile_settings(self, *args):
+    def profilesettings(self, *args):
         self.p_s = ProfileSettings()
         self.p_s.show()
 

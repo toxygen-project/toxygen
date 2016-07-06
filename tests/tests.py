@@ -1,8 +1,8 @@
-from src.bootstrap import node_generator
-from src.profile_ import *
-from src.settings import ProfileHelper
-from src.tox_dns import tox_dns
-import src.toxencryptsave as encr
+from toxygen.bootstrap import node_generator
+from toxygen.profile import *
+from toxygen.settings import ProfileHelper
+from toxygen.tox_dns import tox_dns
+import toxygen.toxencryptsave as encr
 
 
 class TestProfile:

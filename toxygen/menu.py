@@ -3,7 +3,7 @@ try:
 except ImportError:
     from PyQt4 import QtCore, QtGui
 from settings import *
-from profile_ import Profile
+from profile import Profile
 from util import curr_directory
 from widgets import CenteredWidget, DataLabel, LineEdit
 import pyaudio
@@ -131,10 +131,10 @@ class ProfileSettings(CenteredWidget):
         self.delete_avatar.setGeometry(QtCore.QRect(420, 300, 180, 30))
         self.delete_avatar.clicked.connect(self.reset_avatar)
         self.new_avatar.clicked.connect(self.set_avatar)
-        self.profile_pass = QtGui.QLabel(self)
-        self.profile_pass.setGeometry(QtCore.QRect(40, 340, 300, 30))
+        self.profilepass = QtGui.QLabel(self)
+        self.profilepass.setGeometry(QtCore.QRect(40, 340, 300, 30))
         font.setPointSize(18)
-        self.profile_pass.setFont(font)
+        self.profilepass.setFont(font)
         self.password = LineEdit(self)
         self.password.setGeometry(QtCore.QRect(40, 380, 300, 30))
         self.password.setEchoMode(QtGui.QLineEdit.EchoMode.Password)
@@ -175,7 +175,7 @@ class ProfileSettings(CenteredWidget):
         self.new_avatar.setText(QtGui.QApplication.translate("ProfileSettingsForm", "New avatar", None, QtGui.QApplication.UnicodeUTF8))
         self.delete_avatar.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Reset avatar", None, QtGui.QApplication.UnicodeUTF8))
         self.new_nospam.setText(QtGui.QApplication.translate("ProfileSettingsForm", "New NoSpam", None, QtGui.QApplication.UnicodeUTF8))
-        self.profile_pass.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Profile password", None, QtGui.QApplication.UnicodeUTF8))
+        self.profilepass.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Profile password", None, QtGui.QApplication.UnicodeUTF8))
         self.password.setPlaceholderText(QtGui.QApplication.translate("ProfileSettingsForm", "Password (at least 8 symbols)", None, QtGui.QApplication.UnicodeUTF8))
         self.confirm_password.setPlaceholderText(QtGui.QApplication.translate("ProfileSettingsForm", "Confirm password", None, QtGui.QApplication.UnicodeUTF8))
         self.set_password.setText(QtGui.QApplication.translate("ProfileSettingsForm", "Set password", None, QtGui.QApplication.UnicodeUTF8))
