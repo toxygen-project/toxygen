@@ -385,29 +385,33 @@ class Profile(contact.Contact, Singleton):
             if not friend.visibility:
                 self.update_filtration()
 
-    def send_message(self, text):
+    def send_message(self, text, friend_num=None):
         """
-        Send message to active friend
+        Send message
         :param text: message text
+        :param friend_num: num of friend
         """
+        if friend_num is None:
+            friend_num = self.get_active_number()
         if text.startswith('/plugin '):
             plugin_support.PluginLoader.get_instance().command(text[8:])
             self._screen.messageEdit.clear()
-        elif text and self._active_friend + 1:
+        elif text and friend_num + 1:
             text = ''.join(c if c <= '\u10FFFF' else '\u25AF' for c in text)
             if text.startswith('/me '):
                 message_type = TOX_MESSAGE_TYPE['ACTION']
                 text = text[4:]
             else:
                 message_type = TOX_MESSAGE_TYPE['NORMAL']
-            friend = self._friends[self._active_friend]
+            friend = self.get_friend_by_number(friend_num)
             friend.inc_receipts()
             if friend.status is not None:
                 self.split_and_send(friend.number, message_type, text.encode('utf-8'))
-            t = time.time()
-            self.create_message_item(text, t, MESSAGE_OWNER['NOT_SENT'], message_type)
-            self._screen.messageEdit.clear()
-            self._messages.scrollToBottom()
+            if friend.number == self.get_active_number():
+                t = time.time()
+                self.create_message_item(text, t, MESSAGE_OWNER['NOT_SENT'], message_type)
+                self._screen.messageEdit.clear()
+                self._messages.scrollToBottom()
             friend.append_message(TextMessage(text, MESSAGE_OWNER['NOT_SENT'], t, message_type))
 
     def delete_message(self, time):

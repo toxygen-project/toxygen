@@ -1,6 +1,6 @@
 import os
 import time
-
+import shutil
 
 program_version = '0.2.2'
 
@@ -16,6 +16,18 @@ def curr_directory():
 
 def curr_time():
     return time.strftime('%H:%M')
+
+
+def copy(src, dest):
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+    src_files = os.listdir(src)
+    for file_name in src_files:
+        full_file_name = os.path.join(src, file_name)
+        if os.path.isfile(full_file_name):
+            shutil.copy(full_file_name, dest)
+        else:
+            copy(full_file_name, os.path.join(dest, file_name))
 
 
 def convert_time(t):

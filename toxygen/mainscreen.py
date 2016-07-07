@@ -54,6 +54,7 @@ class MainWindow(QtGui.QMainWindow):
         self.actionSettings.setObjectName("actionSettings")
         self.audioSettings = QtGui.QAction(MainWindow)
         self.pluginData = QtGui.QAction(MainWindow)
+        self.importPlugin = QtGui.QAction(MainWindow)
         self.lockApp = QtGui.QAction(MainWindow)
         self.menuProfile.addAction(self.actionAdd_friend)
         self.menuProfile.addAction(self.actionSettings)
@@ -64,6 +65,7 @@ class MainWindow(QtGui.QMainWindow):
         self.menuSettings.addAction(self.actionNetwork)
         self.menuSettings.addAction(self.audioSettings)
         self.menuPlugins.addAction(self.pluginData)
+        self.menuPlugins.addAction(self.importPlugin)
         self.menuAbout.addAction(self.actionAbout_program)
         self.menubar.addAction(self.menuProfile.menuAction())
         self.menubar.addAction(self.menuSettings.menuAction())
@@ -80,6 +82,7 @@ class MainWindow(QtGui.QMainWindow):
         self.audioSettings.triggered.connect(self.audio_settings)
         self.pluginData.triggered.connect(self.plugins_menu)
         self.lockApp.triggered.connect(self.lock_app)
+        self.importPlugin.triggered.connect(self.import_plugin)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def languageChange(self, *args, **kwargs):
@@ -113,6 +116,7 @@ class MainWindow(QtGui.QMainWindow):
         self.online_contacts.addItem(QtGui.QApplication.translate("MainWindow", "All", None, QtGui.QApplication.UnicodeUTF8))
         self.online_contacts.addItem(QtGui.QApplication.translate("MainWindow", "Online", None, QtGui.QApplication.UnicodeUTF8))
         self.online_contacts.setCurrentIndex(int(Settings.get_instance()['show_online_friends']))
+        self.importPlugin.setText(QtGui.QApplication.translate("MainWindow", "Import plugin", None, QtGui.QApplication.UnicodeUTF8))
 
     def setup_right_bottom(self, Form):
         Form.resize(650, 60)
@@ -392,6 +396,26 @@ class MainWindow(QtGui.QMainWindow):
     def audio_settings(self):
         self.audio_s = AudioSettings()
         self.audio_s.show()
+
+    def import_plugin(self):
+        import util
+        directory = QtGui.QFileDialog.getExistingDirectory(self,
+                                                           QtGui.QApplication.translate("MainWindow", 'Choose folder with plugin',
+                                                                                        None,
+                                                                                        QtGui.QApplication.UnicodeUTF8),
+                                                           util.curr_directory(),
+                                                           QtGui.QFileDialog.ShowDirsOnly | QtGui.QFileDialog.DontUseNativeDialog)
+        if directory:
+            src = directory + '/'
+            dest = curr_directory() + '/plugins/'
+            util.copy(src, dest)
+            msgBox = QtGui.QMessageBox()
+            msgBox.setWindowTitle(
+                QtGui.QApplication.translate("MainWindow", "Restart Toxygen", None, QtGui.QApplication.UnicodeUTF8))
+            msgBox.setText(
+                QtGui.QApplication.translate("MainWindow", 'Plugin will be loaded after restart', None,
+                                             QtGui.QApplication.UnicodeUTF8))
+            msgBox.exec_()
 
     def lock_app(self):
         if toxencryptsave.ToxEncryptSave.get_instance().has_password():
