@@ -4,7 +4,7 @@ except ImportError:
     from PyQt4 import QtCore, QtGui
 from settings import *
 from profile import Profile
-from util import curr_directory
+from util import curr_directory, copy
 from widgets import CenteredWidget, DataLabel, LineEdit
 import pyaudio
 import toxencryptsave
@@ -554,8 +554,8 @@ class InterfaceSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("interfaceForm")
-        self.setMinimumSize(QtCore.QSize(400, 450))
-        self.setMaximumSize(QtCore.QSize(400, 450))
+        self.setMinimumSize(QtCore.QSize(400, 550))
+        self.setMaximumSize(QtCore.QSize(400, 550))
         self.label = QtGui.QLabel(self)
         self.label.setGeometry(QtCore.QRect(30, 10, 370, 20))
         font = QtGui.QFont()
@@ -610,12 +610,20 @@ class InterfaceSettings(CenteredWidget):
         self.messages_font_size.setCurrentIndex(settings['message_font_size'] - 10)
 
         self.unread = QtGui.QPushButton(self)
-        self.unread.setGeometry(QtCore.QRect(30, 380, 340, 30))
+        self.unread.setGeometry(QtCore.QRect(30, 425, 340, 30))
         self.unread.clicked.connect(self.select_color)
 
         self.compact_mode = QtGui.QCheckBox(self)
-        self.compact_mode.setGeometry(QtCore.QRect(30, 425, 370, 20))
+        self.compact_mode.setGeometry(QtCore.QRect(30, 380, 370, 20))
         self.compact_mode.setChecked(settings['compact_mode'])
+
+        self.import_smileys = QtGui.QPushButton(self)
+        self.import_smileys.setGeometry(QtCore.QRect(30, 465, 340, 30))
+        self.import_smileys.clicked.connect(self.import_sm)
+
+        self.import_stickers = QtGui.QPushButton(self)
+        self.import_stickers.setGeometry(QtCore.QRect(30, 505, 340, 30))
+        self.import_stickers.clicked.connect(self.import_st)
 
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -630,6 +638,36 @@ class InterfaceSettings(CenteredWidget):
         self.messages_font_size_label.setText(QtGui.QApplication.translate("interfaceForm", "Messages font size:", None, QtGui.QApplication.UnicodeUTF8))
         self.unread.setText(QtGui.QApplication.translate("interfaceForm", "Select unread messages notification color", None, QtGui.QApplication.UnicodeUTF8))
         self.compact_mode.setText(QtGui.QApplication.translate("interfaceForm", "Compact contact list", None, QtGui.QApplication.UnicodeUTF8))
+        self.import_smileys.setText(QtGui.QApplication.translate("interfaceForm", "Import smiley pack", None, QtGui.QApplication.UnicodeUTF8))
+        self.import_stickers.setText(QtGui.QApplication.translate("interfaceForm", "Import sticker pack", None, QtGui.QApplication.UnicodeUTF8))
+
+    def import_st(self):
+        directory = QtGui.QFileDialog.getExistingDirectory(self,
+                                                           QtGui.QApplication.translate("MainWindow",
+                                                                                        'Choose folder with sticker pack',
+                                                                                        None,
+                                                                                        QtGui.QApplication.UnicodeUTF8),
+                                                           curr_directory(),
+                                                           QtGui.QFileDialog.ShowDirsOnly | QtGui.QFileDialog.DontUseNativeDialog)
+
+        if directory:
+            src = directory + '/'
+            dest = curr_directory() + '/stickers/' + os.path.basename(directory) + '/'
+            copy(src, dest)
+
+    def import_sm(self):
+        directory = QtGui.QFileDialog.getExistingDirectory(self,
+                                                           QtGui.QApplication.translate("MainWindow",
+                                                                                        'Choose folder with smiley pack',
+                                                                                        None,
+                                                                                        QtGui.QApplication.UnicodeUTF8),
+                                                           curr_directory(),
+                                                           QtGui.QFileDialog.ShowDirsOnly | QtGui.QFileDialog.DontUseNativeDialog)
+
+        if directory:
+            src = directory + '/'
+            dest = curr_directory() + '/smileys/' + os.path.basename(directory) + '/'
+            copy(src, dest)
 
     def select_color(self):
         col = QtGui.QColorDialog.getColor()

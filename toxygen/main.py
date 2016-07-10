@@ -94,6 +94,17 @@ class Toxygen:
                 elif _login.t == 1:  # create new profile
                     _login.name = _login.name.strip()
                     name = _login.name if _login.name else 'toxygen_user'
+                    pr = map(lambda x: x[1], ProfileHelper.find_profiles())
+                    if name in list(pr):
+                        msgBox = QtGui.QMessageBox()
+                        msgBox.setWindowTitle(
+                            QtGui.QApplication.translate("MainWindow", "Error", None, QtGui.QApplication.UnicodeUTF8))
+                        text = (QtGui.QApplication.translate("MainWindow",
+                                                             'Profile with this name already exists',
+                                                             None, QtGui.QApplication.UnicodeUTF8))
+                        msgBox.setText(text)
+                        msgBox.exec_()
+                        return
                     self.tox = profile.tox_factory()
                     self.tox.self_set_name(bytes(_login.name, 'utf-8') if _login.name else b'Toxygen User')
                     self.tox.self_set_status_message(b'Toxing on Toxygen')
