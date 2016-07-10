@@ -820,22 +820,12 @@ class Profile(contact.Contact, Singleton):
 
         elif auto:
             path = settings['auto_accept_path'] or curr_directory()
-            if not os.path.isdir(path):
-                path = curr_directory()
-            new_file_name, i = file_name, 1
-            while os.path.isfile(path + '/' + new_file_name):  # file with same name already exists
-                if '.' in file_name:  # has extension
-                    d = file_name.rindex('.')
-                else:  # no extension
-                    d = len(file_name)
-                new_file_name = file_name[:d] + ' ({})'.format(i) + file_name[d:]
-                i += 1
-            self.accept_transfer(None, path + '/' + new_file_name, friend_number, file_number, size)
+            self.accept_transfer(None, path + '/' + file_name, friend_number, file_number, size)
             tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
                                  time.time(),
                                  TOX_FILE_TRANSFER_STATE['RUNNING'],
                                  size,
-                                 new_file_name,
+                                 file_name,
                                  friend_number,
                                  file_number)
         else:
@@ -922,6 +912,16 @@ class Profile(contact.Contact, Singleton):
         :param size: file size
         :param inline: is inline image
         """
+        path, file_name = os.path.split(path)
+        new_file_name, i = file_name, 1
+        while os.path.isfile(path + '/' + new_file_name):  # file with same name already exists
+            if '.' in file_name:  # has extension
+                d = file_name.rindex('.')
+            else:  # no extension
+                d = len(file_name)
+            new_file_name = file_name[:d] + ' ({})'.format(i) + file_name[d:]
+            i += 1
+        path = os.path.join(path, new_file_name)
         if not inline:
             rt = ReceiveTransfer(path, self._tox, friend_number, size, file_number)
         else:

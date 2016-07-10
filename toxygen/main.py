@@ -12,7 +12,7 @@ from callbacks import init_callbacks
 from util import curr_directory, program_version
 import styles.style
 import toxencryptsave
-from passwordscreen import PasswordScreen, UnlockAppScreen
+from passwordscreen import PasswordScreen, UnlockAppScreen, SetProfilePasswordScreen
 from plugin_support import PluginLoader
 
 
@@ -97,6 +97,19 @@ class Toxygen:
                     self.tox = profile.tox_factory()
                     self.tox.self_set_name(bytes(_login.name, 'utf-8') if _login.name else b'Toxygen User')
                     self.tox.self_set_status_message(b'Toxing on Toxygen')
+                    reply = QtGui.QMessageBox.question(None,
+                                                       'Profile {}'.format(name),
+                                                       QtGui.QApplication.translate("login",
+                                                                                    'Do you want to set profile password?',
+                                                                                    None,
+                                                                                    QtGui.QApplication.UnicodeUTF8),
+                                                       QtGui.QMessageBox.Yes,
+                                                       QtGui.QMessageBox.No)
+                    if reply == QtGui.QMessageBox.Yes:
+                        set_pass = SetProfilePasswordScreen(encrypt_save)
+                        set_pass.show()
+                        self.app.connect(self.app, QtCore.SIGNAL("lastWindowClosed()"), self.app, QtCore.SLOT("quit()"))
+                        self.app.exec_()
                     ProfileHelper(Settings.get_default_path(), name).save_profile(self.tox.get_savedata())
                     path = Settings.get_default_path()
                     settings = Settings(name)
@@ -292,6 +305,7 @@ class Toxygen:
                     if self.stop:
                         return
                     self.tox.bootstrap(*data)
+                    self.tox.add_tcp_relay(*data)
             except:
                 pass
             for _ in range(10):
@@ -304,6 +318,7 @@ class Toxygen:
                         if self.stop:
                             return
                         self.tox.bootstrap(*data)
+                        self.tox.add_tcp_relay(*data)
                 except:
                     pass
                 finally:
@@ -405,4 +420,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-

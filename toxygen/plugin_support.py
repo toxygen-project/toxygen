@@ -152,5 +152,6 @@ class PluginLoader(util.Singleton):
         App is closing, stop all plugins
         """
         for key in list(self._plugins.keys()):
-            self._plugins[key][0].close()
+            if self._plugins[key][1]:
+                self._plugins[key][0].close()
             del self._plugins[key]

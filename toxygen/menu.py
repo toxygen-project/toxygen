@@ -17,6 +17,7 @@ class AddContact(CenteredWidget):
     def __init__(self, tox_id=''):
         super(AddContact, self).__init__()
         self.initUI(tox_id)
+        self._adding = False
 
     def initUI(self, tox_id):
         self.setObjectName('AddContact')
@@ -58,8 +59,12 @@ class AddContact(CenteredWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def add_friend(self):
+        if self._adding:
+            return
+        self._adding = True
         profile = Profile.get_instance()
         send = profile.send_friend_request(self.tox_id.text(), self.message_edit.toPlainText())
+        self._adding = False
         if send is True:
             # request was successful
             self.close()
