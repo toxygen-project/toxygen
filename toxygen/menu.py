@@ -63,7 +63,7 @@ class AddContact(CenteredWidget):
             return
         self._adding = True
         profile = Profile.get_instance()
-        send = profile.send_friend_request(self.tox_id.text(), self.message_edit.toPlainText())
+        send = profile.send_friend_request(self.tox_id.text().strip(), self.message_edit.toPlainText())
         self._adding = False
         if send is True:
             # request was successful

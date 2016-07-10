@@ -37,6 +37,7 @@ class PluginSuperClass:
 
     def __init__(self, name, short_name, tox=None, profile=None, settings=None, encrypt_save=None):
         """
+        Constructor. In plugin __init__ should take only 4 last arguments
         :param name: plugin full name
         :param short_name: plugin unique short name (length of short name should not exceed MAX_SHORT_NAME_LENGTH)
         :param tox: tox instance

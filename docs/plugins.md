@@ -10,7 +10,7 @@ Check [Plugin API](/docs/plugin_api.md) for more info
 
 Toxygen comes without preinstalled plugins.
 
-1. Put plugin and directory with its data into /src/plugins/
+1. Put plugin and directory with its data into /src/plugins/ or import it via GUI (In menu: Plugins -> Import plugin)
 2. Restart Toxygen
 
 ##Note: /src/plugins/ should contain plugin_super_class.py and __init__.py
