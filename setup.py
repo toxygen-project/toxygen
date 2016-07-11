@@ -7,14 +7,14 @@ from toxygen.util import program_version
 
 version = program_version + '.0'
 
-MODULES = ['PyAudio', 'PySocks']
+MODULES = ['PyAudio']
 
 if system() == 'Windows':
     MODULES.append('PySide')
 
 
 class InstallScript(install):
-    """Install all required libs"""
+    """This class configures Toxygen after installation"""
 
     def run(self):
         install.run(self)
@@ -29,8 +29,9 @@ setup(name='Toxygen',
       description='Toxygen - Tox client',
       long_description='Toxygen is powerful Tox client written in Python3',
       url='https://github.com/xveduk/toxygen/',
-      keywords='toxygen tox',
+      keywords='toxygen tox messenger',
       author='Ingvar',
+      maintainer='Ingvar',
       license='GPL3',
       packages=['toxygen', 'toxygen.plugins', 'toxygen.styles'],
       install_requires=MODULES,

@@ -381,6 +381,7 @@ class Toxygen:
 
 
 def clean():
+    """Removes all windows libs from libs folder"""
     d = curr_directory() + '/libs/'
     for fl in ('libtox64.dll', 'libtox.dll', 'libsodium64.a', 'libsodium.a'):
         if os.path.exists(d + fl):
@@ -388,6 +389,7 @@ def clean():
 
 
 def configure():
+    """Removes unused libs"""
     d = curr_directory() + '/libs/'
     is_64bits = sys.maxsize > 2 ** 32
     if not is_64bits:
@@ -410,7 +412,7 @@ def configure():
 def main():
     if len(sys.argv) == 1:
         toxygen = Toxygen()
-    else:  # path to profile or tox: uri or --version or --help
+    else:  # started with argument(s)
         arg = sys.argv[1]
         if arg == '--version':
             print('Toxygen ' + program_version)
