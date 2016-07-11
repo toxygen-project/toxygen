@@ -180,9 +180,6 @@ class Profile(basecontact.BaseContact, Singleton):
                 friend_or_gc.delete_old_messages()
                 self._screen.messageEdit.setPlainText(friend_or_gc.curr_text)
                 self._messages.clear()
-                friend.load_corr()
-                messages = friend.get_corr()[-PAGE_SIZE:]
-                self._load_history = False
                 friend_or_gc.load_corr()
                 messages = friend_or_gc.get_corr()[-PAGE_SIZE:]
                 self._load_history = False
@@ -424,8 +421,8 @@ class Profile(basecontact.BaseContact, Singleton):
             friend.inc_receipts()
             if friend.status is not None:
                 self.split_and_send(friend.number, message_type, text.encode('utf-8'))
+            t = time.time()
             if friend.number == self.get_active_number():
-                t = time.time()
                 self.create_message_item(text, t, MESSAGE_OWNER['NOT_SENT'], message_type)
                 self._screen.messageEdit.clear()
                 self._messages.scrollToBottom()
@@ -448,18 +445,18 @@ class Profile(basecontact.BaseContact, Singleton):
         s = Settings.get_instance()
         if hasattr(self, '_history'):
             if s['save_history']:
-                for friend in self._friends_and_gc
-                    if not self._history.friend_exists_in_db(friend.tox_id):
-                        self._history.add_friend_to_db(friend.tox_id)
+                for friend_or_gc in self._friends_and_gc:
+                    if not self._history.friend_exists_in_db(friend_or_gc.tox_id):
+                        self._history.add_friend_to_db(friend_or_gc.tox_id)
                     if not s['save_unsent_only']:
-                        messages = friend.get_corr_for_saving()
+                        messages = friend_or_gc.get_corr_for_saving()
                     else:
-                        messages = friend.get_unsent_messages_for_saving()
-                        self._history.delete_messages(friend.tox_id)
-                    self._history.save_messages_to_db(friend.tox_id, messages)
-                    unsent_messages = friend.get_unsent_messages()
+                        messages = friend_or_gc.get_unsent_messages_for_saving()
+                        self._history.delete_messages(friend_or_gc.tox_id)
+                    self._history.save_messages_to_db(friend_or_gc.tox_id, messages)
+                    unsent_messages = friend_or_gc.get_unsent_messages()
                     unsent_time = unsent_messages[0].get_data()[2] if len(unsent_messages) else time.time() + 1
-                    self._history.update_messages(friend.tox_id, unsent_time)
+                    self._history.update_messages(friend_or_gc.tox_id, unsent_time)
             self._history.save()
             del self._history
 
@@ -474,7 +471,7 @@ class Profile(basecontact.BaseContact, Singleton):
                 self._history.delete_messages(friend.tox_id)
                 self._history.delete_friend_from_db(friend.tox_id)
         else:  # clear all history
-            for number in range(len(self._friends_and_gc))):
+            for number in range(len(self._friends_and_gc)):
                 self.clear_history(number, save_unsent)
 
         if num is None or num == self.get_active_number():
@@ -808,8 +805,8 @@ class Profile(basecontact.BaseContact, Singleton):
         if hasattr(self, '_call'):
             self._call.stop()
             del self._call
-        for i in range(len(self._friends)):
-            del self._friends[0]
+        for i in range(len(self._friends_and_gc)):
+            del self._friends_and_gc[0]
 
     # -----------------------------------------------------------------------------------------------------------------
     # File transfers support

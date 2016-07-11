@@ -5,6 +5,9 @@ except ImportError:
 import basecontact
 from messages import *
 from history import *
+from settings import ProfileHelper
+from toxcore_enums_and_consts import *
+from util import curr_directory
 
 
 class Contact(basecontact.BaseContact):
