@@ -126,7 +126,8 @@ class Settings(dict, Singleton):
             'unread_color': 'red',
             'save_unsent_only': False,
             'compact_mode': False,
-            'show_welcome_screen': True
+            'show_welcome_screen': True,
+            'notify_all_gc': False
         }
 
     @staticmethod

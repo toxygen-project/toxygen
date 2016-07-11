@@ -41,6 +41,7 @@ class Profile(basecontact.BaseContact, Singleton):
         self._call = calls.AV(tox.AV)  # object with data about calls
         self._incoming_calls = set()
         self._load_history = True
+        self._gc_invites = {}  # dict of gc invites. key - friend number, value - list of gc data
         settings = Settings.get_instance()
         self._show_online = settings['show_online_friends']
         screen.online_contacts.setCurrentIndex(int(self._show_online))
@@ -383,25 +384,28 @@ class Profile(basecontact.BaseContact, Singleton):
         else:
             self._tox.group_send_message(number, message_type, message)
 
-    def new_message(self, friend_num, message_type, message):
+    def new_message(self, num, message_type, message, is_group=False):
         """
         Current user gets new message
-        :param friend_num: friend_num of friend who sent message
+        :param num: num of friend or gc who sent message
         :param message_type: message type - plain text or action message (/me)
         :param message: text of message
+        :param is_group: is group chat message or not
         """
-        if friend_num == self.get_active_number():  # add message to list
+        if num == self.get_active_number() and is_group != self.is_active_a_friend():  # add message to list
             t = time.time()
             self.create_message_item(message, t, MESSAGE_OWNER['FRIEND'], message_type)
             self._messages.scrollToBottom()
             self._friends_and_gc[self._active_friend_or_gc].append_message(
                 TextMessage(message, MESSAGE_OWNER['FRIEND'], t, message_type))
         else:
-            friend = self.get_friend_by_number(friend_num)
-            friend.inc_messages()
-            friend.append_message(
-                TextMessage(message, MESSAGE_OWNER['FRIEND'], time.time(), message_type))
-            if not friend.visibility:
+            if is_group:
+                friend_or_gc = self.get_gc_by_number(num)
+            else:
+                friend_or_gc = self.get_friend_by_number(num)
+                friend_or_gc.inc_messages()
+            friend_or_gc.append_message(TextMessage(message, MESSAGE_OWNER['FRIEND'], time.time(), message_type))
+            if not friend_or_gc.visibility:
                 self.update_filtration()
 
     def send_message(self, text, number=None, is_gc=False):
@@ -1241,7 +1245,7 @@ class Profile(basecontact.BaseContact, Singleton):
         self.add_gc(num)
 
     def process_group_invite(self, friend_num, data):
-        # TODO: add info to list and support password
+        # TODO: support password
         try:
             text = QtGui.QApplication.translate('MainWindow', 'User {} invites you to group',
                                                 None, QtGui.QApplication.UnicodeUTF8)
@@ -1253,6 +1257,11 @@ class Profile(basecontact.BaseContact, Singleton):
                 data = self._tox.get_savedata()
                 ProfileHelper.get_instance().save_profile(data)
                 self.add_gc(num)
+            elif reply != QtGui.QMessageBox.No:
+                if friend_num in self._gc_invites:
+                    self._gc_invites[friend_num].append(data)
+                else:
+                    self._gc_invites[friend_num] = data
         except Exception as ex:  # something is wrong
             log('Accept group chat invite failed! ' + str(ex))
 

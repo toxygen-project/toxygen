@@ -291,8 +291,23 @@ def callback_audio(toxav, friend_number, samples, audio_samples_per_channel, aud
 # Callbacks - group chats
 # -----------------------------------------------------------------------------------------------------------------
 
-def group_message(tox, group_number, peer_id, message, length, user_data):
-    pass
+def group_message(window, tray):
+    """
+    New message from friend
+    """
+    def wrapped(tox, group_number, peer_id, message_type, message, length, user_data):
+        profile = Profile.get_instance()
+        settings = Settings.get_instance()
+        message = str(message, 'utf-8')
+        invoke_in_main_thread(profile.new_message, group_number, message_type, message, True)
+        if not window.isActiveWindow():
+            bl = settings['notify_all_gc'] or profile.name in message
+            if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked and bl:
+                invoke_in_main_thread(tray_notification, '', message, tray, window)  # TODO: friend name
+            if (settings['sound_notifications'] or bl) and profile.status != TOX_USER_STATUS['BUSY']:
+                sound_notification(SOUND_NOTIFICATION['MESSAGE'])
+            invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
+    return wrapped
 
 
 def group_invite(tox, friend_number, invite_data, length, user_data):
@@ -336,4 +351,7 @@ def init_callbacks(tox, window, tray):
 
     tox.callback_friend_lossless_packet(lossless_packet, 0)
     tox.callback_friend_lossy_packet(lossy_packet, 0)
+
+    tox.callback_group_message(group_message(window, tray), 0)
+    tox.callback_group_invite(group_invite, 0)
 
