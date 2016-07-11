@@ -10,13 +10,11 @@ class Friend(contact.Contact):
     Friend in list of friends. Can be hidden, properties 'has unread messages' and 'has alias' added
     """
 
-    def __init__(self, message_getter, number, *args):
+    def __init__(self, *args):
         """
-        :param message_getter: gets messages from db
         :param number: number of friend.
         """
-        super(Friend, self).__init__(message_getter, *args)
-        self._number = number
+        super(Friend, self).__init__(*args)
         self._alias = False
         self._receipts = 0
 

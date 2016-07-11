@@ -1893,13 +1893,14 @@ class Tox:
         """
         Write the Chat ID designated by the given group number to a byte array.
         `chat_id` should have room for at least TOX_GROUP_CHAT_ID_SIZE bytes.
-        :return true on success.
+        :return chat id.
         """
 
         error = c_int()
+        buff = create_string_buffer(TOX_GROUP_CHAT_ID_SIZE)
         result = Tox.libtoxcore.tox_group_get_chat_id(self._tox_pointer, groupnumber,
-                                                      create_string_buffer(TOX_GROUP_CHAT_ID_SIZE), byref(error))
-        return result
+                                                      buff, byref(error))
+        return bin_to_string(buff[:TOX_GROUP_CHAT_ID_SIZE], TOX_GROUP_CHAT_ID_SIZE)
 
     def group_get_number_groups(self):
         """
@@ -2093,6 +2094,15 @@ class Tox:
         """
         Set the callback for the `group_message` event. Pass NULL to unset.
         This event is triggered when the client receives a group message.
+
+        Callback: python function with params:
+        tox Tox* instance
+        groupnumber The group number of the group the message is intended for.
+        peer_id The ID of the peer who sent the message.
+        type The type of message (normal, action, ...).
+        message The message data.
+        length The length of the message.
+        user_data - user data
         """
 
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_int, c_char_p, c_size_t, c_void_p)
@@ -2140,7 +2150,7 @@ class Tox:
         result = Tox.libtoxcore.tox_group_invite_friend(self._tox_pointer, groupnumber, friend_number, byref(error))
         return result
 
-    def group_invite_accept(self, invite_data, password):
+    def group_invite_accept(self, invite_data, password=None):
         """
         Accept an invite to a group chat that the client previously received from a friend. The invite
         is only valid while the inviter is present in the group.
@@ -2151,8 +2161,10 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_invite_accept(self._tox_pointer, invite_data, len(invite_data), password,
-                                                        len(password), byref(error))
+        result = Tox.libtoxcore.tox_group_invite_accept(self._tox_pointer, invite_data, len(invite_data),
+                                                        password,
+                                                        len(password) if password is not None else 0,
+                                                        byref(error))
         return result
 
     def callback_group_invite(self, callback, user_data):
@@ -2161,6 +2173,13 @@ class Tox:
 
         This event is triggered when the client receives a group invite from a friend. The client must store
         invite_data which is used to join the group via tox_group_invite_accept.
+
+        Callback: python function with params:
+        tox - Tox*
+        friend_number The friend number of the contact who sent the invite.
+        invite_data The invite data.
+        length The length of invite_data.
+        user_data - user data
         """
 
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_char_p, c_size_t, c_void_p)

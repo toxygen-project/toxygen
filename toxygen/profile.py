@@ -60,7 +60,7 @@ class Profile(basecontact.BaseContact, Singleton):
             if not self._history.friend_exists_in_db(tox_id):
                 self._history.add_friend_to_db(tox_id)
             message_getter = self._history.messages_getter(tox_id)
-            friend = Friend(message_getter, i, name, status_message, item, tox_id)
+            friend = Friend(i, message_getter, name, status_message, item, tox_id)
             friend.set_alias(alias)
             self._friends_and_gc.append(friend)
         self.filtration(self._show_online)
@@ -138,7 +138,10 @@ class Profile(basecontact.BaseContact, Singleton):
         self.filtration(self._show_online, self._filter_string)
 
     def get_friend_by_number(self, num):
-        return list(filter(lambda x: x.number == num, self._friends_and_gc))[0]
+        return list(filter(lambda x: x.number == num and type(x) is Friend, self._friends_and_gc))[0]
+
+    def get_gc_by_number(self, num):
+        return list(filter(lambda x: x.number == num and type(x) is not Friend, self._friends_and_gc))[0]
 
     def get_friend_or_gc(self, num):
         return self._friends_and_gc[num]
@@ -350,12 +353,13 @@ class Profile(basecontact.BaseContact, Singleton):
         except:
             pass
 
-    def split_and_send(self, number, message_type, message):
+    def split_and_send(self, number, message_type, message, is_group=False):
         """
         Message splitting
-        :param number: friend's number
+        :param number: friend or gc number
         :param message_type: type of message
         :param message: message text
+        :param is_group: send to group
         """
         while len(message) > TOX_MAX_MESSAGE_LENGTH:
             size = TOX_MAX_MESSAGE_LENGTH * 4 / 5
@@ -369,9 +373,15 @@ class Profile(basecontact.BaseContact, Singleton):
             else:
                 index = TOX_MAX_MESSAGE_LENGTH - size - 1
             index += size + 1
-            self._tox.friend_send_message(number, message_type, message[:index])
+            if not is_group:
+                self._tox.friend_send_message(number, message_type, message[:index])
+            else:
+                self._tox.group_send_message(number, message_type, message[:index])
             message = message[index:]
-        self._tox.friend_send_message(number, message_type, message)
+        if not is_group:
+            self._tox.friend_send_message(number, message_type, message)
+        else:
+            self._tox.group_send_message(number, message_type, message)
 
     def new_message(self, friend_num, message_type, message):
         """
@@ -394,18 +404,20 @@ class Profile(basecontact.BaseContact, Singleton):
             if not friend.visibility:
                 self.update_filtration()
 
-    def send_message(self, text, friend_num=None):
+    def send_message(self, text, number=None, is_gc=False):
         """
         Send message
         :param text: message text
-        :param friend_num: num of friend
+        :param number: num of friend or gc
+        :param is_gc: is group chat
         """
-        if friend_num is None:
-            friend_num = self.get_active_number()
+        if number is None:
+            number = self.get_active_number()
+            is_gc = not self.is_active_a_friend()
         if text.startswith('/plugin '):
             plugin_support.PluginLoader.get_instance().command(text[8:])
             self._screen.messageEdit.clear()
-        elif text and friend_num + 1:
+        elif text and number + 1:
             text = ''.join(c if c <= '\u10FFFF' else '\u25AF' for c in text)
 
             if text.startswith('/me '):
@@ -414,22 +426,30 @@ class Profile(basecontact.BaseContact, Singleton):
             else:
                 message_type = TOX_MESSAGE_TYPE['NORMAL']
 
-            friend = self.get_friend_by_number(friend_num)
-            # TODO: send to gc
-            # friend = self._friends_and_gc[self._active_friend_or_gc]
-
-            friend.inc_receipts()
-            if friend.status is not None:
-                self.split_and_send(friend.number, message_type, text.encode('utf-8'))
+            if not is_gc:
+                friend_or_gc = self.get_friend_by_number(number)
+            else:
+                friend_or_gc = self.get_gc_by_number(number)
             t = time.time()
-            if friend.number == self.get_active_number():
-                self.create_message_item(text, t, MESSAGE_OWNER['NOT_SENT'], message_type)
-                self._screen.messageEdit.clear()
-                self._messages.scrollToBottom()
-            friend.append_message(TextMessage(text, MESSAGE_OWNER['NOT_SENT'], t, message_type))
+
+            if not is_gc:
+                friend_or_gc.inc_receipts()
+                if friend_or_gc.status is not None:
+                    self.split_and_send(friend_or_gc.number, message_type, text.encode('utf-8'))
+                if friend_or_gc.number == self.get_active_number() and self.is_active_a_friend():
+                    self.create_message_item(text, t, MESSAGE_OWNER['NOT_SENT'], message_type)
+                    self._screen.messageEdit.clear()
+                    self._messages.scrollToBottom()
+            else:
+                self.split_and_send(friend_or_gc.number, message_type, text.encode('utf-8'), True)
+                if friend_or_gc.number == self.get_active_number() and not self.is_active_a_friend():
+                    self.create_message_item(text, t, MESSAGE_OWNER['ME'], message_type)
+                    self._screen.messageEdit.clear()
+                    self._messages.scrollToBottom()
+            friend_or_gc.append_message(TextMessage(text, MESSAGE_OWNER['NOT_SENT'], t, message_type))
 
     def delete_message(self, time):
-        friend = self._friends[self._active_friend]
+        friend = self._friends_and_gc[self._active_friend_or_gc]
         friend.delete_message(time)
         self._history.delete_message(friend.tox_id, time)
         self.update()
@@ -1198,12 +1218,43 @@ class Profile(basecontact.BaseContact, Singleton):
     # Group chats support
     # -----------------------------------------------------------------------------------------------------------------
 
+    def add_gc(self, num):
+        tox_id = self._tox.group_get_chat_id(num)
+        name = self._tox.group_get_name(num)
+        topic = self._tox.group_get_topic(num)
+        item = self.create_friend_item()
+        try:
+            if not self._history.friend_exists_in_db(tox_id):
+                self._history.add_friend_to_db(tox_id)
+            message_getter = self._history.messages_getter(tox_id)
+        except Exception as ex:  # something is wrong
+            log('Accept friend request failed! ' + str(ex))
+            message_getter = None
+        gc = GroupChat(self._tox, message_getter, num, name, topic, item, tox_id)
+        self._friends_and_gc.append(gc)
+
     def create_gc(self, name, is_public, password):
         privacy_state = TOX_GROUP_PRIVACY_STATE['TOX_GROUP_PRIVACY_STATE_PUBLIC'] if is_public else TOX_GROUP_PRIVACY_STATE['TOX_GROUP_PRIVACY_STATE_PRIVATE']
         num = self._tox.group_new(privacy_state, bytes(name, 'utf-8'))
         if password:
-            self._tox.group_founder_set_password(num, password)
-        # self._friends_and_gc.append(Groupchat(num, self._tox, ))
+            self._tox.group_founder_set_password(num, bytes(password, 'utf-8'))
+        self.add_gc(num)
+
+    def process_group_invite(self, friend_num, data):
+        # TODO: add info to list and support password
+        try:
+            text = QtGui.QApplication.translate('MainWindow', 'User {} invites you to group',
+                                                None, QtGui.QApplication.UnicodeUTF8)
+            info = text.format(self.get_friend_by_number(friend_num).name)
+            fr_req = QtGui.QApplication.translate('MainWindow', 'Group chat invite', None, QtGui.QApplication.UnicodeUTF8)
+            reply = QtGui.QMessageBox.question(None, fr_req, info, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
+            if reply == QtGui.QMessageBox.Yes:  # accepted
+                num = self._tox.group_invite_accept(data)
+                data = self._tox.get_savedata()
+                ProfileHelper.get_instance().save_profile(data)
+                self.add_gc(num)
+        except Exception as ex:  # something is wrong
+            log('Accept group chat invite failed! ' + str(ex))
 
 
 def tox_factory(data=None, settings=None):

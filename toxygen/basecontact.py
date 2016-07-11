@@ -91,10 +91,11 @@ class BaseContact:
         if not os.path.isfile(avatar_path):  # load default image
             avatar_path = default_path
             os.chdir(curr_directory() + '/images/')
-        pixmap = QtGui.QPixmap(QtCore.QSize(64, 64))
+        width = self._widget.avatar_label.width()
+        pixmap = QtGui.QPixmap(QtCore.QSize(width, width))
         pixmap.load(avatar_path)
         self._widget.avatar_label.setScaledContents(False)
-        self._widget.avatar_label.setPixmap(pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio))
+        self._widget.avatar_label.setPixmap(pixmap.scaled(width, width, QtCore.Qt.KeepAspectRatio))
         self._widget.avatar_label.repaint()
 
     def reset_avatar(self):

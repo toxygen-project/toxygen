@@ -288,6 +288,20 @@ def callback_audio(toxav, friend_number, samples, audio_samples_per_channel, aud
 
 
 # -----------------------------------------------------------------------------------------------------------------
+# Callbacks - group chats
+# -----------------------------------------------------------------------------------------------------------------
+
+def group_message(tox, group_number, peer_id, message, length, user_data):
+    pass
+
+
+def group_invite(tox, friend_number, invite_data, length, user_data):
+    invoke_in_main_thread(Profile.get_instance().process_group_invite,
+                          friend_number,
+                          invite_data[:length])
+
+
+# -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
 # -----------------------------------------------------------------------------------------------------------------
 

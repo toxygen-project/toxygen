@@ -82,7 +82,7 @@ class MainWindow(QtGui.QMainWindow):
         self.actionAbout_program.triggered.connect(self.about_program)
         self.actionNetwork.triggered.connect(self.network_settings)
         self.actionAdd_friend.triggered.connect(self.add_contact)
-        self.actionSettings.triggered.connect(self.profilesettings)
+        self.actionSettings.triggered.connect(self.profile_settings)
         self.actionPrivacy_settings.triggered.connect(self.privacy_settings)
         self.actionInterface_settings.triggered.connect(self.interface_settings)
         self.actionNotifications.triggered.connect(self.notification_settings)
@@ -205,9 +205,9 @@ class MainWindow(QtGui.QMainWindow):
         Form.status_message.setObjectName("status_message")
         self.connection_status = Form.connection_status = StatusCircle(Form)
         Form.connection_status.setGeometry(QtCore.QRect(230, 35, 32, 32))
-        self.avatar_label.mouseReleaseEvent = self.profilesettings
-        self.status_message.mouseReleaseEvent = self.profilesettings
-        self.name.mouseReleaseEvent = self.profilesettings
+        self.avatar_label.mouseReleaseEvent = self.profile_settings
+        self.status_message.mouseReleaseEvent = self.profile_settings
+        self.name.mouseReleaseEvent = self.profile_settings
         self.connection_status.raise_()
         Form.connection_status.setObjectName("connection_status")
 
@@ -232,6 +232,11 @@ class MainWindow(QtGui.QMainWindow):
         font.setBold(False)
         self.account_status.setFont(font)
         self.account_status.setObjectName("account_status")
+
+        self.account_status.mouseReleaseEvent = self.show_chat_menu
+        self.account_name.mouseReleaseEvent = self.show_chat_menu
+        self.account_avatar.mouseReleaseEvent = self.show_chat_menu
+
         self.callButton = QtGui.QPushButton(Form)
         self.callButton.setGeometry(QtCore.QRect(550, 30, 50, 50))
         self.callButton.setObjectName("callButton")
@@ -389,7 +394,7 @@ class MainWindow(QtGui.QMainWindow):
         self.a_c = AddContact(link)
         self.a_c.show()
 
-    def profilesettings(self, *args):
+    def profile_settings(self, *args):
         self.p_s = ProfileSettings()
         self.p_s.show()
 
@@ -454,6 +459,11 @@ class MainWindow(QtGui.QMainWindow):
     def create_groupchat(self):
         self.gc = AddGroupchat()
         self.gc.show()
+
+    def show_chat_menu(self):
+        pr = Profile.get_instance()
+        if not pr.is_active_a_friend():
+            pass  # TODO: show list of users in chat
 
     # -----------------------------------------------------------------------------------------------------------------
     # Messages, calls and file transfers
@@ -533,29 +543,32 @@ class MainWindow(QtGui.QMainWindow):
         auto = QtGui.QApplication.translate("MainWindow", 'Disallow auto accept', None, QtGui.QApplication.UnicodeUTF8) if allowed else QtGui.QApplication.translate("MainWindow", 'Allow auto accept', None, QtGui.QApplication.UnicodeUTF8)
         if item is not None:
             self.listMenu = QtGui.QMenu()
-            set_alias_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Set alias', None, QtGui.QApplication.UnicodeUTF8))
-            clear_history_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Clear history', None, QtGui.QApplication.UnicodeUTF8))
-            copy_menu = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Copy', None, QtGui.QApplication.UnicodeUTF8))
-            copy_name_item = copy_menu.addAction(QtGui.QApplication.translate("MainWindow", 'Name', None, QtGui.QApplication.UnicodeUTF8))
-            copy_status_item = copy_menu.addAction(QtGui.QApplication.translate("MainWindow", 'Status message', None, QtGui.QApplication.UnicodeUTF8))
-            copy_key_item = copy_menu.addAction(QtGui.QApplication.translate("MainWindow", 'Public key', None, QtGui.QApplication.UnicodeUTF8))
+            if type(friend) is Friend:  # TODO: add `invite to gc` submenu
+                set_alias_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Set alias', None, QtGui.QApplication.UnicodeUTF8))
+                clear_history_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Clear history', None, QtGui.QApplication.UnicodeUTF8))
+                copy_menu = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Copy', None, QtGui.QApplication.UnicodeUTF8))
+                copy_name_item = copy_menu.addAction(QtGui.QApplication.translate("MainWindow", 'Name', None, QtGui.QApplication.UnicodeUTF8))
+                copy_status_item = copy_menu.addAction(QtGui.QApplication.translate("MainWindow", 'Status message', None, QtGui.QApplication.UnicodeUTF8))
+                copy_key_item = copy_menu.addAction(QtGui.QApplication.translate("MainWindow", 'Public key', None, QtGui.QApplication.UnicodeUTF8))
 
-            auto_accept_item = self.listMenu.addAction(auto)
-            remove_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Remove friend', None, QtGui.QApplication.UnicodeUTF8))
-            notes_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Notes', None, QtGui.QApplication.UnicodeUTF8))
+                auto_accept_item = self.listMenu.addAction(auto)
+                remove_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Remove friend', None, QtGui.QApplication.UnicodeUTF8))
+                notes_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Notes', None, QtGui.QApplication.UnicodeUTF8))
 
-            submenu = plugin_support.PluginLoader.get_instance().get_menu(self.listMenu, num)
-            if len(submenu):
-                plug = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Plugins', None, QtGui.QApplication.UnicodeUTF8))
-                plug.addActions(submenu)
-            self.connect(set_alias_item, QtCore.SIGNAL("triggered()"), lambda: self.set_alias(num))
-            self.connect(remove_item, QtCore.SIGNAL("triggered()"), lambda: self.remove_friend(num))
-            self.connect(copy_key_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_friend_key(num))
-            self.connect(clear_history_item, QtCore.SIGNAL("triggered()"), lambda: self.clear_history(num))
-            self.connect(auto_accept_item, QtCore.SIGNAL("triggered()"), lambda: self.auto_accept(num, not allowed))
-            self.connect(notes_item, QtCore.SIGNAL("triggered()"), lambda: self.show_note(friend))
-            self.connect(copy_name_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_name(friend))
-            self.connect(copy_status_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_status(friend))
+                submenu = plugin_support.PluginLoader.get_instance().get_menu(self.listMenu, num)
+                if len(submenu):
+                    plug = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Plugins', None, QtGui.QApplication.UnicodeUTF8))
+                    plug.addActions(submenu)
+                self.connect(set_alias_item, QtCore.SIGNAL("triggered()"), lambda: self.set_alias(num))
+                self.connect(remove_item, QtCore.SIGNAL("triggered()"), lambda: self.remove_friend(num))
+                self.connect(copy_key_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_friend_key(num))
+                self.connect(clear_history_item, QtCore.SIGNAL("triggered()"), lambda: self.clear_history(num))
+                self.connect(auto_accept_item, QtCore.SIGNAL("triggered()"), lambda: self.auto_accept(num, not allowed))
+                self.connect(notes_item, QtCore.SIGNAL("triggered()"), lambda: self.show_note(friend))
+                self.connect(copy_name_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_name(friend))
+                self.connect(copy_status_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_status(friend))
+            else:
+                pass  # TODO: add menu for gc
             parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
             self.listMenu.move(parent_position + pos)
             self.listMenu.show()

@@ -5,9 +5,6 @@ except ImportError:
 import basecontact
 from messages import *
 from history import *
-from settings import ProfileHelper
-from toxcore_enums_and_consts import *
-from util import curr_directory
 
 
 class Contact(basecontact.BaseContact):
@@ -17,7 +14,7 @@ class Contact(basecontact.BaseContact):
     widget - widget for update
     """
 
-    def __init__(self, message_getter, name, status_message, widget, tox_id):
+    def __init__(self, number, message_getter, name, status_message, widget, tox_id):
         """
         :param name: name, example: 'Toxygen user'
         :param status_message: status message, example: 'Toxing on Toxygen'
@@ -28,6 +25,7 @@ class Contact(basecontact.BaseContact):
         self._message_getter = message_getter
         self._new_messages = False
         self._visible = True
+        self._number = number
         self._corr = []
         self._unsaved_messages = 0
         self._history_loaded = self._new_actions = False
@@ -149,41 +147,6 @@ class Contact(basecontact.BaseContact):
         self._new_messages = 0
         self._widget.messages.update(self._new_messages)
         self._widget.connection_status.update(self.status, False)
-
-    # -----------------------------------------------------------------------------------------------------------------
-    # Avatars
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def load_avatar(self):
-        """
-        Tries to load avatar of contact or uses default avatar
-        """
-        avatar_path = '{}.png'.format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
-        os.chdir(ProfileHelper.get_path() + 'avatars/')
-        if not os.path.isfile(avatar_path):  # load default image
-            avatar_path = 'avatar.png'
-            os.chdir(curr_directory() + '/images/')
-        width = self._widget.avatar_label.width()
-        pixmap = QtGui.QPixmap(QtCore.QSize(width, width))
-        pixmap.load(avatar_path)
-        self._widget.avatar_label.setScaledContents(False)
-        self._widget.avatar_label.setPixmap(pixmap.scaled(width, width, QtCore.Qt.KeepAspectRatio))
-        self._widget.avatar_label.repaint()
-
-    def reset_avatar(self):
-        avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
-        if os.path.isfile(avatar_path):
-            os.remove(avatar_path)
-            self.load_avatar()
-
-    def set_avatar(self, avatar):
-        avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
-        with open(avatar_path, 'wb') as f:
-            f.write(avatar)
-        self.load_avatar()
-
-    def get_pixmap(self):
-        return self._widget.avatar_label.pixmap()
 
     messages = property(get_messages)
 
