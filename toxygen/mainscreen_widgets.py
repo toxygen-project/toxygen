@@ -356,7 +356,7 @@ class WelcomeScreen(CenteredWidget):
                                                 None, QtGui.QApplication.UnicodeUTF8)
         elif num == 6:
             text = QtGui.QApplication.translate('WelcomeScreen',
-                                                'New in Toxygen v0.2.2:<br>Users can lock application using profile password.<br>Compact contact list support<br>Bug fixes<br>Tox DNS improvements',
+                                                'New in Toxygen v0.2.3:<br>TCS compliance<br>Plugins, smileys and stickers import<br>Bug fixes',
                                                 None, QtGui.QApplication.UnicodeUTF8)
         elif num == 7:
             text = QtGui.QApplication.translate('WelcomeScreen',

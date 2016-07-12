@@ -11,6 +11,7 @@ from mainscreen import MainWindow
 from callbacks import init_callbacks
 from util import curr_directory, program_version
 import styles.style
+import platform
 import toxencryptsave
 from passwordscreen import PasswordScreen, UnlockAppScreen, SetProfilePasswordScreen
 from plugin_support import PluginLoader
@@ -51,6 +52,9 @@ class Toxygen:
         app = QtGui.QApplication(sys.argv)
         app.setWindowIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
         self.app = app
+
+        if platform.system() == 'Linux':
+            QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_X11InitThreads)
 
         # application color scheme
         with open(curr_directory() + '/styles/style.qss') as fl:
