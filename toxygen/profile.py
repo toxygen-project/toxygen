@@ -64,7 +64,24 @@ class Profile(basecontact.BaseContact, Singleton):
             friend = Friend(i, message_getter, name, status_message, item, tox_id)
             friend.set_alias(alias)
             self._friends_and_gc.append(friend)
-        # TODO: list of gc
+
+        l = self._tox.group_get_number_groups()
+        for i in range(l):  # creates list of group chats
+            tox_id = tox.group_get_chat_id(i)
+            try:
+                alias = list(filter(lambda x: x[0] == tox_id, aliases))[0][1]
+            except:
+                alias = ''
+            item = self.create_friend_item()
+            name = alias or tox.group_get_name(i) or tox_id
+            status_message = tox.group_get_topic(i)
+            if not self._history.friend_exists_in_db(tox_id):
+                self._history.add_friend_to_db(tox_id)
+            message_getter = self._history.messages_getter(tox_id)
+            gc = GroupChat(self._tox, i, message_getter, name, status_message, item, tox_id)
+            gc.set_alias(alias)
+            self._friends_and_gc.append(gc)
+
         self.filtration(self._show_online)
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -394,24 +411,27 @@ class Profile(basecontact.BaseContact, Singleton):
         :param is_group: is group chat message or not
         :param peer_id: if gc - peer id
         """
+        t = time.time()
+
         if num == self.get_active_number() and is_group != self.is_active_a_friend():  # add message to list
-            t = time.time()
-            self.create_message_item(message, t, MESSAGE_OWNER['FRIEND'], message_type)
-            self._messages.scrollToBottom()
-            self._friends_and_gc[self._active_friend_or_gc].append_message(
-                TextMessage(message, MESSAGE_OWNER['FRIEND'], t, message_type))
-        else:
-            if is_group:
-                friend_or_gc = self.get_gc_by_number(num)
-                friend_or_gc.append_message(GroupChatTextMessage(self._tox.group_peer_get_name(num, peer_id),
-                                                                 message, MESSAGE_OWNER['FRIEND'],
-                                                                 time.time(), message_type))
+            if not is_group:
+                self.create_message_item(message, t, MESSAGE_OWNER['FRIEND'], message_type)
             else:
-                friend_or_gc = self.get_friend_by_number(num)
-                friend_or_gc.inc_messages()
-                friend_or_gc.append_message(TextMessage(message, MESSAGE_OWNER['FRIEND'], time.time(), message_type))
-            if not friend_or_gc.visibility:
-                self.update_filtration()
+                self.create_message_item(message, t, MESSAGE_OWNER['FRIEND'], message_type, True,
+                                         self._tox.group_peer_get_name(num, peer_id))
+            self._messages.scrollToBottom()
+        if is_group:
+            friend_or_gc = self.get_gc_by_number(num)
+            friend_or_gc.append_message(GroupChatTextMessage(self._tox.group_peer_get_name(num, peer_id),
+                                                             message, MESSAGE_OWNER['FRIEND'],
+                                                             time.time(), message_type))
+        else:
+            friend_or_gc = self.get_friend_by_number(num)
+            friend_or_gc.inc_messages()
+            friend_or_gc.append_message(TextMessage(message, MESSAGE_OWNER['FRIEND'], time.time(), message_type))
+
+        if not friend_or_gc.visibility:
+            self.update_filtration()
 
     def send_message(self, text, number=None, is_gc=False):
         """
@@ -674,10 +694,11 @@ class Profile(basecontact.BaseContact, Singleton):
     def friend_public_key(self, num):
         return self._friends_and_gc[num].tox_id
 
-    def delete_friend_or_gc(self, num):
+    def delete_friend_or_gc(self, num, is_gc=False):
         """
         Removes friend or gc from contact list
         :param num: number of friend or gc in list
+        :param is_gc: is a group chat
         """
         friend = self._friends_and_gc[num]
         settings = Settings.get_instance()
@@ -692,7 +713,8 @@ class Profile(basecontact.BaseContact, Singleton):
         self.clear_history(num)
         if self._history.friend_exists_in_db(friend.tox_id):
             self._history.delete_friend_from_db(friend.tox_id)
-        self._tox.friend_delete(friend.number)
+        if not is_gc:
+            self._tox.friend_delete(friend.number)
         del self._friends_and_gc[num]
         self._screen.friends_list.takeItem(num)
         if num == self._active_friend_or_gc:  # active friend was deleted
@@ -1155,6 +1177,8 @@ class Profile(basecontact.BaseContact, Singleton):
 
     def call_click(self, audio=True, video=False):
         """User clicked audio button in main window"""
+        if not self.is_active_a_friend():
+            return
         num = self.get_active_number()
         if num not in self._call and self.is_active_online():  # start call
             self._call(num, audio, video)
@@ -1287,7 +1311,7 @@ class Profile(basecontact.BaseContact, Singleton):
     def leave_group(self, num, message=None):
         number = self._friends_and_gc[num].number
         self._tox.group_leave(number, message)
-        self.delete_friend_or_gc(num)
+        self.delete_friend_or_gc(num, False)
 
 
 def tox_factory(data=None, settings=None):

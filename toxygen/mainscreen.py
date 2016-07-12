@@ -558,14 +558,14 @@ class MainWindow(QtGui.QMainWindow):
         auto = QtGui.QApplication.translate("MainWindow", 'Disallow auto accept', None, QtGui.QApplication.UnicodeUTF8) if allowed else QtGui.QApplication.translate("MainWindow", 'Allow auto accept', None, QtGui.QApplication.UnicodeUTF8)
         if item is not None:
             self.listMenu = QtGui.QMenu()
-            if type(friend) is Friend:  # TODO: add `invite to gc` submenu
+            if type(friend) is Friend:
                 arr = Profile.get_instance().get_all_gc()
                 if arr:
                     gc_menu = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Invite to group chat', None, QtGui.QApplication.UnicodeUTF8))
                     for gc in arr:
-                        item = gc.menu.addAction(gc_menu.name)
+                        item = gc_menu.addAction(gc.name)
                         self.connect(item, QtCore.SIGNAL("triggered()"),
-                                     lambda: Profile.get_instance().invite_friend(gc.number), friend.number)
+                                     lambda: Profile.get_instance().invite_friend(gc.number, friend.number))
 
                 set_alias_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Set alias', None, QtGui.QApplication.UnicodeUTF8))
                 clear_history_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Clear history', None, QtGui.QApplication.UnicodeUTF8))

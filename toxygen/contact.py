@@ -102,6 +102,14 @@ class Contact(basecontact.BaseContact):
             self._unsaved_messages -= 1
         self._corr.remove(elem)
 
+    def delete_old_messages(self):
+        old = filter(lambda x: x.get_type() in (2, 3) and (x.get_status() >= 2 or x.get_status() is None),
+                     self._corr[:-SAVE_MESSAGES])
+        old = list(old)
+        l = max(len(self._corr) - SAVE_MESSAGES, 0) - len(old)
+        self._unsaved_messages -= l
+        self._corr = old + self._corr[-SAVE_MESSAGES:]
+
     def mark_as_sent(self):
         try:
             message = list(filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr))[0]
