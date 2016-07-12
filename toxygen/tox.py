@@ -1900,7 +1900,7 @@ class Tox:
         buff = create_string_buffer(TOX_GROUP_CHAT_ID_SIZE)
         result = Tox.libtoxcore.tox_group_get_chat_id(self._tox_pointer, groupnumber,
                                                       buff, byref(error))
-        return bin_to_string(buff[:TOX_GROUP_CHAT_ID_SIZE], TOX_GROUP_CHAT_ID_SIZE)
+        return bin_to_string(buff, TOX_GROUP_CHAT_ID_SIZE)
 
     def group_get_number_groups(self):
         """

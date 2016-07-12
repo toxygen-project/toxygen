@@ -175,15 +175,3 @@ class Friend(contact.Contact):
 
     def set_alias(self, alias):
         self._alias = bool(alias)
-
-    # -----------------------------------------------------------------------------------------------------------------
-    # Friend's number (can be used in toxcore)
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def get_number(self):
-        return self._number
-
-    def set_number(self, value):
-        self._number = value
-
-    number = property(get_number, set_number)

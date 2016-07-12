@@ -298,7 +298,7 @@ def group_message(window, tray):
     def wrapped(tox, group_number, peer_id, message_type, message, length, user_data):
         profile = Profile.get_instance()
         settings = Settings.get_instance()
-        message = str(message, 'utf-8')
+        message = str(message[:length], 'utf-8')
         invoke_in_main_thread(profile.new_message, group_number, message_type, message, True)
         if not window.isActiveWindow():
             bl = settings['notify_all_gc'] or profile.name in message

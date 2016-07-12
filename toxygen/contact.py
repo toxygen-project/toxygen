@@ -150,3 +150,14 @@ class Contact(basecontact.BaseContact):
 
     messages = property(get_messages)
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # Number (can be used in toxcore)
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def get_number(self):
+        return self._number
+
+    def set_number(self, value):
+        self._number = value
+
+    number = property(get_number, set_number)

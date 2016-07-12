@@ -64,6 +64,7 @@ class Profile(basecontact.BaseContact, Singleton):
             friend = Friend(i, message_getter, name, status_message, item, tox_id)
             friend.set_alias(alias)
             self._friends_and_gc.append(friend)
+        # TODO: list of gc
         self.filtration(self._show_online)
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -444,13 +445,14 @@ class Profile(basecontact.BaseContact, Singleton):
                     self.create_message_item(text, t, MESSAGE_OWNER['NOT_SENT'], message_type)
                     self._screen.messageEdit.clear()
                     self._messages.scrollToBottom()
+                friend_or_gc.append_message(TextMessage(text, MESSAGE_OWNER['NOT_SENT'], t, message_type))
             else:
                 self.split_and_send(friend_or_gc.number, message_type, text.encode('utf-8'), True)
                 if friend_or_gc.number == self.get_active_number() and not self.is_active_a_friend():
                     self.create_message_item(text, t, MESSAGE_OWNER['ME'], message_type)
                     self._screen.messageEdit.clear()
                     self._messages.scrollToBottom()
-            friend_or_gc.append_message(TextMessage(text, MESSAGE_OWNER['NOT_SENT'], t, message_type))
+                friend_or_gc.append_message(TextMessage(text, MESSAGE_OWNER['ME'], t, message_type))
 
     def delete_message(self, time):
         friend = self._friends_and_gc[self._active_friend_or_gc]
@@ -1234,7 +1236,7 @@ class Profile(basecontact.BaseContact, Singleton):
         except Exception as ex:  # something is wrong
             log('Accept friend request failed! ' + str(ex))
             message_getter = None
-        gc = GroupChat(self._tox, message_getter, num, name, topic, item, tox_id)
+        gc = GroupChat(self._tox, num, message_getter, name, topic, item, tox_id)
         self._friends_and_gc.append(gc)
 
     def create_gc(self, name, is_public, password):

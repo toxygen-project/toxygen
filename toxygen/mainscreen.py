@@ -475,6 +475,8 @@ class MainWindow(QtGui.QMainWindow):
 
     def send_file(self):
         self.menu.hide()
+        if not self.profile.is_active_a_friend():
+            return
         if self.profile.active_friend + 1:
             choose = QtGui.QApplication.translate("MainWindow", 'Choose file', None, QtGui.QApplication.UnicodeUTF8)
             name = QtGui.QFileDialog.getOpenFileName(self, choose, options=QtGui.QFileDialog.DontUseNativeDialog)
@@ -483,6 +485,8 @@ class MainWindow(QtGui.QMainWindow):
 
     def send_screenshot(self, hide=False):
         self.menu.hide()
+        if not self.profile.is_active_a_friend():
+            return
         if self.profile.active_friend + 1:
             self.sw = ScreenShotWindow(self)
             self.sw.show()
@@ -501,6 +505,8 @@ class MainWindow(QtGui.QMainWindow):
 
     def send_sticker(self):
         self.menu.hide()
+        if not self.profile.is_active_a_friend():
+            return
         if self.profile.active_friend + 1:
             self.sticker = StickerWindow(self)
             self.sticker.setGeometry(QtCore.QRect(self.x() if Settings.get_instance()['mirror_mode'] else 270 + self.x(),
