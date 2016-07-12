@@ -559,6 +559,14 @@ class MainWindow(QtGui.QMainWindow):
         if item is not None:
             self.listMenu = QtGui.QMenu()
             if type(friend) is Friend:  # TODO: add `invite to gc` submenu
+                arr = Profile.get_instance().get_all_gc()
+                if arr:
+                    gc_menu = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Invite to group chat', None, QtGui.QApplication.UnicodeUTF8))
+                    for gc in arr:
+                        item = gc.menu.addAction(gc_menu.name)
+                        self.connect(item, QtCore.SIGNAL("triggered()"),
+                                     lambda: Profile.get_instance().invite_friend(gc.number), friend.number)
+
                 set_alias_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Set alias', None, QtGui.QApplication.UnicodeUTF8))
                 clear_history_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Clear history', None, QtGui.QApplication.UnicodeUTF8))
                 copy_menu = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Copy', None, QtGui.QApplication.UnicodeUTF8))
@@ -583,7 +591,23 @@ class MainWindow(QtGui.QMainWindow):
                 self.connect(copy_name_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_name(friend))
                 self.connect(copy_status_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_status(friend))
             else:
-                pass  # TODO: add menu for gc
+                copy_menu = self.listMenu.addMenu(
+                    QtGui.QApplication.translate("MainWindow", 'Copy', None, QtGui.QApplication.UnicodeUTF8))
+                copy_name_item = copy_menu.addAction(
+                    QtGui.QApplication.translate("MainWindow", 'Name', None, QtGui.QApplication.UnicodeUTF8))
+                copy_status_item = copy_menu.addAction(
+                    QtGui.QApplication.translate("MainWindow", 'Topic', None, QtGui.QApplication.UnicodeUTF8))
+                copy_key_item = copy_menu.addAction(
+                    QtGui.QApplication.translate("MainWindow", 'Public key', None, QtGui.QApplication.UnicodeUTF8))
+                leave_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Leave group', None, QtGui.QApplication.UnicodeUTF8))
+                set_alias_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Set alias', None, QtGui.QApplication.UnicodeUTF8))
+                notes_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Notes', None, QtGui.QApplication.UnicodeUTF8))
+                self.connect(notes_item, QtCore.SIGNAL("triggered()"), lambda: self.show_note(friend))
+                self.connect(copy_name_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_name(friend))
+                self.connect(copy_status_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_status(friend))
+                self.connect(copy_key_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_friend_key(num))
+                self.connect(leave_item, QtCore.SIGNAL("triggered()"), lambda: Profile.get_instance().leave_group(num))
+                self.connect(set_alias_item, QtCore.SIGNAL("triggered()"), lambda: self.set_alias(num))
             parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
             self.listMenu.move(parent_position + pos)
             self.listMenu.show()
@@ -607,7 +631,7 @@ class MainWindow(QtGui.QMainWindow):
         self.profile.set_alias(num)
 
     def remove_friend(self, num):
-        self.profile.delete_friend(num)
+        self.profile.delete_friend_or_gc(num)
 
     def copy_friend_key(self, num):
         tox_id = self.profile.friend_public_key(num)

@@ -5,6 +5,8 @@ except ImportError:
 import basecontact
 from messages import *
 from history import *
+import file_transfers as ft
+import util
 
 
 class Contact(basecontact.BaseContact):
@@ -25,6 +27,7 @@ class Contact(basecontact.BaseContact):
         self._message_getter = message_getter
         self._new_messages = False
         self._visible = True
+        self._alias = False
         self._number = number
         self._corr = []
         self._unsaved_messages = 0
@@ -57,11 +60,8 @@ class Contact(basecontact.BaseContact):
         Get data to save in db
         :return: list of unsaved messages or []
         """
-        if hasattr(self, '_message_getter'):
-            del self._message_getter
         messages = list(filter(lambda x: x.get_type() <= 1, self._corr))
-        return list(
-            map(lambda x: x.get_data(), list(messages[-self._unsaved_messages:]))) if self._unsaved_messages else []
+        return list(map(lambda x: x.get_data(), messages[-self._unsaved_messages:])) if self._unsaved_messages else []
 
     def get_corr(self):
         return self._corr[:]
@@ -81,24 +81,50 @@ class Contact(basecontact.BaseContact):
         else:
             return ''
 
-    def clear_corr(self):
+    def get_unsent_messages(self):
+        """
+        :return list of unsent messages
+        """
+        messages = filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr)
+        return list(messages)
+
+    def get_unsent_messages_for_saving(self):
+        """
+        :return list of unsent messages for saving
+        """
+        messages = filter(lambda x: x.get_type() <= 1 and x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr)
+        return list(map(lambda x: x.get_data(), messages))
+
+    def delete_message(self, time):
+        elem = list(filter(lambda x: type(x) is TextMessage and x.get_data()[2] == time, self._corr))[0]
+        tmp = list(filter(lambda x: x.get_type() <= 1, self._corr))
+        if elem in tmp[-self._unsaved_messages:]:
+            self._unsaved_messages -= 1
+        self._corr.remove(elem)
+
+    def mark_as_sent(self):
+        try:
+            message = list(filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr))[0]
+            message.mark_as_sent()
+        except Exception as ex:
+            util.log('Mark as sent ex: ' + str(ex))
+
+    def clear_corr(self, save_unsent=False):
         """
         Clear messages list
         """
         if hasattr(self, '_message_getter'):
             del self._message_getter
         # don't delete data about active file transfer
-        self._corr = list(filter(lambda x: x.get_type() in (2, 3) and (x.get_status() >= 2 or x.get_status() is None),
-                                 self._corr))
-        self._unsaved_messages = 0
-
-    def delete_old_messages(self):
-        old = filter(lambda x: x.get_type() in (2, 3) and (x.get_status() >= 2 or x.get_status() is None),
-                     self._corr[:-SAVE_MESSAGES])
-        old = list(old)
-        l = max(len(self._corr) - SAVE_MESSAGES, 0) - len(old)
-        self._unsaved_messages -= l
-        self._corr = old + self._corr[-SAVE_MESSAGES:]
+        if not save_unsent:
+            self._corr = list(filter(lambda x: x.get_type() in (2, 3) and
+                                               x.get_status() in ft.ACTIVE_FILE_TRANSFERS, self._corr))
+            self._unsaved_messages = 0
+        else:
+            self._corr = list(filter(lambda x: (x.get_type() in (2, 3) and x.get_status() in ft.ACTIVE_FILE_TRANSFERS)
+                                               or (x.get_type() <= 1 and x.get_owner() == MESSAGE_OWNER['NOT_SENT']),
+                                     self._corr))
+            self._unsaved_messages = len(self.get_unsent_messages())
 
     def get_curr_text(self):
         return self._curr_text
@@ -161,3 +187,18 @@ class Contact(basecontact.BaseContact):
         self._number = value
 
     number = property(get_number, set_number)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Alias support
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def set_name(self, value):
+        """
+        Set new name or ignore if alias exists
+        :param value: new name
+        """
+        if not self._alias:
+            super(Contact, self).set_name(value)
+
+    def set_alias(self, alias):
+        self._alias = bool(alias)

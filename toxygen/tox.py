@@ -1607,7 +1607,8 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_leave(self._tox_pointer, groupnumber, message, len(message), byref(error))
+        result = Tox.libtoxcore.tox_group_leave(self._tox_pointer, groupnumber, message,
+                                                len(message) if message is not None else 0, byref(error))
         return result
 
     # -----------------------------------------------------------------------------------------------------------------

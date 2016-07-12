@@ -674,10 +674,10 @@ class Profile(basecontact.BaseContact, Singleton):
     def friend_public_key(self, num):
         return self._friends_and_gc[num].tox_id
 
-    def delete_friend(self, num):
+    def delete_friend_or_gc(self, num):
         """
-        Removes friend from contact list
-        :param num: number of friend in list
+        Removes friend or gc from contact list
+        :param num: number of friend or gc in list
         """
         friend = self._friends_and_gc[num]
         settings = Settings.get_instance()
@@ -732,7 +732,7 @@ class Profile(basecontact.BaseContact, Singleton):
             settings.save()
         try:
             num = self._tox.friend_by_public_key(tox_id)
-            self.delete_friend(num)
+            self.delete_friend_or_gc(num)
             data = self._tox.get_savedata()
             ProfileHelper.get_instance().save_profile(data)
         except:  # not in friend list
@@ -1228,6 +1228,9 @@ class Profile(basecontact.BaseContact, Singleton):
     # Group chats support
     # -----------------------------------------------------------------------------------------------------------------
 
+    def get_all_gc(self):
+        return list(filter(lambda x: type(x) is GroupChat, self._friends_and_gc))
+
     def add_gc(self, num):
         tox_id = self._tox.group_get_chat_id(num)
         name = self._tox.group_get_name(num)
@@ -1277,6 +1280,14 @@ class Profile(basecontact.BaseContact, Singleton):
                     self._gc_invites[friend_num] = data
         except Exception as ex:  # something is wrong
             log('Accept group chat invite failed! ' + str(ex))
+
+    def invite_friend(self, group_number, friend_number):
+        self._tox.group_invite_friend(group_number, friend_number)
+
+    def leave_group(self, num, message=None):
+        number = self._friends_and_gc[num].number
+        self._tox.group_leave(number, message)
+        self.delete_friend_or_gc(num)
 
 
 def tox_factory(data=None, settings=None):

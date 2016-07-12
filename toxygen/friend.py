@@ -1,8 +1,5 @@
 import contact
 from messages import *
-from history import *
-import util
-import file_transfers as ft
 
 
 class Friend(contact.Contact):
@@ -15,7 +12,6 @@ class Friend(contact.Contact):
         :param number: number of friend.
         """
         super(Friend, self).__init__(*args)
-        self._alias = False
         self._receipts = 0
 
     def __del__(self):
@@ -37,100 +33,6 @@ class Friend(contact.Contact):
         if self._receipts:
             self._receipts -= 1
             self.mark_as_sent()
-
-    def load_corr(self, first_time=True):
-        """
-        :param first_time: friend became active, load first part of messages
-        """
-        if (first_time and self._history_loaded) or (not hasattr(self, '_message_getter')):
-            return
-        data = list(self._message_getter.get(PAGE_SIZE))
-        if data is not None and len(data):
-            data.reverse()
-        else:
-            return
-        data = list(map(lambda tupl: TextMessage(*tupl), data))
-        self._corr = data + self._corr
-        self._history_loaded = True
-
-    def get_corr_for_saving(self):
-        """
-        Get data to save in db
-        :return: list of unsaved messages or []
-        """
-        messages = list(filter(lambda x: x.get_type() <= 1, self._corr))
-        return list(map(lambda x: x.get_data(), messages[-self._unsaved_messages:])) if self._unsaved_messages else []
-
-    def get_corr(self):
-        return self._corr[:]
-
-    def append_message(self, message):
-        """
-        :param message: text or file transfer message
-        """
-        self._corr.append(message)
-        if message.get_type() <= 1:
-            self._unsaved_messages += 1
-
-    def get_last_message_text(self):
-        messages = list(filter(lambda x: x.get_type() <= 1 and x.get_owner() != MESSAGE_OWNER['FRIEND'], self._corr))
-        if messages:
-            return messages[-1].get_data()[0]
-        else:
-            return ''
-
-    def get_unsent_messages(self):
-        """
-        :return list of unsent messages
-        """
-        messages = filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr)
-        return list(messages)
-
-    def get_unsent_messages_for_saving(self):
-        """
-        :return list of unsent messages for saving
-        """
-        messages = filter(lambda x: x.get_type() <= 1 and x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr)
-        return list(map(lambda x: x.get_data(), messages))
-
-    def delete_message(self, time):
-        elem = list(filter(lambda x: type(x) is TextMessage and x.get_data()[2] == time, self._corr))[0]
-        tmp = list(filter(lambda x: x.get_type() <= 1, self._corr))
-        if elem in tmp[-self._unsaved_messages:]:
-            self._unsaved_messages -= 1
-        self._corr.remove(elem)
-
-    def mark_as_sent(self):
-        try:
-            message = list(filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr))[0]
-            message.mark_as_sent()
-        except Exception as ex:
-            util.log('Mark as sent ex: ' + str(ex))
-
-    def clear_corr(self, save_unsent=False):
-        """
-        Clear messages list
-        """
-        if hasattr(self, '_message_getter'):
-            del self._message_getter
-        # don't delete data about active file transfer
-        if not save_unsent:
-            self._corr = list(filter(lambda x: x.get_type() in (2, 3) and
-                                               x.get_status() in ft.ACTIVE_FILE_TRANSFERS, self._corr))
-            self._unsaved_messages = 0
-        else:
-            self._corr = list(filter(lambda x: (x.get_type() in (2, 3) and x.get_status() in ft.ACTIVE_FILE_TRANSFERS)
-                                     or (x.get_type() <= 1 and x.get_owner() == MESSAGE_OWNER['NOT_SENT']),
-                                     self._corr))
-            self._unsaved_messages = len(self.get_unsent_messages())
-
-    def get_curr_text(self):
-        return self._curr_text
-
-    def set_curr_text(self, value):
-        self._curr_text = value
-
-    curr_text = property(get_curr_text, set_curr_text)
 
     # -----------------------------------------------------------------------------------------------------------------
     # File transfers support
@@ -160,18 +62,3 @@ class Friend(contact.Contact):
 
     def delete_one_unsent_file(self, time):
         self._corr = list(filter(lambda x: not (type(x) is UnsentFile and x.get_data()[2] == time), self._corr))
-
-    # -----------------------------------------------------------------------------------------------------------------
-    # Alias support
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def set_name(self, value):
-        """
-        Set new name or ignore if alias exists
-        :param value: new name
-        """
-        if not self._alias:
-            super(Friend, self).set_name(value)
-
-    def set_alias(self, alias):
-        self._alias = bool(alias)
