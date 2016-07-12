@@ -59,8 +59,10 @@ class MainWindow(QtGui.QMainWindow):
         self.importPlugin = QtGui.QAction(MainWindow)
         self.lockApp = QtGui.QAction(MainWindow)
         self.createGC = QtGui.QAction(MainWindow)
+        self.joinGC = QtGui.QAction(MainWindow)
         self.gcRequests = QtGui.QAction(MainWindow)
         self.menuGroupChats.addAction(self.createGC)
+        self.menuGroupChats.addAction(self.joinGC)
         self.menuGroupChats.addAction(self.gcRequests)
         self.menuProfile.addAction(self.actionAdd_friend)
         self.menuProfile.addAction(self.actionSettings)
@@ -92,6 +94,8 @@ class MainWindow(QtGui.QMainWindow):
         self.lockApp.triggered.connect(self.lock_app)
         self.importPlugin.triggered.connect(self.import_plugin)
         self.createGC.triggered.connect(self.create_groupchat)
+        self.joinGC.triggered.connect(self.join_groupchat)
+
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def languageChange(self, *args, **kwargs):
@@ -103,9 +107,10 @@ class MainWindow(QtGui.QMainWindow):
         return super(MainWindow, self).event(event)
 
     def retranslateUi(self):
+        self.joinGC.setText(QtGui.QApplication.translate("MainWindow", "Join group chat", None, QtGui.QApplication.UnicodeUTF8))
         self.lockApp.setText(QtGui.QApplication.translate("MainWindow", "Lock", None, QtGui.QApplication.UnicodeUTF8))
-        self.menuGroupChats.setTitle(QtGui.QApplication.translate("MainWindow", "Groupchats", None, QtGui.QApplication.UnicodeUTF8))
-        self.createGC.setText(QtGui.QApplication.translate("MainWindow", "Create groupchat", None, QtGui.QApplication.UnicodeUTF8))
+        self.menuGroupChats.setTitle(QtGui.QApplication.translate("MainWindow", "Group chats", None, QtGui.QApplication.UnicodeUTF8))
+        self.createGC.setText(QtGui.QApplication.translate("MainWindow", "Create group chat", None, QtGui.QApplication.UnicodeUTF8))
         self.gcRequests.setText(QtGui.QApplication.translate("MainWindow", "Groupchat requests", None, QtGui.QApplication.UnicodeUTF8))
         self.menuPlugins.setTitle(QtGui.QApplication.translate("MainWindow", "Plugins", None, QtGui.QApplication.UnicodeUTF8))
         self.pluginData.setText(QtGui.QApplication.translate("MainWindow", "List of plugins", None, QtGui.QApplication.UnicodeUTF8))
@@ -458,6 +463,10 @@ class MainWindow(QtGui.QMainWindow):
 
     def create_groupchat(self):
         self.gc = AddGroupchat()
+        self.gc.show()
+
+    def join_groupchat(self):
+        self.gc = JoinGroupchat()
         self.gc.show()
 
     def show_chat_menu(self):

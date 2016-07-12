@@ -1570,7 +1570,10 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_join(self._tox_pointer, chat_id, password, len(password), byref(error))
+        result = Tox.libtoxcore.tox_group_join(self._tox_pointer, chat_id,
+                                               password,
+                                               len(password) if password is not None else 0,
+                                               byref(error))
         return result
 
     def group_reconnect(self, groupnumber):

@@ -385,13 +385,14 @@ class Profile(basecontact.BaseContact, Singleton):
         else:
             self._tox.group_send_message(number, message_type, message)
 
-    def new_message(self, num, message_type, message, is_group=False):
+    def new_message(self, num, message_type, message, is_group=False, peer_id=-1):
         """
         Current user gets new message
         :param num: num of friend or gc who sent message
         :param message_type: message type - plain text or action message (/me)
         :param message: text of message
         :param is_group: is group chat message or not
+        :param peer_id: if gc - peer id
         """
         if num == self.get_active_number() and is_group != self.is_active_a_friend():  # add message to list
             t = time.time()
@@ -402,10 +403,13 @@ class Profile(basecontact.BaseContact, Singleton):
         else:
             if is_group:
                 friend_or_gc = self.get_gc_by_number(num)
+                friend_or_gc.append_message(GroupChatTextMessage(self._tox.group_peer_get_name(num, peer_id),
+                                                                 message, MESSAGE_OWNER['FRIEND'],
+                                                                 time.time(), message_type))
             else:
                 friend_or_gc = self.get_friend_by_number(num)
                 friend_or_gc.inc_messages()
-            friend_or_gc.append_message(TextMessage(message, MESSAGE_OWNER['FRIEND'], time.time(), message_type))
+                friend_or_gc.append_message(TextMessage(message, MESSAGE_OWNER['FRIEND'], time.time(), message_type))
             if not friend_or_gc.visibility:
                 self.update_filtration()
 
@@ -1238,6 +1242,13 @@ class Profile(basecontact.BaseContact, Singleton):
             message_getter = None
         gc = GroupChat(self._tox, num, message_getter, name, topic, item, tox_id)
         self._friends_and_gc.append(gc)
+
+    def join_gc(self, chat_id, password):
+        num = self._tox.group_join(chat_id, password if password else None)
+        if num != 2 ** 32 - 1:
+            self.add_gc(num)
+        else:
+            pass  # TODO: join failed, show error
 
     def create_gc(self, name, is_public, password):
         privacy_state = TOX_GROUP_PRIVACY_STATE['TOX_GROUP_PRIVACY_STATE_PUBLIC'] if is_public else TOX_GROUP_PRIVACY_STATE['TOX_GROUP_PRIVACY_STATE_PRIVATE']

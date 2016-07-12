@@ -38,6 +38,7 @@ class AddGroupchat(CenteredWidget):
         self.pass_label.setGeometry(QtCore.QRect(50, 130, 470, 20))
         self.password = LineEdit(self)
         self.password.setGeometry(QtCore.QRect(50, 150, 470, 27))
+        self.password.setEchoMode(QtGui.QLineEdit.EchoMode.Password)
 
         self.createGCButton.clicked.connect(self.button_click)
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -58,6 +59,46 @@ class AddGroupchat(CenteredWidget):
             Profile.get_instance().create_gc(self.name.text(),
                                              self.privacy_combobox.currentIndex() == 0,
                                              self.password.text())
+            self.close()
+
+
+class JoinGroupchat(CenteredWidget):
+
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+        self.retranslateUi()
+        self.center()
+
+    def initUI(self):
+        self.setObjectName('AddGC')
+        self.resize(570, 150)
+        self.setMaximumSize(QtCore.QSize(570, 150))
+        self.setMinimumSize(QtCore.QSize(570, 150))
+        self.joinGCButton = QtGui.QPushButton(self)
+        self.joinGCButton.setGeometry(QtCore.QRect(50, 110, 470, 30))
+        self.id = LineEdit(self)
+        self.id.setGeometry(QtCore.QRect(50, 10, 470, 30))
+        self.password = LineEdit(self)
+        self.password.setGeometry(QtCore.QRect(50, 50, 470, 30))
+        self.password.setEchoMode(QtGui.QLineEdit.EchoMode.Password)
+
+        self.joinGCButton.clicked.connect(self.button_click)
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        self.setWindowTitle(
+            QtGui.QApplication.translate('JoinGC', "Join group chat", None, QtGui.QApplication.UnicodeUTF8))
+        self.joinGCButton.setText(
+            QtGui.QApplication.translate("JoinGC", "Join", None, QtGui.QApplication.UnicodeUTF8))
+        self.id.setPlaceholderText(
+            QtGui.QApplication.translate('JoinGC', "Group ID", None, QtGui.QApplication.UnicodeUTF8))
+        self.password.setPlaceholderText(
+            QtGui.QApplication.translate('JoinGC', "Optional password", None, QtGui.QApplication.UnicodeUTF8))
+
+    def button_click(self):
+        if self.id.text():
+            Profile.get_instance().join_gc(self.id.text().strip(), self.password.text())
             self.close()
 
 
