@@ -582,14 +582,8 @@ class MainWindow(QtGui.QMainWindow):
                 if len(submenu):
                     plug = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Plugins', None, QtGui.QApplication.UnicodeUTF8))
                     plug.addActions(submenu)
-                self.connect(set_alias_item, QtCore.SIGNAL("triggered()"), lambda: self.set_alias(num))
                 self.connect(remove_item, QtCore.SIGNAL("triggered()"), lambda: self.remove_friend(num))
-                self.connect(copy_key_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_friend_key(num))
-                self.connect(clear_history_item, QtCore.SIGNAL("triggered()"), lambda: self.clear_history(num))
                 self.connect(auto_accept_item, QtCore.SIGNAL("triggered()"), lambda: self.auto_accept(num, not allowed))
-                self.connect(notes_item, QtCore.SIGNAL("triggered()"), lambda: self.show_note(friend))
-                self.connect(copy_name_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_name(friend))
-                self.connect(copy_status_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_status(friend))
             else:
                 copy_menu = self.listMenu.addMenu(
                     QtGui.QApplication.translate("MainWindow", 'Copy', None, QtGui.QApplication.UnicodeUTF8))
@@ -601,13 +595,17 @@ class MainWindow(QtGui.QMainWindow):
                     QtGui.QApplication.translate("MainWindow", 'Public key', None, QtGui.QApplication.UnicodeUTF8))
                 leave_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Leave group', None, QtGui.QApplication.UnicodeUTF8))
                 set_alias_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Set alias', None, QtGui.QApplication.UnicodeUTF8))
+                clear_history_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Clear history', None, QtGui.QApplication.UnicodeUTF8))
                 notes_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Notes', None, QtGui.QApplication.UnicodeUTF8))
-                self.connect(notes_item, QtCore.SIGNAL("triggered()"), lambda: self.show_note(friend))
-                self.connect(copy_name_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_name(friend))
-                self.connect(copy_status_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_status(friend))
-                self.connect(copy_key_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_friend_key(num))
                 self.connect(leave_item, QtCore.SIGNAL("triggered()"), lambda: Profile.get_instance().leave_group(num))
-                self.connect(set_alias_item, QtCore.SIGNAL("triggered()"), lambda: self.set_alias(num))
+
+            self.connect(notes_item, QtCore.SIGNAL("triggered()"), lambda: self.show_note(friend))
+            self.connect(set_alias_item, QtCore.SIGNAL("triggered()"), lambda: self.set_alias(num))
+            self.connect(clear_history_item, QtCore.SIGNAL("triggered()"), lambda: self.clear_history(num))
+            self.connect(copy_name_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_name(friend))
+            self.connect(copy_status_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_status(friend))
+            self.connect(copy_key_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_friend_key(num))
+
             parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
             self.listMenu.move(parent_position + pos)
             self.listMenu.show()

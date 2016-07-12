@@ -694,11 +694,12 @@ class Profile(basecontact.BaseContact, Singleton):
     def friend_public_key(self, num):
         return self._friends_and_gc[num].tox_id
 
-    def delete_friend_or_gc(self, num, is_gc=False):
+    def delete_friend_or_gc(self, num, is_gc=False, message=None):
         """
         Removes friend or gc from contact list
         :param num: number of friend or gc in list
         :param is_gc: is a group chat
+        :param message: message in gc
         """
         friend = self._friends_and_gc[num]
         settings = Settings.get_instance()
@@ -715,10 +716,12 @@ class Profile(basecontact.BaseContact, Singleton):
             self._history.delete_friend_from_db(friend.tox_id)
         if not is_gc:
             self._tox.friend_delete(friend.number)
+        else:
+            self._tox.group_leave(num, message)
         del self._friends_and_gc[num]
         self._screen.friends_list.takeItem(num)
-        if num == self._active_friend_or_gc:  # active friend was deleted
-            if not len(self._friends_and_gc):  # last friend was deleted
+        if num == self._active_friend_or_gc:  # active friend or gc was deleted
+            if not len(self._friends_and_gc):  # last contact was deleted
                 self.set_active(-1)
             else:
                 self.set_active(0)
@@ -1309,9 +1312,7 @@ class Profile(basecontact.BaseContact, Singleton):
         self._tox.group_invite_friend(group_number, friend_number)
 
     def leave_group(self, num, message=None):
-        number = self._friends_and_gc[num].number
-        self._tox.group_leave(number, message)
-        self.delete_friend_or_gc(num, False)
+        self.delete_friend_or_gc(num, True, message)
 
 
 def tox_factory(data=None, settings=None):
