@@ -5,19 +5,21 @@
 
 ##Using pip3
 
-### Windows  (32-bit interpreter)
+### Windows
 
 ``pip3.4 install toxygen``
+
 Run app using ``toxygen`` command.
 
-##Linux
+### Linux
 
 1. Install [toxcore](https://github.com/irungentoo/toxcore/blob/master/INSTALL.md) with toxav support in your system (install in /usr/lib/)
 2. Install PortAudio: 
 ``sudo apt-get install portaudio19-dev``
-3. Install toxygen: 
+3. Install PySide: ``sudo apt-get install python3-pyside``
+4. Install toxygen: 
 ``sudo pip3.4 install toxygen``
-4 Run toxygen using ``toxygen`` command.
+5. Run toxygen using ``toxygen`` command.
 
 ## From source code (recommended for developers)
 
@@ -31,6 +33,8 @@ Run app using ``toxygen`` command.
 6. Download latest libtox.dll build, download latest libsodium.a build, put it into \src\libs\
 7. Run \src\main.py.
 
+Optional: install toxygen using setup.py: ``python3.4 setup.py install``
+
 [libtox.dll for 32-bit Python](https://build.tox.chat/view/libtoxcore/job/libtoxcore_build_windows_x86_shared_release/lastSuccessfulBuild/artifact/libtoxcore_build_windows_x86_shared_release.zip)
 
 [libtox.dll for 64-bit Python](https://build.tox.chat/view/libtoxcore/job/libtoxcore_build_windows_x86-64_shared_release/lastSuccessfulBuild/artifact/libtoxcore_build_windows_x86-64_shared_release.zip)
@@ -39,21 +43,20 @@ Run app using ``toxygen`` command.
 
 [libsodium.a for 64-bit Python](https://build.tox.chat/view/libsodium/job/libsodium_build_windows_x86-64_static_release/lastSuccessfulBuild/artifact/libsodium_build_windows_x86-64_static_release.zip)
 
-
 ### Linux
 
-Dependencies:
-
-1. Install latest Python3.4: 
+1. Install latest Python3: 
 ``sudo apt-get install python3``
-2. [Install PySide](https://wiki.qt.io/PySide_Binaries_Linux) (recommended), using terminal - ``sudo apt-get install python3-pyside``, or install [PyQt4](https://riverbankcomputing.com/software/pyqt/download).
+2. Install PySide: ``sudo apt-get install python3-pyside`` or install [PyQt4](https://riverbankcomputing.com/software/pyqt/download).
 3. Install [toxcore](https://github.com/irungentoo/toxcore/blob/master/INSTALL.md) with toxav support in your system (install in /usr/lib/)
 4. Install PyAudio: 
-``sudo apt-get install portaudio19-dev`` and ``sudo apt-get install python3-pyaudio``
+``sudo apt-get install portaudio19-dev`` and ``sudo apt-get install python3-pyaudio`` (or ``pip3 install pyaudio``)
 5. [Download toxygen](https://github.com/xveduk/toxygen/archive/master.zip)
 6. Unpack archive 
 7. Run app:
 ``python3.4 main.py``
+
+Optional: install toxygen using setup.py: ``python3 setup.py install``
 
 ## Compile Toxygen
 Check [compile.md](/docs/compile.md) for more info
