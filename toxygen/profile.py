@@ -397,7 +397,6 @@ class Profile(contact.Contact, Singleton):
             plugin_support.PluginLoader.get_instance().command(text[8:])
             self._screen.messageEdit.clear()
         elif text and friend_num + 1:
-            text = ''.join(c if c <= '\u10FFFF' else '\u25AF' for c in text)
             if text.startswith('/me '):
                 message_type = TOX_MESSAGE_TYPE['ACTION']
                 text = text[4:]
@@ -939,6 +938,7 @@ class Profile(contact.Contact, Singleton):
         :param data: raw data - png
         """
         self.send_inline(data, 'toxygen_inline.png')
+        self._messages.repaint()
 
     def send_sticker(self, path):
         with open(path, 'rb') as fl:

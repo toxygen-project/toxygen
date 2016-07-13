@@ -263,7 +263,7 @@ class ProfileSettings(CenteredWidget):
             buffer = QtCore.QBuffer(byte_array)
             buffer.open(QtCore.QIODevice.WriteOnly)
             bitmap.save(buffer, 'PNG')
-            Profile.get_instance().set_avatar(str(byte_array.data()))
+            Profile.get_instance().set_avatar(bytes(byte_array.data()))
 
     def export_profile(self):
         directory = QtGui.QFileDialog.getExistingDirectory(options=QtGui.QFileDialog.DontUseNativeDialog) + '/'
