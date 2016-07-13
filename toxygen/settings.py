@@ -110,6 +110,7 @@ class Settings(dict, Singleton):
             'show_online_friends': False,
             'auto_accept_from_friends': [],
             'friends_aliases': [],
+            'show_avatars': False,
             'typing_notifications': False,
             'calls_sound': True,
             'blocked': [],

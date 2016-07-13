@@ -554,8 +554,8 @@ class InterfaceSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("interfaceForm")
-        self.setMinimumSize(QtCore.QSize(400, 550))
-        self.setMaximumSize(QtCore.QSize(400, 550))
+        self.setMinimumSize(QtCore.QSize(400, 580))
+        self.setMaximumSize(QtCore.QSize(400, 580))
         self.label = QtGui.QLabel(self)
         self.label.setGeometry(QtCore.QRect(30, 10, 370, 20))
         font = QtGui.QFont()
@@ -610,25 +610,30 @@ class InterfaceSettings(CenteredWidget):
         self.messages_font_size.setCurrentIndex(settings['message_font_size'] - 10)
 
         self.unread = QtGui.QPushButton(self)
-        self.unread.setGeometry(QtCore.QRect(30, 425, 340, 30))
+        self.unread.setGeometry(QtCore.QRect(30, 465, 340, 30))
         self.unread.clicked.connect(self.select_color)
 
         self.compact_mode = QtGui.QCheckBox(self)
         self.compact_mode.setGeometry(QtCore.QRect(30, 380, 370, 20))
         self.compact_mode.setChecked(settings['compact_mode'])
 
+        self.show_avatars = QtGui.QCheckBox(self)
+        self.show_avatars.setGeometry(QtCore.QRect(30, 410, 370, 20))
+        self.show_avatars.setChecked(settings['show_avatars'])
+
         self.import_smileys = QtGui.QPushButton(self)
-        self.import_smileys.setGeometry(QtCore.QRect(30, 465, 340, 30))
+        self.import_smileys.setGeometry(QtCore.QRect(30, 505, 340, 30))
         self.import_smileys.clicked.connect(self.import_sm)
 
         self.import_stickers = QtGui.QPushButton(self)
-        self.import_stickers.setGeometry(QtCore.QRect(30, 505, 340, 30))
+        self.import_stickers.setGeometry(QtCore.QRect(30, 545, 340, 30))
         self.import_stickers.clicked.connect(self.import_st)
 
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
+        self.show_avatars.setText(QtGui.QApplication.translate("interfaceForm", "Show avatars in chat", None, QtGui.QApplication.UnicodeUTF8))
         self.setWindowTitle(QtGui.QApplication.translate("interfaceForm", "Interface settings", None, QtGui.QApplication.UnicodeUTF8))
         self.label.setText(QtGui.QApplication.translate("interfaceForm", "Theme:", None, QtGui.QApplication.UnicodeUTF8))
         self.lang.setText(QtGui.QApplication.translate("interfaceForm", "Language:", None, QtGui.QApplication.UnicodeUTF8))
@@ -688,6 +693,9 @@ class InterfaceSettings(CenteredWidget):
             restart = True
         if settings['compact_mode'] != self.compact_mode.isChecked():
             settings['compact_mode'] = self.compact_mode.isChecked()
+            restart = True
+        if settings['show_avatars'] != self.show_avatars.isChecked():
+            settings['show_avatars'] = self.show_avatars.isChecked()
             restart = True
         settings['smiley_pack'] = self.smiley_pack.currentText()
         smileys.SmileyLoader.get_instance().load_pack()

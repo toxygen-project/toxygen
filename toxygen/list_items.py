@@ -159,6 +159,14 @@ class MessageItem(QtGui.QWidget):
             return True
         return False
 
+    def set_avatar(self, pixmap):
+        self.name.setAlignment(QtCore.Qt.AlignCenter)
+        self.message.setAlignment(QtCore.Qt.AlignVCenter)
+        self.setFixedHeight(max(self.height(), 36))
+        self.name.setFixedHeight(self.height())
+        self.message.setFixedHeight(self.height())
+        self.name.setPixmap(pixmap.scaled(30, 30, QtCore.Qt.KeepAspectRatio))
+
 
 class ContactItem(QtGui.QWidget):
     """

@@ -127,12 +127,12 @@ class Friend(contact.Contact):
             del self._message_getter
         # don't delete data about active file transfer
         if not save_unsent:
-            self._corr = list(filter(lambda x: x.get_type() in (2, 3) and
+            self._corr = list(filter(lambda x: x.get_type() == 2 and
                                                x.get_status() in ft.ACTIVE_FILE_TRANSFERS, self._corr))
             self._unsaved_messages = 0
         else:
-            self._corr = list(filter(lambda x: (x.get_type() in (2, 3) and x.get_status() in ft.ACTIVE_FILE_TRANSFERS)
-                                     or (x.get_type() <= 1 and x.get_owner() == MESSAGE_OWNER['NOT_SENT']),
+            self._corr = list(filter(lambda x: (x.get_type() == 2 and x.get_status() in ft.ACTIVE_FILE_TRANSFERS)
+                                               or (x.get_type() <= 1 and x.get_owner() == MESSAGE_OWNER['NOT_SENT']),
                                      self._corr))
             self._unsaved_messages = len(self.get_unsent_messages())
 

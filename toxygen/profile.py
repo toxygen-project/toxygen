@@ -41,6 +41,8 @@ class Profile(contact.Contact, Singleton):
         self._load_history = True
         settings = Settings.get_instance()
         self._show_online = settings['show_online_friends']
+        self._show_avatars = settings['show_avatars']
+        self._friend_item_height = 40 if settings['compact_mode'] else 70
         screen.online_contacts.setCurrentIndex(int(self._show_online))
         aliases = settings['friends_aliases']
         data = tox.self_get_friend_list()
@@ -122,7 +124,7 @@ class Profile(contact.Contact, Singleton):
             friend.visibility = friend.visibility or friend.messages or friend.actions
             if friend.visibility:
                 self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250,
-                                                                               40 if settings['compact_mode'] else 70))
+                                                                               self._friend_item_height))
             else:
                 self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 0))
         self._show_online, self._filter_string = show_online, filter_str
@@ -532,6 +534,9 @@ class Profile(contact.Contact, Singleton):
         else:
             name = self._name
         item = MessageItem(text, time, name, owner != MESSAGE_OWNER['NOT_SENT'], message_type, self._messages)
+        if self._show_avatars:
+            item.set_avatar(self._friends[self._active_friend].get_pixmap() if owner == MESSAGE_OWNER[
+                'FRIEND'] else self.get_pixmap())
         elem = QtGui.QListWidgetItem()
         elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
         if append:
