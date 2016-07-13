@@ -250,7 +250,10 @@ class Profile(basecontact.BaseContact, Singleton):
             self._screen.account_status.setText(friend_or_gc.status_message)
             avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(friend_or_gc.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
             if not os.path.isfile(avatar_path):  # load default image
-                avatar_path = curr_directory() + '/images/avatar.png'
+                if type(friend_or_gc) is Friend:
+                    avatar_path = curr_directory() + '/images/avatar.png'
+                else:
+                    avatar_path = curr_directory() + '/images/group.png'
             os.chdir(os.path.dirname(avatar_path))
             pixmap = QtGui.QPixmap(QtCore.QSize(64, 64))
             pixmap.load(avatar_path)
@@ -427,9 +430,8 @@ class Profile(basecontact.BaseContact, Singleton):
                                                              time.time(), message_type))
         else:
             friend_or_gc = self.get_friend_by_number(num)
-            friend_or_gc.inc_messages()
             friend_or_gc.append_message(TextMessage(message, MESSAGE_OWNER['FRIEND'], time.time(), message_type))
-
+        friend_or_gc.inc_messages()
         if not friend_or_gc.visibility:
             self.update_filtration()
 
@@ -493,6 +495,7 @@ class Profile(basecontact.BaseContact, Singleton):
         Save history to db
         """
         s = Settings.get_instance()
+        # TODO: different saving for friends and gc
         if hasattr(self, '_history'):
             if s['save_history']:
                 for friend_or_gc in self._friends_and_gc:
