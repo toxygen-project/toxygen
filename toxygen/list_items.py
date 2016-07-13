@@ -173,6 +173,7 @@ class ContactItem(QtGui.QWidget):
         size = 32 if mode else 64
         self.avatar_label.setGeometry(QtCore.QRect(3, 4, size, size))
         self.avatar_label.setScaledContents(True)
+        self.avatar_label.setAlignment(QtCore.Qt.AlignCenter)
         self.name = DataLabel(self)
         self.name.setGeometry(QtCore.QRect(50 if mode else 75, 3 if mode else 10, 150, 15 if mode else 25))
         font = QtGui.QFont()

@@ -177,6 +177,7 @@ class MainWindow(QtGui.QMainWindow):
         self.avatar_label = Form.avatar_label = QtGui.QLabel(Form)
         self.avatar_label.setGeometry(QtCore.QRect(5, 30, 64, 64))
         self.avatar_label.setScaledContents(True)
+        self.avatar_label.setAlignment(QtCore.Qt.AlignCenter)
         self.name = Form.name = DataLabel(Form)
         Form.name.setGeometry(QtCore.QRect(75, 40, 150, 25))
         font = QtGui.QFont()
