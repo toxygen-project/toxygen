@@ -330,7 +330,7 @@ class WelcomeScreen(CenteredWidget):
         self.setWindowTitle(QtGui.QApplication.translate('WelcomeScreen', 'Tip of the day',
                                                          None, QtGui.QApplication.UnicodeUTF8))
         import random
-        num = random.randint(0, 8)
+        num = random.randint(0, 10)
         if num == 0:
             text = QtGui.QApplication.translate('WelcomeScreen', 'Press Esc if you want hide app to tray.',
                                                 None, QtGui.QApplication.UnicodeUTF8)
@@ -361,6 +361,14 @@ class WelcomeScreen(CenteredWidget):
         elif num == 7:
             text = QtGui.QApplication.translate('WelcomeScreen',
                                                 'Toxygen supports faux offline messages and file transfers. Send message or file to offline friend and he will get it later.',
+                                                None, QtGui.QApplication.UnicodeUTF8)
+        elif num == 8:
+            text = QtGui.QApplication.translate('WelcomeScreen',
+                                                'Delete single message in chat: make right click on spinner or message time and choose "Delete" in menu',
+                                                None, QtGui.QApplication.UnicodeUTF8)
+        elif num == 9:
+            text = QtGui.QApplication.translate('WelcomeScreen',
+                                                'Use right click on inline image to save it',
                                                 None, QtGui.QApplication.UnicodeUTF8)
         else:
             text = QtGui.QApplication.translate('WelcomeScreen',

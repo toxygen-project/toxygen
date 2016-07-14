@@ -10,6 +10,8 @@ include toxygen/smileys/animated/config.json
 include toxygen/smileys/starwars/*.gif
 include toxygen/smileys/starwars/*.png
 include toxygen/smileys/starwars/config.json
+include toxygen/smileys/ksk/*.png
+include toxygen/smileys/ksk/config.json
 include toxygen/styles/style.qss
 include toxygen/translations/*.qm
 include toxygen/libs/libtox.dll
