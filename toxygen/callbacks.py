@@ -317,6 +317,19 @@ def group_invite(tox, friend_number, invite_data, length, user_data):
                           invite_data[:length])
 
 
+def group_self_join(tox, group_number, user_data):
+    pr = Profile.get_instance()
+    gc = pr.get_gc_by_number(group_number)
+    invoke_in_main_thread(gc.set_status, TOX_USER_STATUS['NONE'])
+    if not pr.is_active_a_friend() and pr.get_active_number() == group_number:
+        invoke_in_main_thread(pr.set_active)
+
+
+def group_peer_join(tox, group_number, peer_id, user_data):
+    gc = Profile.get_instance().get_gc_by_number(group_number)
+    gc.add_peer(peer_id)
+
+
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
 # -----------------------------------------------------------------------------------------------------------------
@@ -355,4 +368,6 @@ def init_callbacks(tox, window, tray):
 
     tox.callback_group_message(group_message(window, tray, tox), 0)
     tox.callback_group_invite(group_invite, 0)
+    tox.callback_group_self_join(group_self_join, 0)
+    tox.callback_group_peer_join(group_peer_join, 0)
 

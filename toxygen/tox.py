@@ -1607,9 +1607,11 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_leave(self._tox_pointer, groupnumber, message,
-                                                len(message) if message is not None else 0, byref(error))
-        return result
+        f = Tox.libtoxcore.tox_group_leave
+        f.restype = c_bool
+        result = f(self._tox_pointer, groupnumber, message,
+                   len(message) if message is not None else 0, byref(error))
+        return result.value
 
     # -----------------------------------------------------------------------------------------------------------------
     # Group user-visible client information (nickname/status/role/public key)
@@ -1965,7 +1967,7 @@ class Tox:
 
         see the `Group chat founder controls` section for the respective set function.
 
-        :return true on success.
+        :return password
         """
 
         error = c_int()
@@ -2165,10 +2167,10 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_invite_accept(self._tox_pointer, invite_data, len(invite_data),
-                                                        password,
-                                                        len(password) if password is not None else 0,
-                                                        byref(error))
+        f = Tox.libtoxcore.tox_group_invite_accept
+        f.restype = c_uint32
+        result = f(self._tox_pointer, invite_data, len(invite_data), password,
+                   len(password) if password is not None else 0, byref(error))
         return result
 
     def callback_group_invite(self, callback, user_data):
@@ -2195,6 +2197,11 @@ class Tox:
         Set the callback for the `group_peer_join` event. Pass NULL to unset.
 
         This event is triggered when a peer other than self joins the group.
+        Callback: python function with params:
+        tox - Tox*
+        group_number - group number
+        peer_id - peer id
+        user_data - user data
         """
 
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_void_p)
@@ -2218,6 +2225,10 @@ class Tox:
 
         This event is triggered when the client has successfully joined a group. Use this to initialize
         any group information the client may need.
+        Callback: python fucntion with params:
+        tox - *Tox
+        group_number - group number
+        user_data - user data
         """
 
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_void_p)

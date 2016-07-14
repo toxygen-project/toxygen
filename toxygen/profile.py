@@ -720,7 +720,7 @@ class Profile(basecontact.BaseContact, Singleton):
         if not is_gc:
             self._tox.friend_delete(friend.number)
         else:
-            self._tox.group_leave(num, message)
+            self._tox.group_leave(num, message.encode('utf-8') if message is not None else None)
         del self._friends_and_gc[num]
         self._screen.friends_list.takeItem(num)
         if num == self._active_friend_or_gc:  # active friend or gc was deleted
