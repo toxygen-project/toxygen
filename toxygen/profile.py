@@ -418,7 +418,7 @@ class Profile(basecontact.BaseContact, Singleton):
         :param peer_id: if gc - peer id
         """
         t = time.time()
-
+        active = False
         if num == self.get_active_number() and is_group != self.is_active_a_friend():  # add message to list
             if not is_group:
                 self.create_message_item(message, t, MESSAGE_OWNER['FRIEND'], message_type)
@@ -426,6 +426,7 @@ class Profile(basecontact.BaseContact, Singleton):
                 self.create_message_item(message, t, MESSAGE_OWNER['FRIEND'], message_type, True,
                                          self._tox.group_peer_get_name(num, peer_id))
             self._messages.scrollToBottom()
+            active = True
         if is_group:
             friend_or_gc = self.get_gc_by_number(num)
             friend_or_gc.append_message(GroupChatTextMessage(self._tox.group_peer_get_name(num, peer_id),
@@ -434,7 +435,8 @@ class Profile(basecontact.BaseContact, Singleton):
         else:
             friend_or_gc = self.get_friend_by_number(num)
             friend_or_gc.append_message(TextMessage(message, MESSAGE_OWNER['FRIEND'], time.time(), message_type))
-        friend_or_gc.inc_messages()
+        if not active:
+            friend_or_gc.inc_messages()
         if not friend_or_gc.visibility:
             self.update_filtration()
 
@@ -723,7 +725,7 @@ class Profile(basecontact.BaseContact, Singleton):
         if not is_gc:
             self._tox.friend_delete(friend.number)
         else:
-            self._tox.group_leave(num, message.encode('utf-8') if message is not None else None)
+            self._tox.group_leave(friend.number, message.encode('utf-8') if message is not None else None)
         del self._friends_and_gc[num]
         self._screen.friends_list.takeItem(num)
         if num == self._active_friend_or_gc:  # active friend or gc was deleted

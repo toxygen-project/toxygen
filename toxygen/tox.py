@@ -1609,7 +1609,6 @@ class Tox:
         f.restype = c_bool
         result = f(self._tox_pointer, groupnumber, message,
                    len(message) if message is not None else 0, byref(error))
-        print('In group leave. Result:', result, 'Error:', error.value)
         return result
 
     # -----------------------------------------------------------------------------------------------------------------
