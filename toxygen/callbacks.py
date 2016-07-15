@@ -314,7 +314,7 @@ def group_message(window, tray, tox):
 def group_invite(tox, friend_number, invite_data, length, user_data):
     invoke_in_main_thread(Profile.get_instance().process_group_invite,
                           friend_number,
-                          invite_data[:length])
+                          bytes(invite_data[:length]))
 
 
 def group_self_join(tox, group_number, user_data):

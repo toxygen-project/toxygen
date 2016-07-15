@@ -1262,9 +1262,12 @@ class Profile(basecontact.BaseContact, Singleton):
         return list(filter(lambda x: type(x) is GroupChat, self._friends_and_gc))
 
     def add_gc(self, num):
-        tox_id = self._tox.group_get_chat_id(num)
-        name = self._tox.group_get_name(num)
-        topic = self._tox.group_get_topic(num)
+        try:
+            tox_id = self._tox.group_get_chat_id(num)
+            name = self._tox.group_get_name(num)
+            topic = self._tox.group_get_topic(num)
+        except:
+            tox_id = name = topic = ''
         item = self.create_friend_item()
         try:
             if not self._history.friend_exists_in_db(tox_id):
@@ -1289,6 +1292,7 @@ class Profile(basecontact.BaseContact, Singleton):
         if password:
             self._tox.group_founder_set_password(num, bytes(password, 'utf-8'))
         self.add_gc(num)
+        self.get_gc_by_number(num).set_status(TOX_USER_STATUS['NONE'])
 
     def process_group_invite(self, friend_num, data):
         # TODO: support password
@@ -1302,6 +1306,7 @@ class Profile(basecontact.BaseContact, Singleton):
                 num = self._tox.group_invite_accept(data)
                 data = self._tox.get_savedata()
                 ProfileHelper.get_instance().save_profile(data)
+                print('In gc invite', num)
                 self.add_gc(num)
             elif reply != QtGui.QMessageBox.No:
                 if friend_num in self._gc_invites:

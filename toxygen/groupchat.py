@@ -12,9 +12,10 @@ class GroupChat(contact.Contact):
 
     def set_status(self, value):
         print('In gc set_status')
-        self.name = self._tox.group_get_name(self._number)
+        super().set_status(value)
+        self.name = bytes(self._tox.group_get_name(self._number), 'utf-8')
         self._tox_id = self._tox.group_get_chat_id(self._number)
-        self.status_message = self._tox.group_get_topic(self._number)
+        self.status_message = bytes(self._tox.group_get_topic(self._number), 'utf-8')
 
     def add_peer(self, peer_id):
         print(peer_id)

@@ -1549,9 +1549,7 @@ class Tox:
         """
 
         error = c_int()
-        func = Tox.libtoxcore.tox_group_new
-        func.restype = c_uint32
-        result = func(self._tox_pointer, privacy_state, group_name,
+        result = Tox.libtoxcore.tox_group_new(self._tox_pointer, privacy_state, group_name,
                       len(group_name), byref(error))
         return result
 
@@ -1611,7 +1609,8 @@ class Tox:
         f.restype = c_bool
         result = f(self._tox_pointer, groupnumber, message,
                    len(message) if message is not None else 0, byref(error))
-        return result.value
+        print('In group leave. Result:', result, 'Error:', error.value)
+        return result
 
     # -----------------------------------------------------------------------------------------------------------------
     # Group user-visible client information (nickname/status/role/public key)
@@ -2171,6 +2170,7 @@ class Tox:
         f.restype = c_uint32
         result = f(self._tox_pointer, invite_data, len(invite_data), password,
                    len(password) if password is not None else 0, byref(error))
+        print('Invite accept. Result:', result, 'Error:', error.value)
         return result
 
     def callback_group_invite(self, callback, user_data):
@@ -2188,7 +2188,7 @@ class Tox:
         user_data - user data
         """
 
-        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_char_p, c_size_t, c_void_p)
+        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, POINTER(c_uint8), c_size_t, c_void_p)
         self.group_invite_cb = c_callback(callback)
         Tox.libtoxcore.tox_callback_group_invite(self._tox_pointer, self.group_invite_cb, user_data)
 
