@@ -293,7 +293,7 @@ def callback_audio(toxav, friend_number, samples, audio_samples_per_channel, aud
 
 def group_message(window, tray, tox):
     """
-    New message from friend
+    New message in group chat
     """
     def wrapped(tox_link, group_number, peer_id, message_type, message, length, user_data):
         profile = Profile.get_instance()
@@ -303,9 +303,9 @@ def group_message(window, tray, tox):
         if not window.isActiveWindow():
             bl = settings['notify_all_gc'] or profile.name in message
             name = tox.group_peer_get_name(group_number, peer_id)
-            if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked and bl:
+            if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and (not settings.locked) and bl:
                 invoke_in_main_thread(tray_notification, name, message, tray, window)
-            if (settings['sound_notifications'] or bl) and profile.status != TOX_USER_STATUS['BUSY']:
+            if settings['sound_notifications'] and bl and profile.status != TOX_USER_STATUS['BUSY']:
                 sound_notification(SOUND_NOTIFICATION['MESSAGE'])
             invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
     return wrapped

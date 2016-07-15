@@ -96,6 +96,9 @@ class Profile(basecontact.BaseContact, Singleton):
             self.set_status((self._status + 1) % 3)
 
     def set_status(self, status):
+        if self.status is None:
+            for gc in filter(lambda x: type(x) is GroupChat, self._friends_and_gc):
+                self._tox.group_reconnect(gc.number)
         super(Profile, self).set_status(status)
         if status is not None:
             self._tox.self_set_status(status)

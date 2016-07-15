@@ -638,6 +638,7 @@ class NotificationsSettings(CenteredWidget):
         settings['notifications'] = self.enableNotifications.isChecked()
         settings['sound_notifications'] = self.soundNotifications.isChecked()
         settings['calls_sound'] = self.callsSound.isChecked()
+        settings['notify_all_gc'] = self.gcNotifications.isChecked()
         settings.save()
 
 
