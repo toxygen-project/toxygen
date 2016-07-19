@@ -80,6 +80,8 @@ class Profile(contact.Contact, Singleton):
         super(Profile, self).set_status(status)
         if status is not None:
             self._tox.self_set_status(status)
+        else:
+            QtCore.QTimer.singleShot(30000, self.reconnect)
 
     def set_name(self, value):
         if self.name == value:
@@ -787,7 +789,13 @@ class Profile(contact.Contact, Singleton):
         self.status = None
         for friend in self._friends:
             friend.status = None
+            friend.number = self._tox.friend_by_public_key(friend.tox_id)
         self.update_filtration()
+
+    def reconnect(self):
+        if self.status is None:
+            self.reset(self._screen.reset)
+            QtCore.QTimer.singleShot(30000, self.reconnect)
 
     def close(self):
         if hasattr(self, '_call'):
@@ -1116,6 +1124,8 @@ class Profile(contact.Contact, Singleton):
         """User clicked audio button in main window"""
         num = self.get_active_number()
         if num not in self._call and self.is_active_online():  # start call
+            if not Settings.get_instance().audio['enabled']:
+                return
             self._call(num, audio, video)
             self._screen.active_call()
             if video:
@@ -1134,6 +1144,8 @@ class Profile(contact.Contact, Singleton):
         """
         Incoming call from friend. Only audio is supported now
         """
+        if not Settings.get_instance().audio['enabled']:
+            return
         friend = self.get_friend_by_number(friend_number)
         if video:
             text = QtGui.QApplication.translate("incoming_call", "Incoming video call", None,

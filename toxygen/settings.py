@@ -34,10 +34,18 @@ class Settings(dict, Singleton):
             super(Settings, self).__init__(Settings.get_default_settings())
             self.save()
         smileys.SmileyLoader(self)
-        p = pyaudio.PyAudio()
         self.locked = False
-        self.audio = {'input': p.get_default_input_device_info()['index'],
-                      'output': p.get_default_output_device_info()['index']}
+        p = pyaudio.PyAudio()
+        input_devices = output_devices = 0
+        for i in range(p.get_device_count()):
+            device = p.get_device_info_by_index(i)
+            if device["maxInputChannels"]:
+                input_devices += 1
+            if device["maxOutputChannels"]:
+                output_devices += 1
+        self.audio = {'input': p.get_default_input_device_info()['index'] if input_devices else -1,
+                      'output': p.get_default_output_device_info()['index'] if output_devices else -1,
+                      'enabled': input_devices and output_devices}
 
     @staticmethod
     def get_auto_profile():
