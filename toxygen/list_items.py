@@ -42,9 +42,30 @@ class MessageEdit(QtGui.QTextBrowser):
 
     def contextMenuEvent(self, event):
         menu = create_menu(self.createStandardContextMenu(event.pos()))
+        quote = menu.addAction(QtGui.QApplication.translate("MainWindow", 'Quote selected text', None, QtGui.QApplication.UnicodeUTF8))
+        quote.triggered.connect(self.quote_text)
+        text = self.textCursor().selection().toPlainText()
+        if not text:
+            quote.setEnabled(False)
+        else:
+            import plugin_support
+            submenu = plugin_support.PluginLoader.get_instance().get_message_menu(menu, text)
+            if len(submenu):
+                plug = menu.addMenu(QtGui.QApplication.translate("MainWindow", 'Plugins', None, QtGui.QApplication.UnicodeUTF8))
+                plug.addActions(submenu)
         menu.popup(event.globalPos())
         menu.exec_(event.globalPos())
         del menu
+
+    def quote_text(self):
+        text = self.textCursor().selection().toPlainText()
+        if text:
+            import mainscreen
+            window = mainscreen.MainWindow.get_instance()
+            text = '>' + '\n>'.join(text.split('\n'))
+            if window.messageEdit.toPlainText():
+                text = '\n' + text
+            window.messageEdit.appendPlainText(text)
 
     def on_anchor_clicked(self, url):
         text = str(url.toString())

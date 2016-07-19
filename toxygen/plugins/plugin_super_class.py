@@ -88,6 +88,15 @@ class PluginSuperClass:
         """
         return []
 
+    def get_message_menu(self, menu, text):
+        """
+        This method creates items for menu which called on right click in message
+        :param menu: menu instance
+        :param text: selected text
+        :return list of QAction's
+        """
+        return []
+
     def get_window(self):
         """
         This method should return window for plugins with GUI or None

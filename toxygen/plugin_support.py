@@ -147,6 +147,16 @@ class PluginLoader(util.Singleton):
                     continue
         return result
 
+    def get_message_menu(self, menu, selected_text):
+        result = []
+        for elem in self._plugins.values():
+            if elem[1]:
+                try:
+                    result.extend(elem[0].get_message_menu(menu, selected_text))
+                except:
+                    continue
+        return result
+
     def stop(self):
         """
         App is closing, stop all plugins

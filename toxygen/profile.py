@@ -171,7 +171,7 @@ class Profile(contact.Contact, Singleton):
             self.send_typing(False)
             self._screen.typing.setVisible(False)
             if value is not None:
-                if self._active_friend + 1:
+                if self._active_friend + 1 and self._active_friend != value:
                     try:
                         self._friends[self._active_friend].curr_text = self._screen.messageEdit.toPlainText()
                     except:

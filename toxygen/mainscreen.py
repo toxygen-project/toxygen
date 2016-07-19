@@ -8,10 +8,11 @@ import plugin_support
 from mainscreen_widgets import *
 
 
-class MainWindow(QtGui.QMainWindow):
+class MainWindow(QtGui.QMainWindow, Singleton):
 
     def __init__(self, tox, reset, tray):
-        super(MainWindow, self).__init__()
+        super().__init__()
+        Singleton.__init__(self)
         self.reset = reset
         self.tray = tray
         self.setAcceptDrops(True)
