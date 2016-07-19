@@ -20,7 +20,12 @@ class MessageArea(QtGui.QPlainTextEdit):
 
     def keyPressEvent(self, event):
         if event.matches(QtGui.QKeySequence.Paste):
-            self.pasteEvent()
+            mimeData = QtGui.QApplication.clipboard().mimeData()
+            if mimeData.hasUrls():
+                for url in mimeData.urls():
+                    self.pasteEvent(url.toString())
+            else:
+                self.pasteEvent()
         elif event.key() in (QtCore.Qt.Key_Return, QtCore.Qt.Key_Enter):
             modifiers = event.modifiers()
             if modifiers & QtCore.Qt.ControlModifier or modifiers & QtCore.Qt.ShiftModifier:
@@ -51,9 +56,13 @@ class MessageArea(QtGui.QPlainTextEdit):
         e.accept()
 
     def dropEvent(self, e):
-        if e.mimeData().hasFormat('text/plain'):
+        if e.mimeData().hasFormat('text/plain') or e.mimeData().hasFormat('text/html'):
             e.accept()
             self.pasteEvent(e.mimeData().text())
+        elif e.mimeData().hasUrls():
+            for url in e.mimeData().urls():
+                self.pasteEvent(url.toString())
+            e.accept()
         else:
             e.ignore()
 
@@ -383,4 +392,3 @@ class WelcomeScreen(CenteredWidget):
         s = settings.Settings.get_instance()
         s['show_welcome_screen'] = False
         s.save()
-
