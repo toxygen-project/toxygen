@@ -3,6 +3,7 @@ try:
     from PySide import QtCore, QtGui
 except ImportError:
     from PyQt4 import QtCore, QtGui
+    QtCore.Slot = QtCore.pyqtSlot
 import profile
 from file_transfers import TOX_FILE_TRANSFER_STATE, PAUSED_FILE_TRANSFERS, DO_NOT_SHOW_ACCEPT_BUTTON, ACTIVE_FILE_TRANSFERS, SHOW_PROGRESS_BAR
 from util import curr_directory, convert_time, curr_time
