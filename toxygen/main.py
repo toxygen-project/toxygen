@@ -226,6 +226,10 @@ class Toxygen:
                 self.p = UnlockAppScreen(toxencryptsave.ToxEncryptSave.get_instance(), correct_pass)
                 self.p.show()
 
+        def tray_activated(reason):
+           if reason == QtGui.QSystemTrayIcon.DoubleClick:
+               show_window()
+
         m.connect(show, QtCore.SIGNAL("triggered()"), show_window)
         m.connect(exit, QtCore.SIGNAL("triggered()"), lambda: app.exit())
         m.connect(m, QtCore.SIGNAL("aboutToShow()"), lambda: m.aboutToShow())
@@ -235,6 +239,7 @@ class Toxygen:
 
         self.tray.setContextMenu(m)
         self.tray.show()
+        self.tray.activated.connect(tray_activated)
 
         self.ms.show()
 
