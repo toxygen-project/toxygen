@@ -376,7 +376,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.p_s.show()
 
     def add_contact(self, link=''):
-        self.a_c = AddContact(link)
+        self.a_c = AddContact(link or '')
         self.a_c.show()
 
     def profilesettings(self, *args):
