@@ -7,10 +7,15 @@ from toxygen.util import program_version
 
 version = program_version + '.0'
 
-MODULES = ['PyAudio']
+MODULES = []
 
-if system() == 'Windows':
-    MODULES.append('PySide')
+if system() in ('Windows', 'Darwin'):
+    MODULES = ['PyAudio', 'PySide']
+else:
+    try:
+        import pyaudio
+    except ImportError:
+        MODULES = ['PyAudio']
 
 
 class InstallScript(install):
@@ -18,11 +23,13 @@ class InstallScript(install):
 
     def run(self):
         install.run(self)
-        OS = system()
-        if OS == 'Windows':
-            call(["toxygen", "--configure"])
-        elif OS == 'Linux':
-            call(["toxygen", "--clean"])
+        try:
+            if system() == 'Windows':
+                call(["toxygen", "--configure"])
+            else:
+                call(["toxygen", "--clean"])
+        except:
+            pass
 
 setup(name='Toxygen',
       version=version,

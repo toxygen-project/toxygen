@@ -8,6 +8,7 @@ try:
     from PySide import QtCore
 except ImportError:
     from PyQt4 import QtCore
+    QtCore.Signal = QtCore.pyqtSignal
 
 # TODO: threads!
 
@@ -34,10 +35,8 @@ ALLOWED_FILES = ('toxygen_inline.png', 'utox-inline.png', 'sticker.png')
 
 
 class StateSignal(QtCore.QObject):
-    try:
-        signal = QtCore.Signal(int, float, int)  # state and progress
-    except:
-        signal = QtCore.pyqtSignal(int, float, int)  # state and progress - pyqt4
+
+    signal = QtCore.Signal(int, float, int)  # state and progress
 
 
 class FileTransfer(QtCore.QObject):

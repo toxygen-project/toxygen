@@ -204,10 +204,12 @@ class Settings(dict, Singleton):
 
     @staticmethod
     def get_default_path():
-        if system() == 'Linux':
-            return os.getenv('HOME') + '/.config/tox/'
-        elif system() == 'Windows':
+        if system() == 'Windows':
             return os.getenv('APPDATA') + '/Tox/'
+        elif system() == 'Darwin':
+            return os.getenv('HOME') + '/Library/Application Support/Tox/'
+        else:
+            return os.getenv('HOME') + '/.config/tox/'
 
 
 class ProfileHelper(Singleton):
