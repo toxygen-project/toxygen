@@ -1246,7 +1246,17 @@ QPushButton:hover
 
 #messages:item:selected
 {
+    background-color: #1E90FF;
+}
+
+MessageEdit 
+{
     background-color: transparent;
+}
+
+#messages:item:selected QListWidgetItem
+{
+    background-color: #1E90FF;
 }
 
 #friends_list:item:selected

@@ -265,6 +265,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
                 self.messages.verticalScrollBar().setValue(1)
         self.messages.verticalScrollBar().valueChanged.connect(load)
         self.messages.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.messages.setSelectionMode(QtGui.QAbstractItemView.ExtendedSelection)
 
     def initUI(self, tox):
         self.setMinimumSize(920, 500)
@@ -325,8 +326,8 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.profile.save_history()
         self.profile.close()
         s = Settings.get_instance()
-        s['x'] = self.pos().x()
-        s['y'] = self.pos().y()
+        s['x'] = self.geometry().x()
+        s['y'] = self.geometry().y()
         s['width'] = self.width()
         s['height'] = self.height()
         s.save()
@@ -610,4 +611,3 @@ class MainWindow(QtGui.QMainWindow, Singleton):
 
     def filtering(self):
         self.profile.filtration(self.online_contacts.currentIndex() == 1, self.contact_name.text())
-

@@ -266,7 +266,8 @@ class ProfileSettings(CenteredWidget):
             Profile.get_instance().set_avatar(bytes(byte_array.data()))
 
     def export_profile(self):
-        directory = QtGui.QFileDialog.getExistingDirectory(options=QtGui.QFileDialog.DontUseNativeDialog) + '/'
+        directory = QtGui.QFileDialog.getExistingDirectory(options=QtGui.QFileDialog.DontUseNativeDialog,
+                                                           dir=curr_directory()) + '/'
         if directory != '/':
             ProfileHelper.get_instance().export_profile(directory)
             settings = Settings.get_instance()
