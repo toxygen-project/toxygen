@@ -3,6 +3,7 @@ from setuptools.command.install import install
 from platform import system
 from subprocess import call
 from toxygen.util import program_version
+import sys
 
 
 version = program_version + '.0'
@@ -29,7 +30,19 @@ class InstallScript(install):
             else:
                 call(["toxygen", "--clean"])
         except:
-            pass
+            try:
+                params = list(filter(lambda x: x.startswith('--prefix='), sys.argv))
+                if params:
+                    path = params[0][len('--prefix='):]
+                    if path[-1] not in ('/', '\\'):
+                        path += '/'
+                    path += 'bin/toxygen'
+                    if system() == 'Windows':
+                        call([path, "--configure"])
+                    else:
+                        call([path, "--clean"])
+            except:
+                pass
 
 setup(name='Toxygen',
       version=version,
