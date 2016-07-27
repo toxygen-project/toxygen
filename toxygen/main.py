@@ -125,7 +125,19 @@ class Toxygen:
                         set_pass.show()
                         self.app.connect(self.app, QtCore.SIGNAL("lastWindowClosed()"), self.app, QtCore.SLOT("quit()"))
                         self.app.exec_()
-                    ProfileHelper(Settings.get_default_path(), name).save_profile(self.tox.get_savedata())
+                    reply = QtGui.QMessageBox.question(None,
+                                                       'Profile {}'.format(name),
+                                                       QtGui.QApplication.translate("login",
+                                                                                    'Do you want to save profile in default folder? If no, profile will be saved in program folder',
+                                                                                    None,
+                                                                                    QtGui.QApplication.UnicodeUTF8),
+                                                       QtGui.QMessageBox.Yes,
+                                                       QtGui.QMessageBox.No)
+                    if reply == QtGui.QMessageBox.Yes:
+                        path = Settings.get_default_path()
+                    else:
+                        path = curr_directory()
+                    ProfileHelper(path, name).save_profile(self.tox.get_savedata())
                     path = Settings.get_default_path()
                     settings = Settings(name)
                     if curr_lang in langs:
@@ -424,7 +436,7 @@ def main():
     else:  # started with argument(s)
         arg = sys.argv[1]
         if arg == '--version':
-            print('Toxygen ' + program_version)
+            print('Toxygen v' + program_version)
             return
         elif arg == '--help':
             print('Usage:\ntoxygen path_to_profile\ntoxygen tox_id\ntoxygen --version')

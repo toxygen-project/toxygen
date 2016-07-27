@@ -311,9 +311,12 @@ class Profile(contact.Contact, Singleton):
         Send typing notification to a friend
         """
         if Settings.get_instance()['typing_notifications'] and self._active_friend + 1:
-            friend = self._friends[self._active_friend]
-            if friend.status is not None:
-                self._tox.self_set_typing(friend.number, typing)
+            try:
+                friend = self._friends[self._active_friend]
+                if friend.status is not None:
+                    self._tox.self_set_typing(friend.number, typing)
+            except:
+                pass
 
     def friend_typing(self, friend_number, typing):
         """

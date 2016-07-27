@@ -269,11 +269,22 @@ class ProfileSettings(CenteredWidget):
         directory = QtGui.QFileDialog.getExistingDirectory(options=QtGui.QFileDialog.DontUseNativeDialog,
                                                            dir=curr_directory()) + '/'
         if directory != '/':
-            ProfileHelper.get_instance().export_profile(directory)
+            reply = QtGui.QMessageBox.question(None,
+                                               QtGui.QApplication.translate("ProfileSettingsForm",
+                                                                            'Use new path',
+                                                                            None,
+                                                                            QtGui.QApplication.UnicodeUTF8),
+                                               QtGui.QApplication.translate("ProfileSettingsForm",
+                                                                            'Do you want to move your profile to this location?',
+                                                                            None,
+                                                                            QtGui.QApplication.UnicodeUTF8),
+                                               QtGui.QMessageBox.Yes,
+                                               QtGui.QMessageBox.No)
             settings = Settings.get_instance()
             settings.export(directory)
             profile = Profile.get_instance()
             profile.export_history(directory)
+            ProfileHelper.get_instance().export_profile(directory, reply == QtGui.QMessageBox.Yes)
 
     def closeEvent(self, event):
         profile = Profile.get_instance()

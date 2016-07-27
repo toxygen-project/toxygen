@@ -1,8 +1,7 @@
 from platform import system
 import json
 import os
-import locale
-from util import Singleton, curr_directory, log
+from util import Singleton, curr_directory, log, copy
 import pyaudio
 from toxencryptsave import ToxEncryptSave
 import smileys
@@ -202,6 +201,9 @@ class Settings(dict, Singleton):
         with open(path + str(self.name) + '.json', 'w') as fl:
             fl.write(text)
 
+    def update_path(self):
+        self.path = ProfileHelper.get_path() + self.name + '.json'
+
     @staticmethod
     def get_default_path():
         if system() == 'Windows':
@@ -244,13 +246,18 @@ class ProfileHelper(Singleton):
             fl.write(data)
         print('Profile saved successfully')
 
-    def export_profile(self, new_path):
-        new_path += os.path.basename(self._path)
+    def export_profile(self, new_path, use_new_path):
+        path = new_path + os.path.basename(self._path)
         with open(self._path, 'rb') as fin:
             data = fin.read()
-        with open(new_path, 'wb') as fout:
+        with open(path, 'wb') as fout:
             fout.write(data)
         print('Profile exported successfully')
+        copy(self._directory + 'avatars', new_path + 'avatars')
+        if use_new_path:
+            self._path = new_path + os.path.basename(self._path)
+            self._directory = new_path
+            Settings.get_instance().update_path()
 
     @staticmethod
     def find_profiles():
