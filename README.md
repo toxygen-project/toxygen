@@ -1,17 +1,22 @@
-# Toxygen 
+# Toxygen
+
 Toxygen is cross-platform [Tox](https://tox.chat/) client written in Python3
 
 [![Release](https://img.shields.io/github/release/xveduk/toxygen.svg?style=flat)](https://github.com/xveduk/toxygen/releases/latest)
 [![Open issues](https://img.shields.io/github/issues/xveduk/toxygen.svg?style=flat)](https://github.com/xveduk/toxygen/issues)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat)](https://raw.githubusercontent.com/xveduk/toxygen/master/LICENSE.md)
 
-### [Install](/docs/install.md) - [Contribute](/docs/contributing.md) - [Plugins](/docs/plugins.md)
+### [Install](/docs/install.md) - [Contribute](/docs/contributing.md) - [Plugins](/docs/plugins.md) - [Compile](/docs/compile.md) - [Contact](/docs/contact.md)
 
 ### Supported OS:
+
 - Windows
 - Linux
+- OS X
+- FreeBSD
 
-###Features
+### Features
+
 - [x] 1v1 messages
 - [x] File transfers
 - [x] Audio
@@ -42,19 +47,17 @@ Toxygen is cross-platform [Tox](https://tox.chat/) client written in Python3
 - [ ] Desktop sharing
 - [ ] Group chats
 
-###Downloads
+### Downloads
 [Releases](https://github.com/xveduk/toxygen/releases)
 
 [Download last stable version](https://github.com/xveduk/toxygen/archive/master.zip)
 
 [Download develop version](https://github.com/xveduk/toxygen/archive/develop.zip)
 
-###Screenshots
+### Screenshots
 *Toxygen on Ubuntu and Windows*
 ![Ubuntu](/docs/ubuntu.png)
 ![Windows](/docs/windows.png)
 
-
-###Docs
+### Docs
 [Check /docs/ for more info](/docs/)
-

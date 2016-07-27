@@ -3,7 +3,7 @@
 ## Use precompiled binary:
 [Check our releases page](https://github.com/xveduk/toxygen/releases)
 
-##Using pip3
+## Using pip3
 
 ### Windows
 
@@ -21,12 +21,21 @@ Run app using ``toxygen`` command.
 ``sudo pip3.4 install toxygen``
 5. Run toxygen using ``toxygen`` command.
 
+### OS X
+
+1. Install [toxcore](https://github.com/irungentoo/toxcore/blob/master/INSTALL.md) with toxav support in your system (install in /usr/lib/)
+2. Install PortAudio:
+``brew install portaudio``
+3. Install toxygen: 
+``pip3 install toxygen``
+4. Run toxygen using ``toxygen`` command.
+
 ## From source code (recommended for developers)
 
 ### Windows
 
 1. [Download and install latest Python 3.4](https://www.python.org/downloads/windows/)
-2. [Install PySide](https://pypi.python.org/pypi/PySide/1.2.4) (recommended) or [PyQt4](https://riverbankcomputing.com/software/pyqt/download)
+2. [Install PySide](https://pypi.python.org/pypi/PySide/1.2.4#installing-pyside-on-a-windows-system) (recommended) or [PyQt4](https://riverbankcomputing.com/software/pyqt/download)
 3. Install PyAudio: ``pip3.4 install pyaudio``
 4. [Download toxygen](https://github.com/xveduk/toxygen/archive/master.zip)
 5. Unpack archive  
@@ -47,7 +56,7 @@ Optional: install toxygen using setup.py: ``python3.4 setup.py install``
 
 1. Install latest Python3: 
 ``sudo apt-get install python3``
-2. Install PySide: ``sudo apt-get install python3-pyside`` or install [PyQt4](https://riverbankcomputing.com/software/pyqt/download).
+2. Install PySide: ``sudo apt-get install python3-pyside`` or install [PyQt4](https://riverbankcomputing.com/software/pyqt/download) (``sudo apt-get install python3-pyqt4``).
 3. Install [toxcore](https://github.com/irungentoo/toxcore/blob/master/INSTALL.md) with toxav support in your system (install in /usr/lib/)
 4. Install PyAudio: 
 ``sudo apt-get install portaudio19-dev`` and ``sudo apt-get install python3-pyaudio`` (or ``pip3 install pyaudio``)
@@ -56,7 +65,17 @@ Optional: install toxygen using setup.py: ``python3.4 setup.py install``
 7. Run app:
 ``python3.4 main.py``
 
-Optional: install toxygen using setup.py: ``python3 setup.py install``
+Optional: install toxygen using setup.py: ``python3.4 setup.py install``
 
-## Compile Toxygen
-Check [compile.md](/docs/compile.md) for more info
+### OS X
+
+1. [Download and install latest Python 3.4](https://www.python.org/downloads/mac-osx/)
+2. [Install PySide](https://pypi.python.org/pypi/PySide/1.2.4#installing-pyside-on-a-mac-os-x-system) (recommended) or [PyQt4](https://riverbankcomputing.com/software/pyqt/download)
+3. Install PortAudio:
+``brew install portaudio``
+4. Install PyAudio: ``pip3 install pyaudio``
+4. [Download toxygen](https://github.com/xveduk/toxygen/archive/master.zip)
+5. Unpack archive  
+6. Run \src\main.py.
+
+Optional: install toxygen using setup.py: ``python3 setup.py install``
