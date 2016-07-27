@@ -23,12 +23,16 @@ Run app using ``toxygen`` command.
 
 ### OS X
 
-1. Install [toxcore](https://github.com/irungentoo/toxcore/blob/master/INSTALL.md) with toxav support in your system (install in /usr/lib/)
+1. Install [toxcore](https://github.com/irungentoo/toxcore/blob/master/INSTALL.md) with toxav support in your system
 2. Install PortAudio:
 ``brew install portaudio``
 3. Install toxygen: 
 ``pip3 install toxygen``
 4. Run toxygen using ``toxygen`` command.
+
+## Packages
+
+Coming soon.
 
 ## From source code (recommended for developers)
 
@@ -40,7 +44,7 @@ Run app using ``toxygen`` command.
 4. [Download toxygen](https://github.com/xveduk/toxygen/archive/master.zip)
 5. Unpack archive  
 6. Download latest libtox.dll build, download latest libsodium.a build, put it into \src\libs\
-7. Run \src\main.py.
+7. Run \toxygen\main.py.
 
 Optional: install toxygen using setup.py: ``python3.4 setup.py install``
 
@@ -74,8 +78,9 @@ Optional: install toxygen using setup.py: ``python3.4 setup.py install``
 3. Install PortAudio:
 ``brew install portaudio``
 4. Install PyAudio: ``pip3 install pyaudio``
-4. [Download toxygen](https://github.com/xveduk/toxygen/archive/master.zip)
-5. Unpack archive  
-6. Run \src\main.py.
+5. Install [toxcore](https://github.com/irungentoo/toxcore/blob/master/INSTALL.md) with toxav support in your system
+6. [Download toxygen](https://github.com/xveduk/toxygen/archive/master.zip)
+7. Unpack archive  
+8. Run \toxygen\main.py.
 
 Optional: install toxygen using setup.py: ``python3 setup.py install``
