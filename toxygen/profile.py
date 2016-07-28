@@ -176,10 +176,11 @@ class Profile(contact.Contact, Singleton):
                         self._friends[self._active_friend].curr_text = self._screen.messageEdit.toPlainText()
                     except:
                         pass
-                self._active_friend = value
                 friend = self._friends[value]
+                if self._active_friend != value:
+                    self._screen.messageEdit.setPlainText(friend.curr_text)
+                self._active_friend = value
                 self._friends[value].reset_messages()
-                self._screen.messageEdit.setPlainText(friend.curr_text)
                 self._messages.clear()
                 friend.load_corr()
                 messages = friend.get_corr()[-PAGE_SIZE:]
@@ -490,7 +491,7 @@ class Profile(contact.Contact, Singleton):
                                          data[1],
                                          data[3],
                                          False)
-            elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:
+            elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:  # file transfer
                 if message.get_status() is None:
                     self.create_unsent_file_item(message)
                     continue
@@ -502,14 +503,15 @@ class Profile(contact.Contact, Singleton):
                         ft.signal()
                     except:
                         print('Incoming not started transfer - no info found')
-            elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline
-                self.create_inline_item(message.get_data())
+            elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline image
+                self.create_inline_item(message.get_data(), False)
             else:  # info message
                 data = message.get_data()
                 self.create_message_item(data[0],
                                          data[2],
                                          '',
-                                         data[3])
+                                         data[3],
+                                         False)
         self._load_history = True
 
     def export_history(self, directory):

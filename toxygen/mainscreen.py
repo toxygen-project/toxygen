@@ -365,7 +365,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         msgBox = QtGui.QMessageBox()
         msgBox.setWindowTitle(QtGui.QApplication.translate("MainWindow", "About", None, QtGui.QApplication.UnicodeUTF8))
         text = (QtGui.QApplication.translate("MainWindow", 'Toxygen is Tox client written on Python.\nVersion: ', None, QtGui.QApplication.UnicodeUTF8))
-        msgBox.setText(text + util.program_version + '\nGitHub: github.com/xveduk/toxygen/')
+        msgBox.setText(text + util.program_version + '\nGitHub: https://github.com/toxygen-project/toxygen/')
         msgBox.exec_()
 
     def network_settings(self):
