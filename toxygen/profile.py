@@ -1193,6 +1193,7 @@ class Profile(contact.Contact, Singleton):
             self._messages.scrollToBottom()
         else:
             friend.actions = True
+        # TODO: dict of widgets
         self._call_widget = avwidgets.IncomingCallWidget(friend_number, text, friend.name)
         self._call_widget.set_pixmap(friend.get_pixmap())
         self._call_widget.show()
@@ -1219,6 +1220,7 @@ class Profile(contact.Contact, Singleton):
         self._screen.call_finished()
         self._call.finish_call(friend_number, by_friend)  # finish or decline call
         if hasattr(self, '_call_widget'):
+            self._call_widget.close()
             del self._call_widget
         friend = self.get_friend_by_number(friend_number)
         friend.append_message(InfoMessage(text, time.time()))
