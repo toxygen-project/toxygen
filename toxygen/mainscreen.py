@@ -76,7 +76,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.actionAbout_program.triggered.connect(self.about_program)
         self.actionNetwork.triggered.connect(self.network_settings)
         self.actionAdd_friend.triggered.connect(self.add_contact)
-        self.actionSettings.triggered.connect(self.profilesettings)
+        self.actionSettings.triggered.connect(self.profile_settings)
         self.actionPrivacy_settings.triggered.connect(self.privacy_settings)
         self.actionInterface_settings.triggered.connect(self.interface_settings)
         self.actionNotifications.triggered.connect(self.notification_settings)
@@ -195,9 +195,9 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         Form.status_message.setObjectName("status_message")
         self.connection_status = Form.connection_status = StatusCircle(Form)
         Form.connection_status.setGeometry(QtCore.QRect(230, 35, 32, 32))
-        self.avatar_label.mouseReleaseEvent = self.profilesettings
-        self.status_message.mouseReleaseEvent = self.profilesettings
-        self.name.mouseReleaseEvent = self.profilesettings
+        self.avatar_label.mouseReleaseEvent = self.profile_settings
+        self.status_message.mouseReleaseEvent = self.profile_settings
+        self.name.mouseReleaseEvent = self.profile_settings
         self.connection_status.raise_()
         Form.connection_status.setObjectName("connection_status")
 
@@ -380,7 +380,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.a_c = AddContact(link or '')
         self.a_c.show()
 
-    def profilesettings(self, *args):
+    def profile_settings(self, *args):
         self.p_s = ProfileSettings()
         self.p_s.show()
 
@@ -521,7 +521,12 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         if item is not None:
             self.listMenu = QtGui.QMenu()
             set_alias_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Set alias', None, QtGui.QApplication.UnicodeUTF8))
-            clear_history_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Clear history', None, QtGui.QApplication.UnicodeUTF8))
+
+            history_menu = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Chat history', None, QtGui.QApplication.UnicodeUTF8))
+            clear_history_item = history_menu.addAction(QtGui.QApplication.translate("MainWindow", 'Clear history', None, QtGui.QApplication.UnicodeUTF8))
+            export_to_text_item = history_menu.addAction(QtGui.QApplication.translate("MainWindow", 'Export as text', None, QtGui.QApplication.UnicodeUTF8))
+            export_to_html_item = history_menu.addAction(QtGui.QApplication.translate("MainWindow", 'Export as HTML', None, QtGui.QApplication.UnicodeUTF8))
+
             copy_menu = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Copy', None, QtGui.QApplication.UnicodeUTF8))
             copy_name_item = copy_menu.addAction(QtGui.QApplication.translate("MainWindow", 'Name', None, QtGui.QApplication.UnicodeUTF8))
             copy_status_item = copy_menu.addAction(QtGui.QApplication.translate("MainWindow", 'Status message', None, QtGui.QApplication.UnicodeUTF8))
@@ -543,6 +548,9 @@ class MainWindow(QtGui.QMainWindow, Singleton):
             self.connect(notes_item, QtCore.SIGNAL("triggered()"), lambda: self.show_note(friend))
             self.connect(copy_name_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_name(friend))
             self.connect(copy_status_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_status(friend))
+            self.connect(export_to_text_item, QtCore.SIGNAL("triggered()"), lambda: self.profile.export_history(num))
+            self.connect(export_to_html_item, QtCore.SIGNAL("triggered()"),
+                         lambda: self.profile.export_history(num, False))
             parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
             self.listMenu.move(parent_position + pos)
             self.listMenu.show()

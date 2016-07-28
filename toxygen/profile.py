@@ -514,8 +514,35 @@ class Profile(contact.Contact, Singleton):
                                          False)
         self._load_history = True
 
-    def export_history(self, directory):
+    def export_db(self, directory):
         self._history.export(directory)
+
+    def export_history(self, num, as_text=True, _range=None):
+        friend = self._friends[num]
+        if _range is None:
+            friend.load_all_corr()
+        corr = friend.get_corr() if _range is None else friend.get_corr()[_range[0]:_range[1]]
+        arr = []
+        new_line = '\n' if as_text else '<br>'
+        for message in corr:
+            if type(message) is TextMessage:
+                data = message.get_data()
+                if as_text:
+                    x = '[{}] {}: {}\n'
+                else:
+                    x = '[{}] <b>{}:</b> {}<br>'
+                arr.append(x.format(convert_time(data[2]) if data[1] != MESSAGE_OWNER['NOT_SENT'] else 'Unsent',
+                                    friend.name if data[1] == MESSAGE_OWNER['FRIEND'] else self.name,
+                                    data[0]))
+        s = new_line.join(arr)
+        directory = QtGui.QFileDialog.getExistingDirectory(None,
+                    QtGui.QApplication.translate("MainWindow", 'Choose folder', None, QtGui.QApplication.UnicodeUTF8),
+                    curr_directory(),
+                    QtGui.QFileDialog.ShowDirsOnly | QtGui.QFileDialog.DontUseNativeDialog)
+        if directory:
+            name = 'exported_history_{}.{}'.format(convert_time(time.time()), 'txt' if as_text else 'html')
+            with open(directory + '/' + name, 'wt') as fl:
+                fl.write(s)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Factories for friend, message and file transfer items

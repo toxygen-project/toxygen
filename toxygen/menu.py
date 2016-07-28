@@ -283,7 +283,7 @@ class ProfileSettings(CenteredWidget):
             settings = Settings.get_instance()
             settings.export(directory)
             profile = Profile.get_instance()
-            profile.export_history(directory)
+            profile.export_db(directory)
             ProfileHelper.get_instance().export_profile(directory, reply == QtGui.QMessageBox.Yes)
 
     def closeEvent(self, event):

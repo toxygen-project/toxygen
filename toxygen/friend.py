@@ -65,6 +65,14 @@ class Friend(contact.Contact):
         self._corr = data + self._corr
         self._history_loaded = True
 
+    def load_all_corr(self):
+        data = list(self._message_getter.get_all())
+        if data is not None and len(data):
+            data.reverse()
+            data = list(map(lambda tupl: TextMessage(*tupl), data))
+            self._corr = data + self._corr
+            self._history_loaded = True
+
     def get_corr_for_saving(self):
         """
         Get data to save in db
