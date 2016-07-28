@@ -1,0 +1,31 @@
+language: python
+python:
+  - "3.4"
+before_install:
+  - sudo apt-get install -y checkinstall build-essential
+  - sudo apt-get install portaudio19-dev
+install:
+  - pip install PySide --no-index --find-links https://parkin.github.io/python-wheelhouse/;
+  - python ~/virtualenv/python${TRAVIS_PYTHON_VERSION}/bin/pyside_postinstall.py -install
+  - pip install pyaudio
+before_script:
+# Libsodium
+  - git clone git://github.com/jedisct1/libsodium.git
+  - cd libsodium
+  - git checkout tags/1.0.3
+  - ./autogen.sh
+  - ./configure && make -j$(nproc)
+  - sudo checkinstall --install --pkgname libsodium --pkgversion 1.0.0 --nodoc -y
+  - sudo ldconfig
+  - cd ..
+# Toxcore
+  - git clone https://github.com/irungentoo/toxcore.git
+  - cd toxcore
+  - autoreconf -if
+  - ./configure
+  - make -j$(nproc)
+  - sudo make install
+  - echo '/usr/local/lib/' | sudo tee -a /etc/ld.so.conf.d/locallib.conf
+  - sudo ldconfig
+  - cd ..
+script: py.test tests/travis.py

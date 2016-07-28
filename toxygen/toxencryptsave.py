@@ -36,10 +36,9 @@ TOX_PASS_ENCRYPTION_EXTRA_LENGTH = 80
 
 class ToxEncryptSave(util.Singleton):
 
-    libtoxencryptsave = libtox.LibToxEncryptSave()
-
     def __init__(self):
         super().__init__()
+        self.libtoxencryptsave = libtox.LibToxEncryptSave()
         self._passphrase = None
 
     def set_password(self, passphrase):

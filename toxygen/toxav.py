@@ -12,8 +12,6 @@ class ToxAV:
     peers.
     """
 
-    libtoxav = LibToxAV()
-
     # -----------------------------------------------------------------------------------------------------------------
     # Creation and destruction
     # -----------------------------------------------------------------------------------------------------------------
@@ -24,9 +22,10 @@ class ToxAV:
 
         :param tox_pointer: pointer to Tox instance
         """
+        self.libtoxav = LibToxAV()
         toxav_err_new = c_int()
-        ToxAV.libtoxav.toxav_new.restype = POINTER(c_void_p)
-        self._toxav_pointer = ToxAV.libtoxav.toxav_new(tox_pointer, byref(toxav_err_new))
+        self.libtoxav.toxav_new.restype = POINTER(c_void_p)
+        self._toxav_pointer = self.libtoxav.toxav_new(tox_pointer, byref(toxav_err_new))
         toxav_err_new = toxav_err_new.value
         if toxav_err_new == TOXAV_ERR_NEW['NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
@@ -48,7 +47,7 @@ class ToxAV:
         If any calls were ongoing, these will be forcibly terminated without notifying peers. After calling this
         function, no other functions may be called and the av pointer becomes invalid.
         """
-        ToxAV.libtoxav.toxav_kill(self._toxav_pointer)
+        self.libtoxav.toxav_kill(self._toxav_pointer)
 
     def get_tox_pointer(self):
         """
@@ -56,8 +55,8 @@ class ToxAV:
 
         :return: pointer to the Tox instance
         """
-        ToxAV.libtoxav.toxav_get_tox.restype = POINTER(c_void_p)
-        return ToxAV.libtoxav.toxav_get_tox(self._toxav_pointer)
+        self.libtoxav.toxav_get_tox.restype = POINTER(c_void_p)
+        return self.libtoxav.toxav_get_tox(self._toxav_pointer)
 
     # -----------------------------------------------------------------------------------------------------------------
     # A/V event loop
@@ -70,14 +69,14 @@ class ToxAV:
 
         :return: interval in milliseconds
         """
-        return ToxAV.libtoxav.toxav_iteration_interval(self._toxav_pointer)
+        return self.libtoxav.toxav_iteration_interval(self._toxav_pointer)
 
     def iterate(self):
         """
         Main loop for the session. This function needs to be called in intervals of toxav_iteration_interval()
         milliseconds. It is best called in the separate thread from tox_iterate.
         """
-        ToxAV.libtoxav.toxav_iterate(self._toxav_pointer)
+        self.libtoxav.toxav_iterate(self._toxav_pointer)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Call setup
@@ -97,7 +96,7 @@ class ToxAV:
         :return: True on success.
         """
         toxav_err_call = c_int()
-        result = ToxAV.libtoxav.toxav_call(self._toxav_pointer, c_uint32(friend_number), c_uint32(audio_bit_rate),
+        result = self.libtoxav.toxav_call(self._toxav_pointer, c_uint32(friend_number), c_uint32(audio_bit_rate),
                                            c_uint32(video_bit_rate), byref(toxav_err_call))
         toxav_err_call = toxav_err_call.value
         if toxav_err_call == TOXAV_ERR_CALL['OK']:
@@ -131,7 +130,7 @@ class ToxAV:
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_bool, c_bool, c_void_p)
         self.call_cb = c_callback(callback)
-        ToxAV.libtoxav.toxav_callback_call(self._toxav_pointer, self.call_cb, user_data)
+        self.libtoxav.toxav_callback_call(self._toxav_pointer, self.call_cb, user_data)
 
     def answer(self, friend_number, audio_bit_rate, video_bit_rate):
         """
@@ -146,7 +145,7 @@ class ToxAV:
         :return: True on success.
         """
         toxav_err_answer = c_int()
-        result = ToxAV.libtoxav.toxav_answer(self._toxav_pointer, c_uint32(friend_number), c_uint32(audio_bit_rate),
+        result = self.libtoxav.toxav_answer(self._toxav_pointer, c_uint32(friend_number), c_uint32(audio_bit_rate),
                                              c_uint32(video_bit_rate), byref(toxav_err_answer))
         toxav_err_answer = toxav_err_answer.value
         if toxav_err_answer == TOXAV_ERR_ANSWER['OK']:
@@ -184,7 +183,7 @@ class ToxAV:
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_void_p)
         self.call_state_cb = c_callback(callback)
-        ToxAV.libtoxav.toxav_callback_call_state(self._toxav_pointer, self.call_state_cb, user_data)
+        self.libtoxav.toxav_callback_call_state(self._toxav_pointer, self.call_state_cb, user_data)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Call control
@@ -199,7 +198,7 @@ class ToxAV:
         :return: True on success.
         """
         toxav_err_call_control = c_int()
-        result = ToxAV.libtoxav.toxav_call_control(self._toxav_pointer, c_uint32(friend_number), c_int(control),
+        result = self.libtoxav.toxav_call_control(self._toxav_pointer, c_uint32(friend_number), c_int(control),
                                                    byref(toxav_err_call_control))
         toxav_err_call_control = toxav_err_call_control.value
         if toxav_err_call_control == TOXAV_ERR_CALL_CONTROL['OK']:
@@ -241,7 +240,7 @@ class ToxAV:
         24000, or 48000.
         """
         toxav_err_send_frame = c_int()
-        result = ToxAV.libtoxav.toxav_audio_send_frame(self._toxav_pointer, c_uint32(friend_number),
+        result = self.libtoxav.toxav_audio_send_frame(self._toxav_pointer, c_uint32(friend_number),
                                                        cast(pcm, c_void_p),
                                                        c_size_t(sample_count), c_uint8(channels),
                                                        c_uint32(sampling_rate), byref(toxav_err_send_frame))
@@ -281,7 +280,7 @@ class ToxAV:
         :param v: V (Chroma) plane data.
         """
         toxav_err_send_frame = c_int()
-        result = ToxAV.libtoxav.toxav_video_send_frame(self._toxav_pointer, c_uint32(friend_number), c_uint16(width),
+        result = self.libtoxav.toxav_video_send_frame(self._toxav_pointer, c_uint32(friend_number), c_uint16(width),
                                                        c_uint16(height), c_char_p(y), c_char_p(u), c_char_p(v),
                                                        byref(toxav_err_send_frame))
         toxav_err_send_frame = toxav_err_send_frame.value
@@ -328,7 +327,7 @@ class ToxAV:
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, POINTER(c_uint8), c_size_t, c_uint8, c_uint32, c_void_p)
         self.audio_receive_frame_cb = c_callback(callback)
-        ToxAV.libtoxav.toxav_callback_audio_receive_frame(self._toxav_pointer, self.audio_receive_frame_cb, user_data)
+        self.libtoxav.toxav_callback_audio_receive_frame(self._toxav_pointer, self.audio_receive_frame_cb, user_data)
 
     def callback_video_receive_frame(self, callback, user_data):
         """
@@ -360,4 +359,4 @@ class ToxAV:
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint16, c_uint16, POINTER(c_uint8), POINTER(c_uint8),
                                POINTER(c_uint8), c_int32, c_int32, c_int32, c_void_p)
         self.video_receive_frame_cb = c_callback(callback)
-        ToxAV.libtoxav.toxav_callback_video_receive_frame(self._toxav_pointer, self.video_receive_frame_cb, user_data)
+        self.libtoxav.toxav_callback_video_receive_frame(self._toxav_pointer, self.video_receive_frame_cb, user_data)
