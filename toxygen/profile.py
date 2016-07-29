@@ -521,7 +521,12 @@ class Profile(contact.Contact, Singleton):
         friend = self._friends[num]
         if _range is None:
             friend.load_all_corr()
-        corr = friend.get_corr() if _range is None else friend.get_corr()[_range[0]:_range[1]]
+        if _range is None:
+            corr = friend.get_corr()
+        elif _range[1] + 1:
+            corr = friend.get_corr()[_range[0]:_range[1] + 1]
+        else:
+            corr = friend.get_corr()[_range[0]:]
         arr = []
         new_line = '\n' if as_text else '<br>'
         for message in corr:
@@ -535,14 +540,7 @@ class Profile(contact.Contact, Singleton):
                                     friend.name if data[1] == MESSAGE_OWNER['FRIEND'] else self.name,
                                     data[0]))
         s = new_line.join(arr)
-        directory = QtGui.QFileDialog.getExistingDirectory(None,
-                    QtGui.QApplication.translate("MainWindow", 'Choose folder', None, QtGui.QApplication.UnicodeUTF8),
-                    curr_directory(),
-                    QtGui.QFileDialog.ShowDirsOnly | QtGui.QFileDialog.DontUseNativeDialog)
-        if directory:
-            name = 'exported_history_{}.{}'.format(convert_time(time.time()), 'txt' if as_text else 'html')
-            with open(directory + '/' + name, 'wt') as fl:
-                fl.write(s)
+        return s
 
     # -----------------------------------------------------------------------------------------------------------------
     # Factories for friend, message and file transfer items
@@ -818,6 +816,7 @@ class Profile(contact.Contact, Singleton):
         self._call.stop()
         del self._tox
         self._tox = restart()
+        self._call = calls.AV(self._tox.AV)
         self.status = None
         for friend in self._friends:
             friend.status = None

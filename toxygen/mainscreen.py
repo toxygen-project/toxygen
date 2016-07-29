@@ -257,7 +257,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.messages.setSpacing(1)
         self.messages.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.messages.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.messages.setFocusPolicy(QtCore.Qt.NoFocus)
+        # self.messages.setFocusPolicy(QtCore.Qt.NoFocus)
 
         def load(pos):
             if not pos:
@@ -353,6 +353,14 @@ class MainWindow(QtGui.QMainWindow, Singleton):
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Escape:
             self.hide()
+        elif event.key() == QtCore.Qt.Key_C and event.modifiers() & QtCore.Qt.ControlModifier and self.messages.selectedIndexes():
+            rows = list(map(lambda x: self.messages.row(x), self.messages.selectedItems()))
+            indexes = (rows[0] - self.messages.count(), rows[-1] - self.messages.count())
+            s = self.profile.export_history(self.profile.active_friend, True, indexes)
+            clipboard = QtGui.QApplication.clipboard()
+            clipboard.setText(s)
+        elif event.key() == QtCore.Qt.Key_Z and event.modifiers() & QtCore.Qt.ControlModifier and self.messages.selectedIndexes():
+            self.messages.clearSelection()
         else:
             super(MainWindow, self).keyPressEvent(event)
 
@@ -548,9 +556,9 @@ class MainWindow(QtGui.QMainWindow, Singleton):
             self.connect(notes_item, QtCore.SIGNAL("triggered()"), lambda: self.show_note(friend))
             self.connect(copy_name_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_name(friend))
             self.connect(copy_status_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_status(friend))
-            self.connect(export_to_text_item, QtCore.SIGNAL("triggered()"), lambda: self.profile.export_history(num))
+            self.connect(export_to_text_item, QtCore.SIGNAL("triggered()"), lambda: self.export_history(num))
             self.connect(export_to_html_item, QtCore.SIGNAL("triggered()"),
-                         lambda: self.profile.export_history(num, False))
+                         lambda: self.export_history(num, False))
             parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
             self.listMenu.move(parent_position + pos)
             self.listMenu.show()
@@ -569,6 +577,20 @@ class MainWindow(QtGui.QMainWindow, Singleton):
             s.save()
         self.note = MultilineEdit(user, note, save_note)
         self.note.show()
+
+    def export_history(self, num, as_text=True):
+        s = self.profile.export_history(num, as_text)
+        directory = QtGui.QFileDialog.getExistingDirectory(None,
+                                                           QtGui.QApplication.translate("MainWindow", 'Choose folder',
+                                                                                        None,
+                                                                                        QtGui.QApplication.UnicodeUTF8),
+                                                           curr_directory(),
+                                                           QtGui.QFileDialog.ShowDirsOnly | QtGui.QFileDialog.DontUseNativeDialog)
+
+        if directory:
+            name = 'exported_history_{}.{}'.format(convert_time(time.time()), 'txt' if as_text else 'html')
+            with open(directory + '/' + name, 'wt') as fl:
+                fl.write(s)
 
     def set_alias(self, num):
         self.profile.set_alias(num)
