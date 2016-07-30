@@ -76,6 +76,9 @@ class FileTransfer(QtCore.QObject):
     def get_friend_number(self):
         return self._friend_number
 
+    def get_path(self):
+        return self._path
+
     def cancel(self):
         self.send_control(TOX_FILE_CONTROL['CANCEL'])
         if hasattr(self, '_file'):
@@ -224,7 +227,6 @@ class ReceiveTransfer(FileTransfer):
         if data is None:
             self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self.signal()
         else:
             data = bytearray(data)
             if self._file_size < position:
@@ -236,7 +238,7 @@ class ReceiveTransfer(FileTransfer):
             if position + l > self._file_size:
                 self._file_size = position + l
             self._done += l
-            self.signal()
+        self.signal()
 
 
 class ReceiveToBuffer(FileTransfer):

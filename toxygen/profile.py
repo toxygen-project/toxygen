@@ -43,6 +43,7 @@ class Profile(contact.Contact, Singleton):
         self._show_online = settings['show_online_friends']
         self._show_avatars = settings['show_avatars']
         self._friend_item_height = 40 if settings['compact_mode'] else 70
+        self._paused_file_transfers = settings['paused_file_transfers']
         screen.online_contacts.setCurrentIndex(int(self._show_online))
         aliases = settings['friends_aliases']
         data = tox.self_get_friend_list()
@@ -286,6 +287,11 @@ class Profile(contact.Contact, Singleton):
                 else:
                     self.send_file(data[0], friend_number, True)
             friend.clear_unsent_files()
+            for key in self._paused_file_transfers:
+                data = self._paused_file_transfers[key]
+                if data[1] == friend_number and not data[2]:
+                    self.send_file(data[0], friend_number, True, key)
+                    del self._paused_file_transfers[key]
             if friend_number == self.get_active_number():
                 self.update()
         except Exception as ex:
@@ -295,11 +301,19 @@ class Profile(contact.Contact, Singleton):
         """
         Friend with specified number quit
         """
-        # TODO: fix and add full file resuming support
         self.get_friend_by_number(friend_number).status = None
         self.friend_typing(friend_number, False)
         if friend_number in self._call:
             self._call.finish_call(friend_number, True)
+        for friend_num, file_num in list(self._file_transfers.keys()):
+            if friend_num == friend_number:
+                ft = self._file_transfers[(friend_num, file_num)]
+                if type(ft) is SendTransfer:
+                    self._paused_file_transfers[ft.get_file_id()] = [ft.get_path(), friend_num, False]
+                elif type(ft) is ReceiveTransfer:
+                    self._paused_file_transfers[ft.get_file_id()] = [ft.get_path(), friend_num, True]
+                ft.cancelled()
+                del self._file_transfers[(friend_num, file_num)]
 
     # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications
@@ -832,6 +846,9 @@ class Profile(contact.Contact, Singleton):
             del self._call
         for i in range(len(self._friends)):
             del self._friends[0]
+        settings = Settings.get_instance()
+        settings['paused_file_transfers'] = self._paused_file_transfers
+        settings.save()
 
     # -----------------------------------------------------------------------------------------------------------------
     # File transfers support
@@ -849,7 +866,20 @@ class Profile(contact.Contact, Singleton):
         friend = self.get_friend_by_number(friend_number)
         auto = settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']
         inline = (file_name in ALLOWED_FILES) and settings['allow_inline']
-        if inline and size < 1024 * 1024:
+        file_id = self._tox.file_get_file_id(friend_number, file_number)
+        accepted = True
+        if file_id in self._paused_file_transfers:
+            data = self._paused_file_transfers[file_id]
+            # TODO: check size of file and send seek control
+            self.accept_transfer(None, data[0], friend_number, file_number, size)
+            tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
+                                 time.time(),
+                                 TOX_FILE_TRANSFER_STATE['RUNNING'],
+                                 size,
+                                 file_name,
+                                 friend_number,
+                                 file_number)
+        elif inline and size < 1024 * 1024:
             self.accept_transfer(None, '', friend_number, file_number, size, True)
             tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
                                  time.time(),
@@ -877,9 +907,10 @@ class Profile(contact.Contact, Singleton):
                                  file_name,
                                  friend_number,
                                  file_number)
+            accepted = False
         if friend_number == self.get_active_number():
             item = self.create_file_transfer_item(tm)
-            if (inline and size < 1024 * 1024) or auto:
+            if accepted:
                 self._file_transfers[(friend_number, file_number)].set_state_changed_handler(item.update)
             self._messages.scrollToBottom()
         else:
@@ -933,15 +964,11 @@ class Profile(contact.Contact, Singleton):
         """
         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                       TOX_FILE_TRANSFER_STATE['RUNNING'])
-        # if (friend_number, file_number) not in self._file_transfers:
-        #     print self._file_transfers
-        #     print (friend_number, file_number)
-        #     return
         tr = self._file_transfers[(friend_number, file_number)]
         if by_friend:
             tr.state = TOX_FILE_TRANSFER_STATE['RUNNING']
             tr.signal()
-        else:  # send seek control?
+        else:
             tr.send_control(TOX_FILE_CONTROL['RESUME'])
 
     def accept_transfer(self, item, path, friend_number, file_number, size, inline=False):
@@ -1011,12 +1038,13 @@ class Profile(contact.Contact, Singleton):
         st.set_state_changed_handler(item.update)
         self._messages.scrollToBottom()
 
-    def send_file(self, path, number=None, is_resend=False):
+    def send_file(self, path, number=None, is_resend=False, file_id=None):
         """
         Send file to current active friend
         :param path: file path
         :param number: friend_number
         :param is_resend: is 'offline' message
+        :param file_id: file id of transfer
         """
         friend_number = number or self.get_active_number()
         friend = self.get_friend_by_number(friend_number)
@@ -1028,7 +1056,7 @@ class Profile(contact.Contact, Singleton):
         elif friend.status is None and is_resend:
             print('Error in sending')
             raise RuntimeError()
-        st = SendTransfer(path, self._tox, friend_number)
+        st = SendTransfer(path, self._tox, friend_number, TOX_FILE_KIND['DATA'], file_id)
         self._file_transfers[(friend_number, st.get_file_number())] = st
         tm = TransferMessage(MESSAGE_OWNER['ME'],
                              time.time(),
