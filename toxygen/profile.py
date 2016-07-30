@@ -287,9 +287,11 @@ class Profile(contact.Contact, Singleton):
                 else:
                     self.send_file(data[0], friend_number, True)
             friend.clear_unsent_files()
-            for key in self._paused_file_transfers:
+            for key in list(self._paused_file_transfers.keys()):
                 data = self._paused_file_transfers[key]
-                if data[1] == friend_number and not data[2]:
+                if not os.path.exists(data[0]):
+                    del self._paused_file_transfers[key]
+                elif data[1] == friend_number and not data[2]:
                     self.send_file(data[0], friend_number, True, key)
                     del self._paused_file_transfers[key]
             if friend_number == self.get_active_number():
@@ -309,9 +311,9 @@ class Profile(contact.Contact, Singleton):
             if friend_num == friend_number:
                 ft = self._file_transfers[(friend_num, file_num)]
                 if type(ft) is SendTransfer:
-                    self._paused_file_transfers[ft.get_file_id()] = [ft.get_path(), friend_num, False]
+                    self._paused_file_transfers[ft.get_id()] = [ft.get_path(), friend_num, False, -1]
                 elif type(ft) is ReceiveTransfer:
-                    self._paused_file_transfers[ft.get_file_id()] = [ft.get_path(), friend_num, True]
+                    self._paused_file_transfers[ft.get_id()] = [ft.get_path(), friend_num, True, ft.total_size()]
                 ft.cancelled()
                 del self._file_transfers[(friend_num, file_num)]
 
@@ -821,18 +823,16 @@ class Profile(contact.Contact, Singleton):
         Recreate tox instance
         :param restart: method which calls restart and returns new tox instance
         """
-        # TODO: file transfers!!
-        for key in list(self._file_transfers.keys()):
-            self._file_transfers[key].cancelled()
-            del self._file_transfers[key]
+        for friend in self._friends:
+            self.friend_exit(friend.number)
         self._call.stop()
+        del self._call
         del self._tox
         self._tox = restart()
         self._call = calls.AV(self._tox.AV)
         self.status = None
         for friend in self._friends:
-            friend.status = None
-            friend.number = self._tox.friend_by_public_key(friend.tox_id)
+            friend.number = self._tox.friend_by_public_key(friend.tox_id)  # numbers update
         self.update_filtration()
 
     def reconnect(self):
@@ -847,7 +847,7 @@ class Profile(contact.Contact, Singleton):
         for i in range(len(self._friends)):
             del self._friends[0]
         settings = Settings.get_instance()
-        settings['paused_file_transfers'] = self._paused_file_transfers
+        settings['paused_file_transfers'] = self._paused_file_transfers if settings['resend_files'] else {}
         settings.save()
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -870,8 +870,12 @@ class Profile(contact.Contact, Singleton):
         accepted = True
         if file_id in self._paused_file_transfers:
             data = self._paused_file_transfers[file_id]
-            # TODO: check size of file and send seek control
-            self.accept_transfer(None, data[0], friend_number, file_number, size)
+            if not os.path.exists(data[0]):
+                pos = 0
+            else:
+                pos = data[-1]
+            self._tox.file_seek(friend_number, file_number, pos)
+            self.accept_transfer(None, data[0], friend_number, file_number, size, False, pos)
             tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
                                  time.time(),
                                  TOX_FILE_TRANSFER_STATE['RUNNING'],
@@ -971,7 +975,7 @@ class Profile(contact.Contact, Singleton):
         else:
             tr.send_control(TOX_FILE_CONTROL['RESUME'])
 
-    def accept_transfer(self, item, path, friend_number, file_number, size, inline=False):
+    def accept_transfer(self, item, path, friend_number, file_number, size, inline=False, from_position=0):
         """
         :param item: transfer item.
         :param path: path for saving
@@ -979,19 +983,21 @@ class Profile(contact.Contact, Singleton):
         :param file_number: file number
         :param size: file size
         :param inline: is inline image
+        :param from_position: position for start
         """
         path, file_name = os.path.split(path)
         new_file_name, i = file_name, 1
-        while os.path.isfile(path + '/' + new_file_name):  # file with same name already exists
-            if '.' in file_name:  # has extension
-                d = file_name.rindex('.')
-            else:  # no extension
-                d = len(file_name)
-            new_file_name = file_name[:d] + ' ({})'.format(i) + file_name[d:]
-            i += 1
+        if not from_position:
+            while os.path.isfile(path + '/' + new_file_name):  # file with same name already exists
+                if '.' in file_name:  # has extension
+                    d = file_name.rindex('.')
+                else:  # no extension
+                    d = len(file_name)
+                new_file_name = file_name[:d] + ' ({})'.format(i) + file_name[d:]
+                i += 1
         path = os.path.join(path, new_file_name)
         if not inline:
-            rt = ReceiveTransfer(path, self._tox, friend_number, size, file_number)
+            rt = ReceiveTransfer(path, self._tox, friend_number, size, file_number, from_position)
         else:
             rt = ReceiveToBuffer(self._tox, friend_number, size, file_number)
         self._file_transfers[(friend_number, file_number)] = rt

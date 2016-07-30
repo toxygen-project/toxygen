@@ -118,6 +118,7 @@ class Settings(dict, Singleton):
             'show_online_friends': False,
             'auto_accept_from_friends': [],
             'paused_file_transfers': {},
+            'resend_files': True,
             'friends_aliases': [],
             'show_avatars': False,
             'typing_notifications': False,

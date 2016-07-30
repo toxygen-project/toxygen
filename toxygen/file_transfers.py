@@ -55,6 +55,7 @@ class FileTransfer(QtCore.QObject):
         self._size = float(size)
         self._done = 0
         self._state_changed = StateSignal()
+        self._file_id = None
 
     def set_tox(self, tox):
         self._tox = tox
@@ -75,6 +76,9 @@ class FileTransfer(QtCore.QObject):
 
     def get_friend_number(self):
         return self._friend_number
+
+    def get_id(self):
+        return self._file_id
 
     def get_path(self):
         return self._path
@@ -124,6 +128,7 @@ class SendTransfer(FileTransfer):
         self.state = TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
         self._file_number = tox.file_send(friend_number, kind, size, file_id,
                                           bytes(basename(path), 'utf-8') if path else b'')
+        self._file_id = self.get_file_id()
 
     def send_chunk(self, position, size):
         """
@@ -206,15 +211,21 @@ class SendFromFileBuffer(SendTransfer):
 
 class ReceiveTransfer(FileTransfer):
 
-    def __init__(self, path, tox, friend_number, size, file_number):
+    def __init__(self, path, tox, friend_number, size, file_number, position=0):
         super(ReceiveTransfer, self).__init__(path, tox, friend_number, size, file_number)
         self._file = open(self._path, 'wb')
-        self._file.truncate(0)
-        self._file_size = 0
+        self._file_size = position
+        self._file.truncate(position)
+        self._missed = set()
+        self._file_id = self.get_file_id()
 
     def cancel(self):
         super(ReceiveTransfer, self).cancel()
         remove(self._path)
+
+    def total_size(self):
+        self._missed.add(self._file_size)
+        return min(self._missed)
 
     def write_chunk(self, position, data):
         """
@@ -232,6 +243,9 @@ class ReceiveTransfer(FileTransfer):
             if self._file_size < position:
                 self._file.seek(0, 2)
                 self._file.write(b'\0' * (position - self._file_size))
+                self._missed.add(self._file_size)
+            else:
+                self._missed.discard(position)
             self._file.seek(position)
             self._file.write(data)
             l = len(data)
