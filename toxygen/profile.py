@@ -43,7 +43,8 @@ class Profile(contact.Contact, Singleton):
         self._show_online = settings['show_online_friends']
         self._show_avatars = settings['show_avatars']
         self._friend_item_height = 40 if settings['compact_mode'] else 70
-        self._paused_file_transfers = settings['paused_file_transfers']
+        self._paused_file_transfers = dict(settings['paused_file_transfers'])
+        # key - file id, value: [path, friend number, is incoming, start position]
         screen.online_contacts.setCurrentIndex(int(self._show_online))
         aliases = settings['friends_aliases']
         data = tox.self_get_friend_list()
@@ -841,14 +842,16 @@ class Profile(contact.Contact, Singleton):
             QtCore.QTimer.singleShot(30000, self.reconnect)
 
     def close(self):
+        for friend in self._friends:
+            self.friend_exit(friend.number)
+        for i in range(len(self._friends)):
+            del self._friends[0]
         if hasattr(self, '_call'):
             self._call.stop()
             del self._call
-        for i in range(len(self._friends)):
-            del self._friends[0]
-        settings = Settings.get_instance()
-        settings['paused_file_transfers'] = self._paused_file_transfers if settings['resend_files'] else {}
-        settings.save()
+        s = Settings.get_instance()
+        s['paused_file_transfers'] = dict(self._paused_file_transfers) if s['resend_files'] else {}
+        s.save()
 
     # -----------------------------------------------------------------------------------------------------------------
     # File transfers support
@@ -870,10 +873,8 @@ class Profile(contact.Contact, Singleton):
         accepted = True
         if file_id in self._paused_file_transfers:
             data = self._paused_file_transfers[file_id]
-            if not os.path.exists(data[0]):
-                pos = 0
-            else:
-                pos = data[-1]
+            pos = data[-1] if os.path.exists(data[0]) else 0
+            print(pos, os.path.getsize(data[0]))
             self._tox.file_seek(friend_number, file_number, pos)
             self.accept_transfer(None, data[0], friend_number, file_number, size, False, pos)
             tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
@@ -1052,7 +1053,7 @@ class Profile(contact.Contact, Singleton):
         :param is_resend: is 'offline' message
         :param file_id: file id of transfer
         """
-        friend_number = number or self.get_active_number()
+        friend_number = self.get_active_number() if number is None else number
         friend = self.get_friend_by_number(friend_number)
         if friend.status is None and not is_resend:
             m = UnsentFile(path, None, time.time())

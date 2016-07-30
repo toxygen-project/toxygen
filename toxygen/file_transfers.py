@@ -218,6 +218,7 @@ class ReceiveTransfer(FileTransfer):
         self._file.truncate(position)
         self._missed = set()
         self._file_id = self.get_file_id()
+        self._done = position
 
     def cancel(self):
         super(ReceiveTransfer, self).cancel()
