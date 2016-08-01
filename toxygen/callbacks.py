@@ -11,6 +11,7 @@ from tox import bin_to_string
 from plugin_support import PluginLoader
 import queue
 import threading
+import util
 
 
 # -----------------------------------------------------------------------------------------------------------------
@@ -63,10 +64,15 @@ class FileTransfersThread(threading.Thread):
             except queue.Empty:
                 pass
             except queue.Full:
-                print('Full')
+                util.log('Queue is Full in _thread')
+            except Exception as ex:
+                util.log('Exception in _thread: ' + str(ex))
 
 _thread = FileTransfersThread()
-_thread.start()
+
+
+def start():
+    _thread.start()
 
 
 def stop():

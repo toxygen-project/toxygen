@@ -8,7 +8,7 @@ except ImportError:
     from PyQt4 import QtCore, QtGui
 from bootstrap import node_generator
 from mainscreen import MainWindow
-from callbacks import init_callbacks, stop
+from callbacks import init_callbacks, stop, start
 from util import curr_directory, program_version
 import styles.style
 import platform
@@ -262,6 +262,7 @@ class Toxygen:
         plugin_helper = PluginLoader(self.tox, settings)  # plugin support
         plugin_helper.load()
 
+        start()
         # init thread
         self.init = self.InitThread(self.tox, self.ms, self.tray)
         self.init.start()
