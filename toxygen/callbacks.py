@@ -9,6 +9,13 @@ from toxcore_enums_and_consts import *
 from toxav_enums import *
 from tox import bin_to_string
 from plugin_support import PluginLoader
+import queue
+import threading
+
+
+# -----------------------------------------------------------------------------------------------------------------
+# Threads
+# -----------------------------------------------------------------------------------------------------------------
 
 
 class InvokeEvent(QtCore.QEvent):
@@ -32,6 +39,39 @@ _invoker = Invoker()
 
 def invoke_in_main_thread(fn, *args, **kwargs):
     QtCore.QCoreApplication.postEvent(_invoker, InvokeEvent(fn, *args, **kwargs))
+
+
+class FileTransfersThread(threading.Thread):
+
+    def __init__(self):
+        self._queue = queue.Queue()
+        self._timeout = 0.01
+        self._continue = True
+        super().__init__()
+
+    def execute(self, function, *args, **kwargs):
+        self._queue.put((function, args, kwargs))
+
+    def stop(self):
+        self._continue = False
+
+    def run(self):
+        while self._continue:
+            try:
+                function, args, kwargs = self._queue.get(timeout=self._timeout)
+                function(*args, **kwargs)
+            except queue.Empty:
+                pass
+            except queue.Full:
+                print('Full')
+
+_thread = FileTransfersThread()
+_thread.start()
+
+
+def stop():
+    _thread.stop()
+    _thread.join()
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - current user
@@ -204,7 +244,8 @@ def file_recv_chunk(tox, friend_number, file_number, position, chunk, length, us
                               position,
                               None)
     else:
-        Profile.get_instance().incoming_chunk(friend_number, file_number, position, chunk[:length])
+        _thread.execute(Profile.get_instance().incoming_chunk, friend_number, file_number, position, chunk[:length])
+        #Profile.get_instance().incoming_chunk(friend_number, file_number, position, chunk[:length])
 
 
 def file_chunk_request(tox, friend_number, file_number, position, size, user_data):
@@ -212,6 +253,7 @@ def file_chunk_request(tox, friend_number, file_number, position, size, user_dat
     Outgoing chunk
     """
     if size:
+        #_thread.execute(Profile.get_instance().outgoing_chunk, friend_number, file_number, position, size)
         Profile.get_instance().outgoing_chunk(friend_number, file_number, position, size)
     else:
         invoke_in_main_thread(Profile.get_instance().outgoing_chunk,

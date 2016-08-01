@@ -8,7 +8,7 @@ except ImportError:
     from PyQt4 import QtCore, QtGui
 from bootstrap import node_generator
 from mainscreen import MainWindow
-from callbacks import init_callbacks
+from callbacks import init_callbacks, stop
 from util import curr_directory, program_version
 import styles.style
 import platform
@@ -281,6 +281,7 @@ class Toxygen:
         self.mainloop.stop = True
         self.avloop.stop = True
         plugin_helper.stop()
+        stop()
         self.mainloop.wait()
         self.init.wait()
         self.avloop.wait()

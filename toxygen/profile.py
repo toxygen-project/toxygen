@@ -1072,10 +1072,11 @@ class Profile(contact.Contact, Singleton):
                              os.path.basename(path),
                              friend_number,
                              st.get_file_number())
-        item = self.create_file_transfer_item(tm)
-        st.set_state_changed_handler(item.update)
-        self._friends[self._active_friend].append_message(tm)
-        self._messages.scrollToBottom()
+        if friend_number == self.get_active_number():
+            item = self.create_file_transfer_item(tm)
+            st.set_state_changed_handler(item.update)
+            self._friends[self._active_friend].append_message(tm)
+            self._messages.scrollToBottom()
 
     def incoming_chunk(self, friend_number, file_number, position, data):
         """

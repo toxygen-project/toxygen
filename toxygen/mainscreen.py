@@ -93,6 +93,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
     def event(self, event):
         if event.type() == QtCore.QEvent.WindowActivate:
             self.tray.setIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
+            self.messages.repaint()
         return super(MainWindow, self).event(event)
 
     def retranslateUi(self):
