@@ -12,6 +12,7 @@ All plugin's data should be stored in following structure:
 |---plugin_short_name.py
 |---/plugin_short_name/
 	|---settings.json
+	|---readme.txt
 	|---logs.txt
 	|---other_files
 ```
