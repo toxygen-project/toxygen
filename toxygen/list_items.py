@@ -410,7 +410,7 @@ class FileTransferItem(QtGui.QListWidget):
         if time + 1:
             m, s = divmod(time, 60)
             self.time_left.setText('{0:02d}:{1:02d}'.format(m, s))
-        if self.state != state:
+        if self.state != state and self.state in ACTIVE_FILE_TRANSFERS:
             if state == TOX_FILE_TRANSFER_STATE['CANCELLED']:
                 self.setStyleSheet('QListWidget { border: 1px solid #B40404; }')
                 self.cancel.setVisible(False)

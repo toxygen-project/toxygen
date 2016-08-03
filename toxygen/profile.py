@@ -874,7 +874,9 @@ class Profile(contact.Contact, Singleton):
         if file_id in self._paused_file_transfers:
             data = self._paused_file_transfers[file_id]
             pos = data[-1] if os.path.exists(data[0]) else 0
-            print(pos, os.path.getsize(data[0]))
+            if pos >= os.path.getsize(data[0]):
+                self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
+                return
             self._tox.file_seek(friend_number, file_number, pos)
             self.accept_transfer(None, data[0], friend_number, file_number, size, False, pos)
             tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
@@ -969,7 +971,12 @@ class Profile(contact.Contact, Singleton):
         """
         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                       TOX_FILE_TRANSFER_STATE['RUNNING'])
-        tr = self._file_transfers[(friend_number, file_number)]
+        try:
+            tr = self._file_transfers[(friend_number, file_number)]
+        except:
+            print('Exception in resume:', self._file_transfers)
+            print(friend_number, file_number, by_friend)
+            return
         if by_friend:
             tr.state = TOX_FILE_TRANSFER_STATE['RUNNING']
             tr.signal()
@@ -1001,6 +1008,7 @@ class Profile(contact.Contact, Singleton):
             rt = ReceiveTransfer(path, self._tox, friend_number, size, file_number, from_position)
         else:
             rt = ReceiveToBuffer(self._tox, friend_number, size, file_number)
+        rt.set_transfer_finished_handler(self.transfer_finished)
         self._file_transfers[(friend_number, file_number)] = rt
         self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
         if item is not None:
@@ -1032,6 +1040,7 @@ class Profile(contact.Contact, Singleton):
         elif friend.status is None and is_resend:
             raise RuntimeError()
         st = SendFromBuffer(self._tox, friend.number, data, file_name)
+        st.set_transfer_finished_handler(self.transfer_finished)
         self._file_transfers[(friend.number, st.get_file_number())] = st
         tm = TransferMessage(MESSAGE_OWNER['ME'],
                              time.time(),
@@ -1064,7 +1073,9 @@ class Profile(contact.Contact, Singleton):
             print('Error in sending')
             raise RuntimeError()
         st = SendTransfer(path, self._tox, friend_number, TOX_FILE_KIND['DATA'], file_id)
+        st.set_transfer_finished_handler(self.transfer_finished)
         self._file_transfers[(friend_number, st.get_file_number())] = st
+        print('In send file', self._file_transfers)
         tm = TransferMessage(MESSAGE_OWNER['ME'],
                              time.time(),
                              TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED'],
@@ -1075,67 +1086,47 @@ class Profile(contact.Contact, Singleton):
         if friend_number == self.get_active_number():
             item = self.create_file_transfer_item(tm)
             st.set_state_changed_handler(item.update)
-            self._friends[self._active_friend].append_message(tm)
             self._messages.scrollToBottom()
+        self._friends[friend_number].append_message(tm)
 
     def incoming_chunk(self, friend_number, file_number, position, data):
         """
         Incoming chunk
         """
-        if (friend_number, file_number) in self._file_transfers:
-            transfer = self._file_transfers[(friend_number, file_number)]
-            transfer.write_chunk(position, data)
-            if transfer.state not in ACTIVE_FILE_TRANSFERS:  # finished or cancelled
-                if type(transfer) is ReceiveAvatar:
-                    self.get_friend_by_number(friend_number).load_avatar()
-                    self.set_active(None)
-                elif type(transfer) is ReceiveToBuffer:  # inline image
-                    print('inline')
-                    inline = InlineImage(transfer.get_data())
-                    i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                                      TOX_FILE_TRANSFER_STATE['FINISHED'],
-                                                                                      inline)
-                    if friend_number == self.get_active_number():
-                        count = self._messages.count()
-                        if count + i + 1 >= 0:
-                            elem = QtGui.QListWidgetItem()
-                            item = InlineImageItem(transfer.get_data(), self._messages.width(), elem)
-                            elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
-                            self._messages.insertItem(count + i + 1, elem)
-                            self._messages.setItemWidget(elem, item)
-                else:
-                    self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                                  TOX_FILE_TRANSFER_STATE['FINISHED'])
-                del self._file_transfers[(friend_number, file_number)]
+        self._file_transfers[(friend_number, file_number)].write_chunk(position, data)
 
     def outgoing_chunk(self, friend_number, file_number, position, size):
         """
         Outgoing chunk
         """
-        if (friend_number, file_number) in self._file_transfers:
-            transfer = self._file_transfers[(friend_number, file_number)]
-            transfer.send_chunk(position, size)
-            if transfer.state not in ACTIVE_FILE_TRANSFERS:  # finished or cancelled
-                del self._file_transfers[(friend_number, file_number)]
-                if type(transfer) is not SendAvatar:
-                    if type(transfer) is SendFromBuffer and Settings.get_instance()['allow_inline']:  # inline
-                        inline = InlineImage(transfer.get_data())
-                        print('inline')
-                        i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                                          TOX_FILE_TRANSFER_STATE[
-                                                                                              'FINISHED'],
-                                                                                          inline)
-                        if friend_number == self.get_active_number():
-                            count = self._messages.count()
-                            if count + i + 1 >= 0:
-                                elem = QtGui.QListWidgetItem()
-                                item = InlineImageItem(transfer.get_data(), self._messages.width(), elem)
-                                elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
-                                self._messages.insertItem(count + i + 1, elem)
-                                self._messages.setItemWidget(elem, item)
-                    else:
-                        self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                                      TOX_FILE_TRANSFER_STATE['FINISHED'])
+        self._file_transfers[(friend_number, file_number)].send_chunk(position, size)
+
+    @QtCore.Slot(int, int)
+    def transfer_finished(self, friend_number, file_number):
+        transfer = self._file_transfers[(friend_number, file_number)]
+        t = type(transfer)
+        if t is ReceiveAvatar:
+            self.get_friend_by_number(friend_number).load_avatar()
+            self.set_active(None)
+        elif t is ReceiveToBuffer or (t is SendFromBuffer and Settings.get_instance()['allow_inline']):  # inline image
+            print('inline')
+            inline = InlineImage(transfer.get_data())
+            i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+                                                                              TOX_FILE_TRANSFER_STATE['FINISHED'],
+                                                                              inline)
+            if friend_number == self.get_active_number():
+                count = self._messages.count()
+                if count + i + 1 >= 0:
+                    elem = QtGui.QListWidgetItem()
+                    item = InlineImageItem(transfer.get_data(), self._messages.width(), elem)
+                    elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
+                    self._messages.insertItem(count + i + 1, elem)
+                    self._messages.setItemWidget(elem, item)
+        elif t is not SendAvatar:
+            self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+                                                                          TOX_FILE_TRANSFER_STATE['FINISHED'])
+        del self._file_transfers[(friend_number, file_number)]
+        del transfer
 
     # -----------------------------------------------------------------------------------------------------------------
     # Avatars support

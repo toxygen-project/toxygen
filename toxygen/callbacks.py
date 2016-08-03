@@ -243,30 +243,15 @@ def file_recv_chunk(tox, friend_number, file_number, position, chunk, length, us
     """
     Incoming chunk
     """
-    if not length:
-        invoke_in_main_thread(Profile.get_instance().incoming_chunk,
-                              friend_number,
-                              file_number,
-                              position,
-                              None)
-    else:
-        _thread.execute(Profile.get_instance().incoming_chunk, friend_number, file_number, position, chunk[:length])
-        #Profile.get_instance().incoming_chunk(friend_number, file_number, position, chunk[:length])
+    _thread.execute(Profile.get_instance().incoming_chunk, friend_number, file_number, position,
+                    chunk[:length] if length else None)
 
 
 def file_chunk_request(tox, friend_number, file_number, position, size, user_data):
     """
     Outgoing chunk
     """
-    if size:
-        #_thread.execute(Profile.get_instance().outgoing_chunk, friend_number, file_number, position, size)
-        Profile.get_instance().outgoing_chunk(friend_number, file_number, position, size)
-    else:
-        invoke_in_main_thread(Profile.get_instance().outgoing_chunk,
-                              friend_number,
-                              file_number,
-                              position,
-                              size)
+    Profile.get_instance().outgoing_chunk(friend_number, file_number, position, size)
 
 
 def file_recv_control(tox, friend_number, file_number, file_control, user_data):

@@ -10,8 +10,6 @@ except ImportError:
     from PyQt4 import QtCore
     QtCore.Signal = QtCore.pyqtSignal
 
-# TODO: threads!
-
 
 TOX_FILE_TRANSFER_STATE = {
     'RUNNING': 0,
@@ -36,7 +34,12 @@ ALLOWED_FILES = ('toxygen_inline.png', 'utox-inline.png', 'sticker.png')
 
 class StateSignal(QtCore.QObject):
 
-    signal = QtCore.Signal(int, float, int)  # state and progress
+    signal = QtCore.Signal(int, float, int)  # state, progress, time in sec
+
+
+class TransferFinishedSignal(QtCore.QObject):
+
+    signal = QtCore.Signal(int, int)  # friend number, file number
 
 
 class FileTransfer(QtCore.QObject):
@@ -55,6 +58,7 @@ class FileTransfer(QtCore.QObject):
         self._size = float(size)
         self._done = 0
         self._state_changed = StateSignal()
+        self._finished = TransferFinishedSignal()
         self._file_id = None
 
     def set_tox(self, tox):
@@ -63,6 +67,9 @@ class FileTransfer(QtCore.QObject):
     def set_state_changed_handler(self, handler):
         self._state_changed.signal.connect(handler)
 
+    def set_transfer_finished_handler(self, handler):
+        self._finished.signal.connect(handler)
+
     def signal(self):
         percentage = self._done / self._size if self._size else 0
         if self._creation_time is None or not percentage:
@@ -70,6 +77,9 @@ class FileTransfer(QtCore.QObject):
         else:
             t = ((time() - self._creation_time) / percentage) * (1 - percentage)
         self._state_changed.signal.emit(self.state, percentage, int(t))
+
+    def finished(self):
+        self._finished.signal.emit(self._friend_number, self._file_number)
 
     def get_file_number(self):
         return self._file_number
@@ -143,12 +153,12 @@ class SendTransfer(FileTransfer):
             data = self._file.read(size)
             self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
             self._done += size
-            self.signal()
         else:
             if hasattr(self, '_file'):
                 self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self.signal()
+            self.finished()
+        self.signal()
 
 
 class SendAvatar(SendTransfer):
@@ -187,10 +197,10 @@ class SendFromBuffer(FileTransfer):
             data = self._data[position:position + size]
             self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
             self._done += size
-            self.signal()
         else:
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self.signal()
+            self.finished()
+        self.signal()
 
 
 class SendFromFileBuffer(SendTransfer):
@@ -213,7 +223,7 @@ class ReceiveTransfer(FileTransfer):
 
     def __init__(self, path, tox, friend_number, size, file_number, position=0):
         super(ReceiveTransfer, self).__init__(path, tox, friend_number, size, file_number)
-        self._file = open(self._path, 'wb')
+        self._file = open(self._path, 'wb', 1371 * 4)
         self._file_size = position
         self._file.truncate(position)
         self._missed = set()
@@ -239,6 +249,7 @@ class ReceiveTransfer(FileTransfer):
         if data is None:
             self._file.close()
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
+            self.finished()
         else:
             data = bytearray(data)
             if self._file_size < position:
@@ -274,6 +285,7 @@ class ReceiveToBuffer(FileTransfer):
             self._creation_time = time()
         if data is None:
             self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
+            self.finished()
         else:
             data = bytes(data)
             l = len(data)
