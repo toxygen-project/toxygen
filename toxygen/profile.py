@@ -824,7 +824,7 @@ class Profile(contact.Contact, Singleton):
         self.update_filtration()
 
     def reconnect(self):
-        if self.status is None:
+        if self.status is None or all(list(map(lambda x: x.status is None, self._friends))):
             self.reset(self._screen.reset)
             QtCore.QTimer.singleShot(30000, self.reconnect)
 
