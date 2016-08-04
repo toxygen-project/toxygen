@@ -223,7 +223,7 @@ class ReceiveTransfer(FileTransfer):
 
     def __init__(self, path, tox, friend_number, size, file_number, position=0):
         super(ReceiveTransfer, self).__init__(path, tox, friend_number, size, file_number)
-        self._file = open(self._path, 'wb', 1371 * 4)
+        self._file = open(self._path, 'wb')
         self._file_size = position
         self._file.truncate(position)
         self._missed = set()

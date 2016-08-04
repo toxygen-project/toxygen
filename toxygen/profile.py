@@ -315,8 +315,7 @@ class Profile(contact.Contact, Singleton):
                     self._paused_file_transfers[ft.get_id()] = [ft.get_path(), friend_num, False, -1]
                 elif type(ft) is ReceiveTransfer:
                     self._paused_file_transfers[ft.get_id()] = [ft.get_path(), friend_num, True, ft.total_size()]
-                ft.cancelled()
-                del self._file_transfers[(friend_num, file_num)]
+                self.cancel_transfer(friend_num, file_num, True)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications
@@ -874,7 +873,7 @@ class Profile(contact.Contact, Singleton):
         if file_id in self._paused_file_transfers:
             data = self._paused_file_transfers[file_id]
             pos = data[-1] if os.path.exists(data[0]) else 0
-            if pos >= os.path.getsize(data[0]):
+            if pos >= size:
                 self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
                 return
             self._tox.file_seek(friend_number, file_number, pos)
@@ -1075,7 +1074,6 @@ class Profile(contact.Contact, Singleton):
         st = SendTransfer(path, self._tox, friend_number, TOX_FILE_KIND['DATA'], file_id)
         st.set_transfer_finished_handler(self.transfer_finished)
         self._file_transfers[(friend_number, st.get_file_number())] = st
-        print('In send file', self._file_transfers)
         tm = TransferMessage(MESSAGE_OWNER['ME'],
                              time.time(),
                              TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED'],

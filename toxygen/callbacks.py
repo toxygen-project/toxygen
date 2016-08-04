@@ -313,7 +313,6 @@ def callback_audio(toxav, friend_number, samples, audio_samples_per_channel, aud
     """
     New audio chunk
     """
-    # print(audio_samples_per_channel, audio_channels_count, rate)
     Profile.get_instance().call.chunk(
         bytes(samples[:audio_samples_per_channel * 2 * audio_channels_count]),
         audio_channels_count,
