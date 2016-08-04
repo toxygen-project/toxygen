@@ -92,10 +92,9 @@ class Contact:
             avatar_path = 'avatar.png'
             os.chdir(curr_directory() + '/images/')
         width = self._widget.avatar_label.width()
-        pixmap = QtGui.QPixmap(QtCore.QSize(width, width))
-        pixmap.load(avatar_path)
-        self._widget.avatar_label.setScaledContents(False)
-        self._widget.avatar_label.setPixmap(pixmap.scaled(width, width, QtCore.Qt.KeepAspectRatio))
+        pixmap = QtGui.QPixmap(avatar_path)
+        self._widget.avatar_label.setPixmap(pixmap.scaled(width, width, QtCore.Qt.KeepAspectRatio,
+                                                          QtCore.Qt.SmoothTransformation))
         self._widget.avatar_label.repaint()
 
     def reset_avatar(self):

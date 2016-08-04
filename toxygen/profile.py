@@ -229,11 +229,9 @@ class Profile(contact.Contact, Singleton):
             if not os.path.isfile(avatar_path):  # load default image
                 avatar_path = curr_directory() + '/images/avatar.png'
             os.chdir(os.path.dirname(avatar_path))
-            pixmap = QtGui.QPixmap(QtCore.QSize(64, 64))
-            pixmap.load(avatar_path)
-            self._screen.account_avatar.setScaledContents(False)
-            self._screen.account_avatar.setPixmap(pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio))
-            self._screen.account_avatar.repaint()  # comment?
+            pixmap = QtGui.QPixmap(avatar_path)
+            self._screen.account_avatar.setPixmap(pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio,
+                                                                QtCore.Qt.SmoothTransformation))
             self.update_filtration()
         except Exception as ex:  # no friend found. ignore
             log('Friend value: ' + str(value))

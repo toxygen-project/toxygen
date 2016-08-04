@@ -187,7 +187,7 @@ class MessageItem(QtGui.QWidget):
         self.setFixedHeight(max(self.height(), 36))
         self.name.setFixedHeight(self.height())
         self.message.setFixedHeight(self.height())
-        self.name.setPixmap(pixmap.scaled(30, 30, QtCore.Qt.KeepAspectRatio))
+        self.name.setPixmap(pixmap.scaled(30, 30, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
 
 
 class ContactItem(QtGui.QWidget):
@@ -202,7 +202,7 @@ class ContactItem(QtGui.QWidget):
         self.avatar_label = QtGui.QLabel(self)
         size = 32 if mode else 64
         self.avatar_label.setGeometry(QtCore.QRect(3, 4, size, size))
-        self.avatar_label.setScaledContents(True)
+        self.avatar_label.setScaledContents(False)
         self.avatar_label.setAlignment(QtCore.Qt.AlignCenter)
         self.name = DataLabel(self)
         self.name.setGeometry(QtCore.QRect(50 if mode else 75, 3 if mode else 10, 150, 15 if mode else 25))
