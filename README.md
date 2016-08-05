@@ -6,6 +6,7 @@ Toxygen is cross-platform [Tox](https://tox.chat/) client written in pure Python
 [![Stars](https://img.shields.io/github/stars/xveduk/toxygen.svg?style=flat)](https://github.com/toxygen-project/toxygen/stargazers)
 [![Open issues](https://img.shields.io/github/issues/xveduk/toxygen.svg?style=flat)](https://github.com/toxygen-project/toxygen/issues)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat)](https://raw.githubusercontent.com/toxygen-project/toxygen/master/LICENSE.md)
+[![Build Status](https://travis-ci.org/toxygen-project/toxygen.svg?branch=master)](https://travis-ci.org/toxygen-project/toxygen)
 
 ### [Install](/docs/install.md) - [Contribute](/docs/contributing.md) - [Plugins](/docs/plugins.md) - [Compile](/docs/compile.md) - [Contact](/docs/contact.md)
 
