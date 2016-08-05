@@ -114,7 +114,7 @@ def friend_status(tox, friend_num, new_status, user_data):
     if friend.status is None and Settings.get_instance()['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
         sound_notification(SOUND_NOTIFICATION['FRIEND_CONNECTION_STATUS'])
     invoke_in_main_thread(friend.set_status, new_status)
-    invoke_in_main_thread(profile.send_files, friend_num)
+    invoke_in_main_thread(QtCore.QTimer.singleShot, 5000, lambda: profile.send_files(friend_num))
     invoke_in_main_thread(profile.update_filtration)
 
 

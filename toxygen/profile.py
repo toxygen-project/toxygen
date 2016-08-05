@@ -970,12 +970,7 @@ class Profile(contact.Contact, Singleton):
         """
         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                       TOX_FILE_TRANSFER_STATE['RUNNING'])
-        try:
-            tr = self._file_transfers[(friend_number, file_number)]
-        except:
-            print('Exception in resume:', self._file_transfers)
-            print(friend_number, file_number, by_friend)
-            return
+        tr = self._file_transfers[(friend_number, file_number)]
         if by_friend:
             tr.state = TOX_FILE_TRANSFER_STATE['RUNNING']
             tr.signal()
