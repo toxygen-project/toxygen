@@ -326,10 +326,10 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.profile = Profile(tox, self)
 
     def closeEvent(self, event):
-        self.profile.save_history()
-        self.profile.close()
         s = Settings.get_instance()
         if not s['close_to_tray'] or s.closing:
+            self.profile.save_history()
+            self.profile.close()
             s['x'] = self.geometry().x()
             s['y'] = self.geometry().y()
             s['width'] = self.width()
