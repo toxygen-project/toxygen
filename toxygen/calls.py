@@ -11,6 +11,7 @@ CALL_TYPE = {
     'AUDIO': 1,
     'VIDEO': 2
 }
+# TODO: rewrite (make class)
 
 
 class AV:

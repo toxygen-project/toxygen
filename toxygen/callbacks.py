@@ -320,6 +320,13 @@ def callback_audio(toxav, friend_number, samples, audio_samples_per_channel, aud
         audio_channels_count,
         rate)
 
+# -----------------------------------------------------------------------------------------------------------------
+# Callbacks - video
+# -----------------------------------------------------------------------------------------------------------------
+
+
+def video_receive_frame(toxav, friend_number, width, height, y, u, v, ystride, ustride, vstride, user_data):
+    pass
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
@@ -353,6 +360,7 @@ def init_callbacks(tox, window, tray):
     toxav.callback_call_state(call_state, 0)
     toxav.callback_call(call, 0)
     toxav.callback_audio_receive_frame(callback_audio, 0)
+    tox.callback_video_receive_frame(video_receive_frame, 0)
 
     tox.callback_friend_lossless_packet(lossless_packet, 0)
     tox.callback_friend_lossy_packet(lossy_packet, 0)

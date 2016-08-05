@@ -10,6 +10,9 @@ import wave
 import settings
 from util import curr_directory
 
+# TODO: widget for video
+# TODO: improve IncomingCallWidget
+
 
 class IncomingCallWidget(widgets.CenteredWidget):
 
@@ -56,7 +59,7 @@ class IncomingCallWidget(widgets.CenteredWidget):
         self.call_type.setText(text)
         pr = profile.Profile.get_instance()
         self.accept_audio.clicked.connect(lambda: pr.accept_call(friend_number, True, False) or self.stop())
-        # self.accept_video.clicked.connect(lambda: pr.start_call(friend_number, True, True))
+        self.accept_video.clicked.connect(lambda: pr.accept_call(friend_number, True, True))
         self.decline.clicked.connect(lambda: pr.stop_call(friend_number, False) or self.stop())
 
         class SoundPlay(QtCore.QThread):
