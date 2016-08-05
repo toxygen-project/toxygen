@@ -23,7 +23,7 @@ class IncomingCallWidget(widgets.CenteredWidget):
         self.name = widgets.DataLabel(self)
         self.name.setGeometry(QtCore.QRect(90, 20, 300, 25))
         font = QtGui.QFont()
-        font.setFamily("Times New Roman")
+        font.setFamily(settings.Settings.get_instance['font'])
         font.setPointSize(16)
         font.setBold(True)
         self.name.setFont(font)

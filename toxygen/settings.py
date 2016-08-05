@@ -34,6 +34,7 @@ class Settings(dict, Singleton):
             self.save()
         smileys.SmileyLoader(self)
         self.locked = False
+        self.closing = False
         p = pyaudio.PyAudio()
         input_devices = output_devices = 0
         for i in range(p.get_device_count()):
@@ -134,7 +135,9 @@ class Settings(dict, Singleton):
             'unread_color': 'red',
             'save_unsent_only': False,
             'compact_mode': False,
-            'show_welcome_screen': True
+            'show_welcome_screen': True,
+            'close_to_tray': False,
+            'font': 'Times New Roman'
         }
 
     @staticmethod

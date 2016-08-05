@@ -239,11 +239,15 @@ class Toxygen:
                 self.p.show()
 
         def tray_activated(reason):
-           if reason == QtGui.QSystemTrayIcon.DoubleClick:
-               show_window()
+            if reason == QtGui.QSystemTrayIcon.DoubleClick:
+                show_window()
+
+        def close_app():
+            settings.closing = True
+            self.ms.close()
 
         m.connect(show, QtCore.SIGNAL("triggered()"), show_window)
-        m.connect(exit, QtCore.SIGNAL("triggered()"), lambda: app.exit())
+        m.connect(exit, QtCore.SIGNAL("triggered()"), close_app)
         m.connect(m, QtCore.SIGNAL("aboutToShow()"), lambda: m.aboutToShow())
         sub.connect(onl, QtCore.SIGNAL("triggered()"), lambda: m.newStatus(0))
         sub.connect(away, QtCore.SIGNAL("triggered()"), lambda: m.newStatus(1))

@@ -6,6 +6,7 @@ from list_items import *
 from widgets import MultilineEdit, LineEdit
 import plugin_support
 from mainscreen_widgets import *
+import settings
 
 
 class MainWindow(QtGui.QMainWindow, Singleton):
@@ -126,6 +127,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.messageEdit.setObjectName("messageEdit")
         font = QtGui.QFont()
         font.setPointSize(10)
+        font.setFamily(settings.Settings.get_instance()['font'])
         self.messageEdit.setFont(font)
 
         self.sendMessageButton = QtGui.QPushButton(Form)
@@ -182,7 +184,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.name = Form.name = DataLabel(Form)
         Form.name.setGeometry(QtCore.QRect(75, 40, 150, 25))
         font = QtGui.QFont()
-        font.setFamily("Times New Roman")
+        font.setFamily(settings.Settings.get_instance()['font'])
         font.setPointSize(14)
         font.setBold(True)
         Form.name.setFont(font)
@@ -210,7 +212,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.account_name.setGeometry(QtCore.QRect(100, 25, 400, 25))
         self.account_name.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse)
         font = QtGui.QFont()
-        font.setFamily("Times New Roman")
+        font.setFamily(settings.Settings.get_instance()['font'])
         font.setPointSize(14)
         font.setBold(True)
         self.account_name.setFont(font)
@@ -322,16 +324,21 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.retranslateUi()
         self.profile = Profile(tox, self)
 
-    def closeEvent(self, *args, **kwargs):
+    def closeEvent(self, event):
         self.profile.save_history()
         self.profile.close()
         s = Settings.get_instance()
-        s['x'] = self.geometry().x()
-        s['y'] = self.geometry().y()
-        s['width'] = self.width()
-        s['height'] = self.height()
-        s.save()
-        QtGui.QApplication.closeAllWindows()
+        if not s['close_to_tray'] or s.closing:
+            s['x'] = self.geometry().x()
+            s['y'] = self.geometry().y()
+            s['width'] = self.width()
+            s['height'] = self.height()
+            s.save()
+            QtGui.QApplication.closeAllWindows()
+            event.accept()
+        else:
+            event.ignore()
+            self.hide()
 
     def resizeEvent(self, *args, **kwargs):
         self.messages.setGeometry(0, 0, self.width() - 270, self.height() - 155)

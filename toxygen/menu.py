@@ -37,6 +37,7 @@ class AddContact(CenteredWidget):
         self.error_label = DataLabel(self)
         self.error_label.setGeometry(QtCore.QRect(120, 10, 420, 20))
         font = QtGui.QFont()
+        font.setFamily(Settings.get_instance()['font'])
         font.setPointSize(10)
         font.setWeight(30)
         self.error_label.setFont(font)
@@ -51,7 +52,6 @@ class AddContact(CenteredWidget):
         self.message.setObjectName("label_2")
         self.retranslateUi()
         self.message_edit.setText('Hello! Add me to your contact list please')
-        font = QtGui.QFont()
         font.setPointSize(12)
         font.setBold(True)
         self.label.setFont(font)
@@ -102,6 +102,7 @@ class ProfileSettings(CenteredWidget):
         self.label = QtGui.QLabel(self)
         self.label.setGeometry(QtCore.QRect(40, 30, 91, 25))
         font = QtGui.QFont()
+        font.setFamily(Settings.get_instance()['font'])
         font.setPointSize(18)
         font.setWeight(75)
         font.setBold(True)
@@ -532,11 +533,12 @@ class NotificationsSettings(CenteredWidget):
         self.soundNotifications = QtGui.QCheckBox(self)
         self.soundNotifications.setGeometry(QtCore.QRect(10, 70, 340, 18))
         font = QtGui.QFont()
+        s = Settings.get_instance()
+        font.setFamily(s['font'])
         font.setPointSize(12)
         self.callsSound.setFont(font)
         self.soundNotifications.setFont(font)
         self.enableNotifications.setFont(font)
-        s = Settings.get_instance()
         self.enableNotifications.setChecked(s['notifications'])
         self.soundNotifications.setChecked(s['sound_notifications'])
         self.callsSound.setChecked(s['calls_sound'])
@@ -566,19 +568,20 @@ class InterfaceSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("interfaceForm")
-        self.setMinimumSize(QtCore.QSize(400, 580))
-        self.setMaximumSize(QtCore.QSize(400, 580))
+        self.setMinimumSize(QtCore.QSize(400, 650))
+        self.setMaximumSize(QtCore.QSize(400, 650))
         self.label = QtGui.QLabel(self)
         self.label.setGeometry(QtCore.QRect(30, 10, 370, 20))
+        settings = Settings.get_instance()
         font = QtGui.QFont()
         font.setPointSize(14)
         font.setBold(True)
+        font.setFamily(settings['font'])
         self.label.setFont(font)
         self.themeSelect = QtGui.QComboBox(self)
         self.themeSelect.setGeometry(QtCore.QRect(30, 40, 120, 30))
         list_of_themes = ['dark']
         self.themeSelect.addItems(list_of_themes)
-        settings = Settings.get_instance()
         theme = settings['theme']
         if theme in list_of_themes:
             index = list_of_themes.index(theme)
@@ -622,23 +625,31 @@ class InterfaceSettings(CenteredWidget):
         self.messages_font_size.setCurrentIndex(settings['message_font_size'] - 10)
 
         self.unread = QtGui.QPushButton(self)
-        self.unread.setGeometry(QtCore.QRect(30, 465, 340, 30))
+        self.unread.setGeometry(QtCore.QRect(30, 470, 340, 30))
         self.unread.clicked.connect(self.select_color)
 
         self.compact_mode = QtGui.QCheckBox(self)
         self.compact_mode.setGeometry(QtCore.QRect(30, 380, 370, 20))
         self.compact_mode.setChecked(settings['compact_mode'])
 
+        self.close_to_tray = QtGui.QCheckBox(self)
+        self.close_to_tray.setGeometry(QtCore.QRect(30, 410, 370, 20))
+        self.close_to_tray.setChecked(settings['close_to_tray'])
+
         self.show_avatars = QtGui.QCheckBox(self)
-        self.show_avatars.setGeometry(QtCore.QRect(30, 410, 370, 20))
+        self.show_avatars.setGeometry(QtCore.QRect(30, 440, 370, 20))
         self.show_avatars.setChecked(settings['show_avatars'])
 
+        self.choose_font = QtGui.QPushButton(self)
+        self.choose_font.setGeometry(QtCore.QRect(30, 510, 340, 30))
+        self.choose_font.clicked.connect(self.new_font)
+
         self.import_smileys = QtGui.QPushButton(self)
-        self.import_smileys.setGeometry(QtCore.QRect(30, 505, 340, 30))
+        self.import_smileys.setGeometry(QtCore.QRect(30, 550, 340, 30))
         self.import_smileys.clicked.connect(self.import_sm)
 
         self.import_stickers = QtGui.QPushButton(self)
-        self.import_stickers.setGeometry(QtCore.QRect(30, 545, 340, 30))
+        self.import_stickers.setGeometry(QtCore.QRect(30, 590, 340, 30))
         self.import_stickers.clicked.connect(self.import_st)
 
         self.retranslateUi()
@@ -657,6 +668,8 @@ class InterfaceSettings(CenteredWidget):
         self.compact_mode.setText(QtGui.QApplication.translate("interfaceForm", "Compact contact list", None, QtGui.QApplication.UnicodeUTF8))
         self.import_smileys.setText(QtGui.QApplication.translate("interfaceForm", "Import smiley pack", None, QtGui.QApplication.UnicodeUTF8))
         self.import_stickers.setText(QtGui.QApplication.translate("interfaceForm", "Import sticker pack", None, QtGui.QApplication.UnicodeUTF8))
+        self.close_to_tray.setText(QtGui.QApplication.translate("interfaceForm", "Close to tray", None, QtGui.QApplication.UnicodeUTF8))
+        self.choose_font.setText(QtGui.QApplication.translate("interfaceForm", "Select font", None, QtGui.QApplication.UnicodeUTF8))
 
     def import_st(self):
         directory = QtGui.QFileDialog.getExistingDirectory(self,
@@ -686,6 +699,20 @@ class InterfaceSettings(CenteredWidget):
             dest = curr_directory() + '/smileys/' + os.path.basename(directory) + '/'
             copy(src, dest)
 
+    def new_font(self):
+        settings = Settings.get_instance()
+        font, ok = QtGui.QFontDialog.getFont(QtGui.QFont(settings['font'], 10), self)
+        if ok:
+            settings['font'] = font.family()
+            settings.save()
+            msgBox = QtGui.QMessageBox()
+            text = QtGui.QApplication.translate("interfaceForm", 'Restart app to apply settings', None,
+                                                QtGui.QApplication.UnicodeUTF8)
+            msgBox.setWindowTitle(QtGui.QApplication.translate("interfaceForm", 'Restart required', None,
+                                                               QtGui.QApplication.UnicodeUTF8))
+            msgBox.setText(text)
+            msgBox.exec_()
+
     def select_color(self):
         col = QtGui.QColorDialog.getColor()
 
@@ -710,6 +737,7 @@ class InterfaceSettings(CenteredWidget):
             settings['show_avatars'] = self.show_avatars.isChecked()
             restart = True
         settings['smiley_pack'] = self.smiley_pack.currentText()
+        settings['close_to_tray'] = self.close_to_tray.isChecked()
         smileys.SmileyLoader.get_instance().load_pack()
         language = self.lang_choose.currentText()
         if settings['language'] != language:
@@ -753,9 +781,11 @@ class AudioSettings(CenteredWidget):
         self.in_label.setGeometry(QtCore.QRect(25, 5, 350, 20))
         self.out_label = QtGui.QLabel(self)
         self.out_label.setGeometry(QtCore.QRect(25, 65, 350, 20))
+        settings = Settings.get_instance()
         font = QtGui.QFont()
         font.setPointSize(16)
         font.setBold(True)
+        font.setFamily(settings['font'])
         self.in_label.setFont(font)
         self.out_label.setFont(font)
         self.input = QtGui.QComboBox(self)
@@ -763,7 +793,6 @@ class AudioSettings(CenteredWidget):
         self.output = QtGui.QComboBox(self)
         self.output.setGeometry(QtCore.QRect(25, 90, 350, 30))
         p = pyaudio.PyAudio()
-        settings = Settings.get_instance()
         self.in_indexes, self.out_indexes = [], []
         for i in range(p.get_device_count()):
             device = p.get_device_info_by_index(i)
