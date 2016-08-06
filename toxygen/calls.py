@@ -4,14 +4,14 @@ import threading
 import settings
 from toxav_enums import *
 # TODO: play sound until outgoing call will be started or cancelled and add timeout
-# TODO: add widget for call
 
-CALL_TYPE = {
-    'NONE': 0,
-    'AUDIO': 1,
-    'VIDEO': 2
-}
-# TODO: rewrite (make class)
+
+class Call:
+
+    def __init__(self, audio=False, video=False):
+        self.audio = audio
+        self.video = video
+        # TODO: add widget for call
 
 
 class AV:
@@ -20,7 +20,7 @@ class AV:
         self._toxav = toxav
         self._running = True
 
-        self._calls = {}  # dict: key - friend number, value - call type
+        self._calls = {}  # dict: key - friend number, value - Call instance
 
         self._audio = None
         self._audio_stream = None
@@ -33,14 +33,29 @@ class AV:
         self._audio_duration = 60
         self._audio_sample_count = self._audio_rate * self._audio_channels * self._audio_duration // 1000
 
+    def stop(self):
+        self._running = False
+        self.stop_audio_thread()
+
     def __contains__(self, friend_number):
         return friend_number in self._calls
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Calls
+    # -----------------------------------------------------------------------------------------------------------------
 
     def __call__(self, friend_number, audio, video):
         """Call friend with specified number"""
         self._toxav.call(friend_number, 32 if audio else 0, 5000 if video else 0)
-        self._calls[friend_number] = CALL_TYPE['AUDIO']
+        self._calls[friend_number] = Call(audio, video)
         self.start_audio_thread()
+
+    def accept_call(self, friend_number, audio_enabled, video_enabled):
+
+        if self._running:
+            self._calls[friend_number] = Call(audio_enabled, video_enabled)
+            self._toxav.answer(friend_number, 32 if audio_enabled else 0, 5000 if video_enabled else 0)
+            self.start_audio_thread()
 
     def finish_call(self, friend_number, by_friend=False):
 
@@ -51,9 +66,21 @@ class AV:
         if not len(self._calls):
             self.stop_audio_thread()
 
-    def stop(self):
-        self._running = False
-        self.stop_audio_thread()
+    def toxav_call_state_cb(self, friend_number, state):
+        """
+        New call state
+        """
+        pass  # TODO: ignore?
+        # if self._running:
+        #
+        #     if state & TOXAV_FRIEND_CALL_STATE['ACCEPTING_A']:
+        #         self._calls[friend_number].audio = True
+        #     if state & TOXAV_FRIEND_CALL_STATE['ACCEPTING_V']:
+        #         self._calls[friend_number].video = True
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Threads
+    # -----------------------------------------------------------------------------------------------------------------
 
     def start_audio_thread(self):
         """
@@ -93,7 +120,11 @@ class AV:
             self._out_stream.close()
             self._out_stream = None
 
-    def chunk(self, samples, channels_count, rate):
+    # -----------------------------------------------------------------------------------------------------------------
+    # Incoming chunks
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def audio_chunk(self, samples, channels_count, rate):
         """
         Incoming chunk
         """
@@ -106,6 +137,13 @@ class AV:
                                                 output=True)
         self._out_stream.write(samples)
 
+    def video_chunk(self):
+        pass
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # AV sending
+    # -----------------------------------------------------------------------------------------------------------------
+
     def send_audio(self):
         """
         This method sends audio to friends
@@ -116,7 +154,7 @@ class AV:
                 pcm = self._audio_stream.read(self._audio_sample_count)
                 if pcm:
                     for friend in self._calls:
-                        if self._calls[friend] & 1:
+                        if self._calls[friend].audio:
                             try:
                                 self._toxav.audio_send_frame(friend, pcm, self._audio_sample_count,
                                                              self._audio_channels, self._audio_rate)
@@ -126,20 +164,3 @@ class AV:
                 pass
 
             time.sleep(0.01)
-
-    def accept_call(self, friend_number, audio_enabled, video_enabled):
-
-        if self._running:
-            self._calls[friend_number] = int(video_enabled) * 2 + int(audio_enabled)
-            self._toxav.answer(friend_number, 32 if audio_enabled else 0, 5000 if video_enabled else 0)
-            self.start_audio_thread()
-
-    def toxav_call_state_cb(self, friend_number, state):
-        """
-        New call state
-        """
-        if self._running:
-
-            if state & TOXAV_FRIEND_CALL_STATE['ACCEPTING_A']:
-                self._calls[friend_number] |= 1
-
