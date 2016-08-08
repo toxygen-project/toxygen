@@ -127,7 +127,7 @@ class MessageItem(QtGui.QWidget):
     def __init__(self, text, time, user='', sent=True, message_type=TOX_MESSAGE_TYPE['NORMAL'], parent=None):
         QtGui.QWidget.__init__(self, parent)
         self.name = DataLabel(self)
-        self.name.setGeometry(QtCore.QRect(2, 2, 95, 20))
+        self.name.setGeometry(QtCore.QRect(2, 2, 95, 23))
         self.name.setTextFormat(QtCore.Qt.PlainText)
         font = QtGui.QFont()
         font.setFamily(settings.Settings.get_instance()['font'])
@@ -137,7 +137,7 @@ class MessageItem(QtGui.QWidget):
         self.name.setText(user)
 
         self.time = QtGui.QLabel(self)
-        self.time.setGeometry(QtCore.QRect(parent.width() - 50, 0, 50, 20))
+        self.time.setGeometry(QtCore.QRect(parent.width() - 60, 0, 50, 25))
         font.setPointSize(10)
         font.setBold(False)
         self.time.setFont(font)
@@ -151,12 +151,12 @@ class MessageItem(QtGui.QWidget):
             self.time.setText(convert_time(time))
             self.t = False
 
-        self.message = MessageEdit(text, parent.width() - 150, message_type, self)
+        self.message = MessageEdit(text, parent.width() - 160, message_type, self)
         if message_type != TOX_MESSAGE_TYPE['NORMAL']:
             self.name.setStyleSheet("QLabel { color: #5CB3FF; }")
             self.message.setAlignment(QtCore.Qt.AlignCenter)
             self.time.setStyleSheet("QLabel { color: #5CB3FF; }")
-        self.message.setGeometry(QtCore.QRect(100, 0, parent.width() - 150, self.message.height()))
+        self.message.setGeometry(QtCore.QRect(100, 0, parent.width() - 160, self.message.height()))
         self.setFixedHeight(self.message.height())
 
     def mouseReleaseEvent(self, event):
@@ -295,7 +295,7 @@ class FileTransferItem(QtGui.QListWidget):
         self.state = state
 
         self.name = DataLabel(self)
-        self.name.setGeometry(QtCore.QRect(3, 7, 95, 20))
+        self.name.setGeometry(QtCore.QRect(3, 7, 95, 25))
         self.name.setTextFormat(QtCore.Qt.PlainText)
         font = QtGui.QFont()
         font.setFamily(settings.Settings.get_instance()['font'])
@@ -305,14 +305,14 @@ class FileTransferItem(QtGui.QListWidget):
         self.name.setText(user)
 
         self.time = QtGui.QLabel(self)
-        self.time.setGeometry(QtCore.QRect(width - 53, 7, 50, 20))
+        self.time.setGeometry(QtCore.QRect(width - 60, 7, 50, 25))
         font.setPointSize(10)
         font.setBold(False)
         self.time.setFont(font)
         self.time.setText(convert_time(time))
 
         self.cancel = QtGui.QPushButton(self)
-        self.cancel.setGeometry(QtCore.QRect(width - 120, 2, 30, 30))
+        self.cancel.setGeometry(QtCore.QRect(width - 125, 2, 30, 30))
         pixmap = QtGui.QPixmap(curr_directory() + '/images/decline.png')
         icon = QtGui.QIcon(pixmap)
         self.cancel.setIcon(icon)

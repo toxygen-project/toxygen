@@ -2,7 +2,7 @@ import os
 import time
 import shutil
 
-program_version = '0.2.4'
+program_version = '0.2.5'
 
 
 def log(data):
