@@ -260,7 +260,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.messages.setSpacing(1)
         self.messages.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.messages.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        # self.messages.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.messages.focusOutEvent = lambda event: self.messages.clearSelection()
 
         def load(pos):
             if not pos:

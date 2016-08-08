@@ -313,7 +313,7 @@ class Profile(contact.Contact, Singleton):
                 ft = self._file_transfers[(friend_num, file_num)]
                 if type(ft) is SendTransfer:
                     self._paused_file_transfers[ft.get_id()] = [ft.get_path(), friend_num, False, -1]
-                elif type(ft) is ReceiveTransfer:
+                elif type(ft) is ReceiveTransfer and ft.state != TOX_FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']:
                     self._paused_file_transfers[ft.get_id()] = [ft.get_path(), friend_num, True, ft.total_size()]
                 self.cancel_transfer(friend_num, file_num, True)
 

@@ -32,7 +32,9 @@ Run app using ``toxygen`` command.
 
 ## Packages
 
-Coming soon.
+Arch Linux: [AUR](https://aur.archlinux.org/packages/toxygen-git/)
+
+Debian/Ubuntu: [tox.chat](https://tox.chat/download.html#gnulinux)
 
 ## From source code (recommended for developers)
 
