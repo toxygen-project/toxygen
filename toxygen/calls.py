@@ -3,6 +3,7 @@ import time
 import threading
 import settings
 from toxav_enums import *
+import cv2
 # TODO: play sound until outgoing call will be started or cancelled and add timeout
 
 
@@ -33,9 +34,14 @@ class AV:
         self._audio_duration = 60
         self._audio_sample_count = self._audio_rate * self._audio_channels * self._audio_duration // 1000
 
+        self._video = None
+        self._video_thread = None
+        self._video_running = False
+
     def stop(self):
         self._running = False
         self.stop_audio_thread()
+        self.stop_video_thread()
 
     def __contains__(self, friend_number):
         return friend_number in self._calls
@@ -120,6 +126,29 @@ class AV:
             self._out_stream.close()
             self._out_stream = None
 
+    def start_video_thread(self):
+        if self._video_thread is not None:
+            return
+
+        self._video_running = True
+
+        self._video = cv2.VideoCapture(0)
+        self._video.set(cv2.CV_CAP_PROP_FPS, 25)
+        self._video.set(cv2.CV_CAP_PROP_FRAME_WIDTH, 640)
+        self._video.set(cv2.CV_CAP_PROP_FRAME_HEIGHT, 480)
+
+        self._video_thread = threading.Thread(target=self.send_video)
+        self._video_thread.start()
+
+    def stop_video_thread(self):
+        if self._video_thread is None:
+            return
+
+        self._video_running = False
+        self._video_thread.join()
+        self._video_thread = None
+        self._video = None
+
     # -----------------------------------------------------------------------------------------------------------------
     # Incoming chunks
     # -----------------------------------------------------------------------------------------------------------------
@@ -153,10 +182,10 @@ class AV:
             try:
                 pcm = self._audio_stream.read(self._audio_sample_count)
                 if pcm:
-                    for friend in self._calls:
-                        if self._calls[friend].audio:
+                    for friend_num in self._calls:
+                        if self._calls[friend_num].audio:
                             try:
-                                self._toxav.audio_send_frame(friend, pcm, self._audio_sample_count,
+                                self._toxav.audio_send_frame(friend_num, pcm, self._audio_sample_count,
                                                              self._audio_channels, self._audio_rate)
                             except:
                                 pass
@@ -164,3 +193,27 @@ class AV:
                 pass
 
             time.sleep(0.01)
+
+    def send_video(self):
+        while self._video_running:
+            try:
+                result, frame = self._video.read()
+                if result:
+                    height, width, channels = frame.shape
+                    for friend_num in self._calls:
+                        if self._calls[friend_num].video:
+                            try:  # TODO: bgr => yuv
+                                y, u, v = convert_bgr_to_yuv(frame)
+                                self._toxav.video_send_frame(friend_num, width, height, y, u, v)
+                            except Exception as e:
+                                print(e)
+            except Exception as e:
+                print(e)
+
+        time.sleep(0.01)
+
+
+def convert_bgr_to_yuv(frame):
+    print(frame.tostring())
+    print(dir(frame))
+    return 0, 0, 0

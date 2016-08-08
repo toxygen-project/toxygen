@@ -8,15 +8,21 @@ import sys
 
 version = program_version + '.0'
 
-MODULES = []
+MODULES = ['numpy']
 
 if system() in ('Windows', 'Darwin'):
-    MODULES = ['PyAudio', 'PySide']
+    MODULES.extend(['PyAudio', 'PySide'])
 else:
     try:
         import pyaudio
     except ImportError:
-        MODULES = ['PyAudio']
+        MODULES.append('PyAudio')
+
+
+if system() == 'Windows':
+    DEPS_LINKS = []  # TODO: add opencv.whl
+else:
+    DEPS_LINKS = []
 
 
 class InstallScript(install):
@@ -55,6 +61,7 @@ setup(name='Toxygen',
       license='GPL3',
       packages=['toxygen', 'toxygen.plugins', 'toxygen.styles'],
       install_requires=MODULES,
+      dependency_links=DEP_LINKS,
       include_package_data=True,
       classifiers=[
           'Programming Language :: Python :: 3 :: Only',

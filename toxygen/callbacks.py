@@ -360,7 +360,7 @@ def init_callbacks(tox, window, tray):
     toxav.callback_call_state(call_state, 0)
     toxav.callback_call(call, 0)
     toxav.callback_audio_receive_frame(callback_audio, 0)
-    tox.callback_video_receive_frame(video_receive_frame, 0)
+    toxav.callback_video_receive_frame(video_receive_frame, 0)
 
     tox.callback_friend_lossless_packet(lossless_packet, 0)
     tox.callback_friend_lossy_packet(lossy_packet, 0)
