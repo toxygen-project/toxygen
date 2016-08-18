@@ -15,9 +15,11 @@ toxygen/libs
 toxygen/build
 toxygen/dist
 *.spec
-dist/
+dist
 toxygen/avatars
 toxygen/__pycache__
 /*.egg-info
 /*.egg
+html
+Toxygen.egg-info
 

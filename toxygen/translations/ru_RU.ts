@@ -477,6 +477,44 @@ Version: </source>
     </message>
 </context>
 <context>
+    <name>PasswordScreen</name>
+    <message>
+        <location filename="passwordscreen.py" line="136"/>
+        <source>Profile password</source>
+        <translation>Пароль профиля</translation>
+    </message>
+    <message>
+        <location filename="passwordscreen.py" line="139"/>
+        <source>Password (at least 8 symbols)</source>
+        <translation>Пароль (минимум 8 символов)</translation>
+    </message>
+    <message>
+        <location filename="passwordscreen.py" line="142"/>
+        <source>Confirm password</source>
+        <translation>Подтверждение пароля</translation>
+    </message>
+    <message>
+        <location filename="passwordscreen.py" line="144"/>
+        <source>Set password</source>
+        <translation>Изменить пароль</translation>
+    </message>
+    <message>
+        <location filename="passwordscreen.py" line="163"/>
+        <source>Passwords do not match</source>
+        <translation>Пароли не совпадают</translation>
+    </message>
+    <message>
+        <location filename="passwordscreen.py" line="149"/>
+        <source>There is no way to recover lost passwords</source>
+        <translation>Восстановление забытых паролей не поддерживается</translation>
+    </message>
+    <message>
+        <location filename="passwordscreen.py" line="159"/>
+        <source>Password must be at least 8 symbols</source>
+        <translation>Пароль должен быть длиной не менее 8 символов</translation>
+    </message>
+</context>
+<context>
     <name>PluginWindow</name>
     <message>
         <location filename="plugins/plugin_super_class.py" line="142"/>
@@ -992,6 +1030,24 @@ Version: </source>
         <source>Enable sound notifications</source>
         <translation>Включить звуковые уведомления
 </translation>
+    </message>
+</context>
+<context>
+    <name>pass</name>
+    <message>
+        <location filename="passwordscreen.py" line="64"/>
+        <source>Enter password</source>
+        <translation>Введите пароль</translation>
+    </message>
+    <message>
+        <location filename="passwordscreen.py" line="65"/>
+        <source>Password:</source>
+        <translation>Пароль</translation>
+    </message>
+    <message>
+        <location filename="passwordscreen.py" line="66"/>
+        <source>Incorrect password</source>
+        <translation>Неверный пароль</translation>
     </message>
 </context>
 <context>

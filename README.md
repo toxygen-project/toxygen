@@ -62,3 +62,5 @@ Toxygen is cross-platform [Tox](https://tox.chat/) client written in pure Python
 
 ### Docs
 [Check /docs/ for more info](/docs/)
+
+Also visit [pythonhosted.org/Toxygen/](http://pythonhosted.org/Toxygen/)

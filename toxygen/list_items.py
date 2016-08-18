@@ -360,7 +360,7 @@ class FileTransferItem(QtGui.QListWidget):
         self.file_name.setToolTip(file_name)
         self.saved_name = file_name
         self.time_left = QtGui.QLabel(self)
-        self.time_left.setGeometry(QtCore.QRect(width - 87, 7, 30, 20))
+        self.time_left.setGeometry(QtCore.QRect(width - 92, 7, 30, 20))
         font.setPointSize(10)
         self.time_left.setFont(font)
         self.time_left.setVisible(state == TOX_FILE_TRANSFER_STATE['RUNNING'])
