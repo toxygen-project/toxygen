@@ -1,6 +1,6 @@
 # Toxygen
 
-Toxygen is cross-platform [Tox](https://tox.chat/) client written in pure Python3
+Toxygen is powerfull cross-platform [Tox](https://tox.chat/) client written in pure Python3.
 
 [![Release](https://img.shields.io/github/release/xveduk/toxygen.svg?style=flat)](https://github.com/toxygen-project/toxygen/releases/latest)
 [![Stars](https://img.shields.io/github/stars/xveduk/toxygen.svg?style=flat)](https://github.com/toxygen-project/toxygen/stargazers)
@@ -12,11 +12,9 @@ Toxygen is cross-platform [Tox](https://tox.chat/) client written in pure Python
 
 ### Supported OS:
 
-- Windows
-- Linux
-- OS X
+![Linux, Windows and OS X](/docs/os.png)
 
-### Features
+### Features:
 
 - [x] 1v1 messages
 - [x] File transfers
@@ -64,3 +62,5 @@ Toxygen is cross-platform [Tox](https://tox.chat/) client written in pure Python
 [Check /docs/ for more info](/docs/)
 
 Also visit [pythonhosted.org/Toxygen/](http://pythonhosted.org/Toxygen/)
+
+[Wiki](https://wiki.tox.chat/clients/toxygen)
