@@ -1100,7 +1100,8 @@ class Profile(contact.Contact, Singleton):
         t = type(transfer)
         if t is ReceiveAvatar:
             self.get_friend_by_number(friend_number).load_avatar()
-            self.set_active(None)
+            if friend_number == self.get_active_number():
+                self.set_active(None)
         elif t is ReceiveToBuffer or (t is SendFromBuffer and Settings.get_instance()['allow_inline']):  # inline image
             print('inline')
             inline = InlineImage(transfer.get_data())
@@ -1115,6 +1116,7 @@ class Profile(contact.Contact, Singleton):
                     elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
                     self._messages.insertItem(count + i + 1, elem)
                     self._messages.setItemWidget(elem, item)
+                    self._messages.scrollToBottom()
         elif t is not SendAvatar:
             self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                           TOX_FILE_TRANSFER_STATE['FINISHED'])
