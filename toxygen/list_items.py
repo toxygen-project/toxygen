@@ -25,7 +25,9 @@ class MessageEdit(QtGui.QTextBrowser):
         self.setOpenExternalLinks(True)
         self.setAcceptRichText(True)
         self.setOpenLinks(False)
-        self.setSearchPaths([smileys.SmileyLoader.get_instance().get_smileys_path()])
+        path = smileys.SmileyLoader.get_instance().get_smileys_path()
+        if path is not None:
+            self.setSearchPaths([path])
         self.document().setDefaultStyleSheet('a { color: #306EFF; }')
         text = self.decoratedText(text)
         if message_type != TOX_MESSAGE_TYPE['NORMAL']:

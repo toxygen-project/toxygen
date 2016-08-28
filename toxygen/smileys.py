@@ -48,7 +48,7 @@ class SmileyLoader(util.Singleton):
                 print('Smiley pack {} was not loaded. Error: {}'.format(pack_name, ex))
 
     def get_smileys_path(self):
-        return util.curr_directory() + '/smileys/' + self._curr_pack + '/'
+        return util.curr_directory() + '/smileys/' + self._curr_pack + '/' if self._curr_pack is not None else None
 
     def get_packs_list(self):
         d = util.curr_directory() + '/smileys/'
