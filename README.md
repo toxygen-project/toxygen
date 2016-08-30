@@ -1,6 +1,6 @@
 # Toxygen
 
-Toxygen is powerfull cross-platform [Tox](https://tox.chat/) client written in pure Python3.
+Toxygen is powerful cross-platform [Tox](https://tox.chat/) client written in pure Python3.
 
 [![Release](https://img.shields.io/github/release/xveduk/toxygen.svg?style=flat)](https://github.com/toxygen-project/toxygen/releases/latest)
 [![Stars](https://img.shields.io/github/stars/xveduk/toxygen.svg?style=flat)](https://github.com/toxygen-project/toxygen/stargazers)

@@ -31,7 +31,8 @@ def copy(src, dest):
 
 
 def convert_time(t):
-    sec = int(t) - time.timezone
+    offset = time.timezone - time.daylight * 3600
+    sec = int(t) - offset
     m, s = divmod(sec, 60)
     h, m = divmod(m, 60)
     d, h = divmod(h, 24)
