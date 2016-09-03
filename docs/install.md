@@ -27,7 +27,7 @@ Run app using ``toxygen`` command.
 2. Install PortAudio:
 ``brew install portaudio``
 3. Install toxygen: 
-``pip3 install toxygen``
+``pip3.4 install toxygen``
 4. Run toxygen using ``toxygen`` command.
 
 ## Packages

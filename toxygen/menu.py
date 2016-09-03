@@ -714,10 +714,10 @@ class InterfaceSettings(CenteredWidget):
             msgBox.exec_()
 
     def select_color(self):
-        col = QtGui.QColorDialog.getColor()
+        settings = Settings.get_instance()
+        col = QtGui.QColorDialog.getColor(settings['unread_color'])
 
         if col.isValid():
-            settings = Settings.get_instance()
             name = col.name()
             settings['unread_color'] = name
             settings.save()

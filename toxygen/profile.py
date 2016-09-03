@@ -237,7 +237,7 @@ class Profile(contact.Contact, Singleton):
             self.update_filtration()
         except Exception as ex:  # no friend found. ignore
             log('Friend value: ' + str(value))
-            log('Error: ' + str(ex))
+            log('Error in set active: ' + str(ex))
             raise
 
     active_friend = property(get_active, set_active)
