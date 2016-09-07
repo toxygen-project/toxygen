@@ -1,4 +1,3 @@
-# coding=utf-8
 from sqlite3 import connect
 import settings
 from os import chdir
@@ -7,6 +6,8 @@ from toxencryptsave import ToxEncryptSave
 
 
 PAGE_SIZE = 42
+
+TIMEOUT = 11
 
 MESSAGE_OWNER = {
     'ME': 0,
@@ -32,7 +33,7 @@ class History:
                         fout.write(data)
             except:
                 os.remove(path)
-        db = connect(name + '.hstr')
+        db = connect(name + '.hstr', timeout=TIMEOUT)
         cursor = db.cursor()
         cursor.execute('CREATE TABLE IF NOT EXISTS friends('
                        '    tox_id TEXT PRIMARY KEY'
@@ -62,7 +63,7 @@ class History:
 
     def add_friend_to_db(self, tox_id):
         chdir(settings.ProfileHelper.get_path())
-        db = connect(self._name + '.hstr')
+        db = connect(self._name + '.hstr', timeout=TIMEOUT)
         try:
             cursor = db.cursor()
             cursor.execute('INSERT INTO friends VALUES (?);', (tox_id, ))
@@ -82,7 +83,7 @@ class History:
 
     def delete_friend_from_db(self, tox_id):
         chdir(settings.ProfileHelper.get_path())
-        db = connect(self._name + '.hstr')
+        db = connect(self._name + '.hstr', timeout=TIMEOUT)
         try:
             cursor = db.cursor()
             cursor.execute('DELETE FROM friends WHERE tox_id=?;', (tox_id, ))
@@ -96,7 +97,7 @@ class History:
 
     def friend_exists_in_db(self, tox_id):
         chdir(settings.ProfileHelper.get_path())
-        db = connect(self._name + '.hstr')
+        db = connect(self._name + '.hstr', timeout=TIMEOUT)
         cursor = db.cursor()
         cursor.execute('SELECT 0 FROM friends WHERE tox_id=?', (tox_id, ))
         result = cursor.fetchone()
@@ -105,7 +106,7 @@ class History:
 
     def save_messages_to_db(self, tox_id, messages_iter):
         chdir(settings.ProfileHelper.get_path())
-        db = connect(self._name + '.hstr')
+        db = connect(self._name + '.hstr', timeout=TIMEOUT)
         try:
             cursor = db.cursor()
             cursor.executemany('INSERT INTO id' + tox_id + '(message, owner, unix_time, message_type) '
@@ -119,7 +120,7 @@ class History:
 
     def update_messages(self, tox_id, unsent_time):
         chdir(settings.ProfileHelper.get_path())
-        db = connect(self._name + '.hstr')
+        db = connect(self._name + '.hstr', timeout=TIMEOUT)
         try:
             cursor = db.cursor()
             cursor.execute('UPDATE id' + tox_id + ' SET owner = 0 '
@@ -134,7 +135,7 @@ class History:
 
     def delete_message(self, tox_id, time):
         chdir(settings.ProfileHelper.get_path())
-        db = connect(self._name + '.hstr')
+        db = connect(self._name + '.hstr', timeout=TIMEOUT)
         try:
             cursor = db.cursor()
             cursor.execute('DELETE FROM id' + tox_id + ' WHERE unix_time = ' + str(time) + ';')
@@ -147,7 +148,7 @@ class History:
 
     def delete_messages(self, tox_id):
         chdir(settings.ProfileHelper.get_path())
-        db = connect(self._name + '.hstr')
+        db = connect(self._name + '.hstr', timeout=TIMEOUT)
         try:
             cursor = db.cursor()
             cursor.execute('DELETE FROM id' + tox_id + ';')
@@ -162,9 +163,10 @@ class History:
         return History.MessageGetter(self._name, tox_id)
 
     class MessageGetter:
+
         def __init__(self, name, tox_id):
             chdir(settings.ProfileHelper.get_path())
-            self._db = connect(name + '.hstr')
+            self._db = connect(name + '.hstr', timeout=TIMEOUT)
             self._cursor = self._db.cursor()
             self._cursor.execute('SELECT message, owner, unix_time, message_type FROM id' + tox_id +
                                  ' ORDER BY unix_time DESC;')
