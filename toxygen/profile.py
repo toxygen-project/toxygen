@@ -838,7 +838,7 @@ class Profile(contact.Contact, Singleton):
     def reconnect(self):
         if self.status is None or all(list(map(lambda x: x.status is None, self._friends))):
             self.reset(self._screen.reset)
-            QtCore.QTimer.singleShot(30000, self.reconnect)
+            QtCore.QTimer.singleShot(45000, self.reconnect)
 
     def close(self):
         for friend in self._friends:

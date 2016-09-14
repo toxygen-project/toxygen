@@ -78,9 +78,8 @@ class FileTransfer(QtCore.QObject):
             t = ((time() - self._creation_time) / percentage) * (1 - percentage)
         self._state_changed.signal.emit(self.state, percentage, int(t))
 
-    def finished(self, emit=False):
-        if type(self) is not ReceiveAvatar or emit:
-            self._finished.signal.emit(self._friend_number, self._file_number)
+    def finished(self):
+        self._finished.signal.emit(self._friend_number, self._file_number)
 
     def get_file_number(self):
         return self._file_number
@@ -342,3 +341,7 @@ class ReceiveAvatar(ReceiveTransfer):
                 remove(avatar_path)
             rename(self._path, avatar_path)
             self.finished(True)
+
+    def finished(self, emit=False):
+        if emit:
+            super().finished()
