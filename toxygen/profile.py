@@ -554,6 +554,8 @@ class Profile(contact.Contact, Singleton):
                                     friend.name if data[1] == MESSAGE_OWNER['FRIEND'] else self.name,
                                     data[0]))
         s = new_line.join(arr)
+        if not as_text:
+            s = '<html><head><meta charset="UTF-8"><title>{}</title></head><body>{}</body></html>'.format(friend.name, s)
         return s
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -1135,6 +1137,7 @@ class Profile(contact.Contact, Singleton):
         if not os.path.isfile(avatar_path):  # reset image
             avatar_path = None
         sa = SendAvatar(avatar_path, self._tox, friend_number)
+        sa.set_transfer_finished_handler(self.transfer_finished)
         self._file_transfers[(friend_number, sa.get_file_number())] = sa
 
     def incoming_avatar(self, friend_number, file_number, size):
