@@ -160,6 +160,7 @@ class History:
             db.close()
 
     def unlock_db(self):
+        print('Unlocking db...')
         connection = dbapi2.connect(self._name)
         connection.commit()
         connection.close()

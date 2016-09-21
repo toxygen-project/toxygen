@@ -49,9 +49,9 @@ class Settings(dict, Singleton):
 
     @staticmethod
     def get_auto_profile():
-        path = Settings.get_default_path() + 'toxygen.json'
-        if os.path.isfile(path):
-            with open(path) as fl:
+        p = Settings.get_default_path() + 'toxygen.json'
+        if os.path.isfile(p):
+            with open(p) as fl:
                 data = fl.read()
             auto = json.loads(data)
             if 'path' in auto and 'name' in auto:
@@ -61,9 +61,12 @@ class Settings(dict, Singleton):
     @staticmethod
     def set_auto_profile(path, name):
         p = Settings.get_default_path() + 'toxygen.json'
-        with open(p) as fl:
-            data = fl.read()
-        data = json.loads(data)
+        if os.path.isfile(p):
+            with open(p) as fl:
+                data = fl.read()
+            data = json.loads(data)
+        else:
+            data = {}
         data['path'] = str(path)
         data['name'] = str(name)
         with open(p, 'w') as fl:
@@ -72,9 +75,12 @@ class Settings(dict, Singleton):
     @staticmethod
     def reset_auto_profile():
         p = Settings.get_default_path() + 'toxygen.json'
-        with open(p) as fl:
-            data = fl.read()
-        data = json.loads(data)
+        if os.path.isfile(p):
+            with open(p) as fl:
+                data = fl.read()
+            data = json.loads(data)
+        else:
+            data = {}
         if 'path' in data:
             del data['path']
             del data['name']
