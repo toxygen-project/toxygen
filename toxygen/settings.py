@@ -145,7 +145,8 @@ class Settings(dict, Singleton):
             'compact_mode': False,
             'show_welcome_screen': True,
             'close_to_tray': False,
-            'font': 'Times New Roman'
+            'font': 'Times New Roman',
+            'update': 1
         }
 
     @staticmethod

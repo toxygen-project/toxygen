@@ -15,6 +15,7 @@ import platform
 import toxencryptsave
 from passwordscreen import PasswordScreen, UnlockAppScreen, SetProfilePasswordScreen
 from plugin_support import PluginLoader
+import updater
 
 
 class Toxygen:
@@ -278,6 +279,7 @@ class Toxygen:
 
         app.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app, QtCore.SLOT("quit()"))
         app.exec_()
+
         self.init.stop = True
         self.mainloop.stop = True
         self.avloop.stop = True

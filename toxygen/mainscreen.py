@@ -337,7 +337,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
             s.save()
             QtGui.QApplication.closeAllWindows()
             event.accept()
-        else:
+        elif QtGui.QSystemTrayIcon.isSystemTrayAvailable():
             event.ignore()
             self.hide()
 
@@ -359,7 +359,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.profile.update()
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Escape:
+        if event.key() == QtCore.Qt.Key_Escape and QtGui.QSystemTrayIcon.isSystemTrayAvailable():
             self.hide()
         elif event.key() == QtCore.Qt.Key_C and event.modifiers() & QtCore.Qt.ControlModifier and self.messages.selectedIndexes():
             rows = list(map(lambda x: self.messages.row(x), self.messages.selectedItems()))
