@@ -341,6 +341,10 @@ class MainWindow(QtGui.QMainWindow, Singleton):
             event.ignore()
             self.hide()
 
+    def close_window(self):
+        Settings.get_instance().closing = True
+        self.close()
+
     def resizeEvent(self, *args, **kwargs):
         self.messages.setGeometry(0, 0, self.width() - 270, self.height() - 155)
         self.friends_list.setGeometry(0, 0, 270, self.height() - 125)

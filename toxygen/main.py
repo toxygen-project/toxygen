@@ -183,6 +183,7 @@ class Toxygen:
         self.tray.setObjectName('tray')
 
         self.ms = MainWindow(self.tox, self.reset, self.tray)
+        app.aboutToQuit.connect(self.ms.close_window)
 
         class Menu(QtGui.QMenu):
 
