@@ -10,7 +10,6 @@ from bootstrap import node_generator
 from mainscreen import MainWindow
 from callbacks import init_callbacks, stop, start
 from util import curr_directory, program_version
-import styles.style
 import platform
 import toxencryptsave
 from passwordscreen import PasswordScreen, UnlockAppScreen, SetProfilePasswordScreen
