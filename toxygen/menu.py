@@ -9,6 +9,7 @@ from widgets import CenteredWidget, DataLabel, LineEdit
 import pyaudio
 import toxencryptsave
 import plugin_support
+import updater
 
 
 class AddContact(CenteredWidget):
@@ -899,3 +900,64 @@ class PluginsSettings(CenteredWidget):
             self.button.setText(QtGui.QApplication.translate("PluginsForm", "Disable plugin", None, QtGui.QApplication.UnicodeUTF8))
         else:
             self.button.setText(QtGui.QApplication.translate("PluginsForm", "Enable plugin", None, QtGui.QApplication.UnicodeUTF8))
+
+
+class UpdateSettings(CenteredWidget):
+    """
+    Audio calls settings form
+    """
+
+    def __init__(self):
+        super(UpdateSettings, self).__init__()
+        self.initUI()
+        self.center()
+
+    def initUI(self):
+        self.setObjectName("updateSettingsForm")
+        self.resize(400, 150)
+        self.setMinimumSize(QtCore.QSize(400, 120))
+        self.setMaximumSize(QtCore.QSize(400, 120))
+        self.in_label = QtGui.QLabel(self)
+        self.in_label.setGeometry(QtCore.QRect(25, 5, 350, 20))
+        settings = Settings.get_instance()
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        font.setBold(True)
+        font.setFamily(settings['font'])
+        self.in_label.setFont(font)
+        self.autoupdate = QtGui.QComboBox(self)
+        self.autoupdate.setGeometry(QtCore.QRect(25, 30, 350, 30))
+        self.button = QtGui.QPushButton(self)
+        self.button.setGeometry(QtCore.QRect(25, 70, 350, 30))
+        self.button.setEnabled(settings['update'])
+        self.button.clicked.connect(self.update_client)
+
+        self.retranslateUi()
+        self.autoupdate.setCurrentIndex(settings['update'])
+        QtCore.QMetaObject.connectSlotsByName(self)
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtGui.QApplication.translate("updateSettingsForm", "Update settings", None, QtGui.QApplication.UnicodeUTF8))
+        self.in_label.setText(QtGui.QApplication.translate("updateSettingsForm", "Select update mode:", None, QtGui.QApplication.UnicodeUTF8))
+        self.button.setText(QtGui.QApplication.translate("updateSettingsForm", "Update Toxygen", None, QtGui.QApplication.UnicodeUTF8))
+        self.autoupdate.addItem(QtGui.QApplication.translate("updateSettingsForm", "Disabled", None, QtGui.QApplication.UnicodeUTF8))
+        self.autoupdate.addItem(QtGui.QApplication.translate("updateSettingsForm", "Manual", None, QtGui.QApplication.UnicodeUTF8))
+        self.autoupdate.addItem(QtGui.QApplication.translate("updateSettingsForm", "Auto", None, QtGui.QApplication.UnicodeUTF8))
+
+    def closeEvent(self, event):
+        settings = Settings.get_instance()
+        settings['update'] = self.autoupdate.currentIndex()
+        settings.save()
+
+    def update_client(self):
+        version = updater.check_for_updates()
+        if version is not None:
+            updater.download(version)
+        else:
+            msgBox = QtGui.QMessageBox()
+            msgBox.setWindowTitle(
+                QtGui.QApplication.translate("updateSettingsForm", "No updates found", None, QtGui.QApplication.UnicodeUTF8))
+            text = (QtGui.QApplication.translate("updateSettingsForm", 'Toxygen is up to date', None,
+                                                 QtGui.QApplication.UnicodeUTF8))
+            msgBox.setText(text)
+            msgBox.exec_()

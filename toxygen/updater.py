@@ -1,5 +1,6 @@
 import util
 import settings
+import platform
 try:
     from PySide import QtNetwork, QtCore
 except:
@@ -16,8 +17,25 @@ def check_for_updates():
     return None  # no new version was found
 
 
-def get_url(version):
+def is_from_sources():
+    return __file__.endswith('.py')
+
+
+def get_file_name():
+    res = 'toxygen.zip' if platform.system() == 'Windows' else 'toxygen.tar.gz'
+    return util.curr_directory() + '/' + res
+
+
+def test_url(version):
     return 'https://github.com/toxygen-project/toxygen/releases/tag/v' + version
+
+
+def get_url(version):
+    if not is_from_sources():
+        return 'https://github.com/toxygen-project/toxygen/releases/tag/v' + version
+    else:
+        name = 'toxygen_windows.zip' if platform.system() == 'Windows' else 'toxygen_linux.tar.gz'
+        return 'https://github.com/toxygen-project/toxygen/archive/v{}.{}'.format(version, name)
 
 
 def download(version):
@@ -37,8 +55,9 @@ def download(version):
             reply = netman.get(request)
             while not reply.isFinished():
                 QtCore.QThread.msleep(1)
-            data = bytes(reply.readAll().data())
-            with open('toxygen.zip', 'wb') as fl:
+                QtCore.QCoreApplication.processEvents()
+            data = bytes(reply.readAll().data())  # TODO: fix
+            with open(get_file_name(), 'wb') as fl:
                 fl.write(data)
         except Exception as ex:
             util.log('Downloading new version of Toxygen failed with exception: ' + str(ex))
@@ -53,13 +72,15 @@ def send_request(version):
         proxy.setHostName(s['proxy_host'])
         proxy.setPort(s['proxy_port'])
         netman.setProxy(proxy)
-    url = get_url(version)
+    url = test_url(version)
     try:
         request = QtNetwork.QNetworkRequest(url)
         reply = netman.get(request)
         while not reply.isFinished():
             QtCore.QThread.msleep(1)
-        return reply.attribute() == 200
+            QtCore.QCoreApplication.processEvents()
+        attr = reply.attribute(QtNetwork.QNetworkRequest.HttpStatusCodeAttribute)
+        return 200 <= attr < 300
     except Exception as ex:
         util.log('TOXYGEN UPDATER ERROR: ' + str(ex))
         return False

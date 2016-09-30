@@ -259,6 +259,23 @@ class Toxygen:
         self.tray.show()
         self.tray.activated.connect(tray_activated)
 
+        if settings['update']:  # auto update
+            version = updater.check_for_updates()
+            if version is not None:
+                if settings['update'] == 2:
+                    updater.download(version)
+                else:
+                    reply = QtGui.QMessageBox.question(None,
+                                                       '',
+                                                       QtGui.QApplication.translate("login",
+                                                                                    'Update for Toxygen was found. Download and install it?',
+                                                                                    None,
+                                                                                    QtGui.QApplication.UnicodeUTF8),
+                                                       QtGui.QMessageBox.Yes,
+                                                       QtGui.QMessageBox.No)
+                    if reply == QtGui.QMessageBox.Yes:
+                        updater.download(version)
+
         self.ms.show()
 
         plugin_helper = PluginLoader(self.tox, settings)  # plugin support

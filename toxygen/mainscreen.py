@@ -52,6 +52,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.actionNetwork.setObjectName("actionNetwork")
         self.actionAbout_program = QtGui.QAction(MainWindow)
         self.actionAbout_program.setObjectName("actionAbout_program")
+        self.updateSettings = QtGui.QAction(MainWindow)
         self.actionSettings = QtGui.QAction(MainWindow)
         self.actionSettings.setObjectName("actionSettings")
         self.audioSettings = QtGui.QAction(MainWindow)
@@ -66,6 +67,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.menuSettings.addAction(self.actionNotifications)
         self.menuSettings.addAction(self.actionNetwork)
         self.menuSettings.addAction(self.audioSettings)
+        self.menuSettings.addAction(self.updateSettings)
         self.menuPlugins.addAction(self.pluginData)
         self.menuPlugins.addAction(self.importPlugin)
         self.menuAbout.addAction(self.actionAbout_program)
@@ -82,6 +84,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.actionInterface_settings.triggered.connect(self.interface_settings)
         self.actionNotifications.triggered.connect(self.notification_settings)
         self.audioSettings.triggered.connect(self.audio_settings)
+        self.updateSettings.triggered.connect(self.update_settings)
         self.pluginData.triggered.connect(self.plugins_menu)
         self.lockApp.triggered.connect(self.lock_app)
         self.importPlugin.triggered.connect(self.import_plugin)
@@ -112,6 +115,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.actionAbout_program.setText(QtGui.QApplication.translate("MainWindow", "About program", None, QtGui.QApplication.UnicodeUTF8))
         self.actionSettings.setText(QtGui.QApplication.translate("MainWindow", "Settings", None, QtGui.QApplication.UnicodeUTF8))
         self.audioSettings.setText(QtGui.QApplication.translate("MainWindow", "Audio", None, QtGui.QApplication.UnicodeUTF8))
+        self.updateSettings.setText(QtGui.QApplication.translate("MainWindow", "Updates", None, QtGui.QApplication.UnicodeUTF8))
         self.contact_name.setPlaceholderText(QtGui.QApplication.translate("MainWindow", "Search", None, QtGui.QApplication.UnicodeUTF8))
         self.sendMessageButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Send message", None, QtGui.QApplication.UnicodeUTF8))
         self.callButton.setToolTip(QtGui.QApplication.translate("MainWindow", "Start audio call with friend", None, QtGui.QApplication.UnicodeUTF8))
@@ -419,6 +423,10 @@ class MainWindow(QtGui.QMainWindow, Singleton):
     def audio_settings(self):
         self.audio_s = AudioSettings()
         self.audio_s.show()
+
+    def update_settings(self):
+        self.update_s = UpdateSettings()
+        self.update_s.show()
 
     def import_plugin(self):
         import util
