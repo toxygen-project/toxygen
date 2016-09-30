@@ -1,4 +1,4 @@
-from sqlite3 import connect, dbapi2
+from sqlite3 import connect
 import settings
 from os import chdir
 import os.path
@@ -77,7 +77,6 @@ class History:
             db.commit()
         except:
             db.rollback()
-            self.unlock_db()
         finally:
             db.close()
 
@@ -91,7 +90,6 @@ class History:
             db.commit()
         except:
             db.rollback()
-            self.unlock_db()
         finally:
             db.close()
 
@@ -114,7 +112,6 @@ class History:
             db.commit()
         except:
             db.rollback()
-            self.unlock_db()
         finally:
             db.close()
 
@@ -128,7 +125,6 @@ class History:
             db.commit()
         except:
             db.rollback()
-            self.unlock_db()
         finally:
             db.close()
         pass
@@ -142,7 +138,6 @@ class History:
             db.commit()
         except:
             db.rollback()
-            self.unlock_db()
         finally:
             db.close()
 
@@ -155,15 +150,8 @@ class History:
             db.commit()
         except:
             db.rollback()
-            self.unlock_db()
         finally:
             db.close()
-
-    def unlock_db(self):
-        print('Unlocking db...')
-        connection = dbapi2.connect(self._name)
-        connection.commit()
-        connection.close()
 
     def messages_getter(self, tox_id):
         return History.MessageGetter(self._name, tox_id)
