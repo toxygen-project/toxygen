@@ -18,6 +18,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.tray = tray
         self.setAcceptDrops(True)
         self.initUI(tox)
+        self._saved = False
         if settings.Settings.get_instance()['show_welcome_screen']:
             self.ws = WelcomeScreen()
 
@@ -262,6 +263,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.messages.setGeometry(0, 0, 620, 310)
         self.messages.setObjectName("messages")
         self.messages.setSpacing(1)
+
         self.messages.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.messages.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.messages.focusOutEvent = lambda event: self.messages.clearSelection()
@@ -332,15 +334,17 @@ class MainWindow(QtGui.QMainWindow, Singleton):
     def closeEvent(self, event):
         s = Settings.get_instance()
         if not s['close_to_tray'] or s.closing:
-            self.profile.save_history()
-            self.profile.close()
-            s['x'] = self.geometry().x()
-            s['y'] = self.geometry().y()
-            s['width'] = self.width()
-            s['height'] = self.height()
-            s.save()
-            QtGui.QApplication.closeAllWindows()
-            event.accept()
+            if not self._saved:
+                self._saved = True
+                self.profile.save_history()
+                self.profile.close()
+                s['x'] = self.geometry().x()
+                s['y'] = self.geometry().y()
+                s['width'] = self.width()
+                s['height'] = self.height()
+                s.save()
+                QtGui.QApplication.closeAllWindows()
+                event.accept()
         elif QtGui.QSystemTrayIcon.isSystemTrayAvailable():
             event.ignore()
             self.hide()

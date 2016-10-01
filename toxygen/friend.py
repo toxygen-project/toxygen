@@ -116,9 +116,10 @@ class Friend(contact.Contact):
     def delete_message(self, time):
         elem = list(filter(lambda x: type(x) is TextMessage and x.get_data()[2] == time, self._corr))[0]
         tmp = list(filter(lambda x: x.get_type() <= 1, self._corr))
-        if elem in tmp[-self._unsaved_messages:]:
+        if elem in tmp[-self._unsaved_messages:] and self._unsaved_messages:
             self._unsaved_messages -= 1
         self._corr.remove(elem)
+        self._message_getter.delete_one()
 
     def mark_as_sent(self):
         try:

@@ -159,20 +159,47 @@ class History:
     class MessageGetter:
 
         def __init__(self, name, tox_id):
+            self._count = 0
+            self._name = name
+            self._tox_id = tox_id
+            self._db = self._cursor = None
+
+        def connect(self):
             chdir(settings.ProfileHelper.get_path())
-            self._db = connect(name + '.hstr', timeout=TIMEOUT)
+            self._db = connect(self._name + '.hstr', timeout=TIMEOUT)
             self._cursor = self._db.cursor()
-            self._cursor.execute('SELECT message, owner, unix_time, message_type FROM id' + tox_id +
+            self._cursor.execute('SELECT message, owner, unix_time, message_type FROM id' + self._tox_id +
                                  ' ORDER BY unix_time DESC;')
 
+        def disconnect(self):
+            self._db.close()
+
         def get_one(self):
-            return self._cursor.fetchone()
+            self.connect()
+            self.skip()
+            data = self._cursor.fetchone()
+            self._count += 1
+            self.disconnect()
+            return data
 
         def get_all(self):
-            return self._cursor.fetchall()
+            self.connect()
+            data = self._cursor.fetchall()
+            self.disconnect()
+            self._count = len(data)
+            return data
 
         def get(self, count):
-            return self._cursor.fetchmany(count)
+            self.connect()
+            self.skip()
+            data = self._cursor.fetchmany(count)
+            self.disconnect()
+            self._count += len(data)
+            return data
 
-        def __del__(self):
-            self._db.close()
+        def skip(self):
+            if self._count:
+                self._cursor.fetchmany(self._count)
+
+        def delete_one(self):
+            self._count -= 1
