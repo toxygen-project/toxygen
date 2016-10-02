@@ -76,6 +76,7 @@ class History:
                            ')')
             db.commit()
         except:
+            print('Database is locked!')
             db.rollback()
         finally:
             db.close()
@@ -89,6 +90,7 @@ class History:
             cursor.execute('DROP TABLE id' + tox_id + ';')
             db.commit()
         except:
+            print('Database is locked!')
             db.rollback()
         finally:
             db.close()
@@ -111,6 +113,7 @@ class History:
                                'VALUES (?, ?, ?, ?);', messages_iter)
             db.commit()
         except:
+            print('Database is locked!')
             db.rollback()
         finally:
             db.close()
@@ -124,6 +127,7 @@ class History:
                            'WHERE unix_time < ' + str(unsent_time) + ' AND owner = 2;')
             db.commit()
         except:
+            print('Database is locked!')
             db.rollback()
         finally:
             db.close()
@@ -137,6 +141,7 @@ class History:
             cursor.execute('DELETE FROM id' + tox_id + ' WHERE unix_time = ' + str(time) + ';')
             db.commit()
         except:
+            print('Database is locked!')
             db.rollback()
         finally:
             db.close()
@@ -149,6 +154,7 @@ class History:
             cursor.execute('DELETE FROM id' + tox_id + ';')
             db.commit()
         except:
+            print('Database is locked!')
             db.rollback()
         finally:
             db.close()
@@ -202,4 +208,5 @@ class History:
                 self._cursor.fetchmany(self._count)
 
         def delete_one(self):
-            self._count -= 1
+            if self._count:
+                self._count -= 1

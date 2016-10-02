@@ -3,7 +3,7 @@ import settings
 import platform
 try:
     from PySide import QtNetwork, QtCore
-except:
+except ImportError:
     from PyQt4 import QtNetwork, QtCore
 
 

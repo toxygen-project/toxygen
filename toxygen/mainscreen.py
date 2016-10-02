@@ -263,7 +263,6 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.messages.setGeometry(0, 0, 620, 310)
         self.messages.setObjectName("messages")
         self.messages.setSpacing(1)
-
         self.messages.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.messages.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.messages.focusOutEvent = lambda event: self.messages.clearSelection()
