@@ -904,7 +904,7 @@ class PluginsSettings(CenteredWidget):
 
 class UpdateSettings(CenteredWidget):
     """
-    Audio calls settings form
+    Updates settings form
     """
 
     def __init__(self):
@@ -953,6 +953,7 @@ class UpdateSettings(CenteredWidget):
         version = updater.check_for_updates()
         if version is not None:
             updater.download(version)
+            QtGui.QApplication.closeAllWindows()
         else:
             msgBox = QtGui.QMessageBox()
             msgBox.setWindowTitle(
