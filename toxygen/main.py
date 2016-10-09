@@ -259,11 +259,13 @@ class Toxygen:
         self.tray.show()
         self.tray.activated.connect(tray_activated)
 
+        updating = False
         if settings['update']:  # auto update
             version = updater.check_for_updates()
             if version is not None:
                 if settings['update'] == 2:
                     updater.download(version)
+                    updating = True
                 else:
                     reply = QtGui.QMessageBox.question(None,
                                                        '',
@@ -275,6 +277,14 @@ class Toxygen:
                                                        QtGui.QMessageBox.No)
                     if reply == QtGui.QMessageBox.Yes:
                         updater.download(version)
+                        updating = True
+
+        if updating:
+            data = self.tox.get_savedata()
+            ProfileHelper.get_instance().save_profile(data)
+            settings.close()
+            del self.tox
+            return
 
         self.ms.show()
 

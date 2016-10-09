@@ -1,10 +1,12 @@
 import util
+import os
 import settings
 import platform
 try:
     from PySide import QtNetwork, QtCore
 except ImportError:
     from PyQt4 import QtNetwork, QtCore
+import subprocess
 
 
 def check_for_updates():
@@ -21,46 +23,35 @@ def is_from_sources():
     return __file__.endswith('.py')
 
 
-def get_file_name():
-    res = 'toxygen.zip' if platform.system() == 'Windows' else 'toxygen.tar.gz'
-    return util.curr_directory() + '/' + res
-
-
 def test_url(version):
     return 'https://github.com/toxygen-project/toxygen/releases/tag/v' + version
 
 
 def get_url(version):
-    if not is_from_sources():
-        return 'https://github.com/toxygen-project/toxygen/releases/tag/v' + version
+    if is_from_sources():
+        return 'https://github.com/toxygen-project/toxygen/archive/v' + version + '.zip'
     else:
         name = 'toxygen_windows.zip' if platform.system() == 'Windows' else 'toxygen_linux.tar.gz'
-        return 'https://github.com/toxygen-project/toxygen/archive/v{}.{}'.format(version, name)
+        return 'https://github.com/toxygen-project/toxygen/releases/tag/v{}/{}'.format(version, name)
+
+
+def get_params(url):
+    if is_from_sources():
+        return ['python3', 'toxygen_updater.py', url]
+    elif platform.system() == 'Windows':
+        return ['run', 'toxygen_updater.exe', url]
+    else:
+        return ['./toxygen_updater', url]
 
 
 def download(version):
-    s = settings.Settings.get_instance()
-    if s['update']:
-        netman = QtNetwork.QNetworkAccessManager()
-        proxy = QtNetwork.QNetworkProxy()
-        if s['proxy_type']:
-            proxy.setType(
-                QtNetwork.QNetworkProxy.Socks5Proxy if s['proxy_type'] == 2 else QtNetwork.QNetworkProxy.HttpProxy)
-            proxy.setHostName(s['proxy_host'])
-            proxy.setPort(s['proxy_port'])
-            netman.setProxy(proxy)
-        url = get_url(version)
-        try:
-            request = QtNetwork.QNetworkRequest(url)
-            reply = netman.get(request)
-            while not reply.isFinished():
-                QtCore.QThread.msleep(1)
-                QtCore.QCoreApplication.processEvents()
-            data = bytes(reply.readAll().data())  # TODO: fix
-            with open(get_file_name(), 'wb') as fl:
-                fl.write(data)
-        except Exception as ex:
-            util.log('Downloading new version of Toxygen failed with exception: ' + str(ex))
+    os.chdir(util.curr_directory())
+    url = get_url(version)
+    params = get_params(url)
+    try:
+        subprocess.Popen(params)
+    except Exception as ex:
+        util.log('Exception: running updater failed with ' + str(ex))
 
 
 def send_request(version):
