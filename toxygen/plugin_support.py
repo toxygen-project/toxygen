@@ -68,7 +68,6 @@ class PluginLoader(util.Singleton):
         """
         New incoming custom lossless packet (callback)
         """
-        print('Custom', data)
         l = data[0] - pl.LOSSLESS_FIRST_BYTE
         name = ''.join(chr(x) for x in data[1:l + 1])
         if name in self._plugins and self._plugins[name][1]:

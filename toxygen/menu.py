@@ -950,6 +950,16 @@ class UpdateSettings(CenteredWidget):
         settings.save()
 
     def update_client(self):
+        if not updater.connection_available():
+            msgBox = QtGui.QMessageBox()
+            msgBox.setWindowTitle(
+                QtGui.QApplication.translate("updateSettingsForm", "Error", None,
+                                             QtGui.QApplication.UnicodeUTF8))
+            text = (QtGui.QApplication.translate("updateSettingsForm", 'Problems with internet connection', None,
+                                                 QtGui.QApplication.UnicodeUTF8))
+            msgBox.setText(text)
+            msgBox.exec_()
+            return
         version = updater.check_for_updates()
         if version is not None:
             updater.download(version)

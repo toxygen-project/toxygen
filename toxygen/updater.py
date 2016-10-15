@@ -2,11 +2,20 @@ import util
 import os
 import settings
 import platform
+import urllib
 try:
     from PySide import QtNetwork, QtCore
 except ImportError:
     from PyQt4 import QtNetwork, QtCore
 import subprocess
+
+
+def connection_available():
+    try:
+        urllib.request.urlopen('http://216.58.192.142', timeout=1)  # google.com
+        return True
+    except:
+        return False
 
 
 def check_for_updates():

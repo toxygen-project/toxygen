@@ -260,7 +260,7 @@ class Toxygen:
         self.tray.activated.connect(tray_activated)
 
         updating = False
-        if settings['update']:  # auto update
+        if settings['update'] and updater.connection_available():  # auto update
             version = updater.check_for_updates()
             if version is not None:
                 if settings['update'] == 2:
