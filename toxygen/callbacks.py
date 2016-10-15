@@ -274,16 +274,18 @@ def lossless_packet(tox, friend_number, data, length, user_data):
     """
     Incoming lossless packet
     """
+    data = data[:length]
     plugin = PluginLoader.get_instance()
-    invoke_in_main_thread(plugin.callback_lossless, friend_number, data, length)
+    invoke_in_main_thread(plugin.callback_lossless, friend_number, data)
 
 
 def lossy_packet(tox, friend_number, data, length, user_data):
     """
     Incoming lossy packet
     """
+    data = data[:length]
     plugin = PluginLoader.get_instance()
-    invoke_in_main_thread(plugin.callback_lossy, friend_number, data, length)
+    invoke_in_main_thread(plugin.callback_lossy, friend_number, data)
 
 
 # -----------------------------------------------------------------------------------------------------------------

@@ -64,23 +64,24 @@ class PluginLoader(util.Singleton):
                     self._plugins[inst.get_short_name()] = [inst, autostart]  # (inst, is active)
                     break
 
-    def callback_lossless(self, friend_number, data, length):
+    def callback_lossless(self, friend_number, data):
         """
         New incoming custom lossless packet (callback)
         """
+        print('Custom', data)
         l = data[0] - pl.LOSSLESS_FIRST_BYTE
         name = ''.join(chr(x) for x in data[1:l + 1])
         if name in self._plugins and self._plugins[name][1]:
-            self._plugins[name][0].lossless_packet(''.join(chr(x) for x in data[l + 1:length]), friend_number)
+            self._plugins[name][0].lossless_packet(''.join(chr(x) for x in data[l + 1:]), friend_number)
 
-    def callback_lossy(self, friend_number, data, length):
+    def callback_lossy(self, friend_number, data):
         """
         New incoming custom lossy packet (callback)
         """
         l = data[0] - pl.LOSSY_FIRST_BYTE
         name = ''.join(chr(x) for x in data[1:l + 1])
         if name in self._plugins and self._plugins[name][1]:
-            self._plugins[name][0].lossy_packet(''.join(chr(x) for x in data[l + 1:length]), friend_number)
+            self._plugins[name][0].lossy_packet(''.join(chr(x) for x in data[l + 1:]), friend_number)
 
     def friend_online(self, friend_number):
         """
