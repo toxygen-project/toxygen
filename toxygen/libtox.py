@@ -8,6 +8,8 @@ class LibToxCore:
     def __init__(self):
         if system() == 'Windows':
             self._libtoxcore = CDLL(util.curr_directory() + '/libs/libtox.dll')
+        elif system() == 'Darwin':
+            self._libtoxcore = CDLL('libtoxcore.dylib')
         else:
             # libtoxcore and libsodium must be installed in your os
             try:
@@ -25,6 +27,8 @@ class LibToxAV:
         if system() == 'Windows':
             # on Windows av api is in libtox.dll
             self._libtoxav = CDLL(util.curr_directory() + '/libs/libtox.dll')
+        elif system() == 'Darwin':
+            self._libtoxav = CDLL('libtoxav.dylib')
         else:
             # /usr/lib/libtoxav.so must exists
             try:
@@ -42,6 +46,8 @@ class LibToxEncryptSave:
         if system() == 'Windows':
             # on Windows profile encryption api is in libtox.dll
             self._lib_tox_encrypt_save = CDLL(util.curr_directory() + '/libs/libtox.dll')
+        elif system() == 'Darwin':
+            self._lib_tox_encrypt_save = CDLL('libtoxencryptsave.dylib')
         else:
             # /usr/lib/libtoxencryptsave.so must exists
             try:

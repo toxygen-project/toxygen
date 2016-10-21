@@ -44,19 +44,19 @@ def get_url(version):
         return 'https://github.com/toxygen-project/toxygen/releases/tag/v{}/{}'.format(version, name)
 
 
-def get_params(url):
+def get_params(url, version):
     if is_from_sources():
-        return ['python3', 'toxygen_updater.py', url]
+        return ['python3', 'toxygen_updater.py', url, version]
     elif platform.system() == 'Windows':
-        return ['run', 'toxygen_updater.exe', url]
+        return ['run', 'toxygen_updater.exe', url, version]
     else:
-        return ['./toxygen_updater', url]
+        return ['./toxygen_updater', url, version]
 
 
 def download(version):
     os.chdir(util.curr_directory())
     url = get_url(version)
-    params = get_params(url)
+    params = get_params(url, version)
     try:
         subprocess.Popen(params)
     except Exception as ex:
