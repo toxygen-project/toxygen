@@ -9,6 +9,8 @@ PAGE_SIZE = 42
 
 TIMEOUT = 11
 
+SAVE_MESSAGES = 150
+
 MESSAGE_OWNER = {
     'ME': 0,
     'FRIEND': 1,
