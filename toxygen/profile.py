@@ -16,6 +16,7 @@ import calls
 import avwidgets
 import plugin_support
 import basecontact
+import items_factory
 
 
 class Profile(basecontact.BaseContact, Singleton):
@@ -40,6 +41,7 @@ class Profile(basecontact.BaseContact, Singleton):
         self._call = calls.AV(tox.AV)  # object with data about calls
         self._incoming_calls = set()
         self._load_history = True
+        self._factory = items_factory.ItemsFactory(self._screen.friends_list, self._messages)
         settings = Settings.get_instance()
         self._show_online = settings['show_online_friends']
         self._show_avatars = settings['show_avatars']
@@ -562,7 +564,7 @@ class Profile(basecontact.BaseContact, Singleton):
         return s
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Factories for friend, message and file transfer items
+    # Friend, message and file transfer items creation
     # -----------------------------------------------------------------------------------------------------------------
 
     def create_friend_item(self):
@@ -570,12 +572,7 @@ class Profile(basecontact.BaseContact, Singleton):
         Method-factory
         :return: new widget for friend instance
         """
-        item = ContactItem()
-        elem = QtGui.QListWidgetItem(self._screen.friends_list)
-        elem.setSizeHint(QtCore.QSize(250, item.height()))
-        self._screen.friends_list.addItem(elem)
-        self._screen.friends_list.setItemWidget(elem, item)
-        return item
+        return self._factory.friend_item()
 
     def create_message_item(self, text, time, owner, message_type, append=True):
         if message_type == MESSAGE_TYPE['INFO_MESSAGE']:
@@ -584,56 +581,30 @@ class Profile(basecontact.BaseContact, Singleton):
             name = self.get_active_name()
         else:
             name = self._name
-        item = MessageItem(text, time, name, owner != MESSAGE_OWNER['NOT_SENT'], message_type, self._messages)
+        pixmap = None
         if self._show_avatars:
-            item.set_avatar(self._contacts[self._active_friend].get_pixmap() if owner == MESSAGE_OWNER[
-                'FRIEND'] else self.get_pixmap())
-        elem = QtGui.QListWidgetItem()
-        elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
-        if append:
-            self._messages.addItem(elem)
-        else:
-            self._messages.insertItem(0, elem)
-        self._messages.setItemWidget(elem, item)
+            if owner == MESSAGE_OWNER['FRIEND']:
+                pixmap = self._contacts[self._active_friend].get_pixmap()
+            else:
+                pixmap = self.get_pixmap()
+        return self._factory.message_item(text, time, name, owner != MESSAGE_OWNER['NOT_SENT'],
+                                          message_type, append, pixmap)
 
     def create_file_transfer_item(self, tm, append=True):
         data = list(tm.get_data())
         data[3] = self.get_friend_by_number(data[4]).name if data[3] else self._name
-        data.append(self._messages.width())
-        item = FileTransferItem(*data)
-        elem = QtGui.QListWidgetItem()
-        elem.setSizeHint(QtCore.QSize(self._messages.width() - 30, 34))
-        if append:
-            self._messages.addItem(elem)
-        else:
-            self._messages.insertItem(0, elem)
-        self._messages.setItemWidget(elem, item)
-        return item
+        return self._factory.file_transfer_item(data, append)
 
     def create_unsent_file_item(self, message, append=True):
         data = message.get_data()
-        item = UnsentFileItem(os.path.basename(data[0]),
-                              os.path.getsize(data[0]) if data[1] is None else len(data[1]),
-                              self.name,
-                              data[2],
-                              self._messages.width())
-        elem = QtGui.QListWidgetItem()
-        elem.setSizeHint(QtCore.QSize(self._messages.width() - 30, 34))
-        if append:
-            self._messages.addItem(elem)
-        else:
-            self._messages.insertItem(0, elem)
-        self._messages.setItemWidget(elem, item)
+        return self._factory.unsent_file_item(os.path.basename(data[0]),
+                                              os.path.getsize(data[0]) if data[1] is None else len(data[1]),
+                                              self.name,
+                                              data[2],
+                                              append)
 
     def create_inline_item(self, data, append=True):
-        elem = QtGui.QListWidgetItem()
-        item = InlineImageItem(data, self._messages.width(), elem)
-        elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
-        if append:
-            self._messages.addItem(elem)
-        else:
-            self._messages.insertItem(0, elem)
-        self._messages.setItemWidget(elem, item)
+        return self._factory.inline_item(data, append)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Work with friends (remove, block, set alias, get public key)
