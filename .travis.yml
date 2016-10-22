@@ -4,6 +4,7 @@ python:
 before_install:
   - sudo apt-get install -y checkinstall build-essential
   - sudo apt-get install portaudio19-dev
+  - sudo apt-get install libconfig-dev libvpx-dev libopus-dev check -qq
 install:
   - pip install PySide --no-index --find-links https://parkin.github.io/python-wheelhouse/;
   - python ~/virtualenv/python${TRAVIS_PYTHON_VERSION}/bin/pyside_postinstall.py -install
