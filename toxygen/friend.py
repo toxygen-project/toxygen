@@ -25,7 +25,7 @@ class Friend(contact.Contact):
         """
         try:
             tr = list(filter(lambda x: x.get_type() == MESSAGE_TYPE['FILE_TRANSFER'] and x.is_active(file_number),
-                        self._corr))[0]
+                             self._corr))[0]
             tr.set_status(status)
             i = self._corr.index(tr)
             if inline:  # inline was loaded

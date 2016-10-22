@@ -22,10 +22,11 @@ class BaseContact:
         """
         self._name, self._status_message = name, status_message
         self._status, self._widget = None, widget
-        self._widget.name.setText(name)
-        self._widget.status_message.setText(status_message)
         self._tox_id = tox_id
-        self.load_avatar()
+        if self._widget is not None:
+            self._widget.name.setText(name)
+            self._widget.status_message.setText(status_message)
+            self.load_avatar()
 
     # -----------------------------------------------------------------------------------------------------------------
     # name - current name or alias of user

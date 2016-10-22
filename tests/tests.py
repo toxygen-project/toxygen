@@ -57,12 +57,10 @@ class TestFriend:
         ProfileHelper('', 'test')
 
     def create_friend(self, name, status_message, number, tox_id):
-        message_getter = None
-        friend = Friend(message_getter, number, name, status_message, ContactItem(), tox_id)
+        friend = Friend(None, number, name, status_message, None, tox_id)
         return friend
 
     def test_friend_creation(self):
-        app = QtGui.QApplication(sys.argv)
         self.create_singletons()
         name, status_message, number = 'Friend', 'I am friend!', 0
         tox_id = '76518406F6A9F2217E8DC487CC783C25CC16A15EB36FF32E335A235342C48A39218F515C39A6'
