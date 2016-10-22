@@ -18,6 +18,15 @@ def connection_available():
         return False
 
 
+def updater_available():
+    if is_from_sources():
+        return os.path.exists(util.curr_directory() + '/toxygen_updater.py')
+    elif platform.system() == 'Windows':
+        return os.path.exists(util.curr_directory() + '/toxygen_updater.exe')
+    else:
+        return os.path.exists(util.curr_directory() + '/toxygen_updater')
+
+
 def check_for_updates():
     current_version = util.program_version
     major, minor, patch = list(map(lambda x: int(x), current_version.split('.')))

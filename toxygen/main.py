@@ -9,7 +9,7 @@ except ImportError:
 from bootstrap import node_generator
 from mainscreen import MainWindow
 from callbacks import init_callbacks, stop, start
-from util import curr_directory, program_version
+from util import curr_directory, program_version, remove
 import styles.style
 import platform
 import toxencryptsave
@@ -22,7 +22,7 @@ class Toxygen:
 
     def __init__(self, path_or_uri=None):
         super(Toxygen, self).__init__()
-        self.tox = self.ms = self.init = self.mainloop = self.avloop = None
+        self.tox = self.ms = self.init = self.app = self.tray = self.mainloop = self.avloop = None
         if path_or_uri is None:
             self.uri = self.path = None
         elif path_or_uri.startswith('tox:'):
@@ -260,7 +260,7 @@ class Toxygen:
         self.tray.activated.connect(tray_activated)
 
         updating = False
-        if settings['update'] and updater.connection_available():  # auto update
+        if settings['update'] and updater.updater_available() and updater.connection_available():  # auto update
             version = updater.check_for_updates()
             if version is not None:
                 if settings['update'] == 2:
@@ -440,9 +440,7 @@ class Toxygen:
 def clean():
     """Removes all windows libs from libs folder"""
     d = curr_directory() + '/libs/'
-    for fl in ('libtox64.dll', 'libtox.dll', 'libsodium64.a', 'libsodium.a'):
-        if os.path.exists(d + fl):
-            os.remove(d + fl)
+    remove(d)
 
 
 def configure():

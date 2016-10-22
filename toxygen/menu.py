@@ -960,6 +960,16 @@ class UpdateSettings(CenteredWidget):
             msgBox.setText(text)
             msgBox.exec_()
             return
+        if not updater.updater_available():
+            msgBox = QtGui.QMessageBox()
+            msgBox.setWindowTitle(
+                QtGui.QApplication.translate("updateSettingsForm", "Error", None,
+                                             QtGui.QApplication.UnicodeUTF8))
+            text = (QtGui.QApplication.translate("updateSettingsForm", 'Updater not found', None,
+                                                 QtGui.QApplication.UnicodeUTF8))
+            msgBox.setText(text)
+            msgBox.exec_()
+            return
         version = updater.check_for_updates()
         if version is not None:
             updater.download(version)

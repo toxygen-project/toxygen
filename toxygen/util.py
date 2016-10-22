@@ -30,6 +30,10 @@ def copy(src, dest):
             copy(full_file_name, os.path.join(dest, file_name))
 
 
+def remove(folder):
+    shutil.rmtree(folder)
+
+
 def convert_time(t):
     offset = time.timezone - time.daylight * 3600
     sec = int(t) - offset
