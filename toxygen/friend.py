@@ -4,14 +4,10 @@ from messages import *
 
 class Friend(contact.Contact):
     """
-    Friend in list of friends. Can be hidden, properties 'has unread messages' and 'has alias' added
+    Friend in list of friends.
     """
 
     def __init__(self, message_getter, number, name, status_message, widget, tox_id):
-        """
-        :param message_getter: gets messages from db
-        :param number: number of friend.
-        """
         super().__init__(message_getter, number, name, status_message, widget, tox_id)
         self._receipts = 0
 

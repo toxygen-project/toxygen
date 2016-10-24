@@ -10,7 +10,8 @@ class BaseContact:
     """
     Class encapsulating TOX contact
     Properties: name (alias of contact or name), status_message, status (connection status)
-    widget - widget for update
+    widget - widget for update, tox id (or public key)
+    Base class for all contacts.
     """
 
     def __init__(self, name, status_message, widget, tox_id):

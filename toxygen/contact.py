@@ -12,8 +12,7 @@ import file_transfers as ft
 class Contact(basecontact.BaseContact):
     """
     Class encapsulating TOX contact
-    Properties: name (alias of contact or name), status_message, status (connection status)
-    widget - widget for update
+    Properties: number, message getter, history etc. Base class for friend and gc classes
     """
 
     def __init__(self, message_getter, number, name, status_message, widget, tox_id):
@@ -59,6 +58,9 @@ class Contact(basecontact.BaseContact):
         self._history_loaded = True
 
     def load_all_corr(self):
+        """
+        Get all chat history from db for current friend
+        """
         data = list(self._message_getter.get_all())
         if data is not None and len(data):
             data.reverse()
@@ -115,6 +117,9 @@ class Contact(basecontact.BaseContact):
         self._message_getter.delete_one()
 
     def delete_old_messages(self):
+        """
+        Delete old messages (reduces RAM if messages saving is not enabled)
+        """
         old = filter(lambda x: x.get_type() in (2, 3) and (x.get_status() >= 2 or x.get_status() is None),
                      self._corr[:-SAVE_MESSAGES])
         old = list(old)
@@ -182,7 +187,7 @@ class Contact(basecontact.BaseContact):
     visibility = property(get_visibility, set_visibility)
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Unread messages from friend
+    # Unread messages and other actions from friend
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_actions(self):
