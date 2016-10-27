@@ -45,8 +45,7 @@ class AudioFile:
             format=self.p.get_format_from_width(self.wf.getsampwidth()),
             channels=self.wf.getnchannels(),
             rate=self.wf.getframerate(),
-            output=True
-        )
+            output=True)
 
     def play(self):
         data = self.wf.readframes(self.chunk)

@@ -202,8 +202,8 @@ class Settings(dict, Singleton):
             app_settings = {}
         if 'active_profile' not in app_settings:
             app_settings['active_profile'] = []
-        profilepath = ProfileHelper.get_path()
-        app_settings['active_profile'].append(str(profilepath + str(self.name) + '.tox'))
+        profile_path = ProfileHelper.get_path()
+        app_settings['active_profile'].append(str(profile_path + str(self.name) + '.tox'))
         data = json.dumps(app_settings)
         with open(path, 'w') as fl:
             fl.write(data)

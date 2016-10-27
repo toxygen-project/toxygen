@@ -1,9 +1,7 @@
 from toxygen.profile import *
 from toxygen.tox_dns import tox_dns
 import toxygen.toxencryptsave as encr
-from toxygen.list_items import ContactItem
 import toxygen.messages as m
-import sys
 import time
 
 
@@ -20,6 +18,21 @@ class TestTox:
         tox = tox_factory(data)
         assert tox.self_get_name() == str(name, 'utf-8')
         assert tox.self_get_status_message() == str(status_message, 'utf-8')
+
+
+class TestProfileHelper:
+
+    def test_creation(self):
+        file_name, path = 'test.tox', os.path.dirname(os.path.realpath(__file__)) + '/'
+        data = b'test'
+        with open(path + file_name, 'wb') as fl:
+            fl.write(data)
+        ph = ProfileHelper(path, file_name[:4])
+        assert ProfileHelper.get_path() == path
+        assert ph.open_profile() == data
+        assert os.path.exists(path + 'avatars/')
+        profiles = ph.find_profiles()
+        assert len(profiles) == 1
 
 
 class TestDNS:
@@ -97,3 +110,5 @@ class TestFriend:
         friend.append_message(m.TextMessage('Hello! It is test!', MESSAGE_OWNER['ME'], t, 0))
         assert len(friend.get_corr()) == 2
         assert len(friend.get_corr_for_saving()) == 1
+
+# TODO: more friend tests and history test
