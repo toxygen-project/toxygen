@@ -50,14 +50,14 @@ def get_url(version):
         return 'https://github.com/toxygen-project/toxygen/archive/v' + version + '.zip'
     else:
         name = 'toxygen_windows.zip' if platform.system() == 'Windows' else 'toxygen_linux.tar.gz'
-        return 'https://github.com/toxygen-project/toxygen/releases/tag/v{}/{}'.format(version, name)
+        return 'https://github.com/toxygen-project/toxygen/releases/download/v{}/{}'.format(version, name)
 
 
 def get_params(url, version):
     if is_from_sources():
         return ['python3', 'toxygen_updater.py', url, version]
     elif platform.system() == 'Windows':
-        return ['run', 'toxygen_updater.exe', url, version]
+        return [util.curr_directory() + '/toxygen_updater.exe', url, version]
     else:
         return ['./toxygen_updater', url, version]
 
@@ -66,6 +66,7 @@ def download(version):
     os.chdir(util.curr_directory())
     url = get_url(version)
     params = get_params(url, version)
+    print('Updating Toxygen')
     try:
         subprocess.Popen(params)
     except Exception as ex:
@@ -89,7 +90,7 @@ def send_request(version):
             QtCore.QThread.msleep(1)
             QtCore.QCoreApplication.processEvents()
         attr = reply.attribute(QtNetwork.QNetworkRequest.HttpStatusCodeAttribute)
-        return 200 <= attr < 300
+        return attr is not None and 200 <= attr < 300
     except Exception as ex:
         util.log('TOXYGEN UPDATER ERROR: ' + str(ex))
         return False
