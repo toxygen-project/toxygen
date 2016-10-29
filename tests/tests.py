@@ -31,8 +31,6 @@ class TestProfileHelper:
         assert ProfileHelper.get_path() == path
         assert ph.open_profile() == data
         assert os.path.exists(path + 'avatars/')
-        profiles = ph.find_profiles()
-        assert len(profiles) == 1
 
 
 class TestDNS:
