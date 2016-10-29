@@ -26,7 +26,7 @@ def log(name, data):
     :param data: data for saving in log
     """
     with open(path_to_data(name) + 'logs.txt', 'a') as fl:
-        fl.write(bytes(data, 'utf-8') + b'\n')
+        fl.write(str(data) + '\n')
 
 
 class PluginSuperClass:
@@ -129,7 +129,7 @@ class PluginSuperClass:
         """
         App is closing
         """
-        pass
+        self.stop()
 
     def command(self, command):
         """
@@ -169,6 +169,7 @@ class PluginSuperClass:
     def load_settings(self):
         """
         This method loads settings of plugin and returns raw data
+        If file doesn't this method raises exception
         """
         with open(path_to_data(self._short_name) + 'settings.json', 'rb') as fl:
             data = fl.read()

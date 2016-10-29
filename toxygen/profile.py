@@ -249,7 +249,10 @@ class Profile(basecontact.BaseContact, Singleton):
     active_friend = property(get_active, set_active)
 
     def get_last_message(self):
-        return self._contacts[self._active_friend].get_last_message_text()
+        if self._active_friend + 1:
+            return self._contacts[self._active_friend].get_last_message_text()
+        else:
+            return ''
 
     def get_active_number(self):
         return self._contacts[self._active_friend].number if self._active_friend + 1 else -1
@@ -1200,7 +1203,8 @@ class Profile(basecontact.BaseContact, Singleton):
         """
         self._call.accept_call(friend_number, audio, video)
         self._screen.active_call()
-        self._incoming_calls.remove(friend_number)
+        if friend_number in self._incoming_calls:
+            self._incoming_calls.remove(friend_number)
         if hasattr(self, '_call_widget'):
             del self._call_widget
 
