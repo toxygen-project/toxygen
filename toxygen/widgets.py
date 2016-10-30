@@ -15,6 +15,13 @@ class DataLabel(QtGui.QLabel):
         super().setText(text)
 
 
+class ComboBox(QtGui.QComboBox):
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.view().setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Expanding)
+
+
 class CenteredWidget(QtGui.QWidget):
 
     def __init__(self):

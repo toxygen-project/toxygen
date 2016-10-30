@@ -186,6 +186,10 @@ class Contact(basecontact.BaseContact):
 
     visibility = property(get_visibility, set_visibility)
 
+    def set_widget(self, widget):
+        self._widget = widget
+        self.init_widget()
+
     # -----------------------------------------------------------------------------------------------------------------
     # Unread messages and other actions from friend
     # -----------------------------------------------------------------------------------------------------------------

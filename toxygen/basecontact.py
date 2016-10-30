@@ -24,10 +24,7 @@ class BaseContact:
         self._name, self._status_message = name, status_message
         self._status, self._widget = None, widget
         self._tox_id = tox_id
-        if self._widget is not None:
-            self._widget.name.setText(name)
-            self._widget.status_message.setText(status_message)
-            self.load_avatar()
+        self.init_widget()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Name - current name or alias of user
@@ -112,3 +109,10 @@ class BaseContact:
 
     def get_pixmap(self):
         return self._widget.avatar_label.pixmap()
+
+    def init_widget(self):
+        if self._widget is not None:
+            self._widget.name.setText(self._name)
+            self._widget.status_message.setText(self._status_message)
+            self._widget.connection_status.update(self._status)
+            self.load_avatar()

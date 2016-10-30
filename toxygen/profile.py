@@ -43,13 +43,13 @@ class Profile(basecontact.BaseContact, Singleton):
         self._load_history = True
         self._factory = items_factory.ItemsFactory(self._screen.friends_list, self._messages)
         settings = Settings.get_instance()
-        self._show_online = settings['show_online_friends']
+        self._sorting = settings['sorting']
         self._show_avatars = settings['show_avatars']
         self._filter_string = ''
         self._friend_item_height = 40 if settings['compact_mode'] else 70
         self._paused_file_transfers = dict(settings['paused_file_transfers'])
         # key - file id, value: [path, friend number, is incoming, start position]
-        screen.online_contacts.setCurrentIndex(int(self._show_online))
+        screen.online_contacts.setCurrentIndex(int(self._sorting))
         aliases = settings['friends_aliases']
         data = tox.self_get_friend_list()
         self._history = History(tox.self_get_public_key())  # connection to db
@@ -69,7 +69,7 @@ class Profile(basecontact.BaseContact, Singleton):
             friend = Friend(message_getter, i, name, status_message, item, tox_id)
             friend.set_alias(alias)
             self._contacts.append(friend)
-        self.filtration(self._show_online)
+        self.filtration_and_sorting(self._sorting)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Edit current user's data
@@ -119,31 +119,59 @@ class Profile(basecontact.BaseContact, Singleton):
     # Filtration
     # -----------------------------------------------------------------------------------------------------------------
 
-    def filtration(self, show_online=True, filter_str=''):
+    def filtration_and_sorting(self, sorting=0, filter_str=''):
         """
         Filtration of friends list
-        :param show_online: show online only contacts
+        :param sorting: 0 - no sort, 1 - online only, 2 - online first, 4 - by name
         :param filter_str: show contacts which name contains this substring
         """
         filter_str = filter_str.lower()
         settings = Settings.get_instance()
+        if sorting > 1:
+            if sorting & 2:
+                self._contacts = sorted(self._contacts, key=lambda x: int(x.status is not None), reverse=True)
+            if sorting & 4:
+                if not sorting & 2:
+                    self._contacts = sorted(self._contacts, key=lambda x: x.name)
+                else:  # save results of prev sorting
+                    online_friends = filter(lambda x: x.status is not None, self._contacts)
+                    count = len(list(online_friends))
+                    part1 = self._contacts[:count]
+                    part2 = self._contacts[count:]
+                    part1 = sorted(part1, key=lambda x: x.name)
+                    part2 = sorted(part2, key=lambda x: x.name)
+                    self._contacts = part1 + part2
+            else:  # sort by number
+                online_friends = filter(lambda x: x.status is not None, self._contacts)
+                count = len(list(online_friends))
+                part1 = self._contacts[:count]
+                part2 = self._contacts[count:]
+                part1 = sorted(part1, key=lambda x: x.number)
+                part2 = sorted(part2, key=lambda x: x.number)
+                self._contacts = part1 + part2
+            self._screen.friends_list.clear()
+            for contact in self._contacts:
+                contact.set_widget(self.create_friend_item())
         for index, friend in enumerate(self._contacts):
-            friend.visibility = (friend.status is not None or not show_online) and (filter_str in friend.name.lower())
+            friend.visibility = (friend.status is not None or not (sorting & 1)) and (filter_str in friend.name.lower())
             friend.visibility = friend.visibility or friend.messages or friend.actions
             if friend.visibility:
-                self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250,
-                                                                               self._friend_item_height))
+                self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, self._friend_item_height))
             else:
                 self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 0))
-        self._show_online, self._filter_string = show_online, filter_str
-        settings['show_online_friends'] = self._show_online
+        self._sorting, self._filter_string = sorting, filter_str
+        settings['sorting'] = self._sorting
         settings.save()
 
     def update_filtration(self):
         """
         Update list of contacts when 1 of friends change connection status
         """
-        self.filtration(self._show_online, self._filter_string)
+        self.filtration_and_sorting(self._sorting, self._filter_string)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Friend getters
+    # -----------------------------------------------------------------------------------------------------------------
 
     def get_friend_by_number(self, num):
         return list(filter(lambda x: x.number == num, self._contacts))[0]

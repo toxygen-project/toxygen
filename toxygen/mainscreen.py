@@ -3,7 +3,7 @@
 from menu import *
 from profile import *
 from list_items import *
-from widgets import MultilineEdit, LineEdit
+from widgets import MultilineEdit, LineEdit, ComboBox
 import plugin_support
 from mainscreen_widgets import *
 import settings
@@ -123,7 +123,13 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.online_contacts.clear()
         self.online_contacts.addItem(QtGui.QApplication.translate("MainWindow", "All", None, QtGui.QApplication.UnicodeUTF8))
         self.online_contacts.addItem(QtGui.QApplication.translate("MainWindow", "Online", None, QtGui.QApplication.UnicodeUTF8))
-        self.online_contacts.setCurrentIndex(int(Settings.get_instance()['show_online_friends']))
+        self.online_contacts.addItem(QtGui.QApplication.translate("MainWindow", "Online first", None, QtGui.QApplication.UnicodeUTF8))
+        self.online_contacts.addItem(QtGui.QApplication.translate("MainWindow", "Name", None, QtGui.QApplication.UnicodeUTF8))
+        self.online_contacts.addItem(QtGui.QApplication.translate("MainWindow", "Online and by name", None, QtGui.QApplication.UnicodeUTF8))
+        self.online_contacts.addItem(QtGui.QApplication.translate("MainWindow", "Online first and by name", None, QtGui.QApplication.UnicodeUTF8))
+        ind = Settings.get_instance()['sorting']
+        d = {0: 0, 1: 1, 2: 2, 3: 4, 1 | 4: 4, 2 | 4: 5}
+        self.online_contacts.setCurrentIndex(d[ind])
         self.importPlugin.setText(QtGui.QApplication.translate("MainWindow", "Import plugin", None, QtGui.QApplication.UnicodeUTF8))
 
     def setup_right_bottom(self, Form):
@@ -171,7 +177,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.contact_name.setObjectName("contact_name")
         self.contact_name.textChanged.connect(self.filtering)
 
-        self.online_contacts = QtGui.QComboBox(Form)
+        self.online_contacts = ComboBox(Form)
         self.online_contacts.setGeometry(QtCore.QRect(150, 0, 120, 25))
         self.online_contacts.activated[int].connect(lambda x: self.filtering())
         self.search_label.raise_()
@@ -257,6 +263,8 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.friends_list.connect(self.friends_list, QtCore.SIGNAL("customContextMenuRequested(QPoint)"),
                                   self.friend_right_click)
         self.friends_list.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.friends_list.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.friends_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
     def setup_right_center(self, widget):
         self.messages = QtGui.QListWidget(widget)
@@ -512,9 +520,9 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         if self.profile.active_friend + 1:
             self.sticker = StickerWindow(self)
             self.sticker.setGeometry(QtCore.QRect(self.x() if Settings.get_instance()['mirror_mode'] else 270 + self.x(),
-                                                 self.y() + self.height() - 200,
-                                                 self.sticker.width(),
-                                                 self.sticker.height()))
+                                                  self.y() + self.height() - 200,
+                                                  self.sticker.width(),
+                                                  self.sticker.height()))
             self.sticker.show()
 
     def active_call(self):
@@ -663,4 +671,6 @@ class MainWindow(QtGui.QMainWindow, Singleton):
             super(MainWindow, self).mouseReleaseEvent(event)
 
     def filtering(self):
-        self.profile.filtration(self.online_contacts.currentIndex() == 1, self.contact_name.text())
+        ind = self.online_contacts.currentIndex()
+        d = {0: 0, 1: 1, 2: 2, 3: 4, 4: 1 | 4, 5: 2 | 4}
+        self.profile.filtration_and_sorting(d[ind], self.contact_name.text())

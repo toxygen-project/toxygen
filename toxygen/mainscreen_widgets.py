@@ -365,7 +365,7 @@ class WelcomeScreen(CenteredWidget):
                                                 None, QtGui.QApplication.UnicodeUTF8)
         elif num == 6:
             text = QtGui.QApplication.translate('WelcomeScreen',
-                                                'New in Toxygen v0.2.4:<br>File transfers update<br>Autoreconnection<br>Improvements<br>Bug fixes',
+                                                'New in Toxygen v0.2.6:<br>Updater<br>Better contact sorting<br>Plugins improvements',
                                                 None, QtGui.QApplication.UnicodeUTF8)
         elif num == 7:
             text = QtGui.QApplication.translate('WelcomeScreen',

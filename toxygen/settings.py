@@ -121,7 +121,7 @@ class Settings(dict, Singleton):
             'allow_inline': True,
             'allow_auto_accept': True,
             'auto_accept_path': None,
-            'show_online_friends': False,
+            'sorting': 0,
             'auto_accept_from_friends': [],
             'paused_file_transfers': {},
             'resend_files': True,
