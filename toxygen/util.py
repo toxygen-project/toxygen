@@ -1,6 +1,7 @@
 import os
 import time
 import shutil
+import sys
 
 program_version = '0.2.6'
 
@@ -41,6 +42,16 @@ def convert_time(t):
     h, m = divmod(m, 60)
     d, h = divmod(h, 24)
     return '%02d:%02d' % (h, m)
+
+
+def append_slash(s):
+    if s[-1] not in ('\\', '/'):
+        s += '/'
+    return s
+
+
+def is_64_bit():
+    return sys.maxsize > 2 ** 32
 
 
 class Singleton:

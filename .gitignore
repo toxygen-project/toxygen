@@ -22,4 +22,5 @@ toxygen/__pycache__
 /*.egg
 html
 Toxygen.egg-info
+*.tox
 

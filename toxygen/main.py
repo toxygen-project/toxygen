@@ -9,7 +9,7 @@ except ImportError:
 from bootstrap import node_generator
 from mainscreen import MainWindow
 from callbacks import init_callbacks, stop, start
-from util import curr_directory, program_version, remove
+from util import curr_directory, program_version, remove, is_64_bit
 import styles.style
 import platform
 import toxencryptsave
@@ -137,7 +137,7 @@ class Toxygen:
                     if reply == QtGui.QMessageBox.Yes:
                         path = Settings.get_default_path()
                     else:
-                        path = curr_directory()
+                        path = curr_directory() + '/'
                     ProfileHelper(path, name).save_profile(self.tox.get_savedata())
                     path = Settings.get_default_path()
                     settings = Settings(name)
@@ -446,7 +446,7 @@ def clean():
 def configure():
     """Removes unused libs"""
     d = curr_directory() + '/libs/'
-    is_64bits = sys.maxsize > 2 ** 32
+    is_64bits = is_64_bit()
     if not is_64bits:
         if os.path.exists(d + 'libtox64.dll'):
             os.remove(d + 'libtox64.dll')

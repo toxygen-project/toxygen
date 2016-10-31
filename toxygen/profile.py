@@ -132,14 +132,14 @@ class Profile(basecontact.BaseContact, Singleton):
                 self._contacts = sorted(self._contacts, key=lambda x: int(x.status is not None), reverse=True)
             if sorting & 4:
                 if not sorting & 2:
-                    self._contacts = sorted(self._contacts, key=lambda x: x.name)
+                    self._contacts = sorted(self._contacts, key=lambda x: x.name.lower())
                 else:  # save results of prev sorting
                     online_friends = filter(lambda x: x.status is not None, self._contacts)
                     count = len(list(online_friends))
                     part1 = self._contacts[:count]
                     part2 = self._contacts[count:]
-                    part1 = sorted(part1, key=lambda x: x.name)
-                    part2 = sorted(part2, key=lambda x: x.name)
+                    part1 = sorted(part1, key=lambda x: x.name.lower())
+                    part2 = sorted(part2, key=lambda x: x.name.lower())
                     self._contacts = part1 + part2
             else:  # sort by number
                 online_friends = filter(lambda x: x.status is not None, self._contacts)
@@ -177,6 +177,8 @@ class Profile(basecontact.BaseContact, Singleton):
         return list(filter(lambda x: x.number == num, self._contacts))[0]
 
     def get_friend(self, num):
+        if num < 0 or num >= len(self._contacts):
+            return None
         return self._contacts[num]
 
     # -----------------------------------------------------------------------------------------------------------------

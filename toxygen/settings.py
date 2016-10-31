@@ -1,7 +1,7 @@
 from platform import system
 import json
 import os
-from util import Singleton, curr_directory, log, copy
+from util import Singleton, curr_directory, log, copy, append_slash
 import pyaudio
 from toxencryptsave import ToxEncryptSave
 import smileys
@@ -232,6 +232,7 @@ class ProfileHelper(Singleton):
     """
     def __init__(self, path, name):
         Singleton.__init__(self)
+        path = append_slash(path)
         self._path = path + name + '.tox'
         self._directory = path
         # create /avatars if not exists:

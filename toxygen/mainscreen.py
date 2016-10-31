@@ -554,6 +554,8 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         item = self.friends_list.itemAt(pos)
         num = self.friends_list.indexFromItem(item).row()
         friend = Profile.get_instance().get_friend(num)
+        if friend is None:
+            return
         settings = Settings.get_instance()
         allowed = friend.tox_id in settings['auto_accept_from_friends']
         auto = QtGui.QApplication.translate("MainWindow", 'Disallow auto accept', None, QtGui.QApplication.UnicodeUTF8) if allowed else QtGui.QApplication.translate("MainWindow", 'Allow auto accept', None, QtGui.QApplication.UnicodeUTF8)
