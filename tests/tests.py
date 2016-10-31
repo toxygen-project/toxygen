@@ -54,18 +54,19 @@ class TestEncryption:
         tox = tox_factory()
         data = tox.get_savedata()
         lib = encr.ToxEncryptSave()
-        lib.set_password('easypassword')
-        copy_data = data[:]
-        data = lib.pass_encrypt(data)
-        data = lib.pass_decrypt(data)
-        assert copy_data == data
+        for password in ('easypassword', 'njvnjfnvaGGV6', 'toxygen'):
+            lib.set_password(password)
+            copy_data = data[:]
+            new_data = lib.pass_encrypt(data)
+            new_data = lib.pass_decrypt(new_data)
+            assert copy_data == new_data
 
 
 class TestFriend:
 
     def create_singletons(self):
         Settings._instance = Settings.get_default_settings()
-        ProfileHelper('', 'test')
+        ProfileHelper('abc', 'test')
 
     def create_friend(self, name, status_message, number, tox_id):
         friend = Friend(None, number, name, status_message, None, tox_id)

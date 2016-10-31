@@ -45,7 +45,7 @@ def convert_time(t):
 
 
 def append_slash(s):
-    if s[-1] not in ('\\', '/'):
+    if len(s) and s[-1] not in ('\\', '/'):
         s += '/'
     return s
 
