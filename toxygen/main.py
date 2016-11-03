@@ -138,7 +138,18 @@ class Toxygen:
                         path = Settings.get_default_path()
                     else:
                         path = curr_directory() + '/'
-                    ProfileHelper(path, name).save_profile(self.tox.get_savedata())
+                    try:
+                        ProfileHelper(path, name).save_profile(self.tox.get_savedata())
+                    except Exception as ex:
+                        print(str(ex))
+                        log('Profile creation exception: ' + str(ex))
+                        msgBox = QtGui.QMessageBox()
+                        msgBox.setText(QtGui.QApplication.translate("login",
+                                                                    'Profile saving error! Does Toxygen have permission to write to this directory?',
+                                                                    None,
+                                                                    QtGui.QApplication.UnicodeUTF8))
+                        msgBox.exec_()
+                        return
                     path = Settings.get_default_path()
                     settings = Settings(name)
                     if curr_lang in langs:
