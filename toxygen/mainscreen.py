@@ -372,7 +372,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.close()
 
     def resizeEvent(self, *args, **kwargs):
-        self.messages.setGeometry(0, 0, self.width() - 270, self.height() - 155)
+        self.messages.setGeometry(0, 0, self.width() - 270, self.height() - 158)
         self.friends_list.setGeometry(0, 0, 270, self.height() - 125)
 
         self.videocallButton.setGeometry(QtCore.QRect(self.width() - 330, 10, 50, 50))

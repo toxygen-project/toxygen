@@ -32,7 +32,8 @@ def copy(src, dest):
 
 
 def remove(folder):
-    shutil.rmtree(folder)
+    if os.path.isdir(folder):
+        shutil.rmtree(folder)
 
 
 def convert_time(t):
