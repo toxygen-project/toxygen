@@ -272,6 +272,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.friends_list.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
         self.friends_list.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.friends_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.friends_list.verticalScrollBar().setContextMenuPolicy(QtCore.Qt.NoContextMenu)
 
     def setup_right_center(self, widget):
         self.messages = QtGui.QListWidget(widget)
@@ -281,6 +282,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.messages.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
         self.messages.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
         self.messages.focusOutEvent = lambda event: self.messages.clearSelection()
+        self.messages.verticalScrollBar().setContextMenuPolicy(QtCore.Qt.NoContextMenu)
 
         def load(pos):
             if not pos:
@@ -372,8 +374,8 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.close()
 
     def resizeEvent(self, *args, **kwargs):
-        self.messages.setGeometry(0, 0, self.width() - 270, self.height() - 158)
-        self.friends_list.setGeometry(0, 0, 270, self.height() - 125)
+        self.messages.setGeometry(0, 0, self.width() - 270, self.height() - 159)
+        self.friends_list.setGeometry(0, 0, 270, self.height() - 129)
 
         self.videocallButton.setGeometry(QtCore.QRect(self.width() - 330, 10, 50, 50))
         self.callButton.setGeometry(QtCore.QRect(self.width() - 390, 10, 50, 50))

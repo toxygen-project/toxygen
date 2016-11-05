@@ -120,7 +120,7 @@ class Contact(basecontact.BaseContact):
         """
         Delete old messages (reduces RAM if messages saving is not enabled)
         """
-        old = filter(lambda x: x.get_type() in (2, 3) and (x.get_status() >= 2 or x.get_status() is None),
+        old = filter(lambda x: x.get_type() == 2 and (x.get_status() >= 2 or x.get_status() is None),
                      self._corr[:-SAVE_MESSAGES])
         old = list(old)
         l = max(len(self._corr) - SAVE_MESSAGES, 0) - len(old)
