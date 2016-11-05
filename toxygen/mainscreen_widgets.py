@@ -392,3 +392,15 @@ class WelcomeScreen(CenteredWidget):
         s = settings.Settings.get_instance()
         s['show_welcome_screen'] = False
         s.save()
+
+
+class MainMenuButton(QtGui.QPushButton):
+
+    def __init__(self, *args):
+        super().__init__(*args)
+        self.setObjectName("mainmenubutton")
+
+    def setText(self, text):
+        metrics = QtGui.QFontMetrics(self.font())
+        self.setFixedWidth(metrics.size(QtCore.Qt.TextSingleLine, text).width() + 20)
+        super().setText(text)

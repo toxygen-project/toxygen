@@ -1070,12 +1070,6 @@ QToolButton::menu-arrow:open {
     border: 1px solid #3A3939;
 }
 
-QPushButton::menu-indicator  {
-    subcontrol-origin: padding;
-    subcontrol-position: bottom right;
-    left: 8px;
-}
-
 QTableView
 {
     border: 1px solid #444;
@@ -1286,4 +1280,33 @@ QListWidget > QLabel
 #contact_name
 {
     padding-left: 22px;
+}
+
+#mainmenubutton
+{
+    border: 1px solid #3A3939;
+    color: silver;
+    margin: 0px;
+    text-align: center;
+}
+
+#mainmenubutton:hover
+{
+    background: transparent;
+    border: 1px solid #A9A9A9;
+    background-color: #302F2F;
+}
+
+#mainmenubutton:pressed
+{
+    background: transparent;
+    border: 1px solid #A9A9A9;
+    background-color: #302F2F;
+}
+
+#mainmenubutton::menu-indicator
+{
+    image: none;
+    width: 0px;
+    height: 0px;
 }
