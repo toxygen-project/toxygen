@@ -49,7 +49,12 @@ def get_url(version):
     if is_from_sources():
         return 'https://github.com/toxygen-project/toxygen/archive/v' + version + '.zip'
     else:
-        name = 'toxygen_windows.zip' if platform.system() == 'Windows' else 'toxygen_linux.tar.gz'
+        if platform.system() == 'Windows':
+            name = 'toxygen_windows.zip'
+        elif util.is_64_bit():
+            name = 'toxygen_linux_64.tar.gz'
+        else:
+            name = 'toxygen_linux.tar.gz'
         return 'https://github.com/toxygen-project/toxygen/releases/download/v{}/{}'.format(version, name)
 
 
@@ -67,6 +72,7 @@ def download(version):
     url = get_url(version)
     params = get_params(url, version)
     print('Updating Toxygen')
+    util.log('Updating Toxygen')
     try:
         subprocess.Popen(params)
     except Exception as ex:
