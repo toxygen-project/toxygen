@@ -9,7 +9,7 @@ class DataLabel(QtGui.QLabel):
     Label with elided text
     """
     def setText(self, text):
-        text = ''.join(c if c <= '\U0010FFFF' else '\u25AF' for c in text)
+        text = ''.join('\u25AF' if len(bytes(c, 'utf-8')) >= 4 else c for c in text)
         metrics = QtGui.QFontMetrics(self.font())
         text = metrics.elidedText(text, QtCore.Qt.ElideRight, self.width())
         super().setText(text)

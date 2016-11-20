@@ -5,6 +5,7 @@ from widgets import MultilineEdit, LineEdit, ComboBox
 import plugin_support
 from mainscreen_widgets import *
 import settings
+import platform
 
 
 class MainWindow(QtGui.QMainWindow, Singleton):
@@ -374,8 +375,12 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.close()
 
     def resizeEvent(self, *args, **kwargs):
-        self.messages.setGeometry(0, 0, self.width() - 270, self.height() - 159)
-        self.friends_list.setGeometry(0, 0, 270, self.height() - 129)
+        if platform.system() == 'Windows':
+            self.messages.setGeometry(0, 0, self.width() - 270, self.height() - 155)
+            self.friends_list.setGeometry(0, 0, 270, self.height() - 125)
+        else:
+            self.messages.setGeometry(0, 0, self.width() - 270, self.height() - 159)
+            self.friends_list.setGeometry(0, 0, 270, self.height() - 129)
 
         self.videocallButton.setGeometry(QtCore.QRect(self.width() - 330, 10, 50, 50))
         self.callButton.setGeometry(QtCore.QRect(self.width() - 390, 10, 50, 50))
