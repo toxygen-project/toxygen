@@ -1151,7 +1151,6 @@ class Profile(basecontact.BaseContact, Singleton):
         if not os.path.isfile(avatar_path):  # reset image
             avatar_path = None
         sa = SendAvatar(avatar_path, self._tox, friend_number)
-        sa.set_transfer_finished_handler(self.transfer_finished)
         self._file_transfers[(friend_number, sa.get_file_number())] = sa
 
     def incoming_avatar(self, friend_number, file_number, size):
@@ -1164,6 +1163,7 @@ class Profile(basecontact.BaseContact, Singleton):
         ra = ReceiveAvatar(self._tox, friend_number, size, file_number)
         if ra.state != TOX_FILE_TRANSFER_STATE['CANCELLED']:
             self._file_transfers[(friend_number, file_number)] = ra
+            ra.set_transfer_finished_handler(self.transfer_finished)
         else:
             self.get_friend_by_number(friend_number).load_avatar()
             if self.get_active_number() == friend_number:
