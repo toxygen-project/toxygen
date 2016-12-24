@@ -127,6 +127,7 @@ class Profile(basecontact.BaseContact, Singleton):
         """
         filter_str = filter_str.lower()
         settings = Settings.get_instance()
+        number = self.get_active_number()
         if sorting > 1:
             if sorting & 2:
                 self._contacts = sorted(self._contacts, key=lambda x: int(x.status is not None), reverse=True)
@@ -162,6 +163,7 @@ class Profile(basecontact.BaseContact, Singleton):
         self._sorting, self._filter_string = sorting, filter_str
         settings['sorting'] = self._sorting
         settings.save()
+        self.set_active_by_number(number)
 
     def update_filtration(self):
         """
@@ -270,11 +272,16 @@ class Profile(basecontact.BaseContact, Singleton):
             pixmap = QtGui.QPixmap(avatar_path)
             self._screen.account_avatar.setPixmap(pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio,
                                                                 QtCore.Qt.SmoothTransformation))
-            self.update_filtration()
         except Exception as ex:  # no friend found. ignore
             log('Friend value: ' + str(value))
             log('Error in set active: ' + str(ex))
             raise
+
+    def set_active_by_number(self, number):
+        for i in range(len(self._contacts)):
+            if self._contacts[i].number == number:
+                self._active_friend = i
+                break
 
     active_friend = property(get_active, set_active)
 

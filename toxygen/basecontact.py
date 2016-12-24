@@ -86,7 +86,7 @@ class BaseContact:
         """
         avatar_path = '{}.png'.format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
         os.chdir(ProfileHelper.get_path() + 'avatars/')
-        if not os.path.isfile(avatar_path):  # load default image
+        if not os.path.isfile(avatar_path) or not os.path.getsize(avatar_path):  # load default image
             avatar_path = 'avatar.png'
             os.chdir(curr_directory() + '/images/')
         width = self._widget.avatar_label.width()
