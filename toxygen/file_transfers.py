@@ -32,6 +32,10 @@ SHOW_PROGRESS_BAR = (0, 1, 4)
 ALLOWED_FILES = ('toxygen_inline.png', 'utox-inline.png', 'sticker.png')
 
 
+def is_inline(file_name):
+    return file_name in ALLOWED_FILES or file_name.startswith('qTox_Screenshot_')
+
+
 class StateSignal(QtCore.QObject):
 
     signal = QtCore.Signal(int, float, int)  # state, progress, time in sec

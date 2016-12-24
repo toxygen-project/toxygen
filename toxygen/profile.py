@@ -883,7 +883,7 @@ class Profile(basecontact.BaseContact, Singleton):
         settings = Settings.get_instance()
         friend = self.get_friend_by_number(friend_number)
         auto = settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']
-        inline = (file_name in ALLOWED_FILES) and settings['allow_inline']
+        inline = is_inline(file_name) and settings['allow_inline']
         file_id = self._tox.file_get_file_id(friend_number, file_number)
         accepted = True
         if file_id in self._paused_file_transfers:
