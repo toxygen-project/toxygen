@@ -475,6 +475,10 @@ def configure():
             pass
 
 
+def reset():
+    Settings.reset_auto_profile()
+
+
 def main():
     if len(sys.argv) == 1:
         toxygen = Toxygen()
@@ -491,6 +495,9 @@ def main():
             return
         elif arg == '--clean':
             clean()
+            return
+        elif arg == '--reset':
+            reset()
             return
         else:
             toxygen = Toxygen(arg)
