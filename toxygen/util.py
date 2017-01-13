@@ -37,12 +37,21 @@ def remove(folder):
 
 
 def convert_time(t):
-    offset = time.timezone - time.daylight * 3600
+    offset = time.timezone + time_offset() * 3600
     sec = int(t) - offset
     m, s = divmod(sec, 60)
     h, m = divmod(m, 60)
     d, h = divmod(h, 24)
     return '%02d:%02d' % (h, m)
+
+
+def time_offset():
+    hours = time.strftime('%H')
+    sec = int(time.time()) - time.timezone
+    m, s = divmod(sec, 60)
+    h, m = divmod(m, 60)
+    d, h = divmod(h, 24)
+    return int(hours) - h
 
 
 def append_slash(s):

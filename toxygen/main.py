@@ -488,7 +488,7 @@ def main():
             print('Toxygen v' + program_version)
             return
         elif arg == '--help':
-            print('Usage:\ntoxygen path_to_profile\ntoxygen tox_id\ntoxygen --version')
+            print('Usage:\ntoxygen path_to_profile\ntoxygen tox_id\ntoxygen --version\ntoxygen --reset')
             return
         elif arg == '--configure':
             configure()
