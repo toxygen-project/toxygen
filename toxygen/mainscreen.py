@@ -690,6 +690,10 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         else:
             super(MainWindow, self).mouseReleaseEvent(event)
 
+    def show(self):
+        super().show()
+        self.profile.update()
+
     def filtering(self):
         ind = self.online_contacts.currentIndex()
         d = {0: 0, 1: 1, 2: 2, 3: 4, 4: 1 | 4, 5: 2 | 4}
