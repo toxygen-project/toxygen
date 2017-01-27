@@ -2154,7 +2154,7 @@ class Tox:
         result = Tox.libtoxcore.tox_group_invite_friend(self._tox_pointer, groupnumber, friend_number, byref(error))
         return result
 
-    def group_invite_accept(self, invite_data, password=None):
+    def group_invite_accept(self, invite_data, friend_number, password=None):
         """
         Accept an invite to a group chat that the client previously received from a friend. The invite
         is only valid while the inviter is present in the group.
@@ -2167,7 +2167,7 @@ class Tox:
         error = c_int()
         f = Tox.libtoxcore.tox_group_invite_accept
         f.restype = c_uint32
-        result = f(self._tox_pointer, invite_data, len(invite_data), password,
+        result = f(self._tox_pointer, friend_number, invite_data, len(invite_data), password,
                    len(password) if password is not None else 0, byref(error))
         print('Invite accept. Result:', result, 'Error:', error.value)
         return result

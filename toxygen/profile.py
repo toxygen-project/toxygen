@@ -1308,7 +1308,7 @@ class Profile(basecontact.BaseContact, Singleton):
             fr_req = QtGui.QApplication.translate('MainWindow', 'Group chat invite', None, QtGui.QApplication.UnicodeUTF8)
             reply = QtGui.QMessageBox.question(None, fr_req, info, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
             if reply == QtGui.QMessageBox.Yes:  # accepted
-                num = self._tox.group_invite_accept(data)
+                num = self._tox.group_invite_accept(data, friend_num)
                 data = self._tox.get_savedata()
                 ProfileHelper.get_instance().save_profile(data)
                 print('In gc invite', num)
