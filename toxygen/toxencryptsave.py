@@ -33,6 +33,8 @@ TOX_ERR_DECRYPTION = {
 
 TOX_PASS_ENCRYPTION_EXTRA_LENGTH = 80
 
+# TODO: move logic to separate class
+
 
 class ToxEncryptSave(util.Singleton):
 

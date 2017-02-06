@@ -31,7 +31,7 @@ def log(name, data):
 
 class PluginSuperClass:
     """
-    Superclass for all plugins. Plugin is python module with at least one class derived from PluginSuperClass.
+    Superclass for all plugins. Plugin is Python3 module with at least one class derived from PluginSuperClass.
     """
     is_plugin = True
 
@@ -169,7 +169,7 @@ class PluginSuperClass:
     def load_settings(self):
         """
         This method loads settings of plugin and returns raw data
-        If file doesn't this method raises exception
+        If file doesn't exist this method raises exception
         """
         with open(path_to_data(self._short_name) + 'settings.json', 'rb') as fl:
             data = fl.read()
