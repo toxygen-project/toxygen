@@ -1,6 +1,6 @@
 from toxygen.profile import *
 from toxygen.tox_dns import tox_dns
-import toxygen.toxencryptsave as encr
+import toxygen.toxes as encr
 import toxygen.messages as m
 import time
 
@@ -53,8 +53,8 @@ class TestEncryption:
     def test_encr_decr(self):
         tox = tox_factory()
         data = tox.get_savedata()
-        lib = encr.ToxEncryptSave()
-        for password in ('easypassword', 'njvnjfnvaGGV6', 'toxygen'):
+        lib = encr.ToxES()
+        for password in ('easypassword', 'njvnFjfn7vaGGV6', 'toxygen'):
             lib.set_password(password)
             copy_data = data[:]
             new_data = lib.pass_encrypt(data)
