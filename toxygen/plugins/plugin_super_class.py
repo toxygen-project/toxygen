@@ -43,7 +43,7 @@ class PluginSuperClass:
         :param tox: tox instance
         :param profile: profile instance
         :param settings: profile settings
-        :param encrypt_save: LibToxEncryptSave instance.
+        :param encrypt_save: ToxES instance.
         """
         self._settings = settings
         self._profile = profile

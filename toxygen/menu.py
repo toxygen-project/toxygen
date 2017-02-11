@@ -7,7 +7,7 @@ from profile import Profile
 from util import curr_directory, copy
 from widgets import CenteredWidget, DataLabel, LineEdit
 import pyaudio
-import toxencryptsave
+import toxes
 import plugin_support
 import updater
 
@@ -215,7 +215,7 @@ class ProfileSettings(CenteredWidget):
     def new_password(self):
         if self.password.text() == self.confirm_password.text():
             if not len(self.password.text()) or len(self.password.text()) >= 8:
-                e = toxencryptsave.ToxEncryptSave.get_instance()
+                e = toxes.ToxES.get_instance()
                 e.set_password(self.password.text())
                 self.close()
             else:

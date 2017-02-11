@@ -4,7 +4,7 @@ import os
 import importlib
 import inspect
 import plugins.plugin_super_class as pl
-import toxencryptsave
+import toxes
 import sys
 
 
@@ -16,7 +16,7 @@ class PluginLoader(util.Singleton):
         self._settings = settings
         self._plugins = {}  # dict. key - plugin unique short name, value - tuple (plugin instance, is active)
         self._tox = tox
-        self._encr = toxencryptsave.ToxEncryptSave.get_instance()
+        self._encr = toxes.ToxES.get_instance()
 
     def set_tox(self, tox):
         """

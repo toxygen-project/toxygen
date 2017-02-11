@@ -6,6 +6,7 @@ import plugin_support
 from mainscreen_widgets import *
 import settings
 import platform
+import toxes
 
 
 class MainWindow(QtGui.QMainWindow, Singleton):
@@ -478,7 +479,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
             msgBox.exec_()
 
     def lock_app(self):
-        if toxencryptsave.ToxEncryptSave.get_instance().has_password():
+        if toxes.ToxES.get_instance().has_password():
             Settings.get_instance().locked = True
             self.hide()
         else:

@@ -3,7 +3,7 @@ import json
 import os
 from util import Singleton, curr_directory, log, copy, append_slash
 import pyaudio
-from toxencryptsave import ToxEncryptSave
+from toxes import ToxES
 import smileys
 
 
@@ -19,7 +19,7 @@ class Settings(dict, Singleton):
         if os.path.isfile(self.path):
             with open(self.path, 'rb') as fl:
                 data = fl.read()
-            inst = ToxEncryptSave.get_instance()
+            inst = ToxES.get_instance()
             try:
                 if inst.is_data_encrypted(data):
                     data = inst.pass_decrypt(data)
@@ -167,7 +167,7 @@ class Settings(dict, Singleton):
 
     def save(self):
         text = json.dumps(self)
-        inst = ToxEncryptSave.get_instance()
+        inst = ToxES.get_instance()
         if inst.has_password():
             text = bytes(inst.pass_encrypt(bytes(text, 'utf-8')))
         else:
@@ -252,7 +252,7 @@ class ProfileHelper(Singleton):
         return self._directory
 
     def save_profile(self, data):
-        inst = ToxEncryptSave.get_instance()
+        inst = ToxES.get_instance()
         if inst.has_password():
             data = inst.pass_encrypt(data)
         with open(self._path, 'wb') as fl:

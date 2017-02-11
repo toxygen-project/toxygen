@@ -12,7 +12,7 @@ from callbacks import init_callbacks, stop, start
 from util import curr_directory, program_version, remove, is_64_bit
 import styles.style
 import platform
-import toxencryptsave
+import toxes
 from passwordscreen import PasswordScreen, UnlockAppScreen, SetProfilePasswordScreen
 from plugin_support import PluginLoader
 import updater
@@ -37,7 +37,7 @@ class Toxygen:
         Show password screen
         """
         tmp = [data]
-        p = PasswordScreen(toxencryptsave.ToxEncryptSave.get_instance(), tmp)
+        p = PasswordScreen(toxes.ToxES.get_instance(), tmp)
         p.show()
         self.app.connect(self.app, QtCore.SIGNAL("lastWindowClosed()"), self.app, QtCore.SLOT("quit()"))
         self.app.exec_()
@@ -62,7 +62,7 @@ class Toxygen:
             dark_style = fl.read()
         app.setStyleSheet(dark_style)
 
-        encrypt_save = toxencryptsave.ToxEncryptSave()
+        encrypt_save = toxes.ToxES()
 
         if self.path is not None:
             path = os.path.dirname(self.path) + '/'
@@ -248,7 +248,7 @@ class Toxygen:
                 def correct_pass():
                     show()
                     Settings.get_instance().locked = False
-                self.p = UnlockAppScreen(toxencryptsave.ToxEncryptSave.get_instance(), correct_pass)
+                self.p = UnlockAppScreen(toxes.ToxES.get_instance(), correct_pass)
                 self.p.show()
 
         def tray_activated(reason):
