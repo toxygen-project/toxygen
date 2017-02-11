@@ -6,10 +6,12 @@ from toxencryptsave_enums_and_consts import *
 class ToxEncryptSave:
 
     def __init__(self):
-        super().__init__()
         self.libtoxencryptsave = libtox.LibToxEncryptSave()
 
     def is_data_encrypted(self, data):
+        """
+        Checks if given data is encrypted
+        """
         func = self.libtoxencryptsave.tox_is_data_encrypted
         func.restype = c_bool
         result = func(c_char_p(bytes(data)))

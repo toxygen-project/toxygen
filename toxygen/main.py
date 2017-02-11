@@ -199,9 +199,10 @@ class Toxygen:
         class Menu(QtGui.QMenu):
 
             def newStatus(self, status):
-                profile.Profile.get_instance().set_status(status)
-                self.aboutToShow()
-                self.hide()
+                if not Settings.get_instance().locked:
+                    profile.Profile.get_instance().set_status(status)
+                    self.aboutToShow()
+                    self.hide()
 
             def aboutToShow(self):
                 status = profile.Profile.get_instance().status
@@ -256,8 +257,9 @@ class Toxygen:
                 show_window()
 
         def close_app():
-            settings.closing = True
-            self.ms.close()
+            if not Settings.get_instance().locked:
+                settings.closing = True
+                self.ms.close()
 
         m.connect(show, QtCore.SIGNAL("triggered()"), show_window)
         m.connect(exit, QtCore.SIGNAL("triggered()"), close_app)
