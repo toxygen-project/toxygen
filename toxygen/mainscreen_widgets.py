@@ -2,7 +2,7 @@ try:
     from PySide import QtCore, QtGui
 except ImportError:
     from PyQt4 import QtCore, QtGui
-from widgets import RubberBand, create_menu, QRightClickButton, CenteredWidget
+from widgets import RubberBand, create_menu, QRightClickButton, CenteredWidget, LineEdit
 from profile import Profile
 import smileys
 import util
@@ -404,3 +404,96 @@ class MainMenuButton(QtGui.QPushButton):
         metrics = QtGui.QFontMetrics(self.font())
         self.setFixedWidth(metrics.size(QtCore.Qt.TextSingleLine, text).width() + 20)
         super().setText(text)
+
+
+class ClickableLabel(QtGui.QLabel):
+
+    def __init__(self, *args):
+        super().__init__(*args)
+
+    def mouseReleaseEvent(self, ev):
+        self.emit(QtCore.SIGNAL('clicked()'))
+
+
+class SearchScreen(QtGui.QWidget):
+
+    def __init__(self, messages, width, *args):
+        super().__init__(*args)
+        self.setMaximumSize(width, 40)
+        self.setMinimumSize(width, 40)
+        self._messages = messages
+
+        self.search_text = LineEdit(self)
+        self.search_text.setGeometry(0, 0, width - 100, 40)
+
+        self.search_button = ClickableLabel(self)
+        self.search_button.setGeometry(width - 100, 0, 40, 40)
+        pixmap = QtGui.QPixmap()
+        pixmap.load(util.curr_directory() + '/images/search.png')
+        self.search_button.setScaledContents(False)
+        self.search_button.setAlignment(QtCore.Qt.AlignCenter)
+        self.search_button.setPixmap(pixmap)
+        self.connect(self.search_button, QtCore.SIGNAL('clicked()'), self.search)
+
+        self.prev_button = QtGui.QPushButton(self)
+        self.prev_button.setGeometry(width - 60, 0, 20, 20)
+        self.prev_button.clicked.connect(self.prev)
+        self.prev_button.setText('\u25B2')
+
+        self.next_button = QtGui.QPushButton(self)
+        self.next_button.setGeometry(width - 60, 20, 20, 20)
+        self.next_button.clicked.connect(self.next)
+        self.next_button.setText('\u25BC')
+
+        self.close_button = QtGui.QPushButton(self)
+        self.close_button.setGeometry(width - 40, 0, 40, 40)
+        self.close_button.clicked.connect(self.close)
+        self.close_button.setText('×')
+        self.close_button.setAlignment(QtCore.Qt.AlignCenter)
+        font = QtGui.QFont()
+        font.setPointSize(32)
+        font.setBold(True)
+        self.close_button.setFont(font)
+
+    def search(self):
+        text = self.search_text.text()  # TODO: clean selection
+        friend = Profile.get_instance().get_curr_friend()
+        if text and friend:
+            index = friend.search_string(text)
+            self.load_messages(index)
+
+    def prev(self):
+        friend = Profile.get_instance().get_curr_friend()
+        if friend is not None:
+            index = friend.search_prev()
+            self.load_messages(index)
+
+    def next(self):
+        friend = Profile.get_instance().get_curr_friend()
+        if friend is not None:
+            index = friend.search_next()
+            if index is not None:
+                text = self.search_text.text()
+                count = self._messages.count()
+                index += count
+                item = self._messages.item(index)
+                self._messages.scrollToItem(item)
+                self._messages.itemWidget(item).select_text(text)
+
+    def load_messages(self, index):
+        if index is not None:
+            profile = Profile.get_instance()
+            count = self._messages.count()
+            while count + index < 0:
+                profile.load_history()
+                count = self._messages.count()
+            index += count
+            item = self._messages.item(index)
+            self._messages.scrollToItem(item)
+            text = self.search_text.text()
+            self._messages.itemWidget(item).select_text(text)
+
+    def closeEvent(self, *args):
+        Profile.get_instance().update()  # TODO: clean selection?
+        self._messages.setGeometry(0, 0, self._messages.width(), self._messages.height() + 40)
+        super().closeEvent(*args)

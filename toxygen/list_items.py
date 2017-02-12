@@ -11,6 +11,7 @@ from widgets import DataLabel, create_menu
 import html as h
 import smileys
 import settings
+import re
 
 
 class MessageEdit(QtGui.QTextBrowser):
@@ -188,6 +189,12 @@ class MessageItem(QtGui.QWidget):
         self.name.setFixedHeight(self.height())
         self.message.setFixedHeight(self.height())
         self.name.setPixmap(pixmap.scaled(30, 30, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
+
+    def select_text(self, text=''):
+        tmp = self.message.toHtml()
+        pattern = re.compile(re.escape(text), re.IGNORECASE)  # TODO: save case
+        tmp = pattern.sub('<font color="red">{}</font>'.format(text), tmp)
+        self.message.setHtml(tmp)
 
 
 class ContactItem(QtGui.QWidget):

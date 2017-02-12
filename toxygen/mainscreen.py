@@ -407,6 +407,8 @@ class MainWindow(QtGui.QMainWindow, Singleton):
             clipboard.setText(s)
         elif event.key() == QtCore.Qt.Key_Z and event.modifiers() & QtCore.Qt.ControlModifier and self.messages.selectedIndexes():
             self.messages.clearSelection()
+        elif event.key() == QtCore.Qt.Key_F and event.modifiers() & QtCore.Qt.ControlModifier:
+            self.show_search_field()
         else:
             super(MainWindow, self).keyPressEvent(event)
 
@@ -699,3 +701,12 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         ind = self.online_contacts.currentIndex()
         d = {0: 0, 1: 1, 2: 2, 3: 4, 4: 1 | 4, 5: 2 | 4}
         self.profile.filtration_and_sorting(d[ind], self.contact_name.text())
+
+    def show_search_field(self):
+        if hasattr(self, 'search_field') and self.search_field.isVisible():
+            return
+        self.search_field = SearchScreen(self.messages, self.messages.width(), self.messages.parent())
+        x, y = self.messages.x(), self.messages.y() + self.messages.height() - 40
+        self.search_field.setGeometry(x, y, self.messages.width(), 40)
+        self.messages.setGeometry(x, self.messages.y(), self.messages.width(), self.messages.height() - 40)
+        self.search_field.show()

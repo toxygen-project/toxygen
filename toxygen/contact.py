@@ -30,7 +30,8 @@ class Contact(basecontact.BaseContact):
         self._unsaved_messages = 0
         self._history_loaded = self._new_actions = False
         self._receipts = 0
-        self._curr_text = ''
+        self._curr_text = self._search_string = ''
+        self._search_index = 0
 
     def __del__(self):
         self.set_visibility(False)
@@ -94,6 +95,10 @@ class Contact(basecontact.BaseContact):
         else:
             return ''
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # Unsent messages
+    # -----------------------------------------------------------------------------------------------------------------
+
     def get_unsent_messages(self):
         """
         :return list of unsent messages
@@ -108,6 +113,17 @@ class Contact(basecontact.BaseContact):
         messages = filter(lambda x: x.get_type() <= 1 and x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr)
         return list(map(lambda x: x.get_data(), messages))
 
+    def mark_as_sent(self):
+        try:
+            message = list(filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr))[0]
+            message.mark_as_sent()
+        except Exception as ex:
+            util.log('Mark as sent ex: ' + str(ex))
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Message deletion
+    # -----------------------------------------------------------------------------------------------------------------
+
     def delete_message(self, time):
         elem = list(filter(lambda x: type(x) is TextMessage and x.get_data()[2] == time, self._corr))[0]
         tmp = list(filter(lambda x: x.get_type() <= 1, self._corr))
@@ -118,7 +134,7 @@ class Contact(basecontact.BaseContact):
 
     def delete_old_messages(self):
         """
-        Delete old messages (reduces RAM if messages saving is not enabled)
+        Delete old messages (reduces RAM usage if messages saving is not enabled)
         """
         old = filter(lambda x: x.get_type() == 2 and (x.get_status() >= 2 or x.get_status() is None),
                      self._corr[:-SAVE_MESSAGES])
@@ -126,13 +142,7 @@ class Contact(basecontact.BaseContact):
         l = max(len(self._corr) - SAVE_MESSAGES, 0) - len(old)
         self._unsaved_messages -= l
         self._corr = old + self._corr[-SAVE_MESSAGES:]
-
-    def mark_as_sent(self):
-        try:
-            message = list(filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr))[0]
-            message.mark_as_sent()
-        except Exception as ex:
-            util.log('Mark as sent ex: ' + str(ex))
+        self._search_index = 0
 
     def clear_corr(self, save_unsent=False):
         """
@@ -140,6 +150,7 @@ class Contact(basecontact.BaseContact):
         """
         if hasattr(self, '_message_getter'):
             del self._message_getter
+        self._search_index = 0
         # don't delete data about active file transfer
         if not save_unsent:
             self._corr = list(filter(lambda x: x.get_type() == 2 and
@@ -150,6 +161,43 @@ class Contact(basecontact.BaseContact):
                                                or (x.get_type() <= 1 and x.get_owner() == MESSAGE_OWNER['NOT_SENT']),
                                      self._corr))
             self._unsaved_messages = len(self.get_unsent_messages())
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Chat history search
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def search_string(self, search_string):
+        self._search_string, self._search_index = search_string, 0
+        return self.search_prev()
+
+    def search_prev(self):
+        while True:
+            l = len(self._corr)
+            for i in range(self._search_index - 1, -l - 1, -1):
+                if type(self._corr[i]) is not TextMessage:
+                    continue
+                if self._search_string.lower() in self._corr[i].get_data()[0].lower():
+                    self._search_index = i
+                    return i
+            self._search_index = -l
+            self.load_corr(False)
+            if len(self._corr) == l:
+                return None  # not found
+
+    def search_next(self):
+        if not self._search_index:
+            return None
+        for i in range(self._search_index + 1, 0):
+            if type(self._corr[i]) is not TextMessage:
+                continue
+            if self._search_string.lower() in self._corr[i].get_data()[0].lower():
+                self._search_index = i
+                return i
+        return None  # not found
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Current text - text from message area
+    # -----------------------------------------------------------------------------------------------------------------
 
     def get_curr_text(self):
         return self._curr_text
