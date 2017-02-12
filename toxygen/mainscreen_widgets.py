@@ -485,17 +485,20 @@ class SearchScreen(QtGui.QWidget):
 
     def next(self):
         friend = Profile.get_instance().get_curr_friend()
+        text = self.search_text.text()
         if friend is not None:
             index = friend.search_next()
             if index is not None:
-                text = self.search_text.text()
                 count = self._messages.count()
                 index += count
                 item = self._messages.item(index)
                 self._messages.scrollToItem(item)
                 self._messages.itemWidget(item).select_text(text)
+            else:
+                self.not_found(text)
 
     def load_messages(self, index):
+        text = self.search_text.text()
         if index is not None:
             profile = Profile.get_instance()
             count = self._messages.count()
@@ -505,10 +508,24 @@ class SearchScreen(QtGui.QWidget):
             index += count
             item = self._messages.item(index)
             self._messages.scrollToItem(item)
-            text = self.search_text.text()
             self._messages.itemWidget(item).select_text(text)
+        else:
+            self.not_found(text)
 
     def closeEvent(self, *args):
         Profile.get_instance().update()
         self._messages.setGeometry(0, 0, self._messages.width(), self._messages.height() + 40)
         super().closeEvent(*args)
+
+    @staticmethod
+    def not_found(text):
+        mbox = QtGui.QMessageBox()
+        mbox.setText(QtGui.QApplication.translate("MainWindow",
+                                                  'Text "{}" was not found'.format(text),
+                                                  None,
+                                                  QtGui.QApplication.UnicodeUTF8))
+        mbox.setWindowTitle(QtGui.QApplication.translate("MainWindow",
+                                                         'Not found',
+                                                         None,
+                                                         QtGui.QApplication.UnicodeUTF8))
+        mbox.exec_()
