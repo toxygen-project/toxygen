@@ -705,6 +705,8 @@ class MainWindow(QtGui.QMainWindow, Singleton):
     def show_search_field(self):
         if hasattr(self, 'search_field') and self.search_field.isVisible():
             return
+        if self.profile.get_curr_friend() is None:
+            return
         self.search_field = SearchScreen(self.messages, self.messages.width(), self.messages.parent())
         x, y = self.messages.x(), self.messages.y() + self.messages.height() - 40
         self.search_field.setGeometry(x, y, self.messages.width(), 40)

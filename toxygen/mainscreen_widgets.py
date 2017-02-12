@@ -424,10 +424,10 @@ class SearchScreen(QtGui.QWidget):
         self._messages = messages
 
         self.search_text = LineEdit(self)
-        self.search_text.setGeometry(0, 0, width - 100, 40)
+        self.search_text.setGeometry(0, 0, width - 160, 40)
 
         self.search_button = ClickableLabel(self)
-        self.search_button.setGeometry(width - 100, 0, 40, 40)
+        self.search_button.setGeometry(width - 160, 0, 40, 40)
         pixmap = QtGui.QPixmap()
         pixmap.load(util.curr_directory() + '/images/search.png')
         self.search_button.setScaledContents(False)
@@ -435,13 +435,17 @@ class SearchScreen(QtGui.QWidget):
         self.search_button.setPixmap(pixmap)
         self.connect(self.search_button, QtCore.SIGNAL('clicked()'), self.search)
 
+        font = QtGui.QFont()
+        font.setPointSize(32)
+        font.setBold(True)
+
         self.prev_button = QtGui.QPushButton(self)
-        self.prev_button.setGeometry(width - 60, 0, 20, 20)
+        self.prev_button.setGeometry(width - 120, 0, 40, 40)
         self.prev_button.clicked.connect(self.prev)
         self.prev_button.setText('\u25B2')
 
         self.next_button = QtGui.QPushButton(self)
-        self.next_button.setGeometry(width - 60, 20, 20, 20)
+        self.next_button.setGeometry(width - 80, 0, 40, 40)
         self.next_button.clicked.connect(self.next)
         self.next_button.setText('\u25BC')
 
@@ -449,10 +453,17 @@ class SearchScreen(QtGui.QWidget):
         self.close_button.setGeometry(width - 40, 0, 40, 40)
         self.close_button.clicked.connect(self.close)
         self.close_button.setText('×')
-        font = QtGui.QFont()
-        font.setPointSize(32)
-        font.setBold(True)
         self.close_button.setFont(font)
+
+        font.setPointSize(18)
+        self.next_button.setFont(font)
+        self.prev_button.setFont(font)
+
+        self.retranslateUi()
+
+    def retranslateUi(self):
+        self.search_text.setPlaceholderText(QtGui.QApplication.translate("MainWindow", "Search", None,
+                                                                         QtGui.QApplication.UnicodeUTF8))
 
     def search(self):
         Profile.get_instance().update()
