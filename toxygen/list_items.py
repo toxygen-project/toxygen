@@ -194,8 +194,25 @@ class MessageItem(QtGui.QWidget):
         tmp = self.message.toHtml()
         strings = re.findall(text, tmp, flags=re.IGNORECASE)
         for s in strings:
-            tmp = tmp.replace(s, '<font color="red">{}</font>'.format(s))
+            tmp = self.replace_all(tmp, s)
         self.message.setHtml(tmp)
+
+    @staticmethod
+    def replace_all(text, substring):
+        i, l = 0, len(substring)
+        while i < len(text) - l + 1:
+            index = text[i:].find(substring)
+            if index == -1:
+                break
+            i += index
+            lgt, rgt = text[i:].find('<'), text[i:].find('>')
+            if rgt < lgt:
+                i += rgt + 1
+                continue
+            sub = '<font color="red">{}</font>'.format(substring)
+            text = text[:i] + sub + text[i + l:]
+            i += len(sub)
+        return text
 
 
 class ContactItem(QtGui.QWidget):

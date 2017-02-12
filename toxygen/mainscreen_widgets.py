@@ -465,6 +465,10 @@ class SearchScreen(QtGui.QWidget):
         self.search_text.setPlaceholderText(QtGui.QApplication.translate("MainWindow", "Search", None,
                                                                          QtGui.QApplication.UnicodeUTF8))
 
+    def show(self):
+        super().show()
+        self.search_text.setFocus()
+
     def search(self):
         Profile.get_instance().update()
         text = self.search_text.text()
