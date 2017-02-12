@@ -190,8 +190,9 @@ class MessageItem(QtGui.QWidget):
         self.message.setFixedHeight(self.height())
         self.name.setPixmap(pixmap.scaled(30, 30, QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
 
-    def select_text(self, text=''):
+    def select_text(self, text):
         tmp = self.message.toHtml()
+        text = h.escape(text)
         strings = re.findall(text, tmp, flags=re.IGNORECASE)
         for s in strings:
             tmp = self.replace_all(tmp, s)
@@ -209,7 +210,7 @@ class MessageItem(QtGui.QWidget):
             if rgt < lgt:
                 i += rgt + 1
                 continue
-            sub = '<font color="red">{}</font>'.format(substring)
+            sub = '<font color="red"><b>{}</b></font>'.format(substring)
             text = text[:i] + sub + text[i + l:]
             i += len(sub)
         return text

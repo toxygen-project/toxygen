@@ -2,6 +2,7 @@ import os
 import time
 import shutil
 import sys
+import re
 
 program_version = '0.2.7'
 
@@ -67,6 +68,15 @@ def append_slash(s):
 
 def is_64_bit():
     return sys.maxsize > 2 ** 32
+
+
+def is_re_valid(regex):
+    try:
+        re.compile(regex)
+    except re.error:
+        return False
+    else:
+        return True
 
 
 class Singleton:

@@ -473,7 +473,7 @@ class SearchScreen(QtGui.QWidget):
         Profile.get_instance().update()
         text = self.search_text.text()
         friend = Profile.get_instance().get_curr_friend()
-        if text and friend:
+        if text and friend and util.is_re_valid(text):
             index = friend.search_string(text)
             self.load_messages(index)
 
