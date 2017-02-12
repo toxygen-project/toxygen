@@ -449,14 +449,14 @@ class SearchScreen(QtGui.QWidget):
         self.close_button.setGeometry(width - 40, 0, 40, 40)
         self.close_button.clicked.connect(self.close)
         self.close_button.setText('×')
-        self.close_button.setAlignment(QtCore.Qt.AlignCenter)
         font = QtGui.QFont()
         font.setPointSize(32)
         font.setBold(True)
         self.close_button.setFont(font)
 
     def search(self):
-        text = self.search_text.text()  # TODO: clean selection
+        Profile.get_instance().update()
+        text = self.search_text.text()
         friend = Profile.get_instance().get_curr_friend()
         if text and friend:
             index = friend.search_string(text)
@@ -494,6 +494,6 @@ class SearchScreen(QtGui.QWidget):
             self._messages.itemWidget(item).select_text(text)
 
     def closeEvent(self, *args):
-        Profile.get_instance().update()  # TODO: clean selection?
+        Profile.get_instance().update()
         self._messages.setGeometry(0, 0, self._messages.width(), self._messages.height() + 40)
         super().closeEvent(*args)

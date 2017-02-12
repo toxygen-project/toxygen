@@ -1205,7 +1205,7 @@ class Profile(basecontact.BaseContact, Singleton):
             else:
                 text = QtGui.QApplication.translate("incoming_call", "Outgoing audio call", None,
                                                     QtGui.QApplication.UnicodeUTF8)
-                self.get_curr_friend().append_message(InfoMessage(text, time.time()))
+            self.get_curr_friend().append_message(InfoMessage(text, time.time()))
             self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
             self._messages.scrollToBottom()
         elif num in self._call:  # finish or cancel call if you call with active friend

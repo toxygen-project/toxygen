@@ -192,8 +192,9 @@ class MessageItem(QtGui.QWidget):
 
     def select_text(self, text=''):
         tmp = self.message.toHtml()
-        pattern = re.compile(re.escape(text), re.IGNORECASE)  # TODO: save case
-        tmp = pattern.sub('<font color="red">{}</font>'.format(text), tmp)
+        strings = re.findall(text, tmp, flags=re.IGNORECASE)
+        for s in strings:
+            tmp = tmp.replace(s, '<font color="red">{}</font>'.format(s))
         self.message.setHtml(tmp)
 
 

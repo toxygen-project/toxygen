@@ -7,6 +7,7 @@ import basecontact
 import util
 from messages import *
 import file_transfers as ft
+import re
 
 
 class Contact(basecontact.BaseContact):
@@ -131,6 +132,7 @@ class Contact(basecontact.BaseContact):
             self._unsaved_messages -= 1
         self._corr.remove(elem)
         self._message_getter.delete_one()
+        self._search_index = 0
 
     def delete_old_messages(self):
         """
@@ -176,7 +178,8 @@ class Contact(basecontact.BaseContact):
             for i in range(self._search_index - 1, -l - 1, -1):
                 if type(self._corr[i]) is not TextMessage:
                     continue
-                if self._search_string.lower() in self._corr[i].get_data()[0].lower():
+                message = self._corr[i].get_data()[0]
+                if re.search(self._search_string, message, re.IGNORECASE) is not None:
                     self._search_index = i
                     return i
             self._search_index = -l
@@ -190,7 +193,8 @@ class Contact(basecontact.BaseContact):
         for i in range(self._search_index + 1, 0):
             if type(self._corr[i]) is not TextMessage:
                 continue
-            if self._search_string.lower() in self._corr[i].get_data()[0].lower():
+            message = self._corr[i].get_data()[0]
+            if re.search(self._search_string, message, re.IGNORECASE) is not None:
                 self._search_index = i
                 return i
         return None  # not found
