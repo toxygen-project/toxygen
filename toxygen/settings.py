@@ -49,7 +49,7 @@ class Settings(dict, Singleton):
 
     @staticmethod
     def get_auto_profile():
-        p = Settings.get_default_path() + 'toxygen.json'
+        p = Settings.get_global_settings_path()
         if os.path.isfile(p):
             with open(p) as fl:
                 data = fl.read()
@@ -60,7 +60,7 @@ class Settings(dict, Singleton):
 
     @staticmethod
     def set_auto_profile(path, name):
-        p = Settings.get_default_path() + 'toxygen.json'
+        p = Settings.get_global_settings_path()
         if os.path.isfile(p):
             with open(p) as fl:
                 data = fl.read()
@@ -74,7 +74,7 @@ class Settings(dict, Singleton):
 
     @staticmethod
     def reset_auto_profile():
-        p = Settings.get_default_path() + 'toxygen.json'
+        p = Settings.get_global_settings_path()
         if os.path.isfile(p):
             with open(p) as fl:
                 data = fl.read()
@@ -89,15 +89,8 @@ class Settings(dict, Singleton):
 
     @staticmethod
     def is_active_profile(path, name):
-        path = path + name + '.tox'
-        settings = Settings.get_default_path() + 'toxygen.json'
-        if os.path.isfile(settings):
-            with open(settings) as fl:
-                data = fl.read()
-            data = json.loads(data)
-            if 'active_profile' in data:
-                return path in data['active_profile']
-        return False
+        path = path + name + '.lock'
+        return os.path.isfile(path)
 
     @staticmethod
     def get_default_settings():
@@ -176,37 +169,19 @@ class Settings(dict, Singleton):
             fl.write(text)
 
     def close(self):
-        path = Settings.get_default_path() + 'toxygen.json'
+        profile_path = ProfileHelper.get_path()
+        path = str(profile_path + str(self.name) + '.lock')
         if os.path.isfile(path):
-            with open(path) as fl:
-                data = fl.read()
-            app_settings = json.loads(data)
-            try:
-                app_settings['active_profile'].remove(str(ProfileHelper.get_path() + self.name + '.tox'))
-            except:
-                pass
-            data = json.dumps(app_settings)
-            with open(path, 'w') as fl:
-                fl.write(data)
+            os.remove(path)
 
     def set_active_profile(self):
         """
         Mark current profile as active
         """
-        path = Settings.get_default_path() + 'toxygen.json'
-        if os.path.isfile(path):
-            with open(path) as fl:
-                data = fl.read()
-            app_settings = json.loads(data)
-        else:
-            app_settings = {}
-        if 'active_profile' not in app_settings:
-            app_settings['active_profile'] = []
         profile_path = ProfileHelper.get_path()
-        app_settings['active_profile'].append(str(profile_path + str(self.name) + '.tox'))
-        data = json.dumps(app_settings)
+        path = str(profile_path + str(self.name) + '.lock')
         with open(path, 'w') as fl:
-            fl.write(data)
+            fl.write('active')
 
     def export(self, path):
         text = json.dumps(self)
@@ -215,6 +190,10 @@ class Settings(dict, Singleton):
 
     def update_path(self):
         self.path = ProfileHelper.get_path() + self.name + '.json'
+
+    @staticmethod
+    def get_global_settings_path():
+        return curr_directory() + '/toxygen.json'
 
     @staticmethod
     def get_default_path():
