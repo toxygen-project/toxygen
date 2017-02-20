@@ -363,11 +363,7 @@ class WelcomeScreen(CenteredWidget):
             text = QtGui.QApplication.translate('WelcomeScreen',
                                                 'Since v0.1.3 Toxygen supports plugins. <a href="https://github.com/xveduk/toxygen/blob/master/docs/plugins.md">Read more</a>',
                                                 None, QtGui.QApplication.UnicodeUTF8)
-        elif num == 6:
-            text = QtGui.QApplication.translate('WelcomeScreen',
-                                                'New in Toxygen v0.2.6:<br>Updater<br>Better contact sorting<br>Plugins improvements',
-                                                None, QtGui.QApplication.UnicodeUTF8)
-        elif num == 7:
+        elif num in (6, 7):
             text = QtGui.QApplication.translate('WelcomeScreen',
                                                 'Toxygen supports faux offline messages and file transfers. Send message or file to offline friend and he will get it later.',
                                                 None, QtGui.QApplication.UnicodeUTF8)
