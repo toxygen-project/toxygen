@@ -133,7 +133,6 @@ class History:
             db.rollback()
         finally:
             db.close()
-        pass
 
     def delete_message(self, tox_id, time):
         chdir(settings.ProfileHelper.get_path())

@@ -1,7 +1,9 @@
 from toxygen.profile import *
 from toxygen.tox_dns import tox_dns
+from toxygen.history import History
 import toxygen.toxes as encr
 import toxygen.messages as m
+import toxygen.util as util
 import time
 
 
@@ -62,31 +64,36 @@ class TestEncryption:
             assert copy_data == new_data
 
 
+def create_singletons():
+    folder = util.curr_directory() + '/abc'
+    Settings._instance = Settings.get_default_settings()
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    ProfileHelper(folder, 'test')
+
+
+def create_friend(name, status_message, number, tox_id):
+    friend = Friend(None, number, name, status_message, None, tox_id)
+    return friend
+
+
 class TestFriend:
 
-    def create_singletons(self):
-        Settings._instance = Settings.get_default_settings()
-        ProfileHelper('abc', 'test')
-
-    def create_friend(self, name, status_message, number, tox_id):
-        friend = Friend(None, number, name, status_message, None, tox_id)
-        return friend
-
     def test_friend_creation(self):
-        self.create_singletons()
+        create_singletons()
         name, status_message, number = 'Friend', 'I am friend!', 0
         tox_id = '76518406F6A9F2217E8DC487CC783C25CC16A15EB36FF32E335A235342C48A39218F515C39A6'
-        friend = self.create_friend(name, status_message, number, tox_id)
+        friend = create_friend(name, status_message, number, tox_id)
         assert friend.name == name
         assert friend.tox_id == tox_id
         assert friend.status_message == status_message
         assert friend.number == number
 
     def test_friend_corr(self):
-        self.create_singletons()
+        create_singletons()
         name, status_message, number = 'Friend', 'I am friend!', 0
         tox_id = '76518406F6A9F2217E8DC487CC783C25CC16A15EB36FF32E335A235342C48A39218F515C39A6'
-        friend = self.create_friend(name, status_message, number, tox_id)
+        friend = create_friend(name, status_message, number, tox_id)
         t = time.time()
         friend.append_message(m.InfoMessage('Info message', t))
         friend.append_message(m.TextMessage('Hello! It is test!', MESSAGE_OWNER['ME'], t + 0.001, 0))
@@ -110,4 +117,30 @@ class TestFriend:
         assert len(friend.get_corr()) == 2
         assert len(friend.get_corr_for_saving()) == 1
 
-# TODO: more friend tests and history test
+
+class TestHistory:
+
+    def test_history(self):
+        create_singletons()
+        db_name = 'my_name'
+        name, status_message, number = 'Friend', 'I am friend!', 0
+        tox_id = '76518406F6A9F2217E8DC487CC783C25CC16A15EB36FF32E335A235342C48A39218F515C39A6'
+        friend = create_friend(name, status_message, number, tox_id)
+        history = History(db_name)
+        history.add_friend_to_db(friend.tox_id)
+        assert history.friend_exists_in_db(friend.tox_id)
+        text_message = 'Test!'
+        t = time.time()
+        friend.append_message(m.TextMessage(text_message, MESSAGE_OWNER['ME'], t, 0))
+        messages = friend.get_corr_for_saving()
+        history.save_messages_to_db(friend.tox_id, messages)
+        getter = history.messages_getter(friend.tox_id)
+        messages = getter.get_all()
+        assert len(messages) == 1
+        assert messages[0][0] == text_message
+        assert messages[0][1] == MESSAGE_OWNER['ME']
+        assert messages[0][-1] == 0
+        history.delete_message(friend.tox_id, t)
+        getter = history.messages_getter(friend.tox_id)
+        messages = getter.get_all()
+        assert len(messages) == 0
