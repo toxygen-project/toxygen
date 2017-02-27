@@ -1,8 +1,9 @@
 from toxygen.profile import *
 from toxygen.tox_dns import tox_dns
 from toxygen.history import History
+from toxygen.smileys import SmileyLoader
+from toxygen.messages import *
 import toxygen.toxes as encr
-import toxygen.messages as m
 import toxygen.util as util
 import time
 
@@ -60,8 +61,19 @@ class TestEncryption:
             lib.set_password(password)
             copy_data = data[:]
             new_data = lib.pass_encrypt(data)
+            assert lib.is_data_encrypted(new_data)
             new_data = lib.pass_decrypt(new_data)
             assert copy_data == new_data
+
+
+class TestSmileys:
+
+    def test_loading(self):
+        settings = {'smiley_pack': 'default', 'smileys': True}
+        sm = SmileyLoader(settings)
+        assert sm.get_smileys_path() is not None
+        l = sm.get_packs_list()
+        assert len(l) == 4
 
 
 def create_singletons():
@@ -74,6 +86,13 @@ def create_singletons():
 
 def create_friend(name, status_message, number, tox_id):
     friend = Friend(None, number, name, status_message, None, tox_id)
+    return friend
+
+
+def create_random_friend():
+    name, status_message, number = 'Friend', 'I am friend!', 0
+    tox_id = '76518406F6A9F2217E8DC487CC783C25CC16A15EB36FF32E335A235342C48A39218F515C39A6'
+    friend = create_friend(name, status_message, number, tox_id)
     return friend
 
 
@@ -91,31 +110,41 @@ class TestFriend:
 
     def test_friend_corr(self):
         create_singletons()
-        name, status_message, number = 'Friend', 'I am friend!', 0
-        tox_id = '76518406F6A9F2217E8DC487CC783C25CC16A15EB36FF32E335A235342C48A39218F515C39A6'
-        friend = create_friend(name, status_message, number, tox_id)
+        friend = create_random_friend()
         t = time.time()
-        friend.append_message(m.InfoMessage('Info message', t))
-        friend.append_message(m.TextMessage('Hello! It is test!', MESSAGE_OWNER['ME'], t + 0.001, 0))
-        friend.append_message(m.TextMessage('Hello!', MESSAGE_OWNER['FRIEND'], t + 0.002, 0))
+        friend.append_message(InfoMessage('Info message', t))
+        friend.append_message(TextMessage('Hello! It is test!', MESSAGE_OWNER['ME'], t + 0.001, 0))
+        friend.append_message(TextMessage('Hello!', MESSAGE_OWNER['FRIEND'], t + 0.002, 0))
         assert friend.get_last_message_text() == 'Hello! It is test!'
         assert len(friend.get_corr()) == 3
         assert len(friend.get_corr_for_saving()) == 2
-        friend.append_message(m.TextMessage('Not sent', MESSAGE_OWNER['NOT_SENT'], t + 0.002, 0))
+        friend.append_message(TextMessage('Not sent', MESSAGE_OWNER['NOT_SENT'], t + 0.002, 0))
         arr = friend.get_unsent_messages_for_saving()
         assert len(arr) == 1
         assert arr[0][0] == 'Not sent'
-        tm = m.TransferMessage(MESSAGE_OWNER['FRIEND'],
-                               time.time(),
-                               TOX_FILE_TRANSFER_STATE['RUNNING'],
-                               100, 'file_name', friend.number, 0)
+        tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
+                             time.time(),
+                             TOX_FILE_TRANSFER_STATE['RUNNING'],
+                             100, 'file_name', friend.number, 0)
         friend.append_message(tm)
         friend.clear_corr()
         assert len(friend.get_corr()) == 1
         assert len(friend.get_corr_for_saving()) == 0
-        friend.append_message(m.TextMessage('Hello! It is test!', MESSAGE_OWNER['ME'], t, 0))
+        friend.append_message(TextMessage('Hello! It is test!', MESSAGE_OWNER['ME'], t, 0))
         assert len(friend.get_corr()) == 2
         assert len(friend.get_corr_for_saving()) == 1
+
+    def test_history_search(self):
+        create_singletons()
+        friend = create_random_friend()
+        message = 'Hello! It is test!'
+        friend.append_message(TextMessage(message, MESSAGE_OWNER['ME'], time.time(), 0))
+        last_message = friend.get_last_message_text()
+        assert last_message == message
+        result = friend.search_string('e[m|s]')
+        assert result is not None
+        result = friend.search_string('tox')
+        assert result is None
 
 
 class TestHistory:
@@ -131,7 +160,7 @@ class TestHistory:
         assert history.friend_exists_in_db(friend.tox_id)
         text_message = 'Test!'
         t = time.time()
-        friend.append_message(m.TextMessage(text_message, MESSAGE_OWNER['ME'], t, 0))
+        friend.append_message(TextMessage(text_message, MESSAGE_OWNER['ME'], t, 0))
         messages = friend.get_corr_for_saving()
         history.save_messages_to_db(friend.tox_id, messages)
         getter = history.messages_getter(friend.tox_id)
@@ -144,3 +173,5 @@ class TestHistory:
         getter = history.messages_getter(friend.tox_id)
         messages = getter.get_all()
         assert len(messages) == 0
+        history.delete_friend_from_db(friend.tox_id)
+        assert not history.friend_exists_in_db(friend.tox_id)

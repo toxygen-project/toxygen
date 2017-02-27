@@ -50,6 +50,8 @@ class Contact(basecontact.BaseContact):
         """
         if (first_time and self._history_loaded) or (not hasattr(self, '_message_getter')):
             return
+        if self._message_getter is None:
+            return
         data = list(self._message_getter.get(PAGE_SIZE))
         if data is not None and len(data):
             data.reverse()
@@ -176,7 +178,7 @@ class Contact(basecontact.BaseContact):
         while True:
             l = len(self._corr)
             for i in range(self._search_index - 1, -l - 1, -1):
-                if type(self._corr[i]) is not TextMessage:
+                if self._corr[i].get_type() > 1:
                     continue
                 message = self._corr[i].get_data()[0]
                 if re.search(self._search_string, message, re.IGNORECASE) is not None:
