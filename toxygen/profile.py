@@ -41,6 +41,7 @@ class Profile(basecontact.BaseContact, Singleton):
         self._call = calls.AV(tox.AV)  # object with data about calls
         self._incoming_calls = set()
         self._load_history = True
+        self._waiting_for_reconnection = False
         self._factory = items_factory.ItemsFactory(self._screen.friends_list, self._messages)
         settings = Settings.get_instance()
         self._sorting = settings['sorting']
@@ -87,7 +88,7 @@ class Profile(basecontact.BaseContact, Singleton):
         if status is not None:
             self._tox.self_set_status(status)
         else:
-            QtCore.QTimer.singleShot(45000, self.reconnect)
+            QtCore.QTimer.singleShot(50000, self.reconnect)
 
     def set_name(self, value):
         if self.name == value:
@@ -855,9 +856,13 @@ class Profile(basecontact.BaseContact, Singleton):
         self.update_filtration()
 
     def reconnect(self):
+        if self._waiting_for_reconnection:
+            return
+        self._waiting_for_reconnection = False
         if self.status is None or all(list(map(lambda x: x.status is None, self._contacts))) and len(self._contacts):
+            self._waiting_for_reconnection = True
             self.reset(self._screen.reset)
-            QtCore.QTimer.singleShot(45000, self.reconnect)
+            QtCore.QTimer.singleShot(50000, self.reconnect)
 
     def close(self):
         for friend in self._contacts:

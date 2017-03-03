@@ -193,7 +193,7 @@ class Contact(basecontact.BaseContact):
         if not self._search_index:
             return None
         for i in range(self._search_index + 1, 0):
-            if type(self._corr[i]) is not TextMessage:
+            if self._corr[i].get_type() > 1:
                 continue
             message = self._corr[i].get_data()[0]
             if re.search(self._search_string, message, re.IGNORECASE) is not None:
