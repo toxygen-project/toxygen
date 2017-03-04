@@ -19,4 +19,4 @@ Toxygen comes without preinstalled plugins.
 
 WARNING: It is unsecure to install plugin not from this list!
 
-[Main repo](https://github.com/ingvar1995/toxygen_plugins)
+[Main repo](https://github.com/toxygen-project/toxygen_plugins)

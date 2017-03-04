@@ -2,9 +2,9 @@
 
 Toxygen is powerful cross-platform [Tox](https://tox.chat/) client written in pure Python3.
 
-[![Release](https://img.shields.io/github/release/xveduk/toxygen.svg?style=flat)](https://github.com/toxygen-project/toxygen/releases/latest)
-[![Stars](https://img.shields.io/github/stars/xveduk/toxygen.svg?style=flat)](https://github.com/toxygen-project/toxygen/stargazers)
-[![Open issues](https://img.shields.io/github/issues/xveduk/toxygen.svg?style=flat)](https://github.com/toxygen-project/toxygen/issues)
+[![Release](https://img.shields.io/github/release/toxygen-project/toxygen.svg?style=flat)](https://github.com/toxygen-project/toxygen/releases/latest)
+[![Stars](https://img.shields.io/github/stars/toxygen-project/toxygen.svg?style=flat)](https://github.com/toxygen-project/toxygen/stargazers)
+[![Open issues](https://img.shields.io/github/issues/toxygen-project/toxygen.svg?style=flat)](https://github.com/toxygen-project/toxygen/issues)
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat)](https://raw.githubusercontent.com/toxygen-project/toxygen/master/LICENSE.md)
 [![Build Status](https://travis-ci.org/toxygen-project/toxygen.svg?branch=master)](https://travis-ci.org/toxygen-project/toxygen)
 

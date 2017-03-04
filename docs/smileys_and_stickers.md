@@ -10,4 +10,4 @@ Animated smileys (.gif) are supported too.
 
 Sticker is inline image. If you want to create your own smiley pack, create directory in src/stickers/ and place your stickers there.
 
-Users can import plugins and stickers packs using menu: Settings -> Interface
+Users can import smileys and stickers using menu: Settings -> Interface

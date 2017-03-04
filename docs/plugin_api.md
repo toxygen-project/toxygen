@@ -53,5 +53,5 @@ Plugin's methods MUST NOT raise exceptions.
 
 #Examples
 
-You can find examples in [official repo](https://github.com/ingvar1995/toxygen_plugins)
+You can find examples in [official repo](https://github.com/toxygen-project/toxygen_plugins)
 

@@ -1,7 +1,7 @@
 # How to install Toxygen
 
 ## Use precompiled binary:
-[Check our releases page](https://github.com/xveduk/toxygen/releases)
+[Check our releases page](https://github.com/toxygen-project/toxygen/releases)
 
 ## Using pip3
 
