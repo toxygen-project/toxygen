@@ -1,5 +1,6 @@
 import contact
 from messages import *
+import os
 
 
 class Friend(contact.Contact):
@@ -36,6 +37,15 @@ class Friend(contact.Contact):
 
     def clear_unsent_files(self):
         self._corr = list(filter(lambda x: type(x) is not UnsentFile, self._corr))
+
+    def remove_invalid_unsent_files(self):
+        def is_valid(message):
+            if type(message) is not UnsentFile:
+                return True
+            if message.get_data()[1] is not None:
+                return True
+            return os.path.exists(message.get_data()[0])
+        self._corr = list(filter(is_valid, self._corr))
 
     def delete_one_unsent_file(self, time):
         self._corr = list(filter(lambda x: not (type(x) is UnsentFile and x.get_data()[2] == time), self._corr))

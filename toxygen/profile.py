@@ -219,6 +219,7 @@ class Profile(basecontact.BaseContact, Singleton):
                     except:
                         pass
                 friend = self._contacts[value]
+                friend.remove_invalid_unsent_files()
                 if self._active_friend != value:
                     self._screen.messageEdit.setPlainText(friend.curr_text)
                 self._active_friend = value
@@ -329,6 +330,7 @@ class Profile(basecontact.BaseContact, Singleton):
 
     def send_files(self, friend_number):
         friend = self.get_friend_by_number(friend_number)
+        friend.remove_invalid_unsent_files()
         files = friend.get_unsent_files()
         try:
             for fl in files:
