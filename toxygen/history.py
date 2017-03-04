@@ -135,11 +135,13 @@ class History:
             db.close()
 
     def delete_message(self, tox_id, time):
+        start, end = str(time - 0.01), str(time + 0.01)
         chdir(settings.ProfileHelper.get_path())
         db = connect(self._name + '.hstr', timeout=TIMEOUT)
         try:
             cursor = db.cursor()
-            cursor.execute('DELETE FROM id' + tox_id + ' WHERE unix_time = ' + str(time) + ';')
+            cursor.execute('DELETE FROM id' + tox_id + ' WHERE unix_time < ' + end + ' AND unix_time > ' +
+                           start + ';')
             db.commit()
         except:
             print('Database is locked!')
