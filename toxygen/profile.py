@@ -87,7 +87,7 @@ class Profile(basecontact.BaseContact, Singleton):
         super(Profile, self).set_status(status)
         if status is not None:
             self._tox.self_set_status(status)
-        else:
+        elif not self._waiting_for_reconnection:
             QtCore.QTimer.singleShot(50000, self.reconnect)
 
     def set_name(self, value):
@@ -858,8 +858,6 @@ class Profile(basecontact.BaseContact, Singleton):
         self.update_filtration()
 
     def reconnect(self):
-        if self._waiting_for_reconnection:
-            return
         self._waiting_for_reconnection = False
         if self.status is None or all(list(map(lambda x: x.status is None, self._contacts))) and len(self._contacts):
             self._waiting_for_reconnection = True
