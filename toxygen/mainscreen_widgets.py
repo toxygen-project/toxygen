@@ -516,10 +516,12 @@ class SearchScreen(QtGui.QWidget):
     @staticmethod
     def not_found(text):
         mbox = QtGui.QMessageBox()
-        mbox.setText(QtGui.QApplication.translate("MainWindow",
-                                                  'Text "{}" was not found'.format(text),
-                                                  None,
-                                                  QtGui.QApplication.UnicodeUTF8))
+        mbox_text = QtGui.QApplication.translate("MainWindow",
+                                                 'Text "{}" was not found',
+                                                 None,
+                                                 QtGui.QApplication.UnicodeUTF8)
+
+        mbox.setText(mbox_text.format(text))
         mbox.setWindowTitle(QtGui.QApplication.translate("MainWindow",
                                                          'Not found',
                                                          None,

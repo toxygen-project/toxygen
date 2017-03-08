@@ -596,6 +596,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
 
             auto_accept_item = self.listMenu.addAction(auto)
             remove_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Remove friend', None, QtGui.QApplication.UnicodeUTF8))
+            block_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Block friend', None, QtGui.QApplication.UnicodeUTF8))
             notes_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Notes', None, QtGui.QApplication.UnicodeUTF8))
 
             submenu = plugin_support.PluginLoader.get_instance().get_menu(self.listMenu, num)
@@ -604,6 +605,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
                 plug.addActions(submenu)
             self.connect(set_alias_item, QtCore.SIGNAL("triggered()"), lambda: self.set_alias(num))
             self.connect(remove_item, QtCore.SIGNAL("triggered()"), lambda: self.remove_friend(num))
+            self.connect(block_item, QtCore.SIGNAL("triggered()"), lambda: self.block_friend(num))
             self.connect(copy_key_item, QtCore.SIGNAL("triggered()"), lambda: self.copy_friend_key(num))
             self.connect(clear_history_item, QtCore.SIGNAL("triggered()"), lambda: self.clear_history(num))
             self.connect(auto_accept_item, QtCore.SIGNAL("triggered()"), lambda: self.auto_accept(num, not allowed))
@@ -651,6 +653,10 @@ class MainWindow(QtGui.QMainWindow, Singleton):
 
     def remove_friend(self, num):
         self.profile.delete_friend(num)
+
+    def block_friend(self, num):
+        friend = self.profile.get_friend(num)
+        self.profile.block_user(friend.tox_id)
 
     def copy_friend_key(self, num):
         tox_id = self.profile.friend_public_key(num)
