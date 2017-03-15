@@ -65,6 +65,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.audioSettings = QtGui.QAction(Form)
         self.pluginData = QtGui.QAction(Form)
         self.importPlugin = QtGui.QAction(Form)
+        self.reloadPlugins = QtGui.QAction(Form)
         self.lockApp = QtGui.QAction(Form)
         self.menuProfile.addAction(self.actionAdd_friend)
         self.menuProfile.addAction(self.actionSettings)
@@ -77,6 +78,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.menuSettings.addAction(self.updateSettings)
         self.menuPlugins.addAction(self.pluginData)
         self.menuPlugins.addAction(self.importPlugin)
+        self.menuPlugins.addAction(self.reloadPlugins)
         self.menuAbout.addAction(self.actionAbout_program)
 
         self.profile_button.setMenu(self.menuProfile)
@@ -96,6 +98,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.pluginData.triggered.connect(self.plugins_menu)
         self.lockApp.triggered.connect(self.lock_app)
         self.importPlugin.triggered.connect(self.import_plugin)
+        self.reloadPlugins.triggered.connect(self.reload_plugins)
 
         Form.setLayout(box)
         QtCore.QMetaObject.connectSlotsByName(Form)
@@ -140,6 +143,7 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         d = {0: 0, 1: 1, 2: 2, 3: 4, 1 | 4: 4, 2 | 4: 5}
         self.online_contacts.setCurrentIndex(d[ind])
         self.importPlugin.setText(QtGui.QApplication.translate("MainWindow", "Import plugin", None, QtGui.QApplication.UnicodeUTF8))
+        self.reloadPlugins.setText(QtGui.QApplication.translate("MainWindow", "Reload plugins", None, QtGui.QApplication.UnicodeUTF8))
 
     def setup_right_bottom(self, Form):
         Form.resize(650, 60)
@@ -460,6 +464,13 @@ class MainWindow(QtGui.QMainWindow, Singleton):
         self.update_s = UpdateSettings()
         self.update_s.show()
 
+    def reload_plugins(self):
+        plugin_loader = plugin_support.PluginLoader.get_instance()
+        if plugin_loader is None:
+            return
+        plugin_loader.stop()
+        plugin_loader.load()
+
     def import_plugin(self):
         import util
         directory = QtGui.QFileDialog.getExistingDirectory(self,
@@ -599,10 +610,12 @@ class MainWindow(QtGui.QMainWindow, Singleton):
             block_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Block friend', None, QtGui.QApplication.UnicodeUTF8))
             notes_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Notes', None, QtGui.QApplication.UnicodeUTF8))
 
-            submenu = plugin_support.PluginLoader.get_instance().get_menu(self.listMenu, num)
-            if len(submenu):
-                plug = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Plugins', None, QtGui.QApplication.UnicodeUTF8))
-                plug.addActions(submenu)
+            plugins_loader = plugin_support.PluginLoader.get_instance()
+            if plugins_loader is not None:
+                submenu = plugins_loader.get_menu(self.listMenu, num)
+                if len(submenu):
+                    plug = self.listMenu.addMenu(QtGui.QApplication.translate("MainWindow", 'Plugins', None, QtGui.QApplication.UnicodeUTF8))
+                    plug.addActions(submenu)
             self.connect(set_alias_item, QtCore.SIGNAL("triggered()"), lambda: self.set_alias(num))
             self.connect(remove_item, QtCore.SIGNAL("triggered()"), lambda: self.remove_friend(num))
             self.connect(block_item, QtCore.SIGNAL("triggered()"), lambda: self.block_friend(num))
