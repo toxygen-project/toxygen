@@ -51,7 +51,8 @@ class PluginLoader(util.Singleton):
                 continue
             for elem in dir(module):
                 obj = getattr(module, elem)
-                if inspect.isclass(obj) and hasattr(obj, 'is_plugin') and obj.is_plugin:  # looking for plugin class in module
+                # looking for plugin class in module
+                if inspect.isclass(obj) and hasattr(obj, 'is_plugin') and obj.is_plugin:
                     print('Plugin', elem)
                     try:  # create instance of plugin class
                         inst = obj(self._tox, self._profile, self._settings, self._encr)
@@ -165,3 +166,8 @@ class PluginLoader(util.Singleton):
             if self._plugins[key][1]:
                 self._plugins[key][0].close()
             del self._plugins[key]
+
+    def reload(self):
+        print('Reloading plugins')
+        self.stop()
+        self.load()

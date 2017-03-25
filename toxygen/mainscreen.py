@@ -466,10 +466,8 @@ class MainWindow(QtGui.QMainWindow, Singleton):
 
     def reload_plugins(self):
         plugin_loader = plugin_support.PluginLoader.get_instance()
-        if plugin_loader is None:
-            return
-        plugin_loader.stop()
-        plugin_loader.load()
+        if plugin_loader is not None:
+            plugin_loader.reload()
 
     def import_plugin(self):
         import util
