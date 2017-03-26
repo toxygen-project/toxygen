@@ -417,20 +417,20 @@ class Profile(basecontact.BaseContact, Singleton):
 
     def split_and_send(self, number, message_type, message):
         """
-        Message splitting
+        Message splitting. Message length cannot be > TOX_MAX_MESSAGE_LENGTH
         :param number: friend's number
         :param message_type: type of message
         :param message: message text
         """
         while len(message) > TOX_MAX_MESSAGE_LENGTH:
-            size = TOX_MAX_MESSAGE_LENGTH * 4 / 5
+            size = TOX_MAX_MESSAGE_LENGTH * 4 // 5
             last_part = message[size:TOX_MAX_MESSAGE_LENGTH]
-            if ' ' in last_part:
-                index = last_part.index(' ')
-            elif ',' in last_part:
-                index = last_part.index(',')
-            elif '.' in last_part:
-                index = last_part.index('.')
+            if b' ' in last_part:
+                index = last_part.index(b' ')
+            elif b',' in last_part:
+                index = last_part.index(b',')
+            elif b'.' in last_part:
+                index = last_part.index(b'.')
             else:
                 index = TOX_MAX_MESSAGE_LENGTH - size - 1
             index += size + 1
