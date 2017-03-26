@@ -35,6 +35,7 @@ class Settings(dict, Singleton):
         smileys.SmileyLoader(self)
         self.locked = False
         self.closing = False
+        self.unlockScreen = False
         p = pyaudio.PyAudio()
         input_devices = output_devices = 0
         for i in range(p.get_device_count()):

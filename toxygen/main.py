@@ -238,19 +238,24 @@ class Toxygen:
         exit = m.addAction(QtGui.QApplication.translate('tray', 'Exit', None, QtGui.QApplication.UnicodeUTF8))
 
         def show_window():
+            s = Settings.get_instance()
+
             def show():
                 if not self.ms.isActiveWindow():
                     self.ms.setWindowState(self.ms.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
                     self.ms.activateWindow()
                 self.ms.show()
-            if not Settings.get_instance().locked:
+            if not s.locked:
                 show()
             else:
                 def correct_pass():
                     show()
-                    Settings.get_instance().locked = False
-                self.p = UnlockAppScreen(toxes.ToxES.get_instance(), correct_pass)
-                self.p.show()
+                    s.locked = False
+                    s.unlockScreen = False
+                if not s.unlockScreen:
+                    s.unlockScreen = True
+                    self.p = UnlockAppScreen(toxes.ToxES.get_instance(), correct_pass)
+                    self.p.show()
 
         def tray_activated(reason):
             if reason == QtGui.QSystemTrayIcon.DoubleClick:
