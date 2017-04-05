@@ -30,7 +30,6 @@ class Contact(basecontact.BaseContact):
         self._corr = []
         self._unsaved_messages = 0
         self._history_loaded = self._new_actions = False
-        self._receipts = 0
         self._curr_text = self._search_string = ''
         self._search_index = 0
 
@@ -140,12 +139,15 @@ class Contact(basecontact.BaseContact):
         """
         Delete old messages (reduces RAM usage if messages saving is not enabled)
         """
-        old = filter(lambda x: x.get_type() == 2 and (x.get_status() >= 2 or x.get_status() is None),
-                     self._corr[:-SAVE_MESSAGES])
-        old = list(old)
-        l = max(len(self._corr) - SAVE_MESSAGES, 0) - len(old)
-        self._unsaved_messages -= l
-        self._corr = old + self._corr[-SAVE_MESSAGES:]
+        def save_message(x):
+            if x.get_type() == 2 and (x.get_status() >= 2 or x.get_status() is None):
+                return True
+            return x.get_owner() == MESSAGE_OWNER['NOT_SENT']
+
+        old = filter(save_message, self._corr[:-SAVE_MESSAGES])
+        self._corr = list(old) + self._corr[-SAVE_MESSAGES:]
+        text_messages = filter(lambda x: x.get_type <= 1, self._corr)
+        self._unsaved_messages = min(self._unsaved_messages, len(list(text_messages)))
         self._search_index = 0
 
     def clear_corr(self, save_unsent=False):

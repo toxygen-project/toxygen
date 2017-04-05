@@ -412,8 +412,8 @@ class Profile(basecontact.BaseContact, Singleton):
             for message in messages:
                 self.split_and_send(friend_number, message.get_data()[-1], message.get_data()[0].encode('utf-8'))
                 friend.inc_receipts()
-        except:
-            pass
+        except Exception as ex:
+            log('Sending pending messages failed with ' + str(ex))
 
     def split_and_send(self, number, message_type, message):
         """
