@@ -1,4 +1,4 @@
-#Plugins API
+# Plugins API
 
 In Toxygen plugin is single python (supported Python 3.0 - 3.4) module (.py file) and directory with data associated with it. 
 Every module must contain one class derived from PluginSuperClass defined in [plugin_super_class.py](/src/plugins/plugin_super_class.py). Instance of this class will be created by PluginLoader class (defined in [plugin_support.py](/src/plugin_support.py) ). This class can enable/disable plugins and send data to it. 
@@ -18,7 +18,7 @@ All plugin's data should be stored in following structure:
 ```
 
 Plugin MUST override:
--  __init__ with params: tox (Tox instance), profile (Profile instance), settings (Settings instance), encrypt_save (ToxEncryptSave instance). Call super().__init__ with params plugin_full_name, plugin_short_name, tox, profile, settings, encrypt_save.
+-  __init__ with params: tox (Tox instance), profile (Profile instance), settings (Settings instance), encrypt_save (ToxES instance). Call super().__init__ with params plugin_full_name, plugin_short_name, tox, profile, settings, encrypt_save.
 
 Plugin can override following methods:
 - get_description - this method should return plugin description. 
@@ -51,7 +51,7 @@ Exceptions:
 
 Plugin's methods MUST NOT raise exceptions.
 
-#Examples
+# Examples
 
 You can find examples in [official repo](https://github.com/toxygen-project/toxygen_plugins)
 

@@ -63,6 +63,7 @@ class IncomingCallWidget(widgets.CenteredWidget):
 
             def __init__(self):
                 QtCore.QThread.__init__(self)
+                self.a = None
 
             def run(self):
                 class AudioFile:

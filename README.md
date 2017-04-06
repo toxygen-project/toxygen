@@ -8,7 +8,7 @@ Toxygen is powerful cross-platform [Tox](https://tox.chat/) client written in pu
 [![License](https://img.shields.io/badge/license-GPLv3-blue.svg?style=flat)](https://raw.githubusercontent.com/toxygen-project/toxygen/master/LICENSE.md)
 [![Build Status](https://travis-ci.org/toxygen-project/toxygen.svg?branch=master)](https://travis-ci.org/toxygen-project/toxygen)
 
-### [Install](/docs/install.md) - [Contribute](/docs/contributing.md) - [Plugins](/docs/plugins.md) - [Compile](/docs/compile.md) - [Contact](/docs/contact.md)
+### [Install](/docs/install.md) - [Contribute](/docs/contributing.md) - [Plugins](/docs/plugins.md) - [Compile](/docs/compile.md) - [Contact](/docs/contact.md) - [Updater](https://github.com/toxygen-project/toxygen_updater)
 
 ### Supported OS:
 
@@ -18,7 +18,7 @@ Toxygen is powerful cross-platform [Tox](https://tox.chat/) client written in pu
 
 - [x] 1v1 messages
 - [x] File transfers
-- [x] Audio
+- [x] Audio calls
 - [x] Plugins support
 - [x] Chat history
 - [x] Emoticons
@@ -42,7 +42,7 @@ Toxygen is powerful cross-platform [Tox](https://tox.chat/) client written in pu
 - [x] Changing nospam
 - [x] File resuming
 - [x] Read receipts
-- [ ] Video
+- [ ] Video calls
 - [ ] Desktop sharing
 - [ ] Group chats
 

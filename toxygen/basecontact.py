@@ -109,6 +109,10 @@ class BaseContact:
     def get_pixmap(self):
         return self._widget.avatar_label.pixmap()
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # Widgets
+    # -----------------------------------------------------------------------------------------------------------------
+
     def init_widget(self):
         if self._widget is not None:
             self._widget.name.setText(self._name)

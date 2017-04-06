@@ -146,7 +146,7 @@ class Contact(basecontact.BaseContact):
 
         old = filter(save_message, self._corr[:-SAVE_MESSAGES])
         self._corr = list(old) + self._corr[-SAVE_MESSAGES:]
-        text_messages = filter(lambda x: x.get_type <= 1, self._corr)
+        text_messages = filter(lambda x: x.get_type() <= 1, self._corr)
         self._unsaved_messages = min(self._unsaved_messages, len(list(text_messages)))
         self._search_index = 0
 
