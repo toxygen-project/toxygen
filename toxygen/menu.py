@@ -141,12 +141,12 @@ class ProfileSettings(CenteredWidget):
         self.profilepass.setFont(font)
         self.password = LineEdit(self)
         self.password.setGeometry(QtCore.QRect(40, 380, 300, 30))
-        self.password.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.password.setEchoMode(QtWidgets.QLineEdit.Password)
         self.leave_blank = QtWidgets.QLabel(self)
         self.leave_blank.setGeometry(QtCore.QRect(350, 380, 300, 30))
         self.confirm_password = LineEdit(self)
         self.confirm_password.setGeometry(QtCore.QRect(40, 420, 300, 30))
-        self.confirm_password.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.confirm_password.setEchoMode(QtWidgets.QLineEdit.Password)
         self.set_password = QtWidgets.QPushButton(self)
         self.set_password.setGeometry(QtCore.QRect(40, 470, 300, 30))
         self.set_password.clicked.connect(self.new_password)
@@ -202,12 +202,10 @@ class ProfileSettings(CenteredWidget):
             Settings.set_auto_profile(ProfileHelper.get_path(), Settings.get_instance().name)
         self.auto = not self.auto
         if self.auto:
-            self.default.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Mark as not default profile", None,
-                                                              QtWidgets.QApplication.UnicodeUTF8))
+            self.default.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Mark as not default profile"))
         else:
             self.default.setText(
-                QtWidgets.QApplication.translate("ProfileSettingsForm", "Mark as default profile", None,
-                                             QtWidgets.QApplication.UnicodeUTF8))
+                QtWidgets.QApplication.translate("ProfileSettingsForm", "Mark as default profile"))
 
     def new_password(self):
         if self.password.text() == self.confirm_password.text():
@@ -217,12 +215,10 @@ class ProfileSettings(CenteredWidget):
                 self.close()
             else:
                 self.not_match.setText(
-                    QtWidgets.QApplication.translate("ProfileSettingsForm", "Password must be at least 8 symbols", None,
-                                                 QtWidgets.QApplication.UnicodeUTF8))
+                    QtWidgets.QApplication.translate("ProfileSettingsForm", "Password must be at least 8 symbols"))
             self.not_match.setVisible(True)
         else:
-            self.not_match.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Passwords do not match", None,
-                                                                QtWidgets.QApplication.UnicodeUTF8))
+            self.not_match.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Passwords do not match"))
             self.not_match.setVisible(True)
 
     def copy(self):
@@ -686,21 +682,19 @@ class InterfaceSettings(CenteredWidget):
 
     def new_font(self):
         settings = Settings.get_instance()
-        font, ok = QtGui.QFontDialog.getFont(QtGui.QFont(settings['font'], 10), self)
+        font, ok = QtWidgets.QFontDialog.getFont(QtGui.QFont(settings['font'], 10), self)
         if ok:
             settings['font'] = font.family()
             settings.save()
             msgBox = QtWidgets.QMessageBox()
-            text = QtWidgets.QApplication.translate("interfaceForm", 'Restart app to apply settings', None,
-                                                QtWidgets.QApplication.UnicodeUTF8)
-            msgBox.setWindowTitle(QtWidgets.QApplication.translate("interfaceForm", 'Restart required', None,
-                                                               QtWidgets.QApplication.UnicodeUTF8))
+            text = QtWidgets.QApplication.translate("interfaceForm", 'Restart app to apply settings')
+            msgBox.setWindowTitle(QtWidgets.QApplication.translate("interfaceForm", 'Restart required'))
             msgBox.setText(text)
             msgBox.exec_()
 
     def select_color(self):
         settings = Settings.get_instance()
-        col = QtGui.QColorDialog.getColor(settings['unread_color'])
+        col = QtWidgets.QColorDialog.getColor(QtGui.QColor(settings['unread_color']))
 
         if col.isValid():
             name = col.name()

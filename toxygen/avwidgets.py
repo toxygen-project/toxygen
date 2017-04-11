@@ -120,8 +120,7 @@ class AudioMessageRecorder(widgets.CenteredWidget):
         self.record = QtWidgets.QPushButton(self)
         self.record.setGeometry(QtCore.QRect(20, 100, 150, 150))
 
-        self.record.setText(QtWidgets.QApplication.translate("MenuWindow", "Start recording", None,
-                                                         QtWidgets.QApplication.UnicodeUTF8))
+        self.record.setText(QtWidgets.QApplication.translate("MenuWindow", "Start recording"))
         self.record.clicked.connect(self.start_or_stop_recording)
         self.recording = False
         self.friend_num = friend_number
@@ -129,8 +128,7 @@ class AudioMessageRecorder(widgets.CenteredWidget):
     def start_or_stop_recording(self):
         if not self.recording:
             self.recording = True
-            self.record.setText(QtWidgets.QApplication.translate("MenuWindow", "Stop recording", None,
-                                                             QtWidgets.QApplication.UnicodeUTF8))
+            self.record.setText(QtWidgets.QApplication.translate("MenuWindow", "Stop recording"))
         else:
             self.close()
 

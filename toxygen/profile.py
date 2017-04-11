@@ -96,8 +96,7 @@ class Profile(basecontact.BaseContact, Singleton):
         tmp = self.name
         super(Profile, self).set_name(value.encode('utf-8'))
         self._tox.self_set_name(self._name.encode('utf-8'))
-        message = QtWidgets.QApplication.translate("MainWindow", 'User {} is now known as {}', None,
-                                               QtWidgets.QApplication.UnicodeUTF8)
+        message = QtWidgets.QApplication.translate("MainWindow", 'User {} is now known as {}')
         message = message.format(tmp, value)
         for friend in self._contacts:
             friend.append_message(InfoMessage(message, time.time()))
@@ -663,12 +662,10 @@ class Profile(basecontact.BaseContact, Singleton):
         friend = self._contacts[num]
         name = friend.name
         dialog = QtWidgets.QApplication.translate('MainWindow',
-                                              "Enter new alias for friend {} or leave empty to use friend's name:",
-                                              None, QtWidgets.QApplication.UnicodeUTF8)
+                                              "Enter new alias for friend {} or leave empty to use friend's name:")
         dialog = dialog.format(name)
         title = QtWidgets.QApplication.translate('MainWindow',
-                                             'Set alias',
-                                             None, QtWidgets.QApplication.UnicodeUTF8)
+                                             'Set alias')
         text, ok = QtGui.QInputDialog.getText(None,
                                               title,
                                               dialog,
@@ -1204,11 +1201,9 @@ class Profile(basecontact.BaseContact, Singleton):
             self._call(num, audio, video)
             self._screen.active_call()
             if video:
-                text = QtWidgets.QApplication.translate("incoming_call", "Outgoing video call", None,
-                                                    QtWidgets.QApplication.UnicodeUTF8)
+                text = QtWidgets.QApplication.translate("incoming_call", "Outgoing video call")
             else:
-                text = QtWidgets.QApplication.translate("incoming_call", "Outgoing audio call", None,
-                                                    QtWidgets.QApplication.UnicodeUTF8)
+                text = QtWidgets.QApplication.translate("incoming_call", "Outgoing audio call")
             self.get_curr_friend().append_message(InfoMessage(text, time.time()))
             self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
             self._messages.scrollToBottom()
@@ -1223,11 +1218,9 @@ class Profile(basecontact.BaseContact, Singleton):
             return
         friend = self.get_friend_by_number(friend_number)
         if video:
-            text = QtWidgets.QApplication.translate("incoming_call", "Incoming video call", None,
-                                                QtWidgets.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate("incoming_call", "Incoming video call")
         else:
-            text = QtWidgets.QApplication.translate("incoming_call", "Incoming audio call", None,
-                                                QtWidgets.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate("incoming_call", "Incoming audio call")
         friend.append_message(InfoMessage(text, time.time()))
         self._incoming_calls.add(friend_number)
         if friend_number == self.get_active_number():

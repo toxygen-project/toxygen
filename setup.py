@@ -11,7 +11,7 @@ version = program_version + '.0'
 MODULES = []
 
 if system() in ('Windows', 'Darwin'):
-    MODULES = ['PyAudio', 'PySide']
+    MODULES = ['PyAudio', 'PyQt5']
 else:
     try:
         import pyaudio
@@ -58,7 +58,8 @@ setup(name='Toxygen',
       include_package_data=True,
       classifiers=[
           'Programming Language :: Python :: 3 :: Only',
-          'Programming Language :: Python :: 3.4',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
       ],
       entry_points={
           'console_scripts': ['toxygen=toxygen.main:main'],

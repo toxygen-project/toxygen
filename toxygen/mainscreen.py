@@ -494,8 +494,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
             msgBox.setWindowTitle(
                 QtWidgets.QApplication.translate("MainWindow", "Cannot lock app"))
             msgBox.setText(
-                QtWidgets.QApplication.translate("MainWindow", 'Error. Profile password is not set.', None,
-                                             QtWidgets.QApplication.UnicodeUTF8))
+                QtWidgets.QApplication.translate("MainWindow", 'Error. Profile password is not set.'))
             msgBox.exec_()
 
     def show_menu(self):

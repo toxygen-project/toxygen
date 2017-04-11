@@ -85,29 +85,21 @@ def create_menu(menu):
         text = action.text()
         if 'Link Location' in text:
             text = text.replace('Copy &Link Location',
-                                QtWidgets.QApplication.translate("MainWindow", "Copy link location", None,
-                                                             QtWidgets.QApplication.UnicodeUTF8))
+                                QtWidgets.QApplication.translate("MainWindow", "Copy link location"))
         elif '&Copy' in text:
-            text = text.replace('&Copy', QtWidgets.QApplication.translate("MainWindow", "Copy", None,
-                                                                      QtWidgets.QApplication.UnicodeUTF8))
+            text = text.replace('&Copy', QtWidgets.QApplication.translate("MainWindow", "Copy"))
         elif 'All' in text:
-            text = text.replace('Select All', QtWidgets.QApplication.translate("MainWindow", "Select all", None,
-                                                                           QtWidgets.QApplication.UnicodeUTF8))
+            text = text.replace('Select All', QtWidgets.QApplication.translate("MainWindow", "Select all"))
         elif 'Delete' in text:
-            text = text.replace('Delete', QtWidgets.QApplication.translate("MainWindow", "Delete", None,
-                                                                       QtWidgets.QApplication.UnicodeUTF8))
+            text = text.replace('Delete', QtWidgets.QApplication.translate("MainWindow", "Delete"))
         elif '&Paste' in text:
-            text = text.replace('&Paste', QtWidgets.QApplication.translate("MainWindow", "Paste", None,
-                                                                       QtWidgets.QApplication.UnicodeUTF8))
+            text = text.replace('&Paste', QtWidgets.QApplication.translate("MainWindow", "Paste"))
         elif 'Cu&t' in text:
-            text = text.replace('Cu&t', QtWidgets.QApplication.translate("MainWindow", "Cut", None,
-                                                                     QtWidgets.QApplication.UnicodeUTF8))
+            text = text.replace('Cu&t', QtWidgets.QApplication.translate("MainWindow", "Cut"))
         elif '&Undo' in text:
-            text = text.replace('&Undo', QtWidgets.QApplication.translate("MainWindow", "Undo", None,
-                                                                      QtWidgets.QApplication.UnicodeUTF8))
+            text = text.replace('&Undo', QtWidgets.QApplication.translate("MainWindow", "Undo"))
         elif '&Redo' in text:
-            text = text.replace('&Redo', QtWidgets.QApplication.translate("MainWindow", "Redo", None,
-                                                                      QtWidgets.QApplication.UnicodeUTF8))
+            text = text.replace('&Redo', QtWidgets.QApplication.translate("MainWindow", "Redo"))
         else:
             menu.removeAction(action)
             continue

@@ -1,8 +1,5 @@
 from widgets import CenteredWidget, LineEdit
-try:
-    from PyQt5 import QtCore, QtGui
-except ImportError:
-    from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
 class PasswordArea(LineEdit):
@@ -10,7 +7,7 @@ class PasswordArea(LineEdit):
     def __init__(self, parent):
         super(PasswordArea, self).__init__(parent)
         self.parent = parent
-        self.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.setEchoMode(QtWidgets.QLineEdit.Password)
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return:
@@ -116,10 +113,10 @@ class SetProfilePasswordScreen(CenteredWidget):
         self.setMaximumSize(QtCore.QSize(700, 200))
         self.password = LineEdit(self)
         self.password.setGeometry(QtCore.QRect(40, 10, 300, 30))
-        self.password.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.password.setEchoMode(QtWidgets.QLineEdit.Password)
         self.confirm_password = LineEdit(self)
         self.confirm_password.setGeometry(QtCore.QRect(40, 50, 300, 30))
-        self.confirm_password.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.confirm_password.setEchoMode(QtWidgets.QLineEdit.Password)
         self.set_password = QtWidgets.QPushButton(self)
         self.set_password.setGeometry(QtCore.QRect(40, 100, 300, 30))
         self.set_password.clicked.connect(self.new_password)
@@ -132,21 +129,16 @@ class SetProfilePasswordScreen(CenteredWidget):
         self.warning.setStyleSheet('QLabel { color: #BC1C1C; }')
 
     def retranslateUi(self):
-        self.setWindowTitle(QtWidgets.QApplication.translate("PasswordScreen", "Profile password", None,
-                                                              QtWidgets.QApplication.UnicodeUTF8))
+        self.setWindowTitle(QtWidgets.QApplication.translate("PasswordScreen", "Profile password"))
         self.password.setPlaceholderText(
-            QtWidgets.QApplication.translate("PasswordScreen", "Password (at least 8 symbols)", None,
-                                         QtWidgets.QApplication.UnicodeUTF8))
+            QtWidgets.QApplication.translate("PasswordScreen", "Password (at least 8 symbols)"))
         self.confirm_password.setPlaceholderText(
-            QtWidgets.QApplication.translate("PasswordScreen", "Confirm password", None,
-                                         QtWidgets.QApplication.UnicodeUTF8))
+            QtWidgets.QApplication.translate("PasswordScreen", "Confirm password"))
         self.set_password.setText(
             QtWidgets.QApplication.translate("PasswordScreen", "Set password"))
-        self.not_match.setText(QtWidgets.QApplication.translate("PasswordScreen", "Passwords do not match", None,
-                                                            QtWidgets.QApplication.UnicodeUTF8))
+        self.not_match.setText(QtWidgets.QApplication.translate("PasswordScreen", "Passwords do not match"))
         self.warning.setText(
-            QtWidgets.QApplication.translate("PasswordScreen", "There is no way to recover lost passwords", None,
-                                         QtWidgets.QApplication.UnicodeUTF8))
+            QtWidgets.QApplication.translate("PasswordScreen", "There is no way to recover lost passwords"))
 
     def new_password(self):
         if self.password.text() == self.confirm_password.text():
@@ -155,10 +147,8 @@ class SetProfilePasswordScreen(CenteredWidget):
                 self.close()
             else:
                 self.not_match.setText(
-                    QtWidgets.QApplication.translate("PasswordScreen", "Password must be at least 8 symbols", None,
-                                                 QtWidgets.QApplication.UnicodeUTF8))
+                    QtWidgets.QApplication.translate("PasswordScreen", "Password must be at least 8 symbols"))
             self.not_match.setVisible(True)
         else:
-            self.not_match.setText(QtWidgets.QApplication.translate("PasswordScreen", "Passwords do not match", None,
-                                                                QtWidgets.QApplication.UnicodeUTF8))
+            self.not_match.setText(QtWidgets.QApplication.translate("PasswordScreen", "Passwords do not match"))
             self.not_match.setVisible(True)

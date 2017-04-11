@@ -331,51 +331,39 @@ class WelcomeScreen(CenteredWidget):
         self.text.setOpenExternalLinks(True)
         self.checkbox = QtWidgets.QCheckBox(self)
         self.checkbox.setGeometry(QtCore.QRect(5, 170, 240, 30))
-        self.checkbox.setText(QtWidgets.QApplication.translate('WelcomeScreen', "Don't show again",
-                                                           None, QtWidgets.QApplication.UnicodeUTF8))
-        self.setWindowTitle(QtWidgets.QApplication.translate('WelcomeScreen', 'Tip of the day',
-                                                         None, QtWidgets.QApplication.UnicodeUTF8))
+        self.checkbox.setText(QtWidgets.QApplication.translate('WelcomeScreen', "Don't show again"))
+        self.setWindowTitle(QtWidgets.QApplication.translate('WelcomeScreen', 'Tip of the day'))
         import random
         num = random.randint(0, 10)
         if num == 0:
-            text = QtWidgets.QApplication.translate('WelcomeScreen', 'Press Esc if you want hide app to tray.',
-                                                None, QtWidgets.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate('WelcomeScreen', 'Press Esc if you want hide app to tray.')
         elif num == 1:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Right click on screenshot button hides app to tray during screenshot.',
-                                                None, QtWidgets.QApplication.UnicodeUTF8)
+                                                'Right click on screenshot button hides app to tray during screenshot.')
         elif num == 2:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'You can use Tox over Tor. For more info read <a href="https://wiki.tox.chat/users/tox_over_tor_tot">this post</a>',
-                                                None, QtWidgets.QApplication.UnicodeUTF8)
+                                                'You can use Tox over Tor. For more info read <a href="https://wiki.tox.chat/users/tox_over_tor_tot">this post</a>')
         elif num == 3:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Use Settings -> Interface to customize interface.',
-                                                None, QtWidgets.QApplication.UnicodeUTF8)
+                                                'Use Settings -> Interface to customize interface.')
         elif num == 4:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Set profile password via Profile -> Settings. Password allows Toxygen encrypt your history and settings.',
-                                                None, QtWidgets.QApplication.UnicodeUTF8)
+                                                'Set profile password via Profile -> Settings. Password allows Toxygen encrypt your history and settings.')
         elif num == 5:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Since v0.1.3 Toxygen supports plugins. <a href="https://github.com/xveduk/toxygen/blob/master/docs/plugins.md">Read more</a>',
-                                                None, QtWidgets.QApplication.UnicodeUTF8)
+                                                'Since v0.1.3 Toxygen supports plugins. <a href="https://github.com/xveduk/toxygen/blob/master/docs/plugins.md">Read more</a>')
         elif num in (6, 7):
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Toxygen supports faux offline messages and file transfers. Send message or file to offline friend and he will get it later.',
-                                                None, QtWidgets.QApplication.UnicodeUTF8)
+                                                'Toxygen supports faux offline messages and file transfers. Send message or file to offline friend and he will get it later.')
         elif num == 8:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Delete single message in chat: make right click on spinner or message time and choose "Delete" in menu',
-                                                None, QtWidgets.QApplication.UnicodeUTF8)
+                                                'Delete single message in chat: make right click on spinner or message time and choose "Delete" in menu')
         elif num == 9:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Use right click on inline image to save it',
-                                                None, QtWidgets.QApplication.UnicodeUTF8)
+                                                'Use right click on inline image to save it')
         else:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Set new NoSpam to avoid spam friend requests: Profile -> Settings -> Set new NoSpam.',
-                                                None, QtWidgets.QApplication.UnicodeUTF8)
+                                                'Set new NoSpam to avoid spam friend requests: Profile -> Settings -> Set new NoSpam.')
         self.text.setHtml(text)
         self.checkbox.stateChanged.connect(self.not_show)
         QtCore.QTimer.singleShot(1000, self.show)
@@ -455,8 +443,7 @@ class SearchScreen(QtWidgets.QWidget):
         self.retranslateUi()
 
     def retranslateUi(self):
-        self.search_text.setPlaceholderText(QtWidgets.QApplication.translate("MainWindow", "Search", None,
-                                                                         QtWidgets.QApplication.UnicodeUTF8))
+        self.search_text.setPlaceholderText(QtWidgets.QApplication.translate("MainWindow", "Search"))
 
     def show(self):
         super().show()
@@ -514,13 +501,9 @@ class SearchScreen(QtWidgets.QWidget):
     def not_found(text):
         mbox = QtWidgets.QMessageBox()
         mbox_text = QtWidgets.QApplication.translate("MainWindow",
-                                                 'Text "{}" was not found',
-                                                 None,
-                                                 QtWidgets.QApplication.UnicodeUTF8)
+                                                 'Text "{}" was not found')
 
         mbox.setText(mbox_text.format(text))
         mbox.setWindowTitle(QtWidgets.QApplication.translate("MainWindow",
-                                                         'Not found',
-                                                         None,
-                                                         QtWidgets.QApplication.UnicodeUTF8))
+                                                         'Not found'))
         mbox.exec_()

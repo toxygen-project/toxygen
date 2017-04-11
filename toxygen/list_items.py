@@ -534,8 +534,7 @@ class InlineImageItem(QtWidgets.QScrollArea):
         elif event.button() == QtCore.Qt.RightButton:  # save inline
             directory = QtWidgets.QFileDialog.getExistingDirectory(self,
                                                                QtWidgets.QApplication.translate("MainWindow",
-                                                                                            'Choose folder', None,
-                                                                                            QtWidgets.QApplication.UnicodeUTF8),
+                                                                                            'Choose folder'),
                                                                curr_directory(),
                                                                QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
             if directory:
