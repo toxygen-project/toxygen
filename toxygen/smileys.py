@@ -3,7 +3,7 @@ import json
 import os
 from collections import OrderedDict
 try:
-    from PySide import QtCore
+    from PyQt5 import QtCore
 except ImportError:
     from PyQt4 import QtCore
 

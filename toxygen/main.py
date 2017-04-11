@@ -2,10 +2,7 @@ import sys
 from loginscreen import LoginScreen
 import profile
 from settings import *
-try:
-    from PySide import QtCore, QtGui
-except ImportError:
-    from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from bootstrap import node_generator
 from mainscreen import MainWindow
 from callbacks import init_callbacks, stop, start
@@ -39,7 +36,7 @@ class Toxygen:
         tmp = [data]
         p = PasswordScreen(toxes.ToxES.get_instance(), tmp)
         p.show()
-        self.app.connect(self.app, QtCore.SIGNAL("lastWindowClosed()"), self.app, QtCore.SLOT("quit()"))
+        self.app.lastWindowClosed.connect(self.app.quit)
         self.app.exec_()
         if tmp[0] == data:
             raise SystemExit()
@@ -50,7 +47,7 @@ class Toxygen:
         """
         Main function of app. loads login screen if needed and starts main screen
         """
-        app = QtGui.QApplication(sys.argv)
+        app = QtWidgets.QApplication(sys.argv)
         app.setWindowIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
         self.app = app
 
@@ -92,7 +89,6 @@ class Toxygen:
                 _login = self.Login(profiles)
                 ls.update_on_close(_login.login_screen_close)
                 ls.show()
-                app.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app, QtCore.SLOT("quit()"))
                 app.exec_()
                 if not _login.t:
                     return
@@ -101,40 +97,35 @@ class Toxygen:
                     name = _login.name if _login.name else 'toxygen_user'
                     pr = map(lambda x: x[1], ProfileHelper.find_profiles())
                     if name in list(pr):
-                        msgBox = QtGui.QMessageBox()
+                        msgBox = QtWidgets.QMessageBox()
                         msgBox.setWindowTitle(
-                            QtGui.QApplication.translate("MainWindow", "Error", None, QtGui.QApplication.UnicodeUTF8))
-                        text = (QtGui.QApplication.translate("MainWindow",
-                                                             'Profile with this name already exists',
-                                                             None, QtGui.QApplication.UnicodeUTF8))
+                            QtWidgets.QApplication.translate("MainWindow", "Error"))
+                        text = (QtWidgets.QApplication.translate("MainWindow",
+                                                             'Profile with this name already exists'))
                         msgBox.setText(text)
                         msgBox.exec_()
                         return
                     self.tox = profile.tox_factory()
                     self.tox.self_set_name(bytes(_login.name, 'utf-8') if _login.name else b'Toxygen User')
                     self.tox.self_set_status_message(b'Toxing on Toxygen')
-                    reply = QtGui.QMessageBox.question(None,
+                    reply = QtWidgets.QMessageBox.question(None,
                                                        'Profile {}'.format(name),
-                                                       QtGui.QApplication.translate("login",
-                                                                                    'Do you want to set profile password?',
-                                                                                    None,
-                                                                                    QtGui.QApplication.UnicodeUTF8),
-                                                       QtGui.QMessageBox.Yes,
-                                                       QtGui.QMessageBox.No)
-                    if reply == QtGui.QMessageBox.Yes:
+                                                       QtWidgets.QApplication.translate("login",
+                                                                                    'Do you want to set profile password?'),
+                                                           QtWidgets.QMessageBox.Yes,
+                                                           QtWidgets.QMessageBox.No)
+                    if reply == QtWidgets.QMessageBox.Yes:
                         set_pass = SetProfilePasswordScreen(encrypt_save)
                         set_pass.show()
-                        self.app.connect(self.app, QtCore.SIGNAL("lastWindowClosed()"), self.app, QtCore.SLOT("quit()"))
+                        self.app.lastWindowClosed.connect(self.app.quit)
                         self.app.exec_()
-                    reply = QtGui.QMessageBox.question(None,
+                    reply = QtWidgets.QMessageBox.question(None,
                                                        'Profile {}'.format(name),
-                                                       QtGui.QApplication.translate("login",
-                                                                                    'Do you want to save profile in default folder? If no, profile will be saved in program folder',
-                                                                                    None,
-                                                                                    QtGui.QApplication.UnicodeUTF8),
-                                                       QtGui.QMessageBox.Yes,
-                                                       QtGui.QMessageBox.No)
-                    if reply == QtGui.QMessageBox.Yes:
+                                                       QtWidgets.QApplication.translate("login",
+                                                                                    'Do you want to save profile in default folder? If no, profile will be saved in program folder'),
+                                                       QtWidgets.QMessageBox.Yes,
+                                                           QtWidgets.QMessageBox.No)
+                    if reply == QtWidgets.QMessageBox.Yes:
                         path = Settings.get_default_path()
                     else:
                         path = curr_directory() + '/'
@@ -143,11 +134,9 @@ class Toxygen:
                     except Exception as ex:
                         print(str(ex))
                         log('Profile creation exception: ' + str(ex))
-                        msgBox = QtGui.QMessageBox()
-                        msgBox.setText(QtGui.QApplication.translate("login",
-                                                                    'Profile saving error! Does Toxygen have permission to write to this directory?',
-                                                                    None,
-                                                                    QtGui.QApplication.UnicodeUTF8))
+                        msgBox = QtWidgets.QMessageBox()
+                        msgBox.setText(QtWidgets.QApplication.translate("login",
+                                                                    'Profile saving error! Does Toxygen have permission to write to this directory?'))
                         msgBox.exec_()
                         return
                     path = Settings.get_default_path()
@@ -173,12 +162,12 @@ class Toxygen:
                 self.tox = profile.tox_factory(data, settings)
 
         if Settings.is_active_profile(path, name):  # profile is in use
-            reply = QtGui.QMessageBox.question(None,
+            reply = QtWidgets.QMessageBox.question(None,
                                                'Profile {}'.format(name),
-                                               QtGui.QApplication.translate("login", 'Other instance of Toxygen uses this profile or profile was not properly closed. Continue?', None, QtGui.QApplication.UnicodeUTF8),
-                                               QtGui.QMessageBox.Yes,
-                                               QtGui.QMessageBox.No)
-            if reply != QtGui.QMessageBox.Yes:
+                                               QtWidgets.QApplication.translate("login", 'Other instance of Toxygen uses this profile or profile was not properly closed. Continue?'),
+                                                   QtWidgets.QMessageBox.Yes,
+                                                   QtWidgets.QMessageBox.No)
+            if reply != QtWidgets.QMessageBox.Yes:
                 return
         else:
             settings.set_active_profile()
@@ -190,21 +179,21 @@ class Toxygen:
         app.translator = translator
 
         # tray icon
-        self.tray = QtGui.QSystemTrayIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
+        self.tray = QtWidgets.QSystemTrayIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
         self.tray.setObjectName('tray')
 
         self.ms = MainWindow(self.tox, self.reset, self.tray)
         app.aboutToQuit.connect(self.ms.close_window)
 
-        class Menu(QtGui.QMenu):
+        class Menu(QtWidgets.QMenu):
 
             def newStatus(self, status):
                 if not Settings.get_instance().locked:
                     profile.Profile.get_instance().set_status(status)
-                    self.aboutToShow()
+                    self.aboutToShowHandler()
                     self.hide()
 
-            def aboutToShow(self):
+            def aboutToShowHandler(self):
                 status = profile.Profile.get_instance().status
                 act = self.act
                 if status is None or Settings.get_instance().locked:
@@ -218,24 +207,24 @@ class Toxygen:
                 self.actions()[2].setVisible(not Settings.get_instance().locked)
 
             def languageChange(self, *args, **kwargs):
-                self.actions()[0].setText(QtGui.QApplication.translate('tray', 'Open Toxygen', None, QtGui.QApplication.UnicodeUTF8))
-                self.actions()[1].setText(QtGui.QApplication.translate('tray', 'Set status', None, QtGui.QApplication.UnicodeUTF8))
-                self.actions()[2].setText(QtGui.QApplication.translate('tray', 'Exit', None, QtGui.QApplication.UnicodeUTF8))
-                self.act.actions()[0].setText(QtGui.QApplication.translate('tray', 'Online', None, QtGui.QApplication.UnicodeUTF8))
-                self.act.actions()[1].setText(QtGui.QApplication.translate('tray', 'Away', None, QtGui.QApplication.UnicodeUTF8))
-                self.act.actions()[2].setText(QtGui.QApplication.translate('tray', 'Busy', None, QtGui.QApplication.UnicodeUTF8))
+                self.actions()[0].setText(QtWidgets.QApplication.translate('tray', 'Open Toxygen'))
+                self.actions()[1].setText(QtWidgets.QApplication.translate('tray', 'Set status'))
+                self.actions()[2].setText(QtWidgets.QApplication.translate('tray', 'Exit'))
+                self.act.actions()[0].setText(QtWidgets.QApplication.translate('tray', 'Online'))
+                self.act.actions()[1].setText(QtWidgets.QApplication.translate('tray', 'Away'))
+                self.act.actions()[2].setText(QtWidgets.QApplication.translate('tray', 'Busy'))
 
         m = Menu()
-        show = m.addAction(QtGui.QApplication.translate('tray', 'Open Toxygen', None, QtGui.QApplication.UnicodeUTF8))
-        sub = m.addMenu(QtGui.QApplication.translate('tray', 'Set status', None, QtGui.QApplication.UnicodeUTF8))
-        onl = sub.addAction(QtGui.QApplication.translate('tray', 'Online', None, QtGui.QApplication.UnicodeUTF8))
-        away = sub.addAction(QtGui.QApplication.translate('tray', 'Away', None, QtGui.QApplication.UnicodeUTF8))
-        busy = sub.addAction(QtGui.QApplication.translate('tray', 'Busy', None, QtGui.QApplication.UnicodeUTF8))
+        show = m.addAction(QtWidgets.QApplication.translate('tray', 'Open Toxygen'))
+        sub = m.addMenu(QtWidgets.QApplication.translate('tray', 'Set status'))
+        onl = sub.addAction(QtWidgets.QApplication.translate('tray', 'Online'))
+        away = sub.addAction(QtWidgets.QApplication.translate('tray', 'Away'))
+        busy = sub.addAction(QtWidgets.QApplication.translate('tray', 'Busy'))
         onl.setCheckable(True)
         away.setCheckable(True)
         busy.setCheckable(True)
         m.act = sub
-        exit = m.addAction(QtGui.QApplication.translate('tray', 'Exit', None, QtGui.QApplication.UnicodeUTF8))
+        exit = m.addAction(QtWidgets.QApplication.translate('tray', 'Exit'))
 
         def show_window():
             s = Settings.get_instance()
@@ -258,7 +247,7 @@ class Toxygen:
                     self.p.show()
 
         def tray_activated(reason):
-            if reason == QtGui.QSystemTrayIcon.DoubleClick:
+            if reason == QtWidgets.QSystemTrayIcon.DoubleClick:
                 show_window()
 
         def close_app():
@@ -266,12 +255,12 @@ class Toxygen:
                 settings.closing = True
                 self.ms.close()
 
-        m.connect(show, QtCore.SIGNAL("triggered()"), show_window)
-        m.connect(exit, QtCore.SIGNAL("triggered()"), close_app)
-        m.connect(m, QtCore.SIGNAL("aboutToShow()"), lambda: m.aboutToShow())
-        sub.connect(onl, QtCore.SIGNAL("triggered()"), lambda: m.newStatus(0))
-        sub.connect(away, QtCore.SIGNAL("triggered()"), lambda: m.newStatus(1))
-        sub.connect(busy, QtCore.SIGNAL("triggered()"), lambda: m.newStatus(2))
+        show.triggered.connect(show_window)
+        exit.triggered.connect(close_app)
+        m.aboutToShow.connect(lambda: m.aboutToShowHandler())
+        onl.triggered.connect(lambda: m.newStatus(0))
+        away.triggered.connect(lambda: m.newStatus(1))
+        busy.triggered.connect(lambda: m.newStatus(2))
 
         self.tray.setContextMenu(m)
         self.tray.show()
@@ -287,15 +276,13 @@ class Toxygen:
                     updater.download(version)
                     updating = True
                 else:
-                    reply = QtGui.QMessageBox.question(None,
+                    reply = QtWidgets.QMessageBox.question(None,
                                                        'Toxygen',
-                                                       QtGui.QApplication.translate("login",
-                                                                                    'Update for Toxygen was found. Download and install it?',
-                                                                                    None,
-                                                                                    QtGui.QApplication.UnicodeUTF8),
-                                                       QtGui.QMessageBox.Yes,
-                                                       QtGui.QMessageBox.No)
-                    if reply == QtGui.QMessageBox.Yes:
+                                                       QtWidgets.QApplication.translate("login",
+                                                                                    'Update for Toxygen was found. Download and install it?'),
+                                                           QtWidgets.QMessageBox.Yes,
+                                                           QtWidgets.QMessageBox.No)
+                    if reply == QtWidgets.QMessageBox.Yes:
                         updater.download(version)
                         updating = True
 
@@ -323,7 +310,7 @@ class Toxygen:
         if self.uri is not None:
             self.ms.add_contact(self.uri)
 
-        app.connect(app, QtCore.SIGNAL("lastWindowClosed()"), app, QtCore.SLOT("quit()"))
+        app.lastWindowClosed.connect(app.quit)
         app.exec_()
 
         self.init.stop = True

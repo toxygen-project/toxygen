@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 try:
-    from PySide import QtCore
+    from PyQt5 import QtCore
 except ImportError:
     from PyQt4 import QtCore
 

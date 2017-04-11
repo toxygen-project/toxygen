@@ -1,5 +1,5 @@
 try:
-    from PySide import QtCore, QtGui
+    from PyQt5 import QtCore, QtGui
 except ImportError:
     from PyQt4 import QtCore, QtGui
 from history import *

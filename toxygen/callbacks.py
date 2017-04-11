@@ -1,5 +1,5 @@
 try:
-    from PySide import QtCore
+    from PyQt5 import QtCore
 except ImportError:
     from PyQt4 import QtCore
 from notifications import *
@@ -225,7 +225,7 @@ def tox_file_recv(window, tray):
             if not window.isActiveWindow():
                 friend = profile.get_friend_by_number(friend_number)
                 if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
-                    file_from = QtGui.QApplication.translate("Callback", "File from", None, QtGui.QApplication.UnicodeUTF8)
+                    file_from = QtWidgets.QApplication.translate("Callback", "File from")
                     invoke_in_main_thread(tray_notification, file_from + ' ' + friend.name, file_name, tray, window)
                 if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                     sound_notification(SOUND_NOTIFICATION['FILE_TRANSFER'])

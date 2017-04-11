@@ -4,7 +4,7 @@ import settings
 import platform
 import urllib
 try:
-    from PySide import QtNetwork, QtCore
+    from PyQt5 import QtNetwork, QtCore
 except ImportError:
     from PyQt4 import QtNetwork, QtCore
 import subprocess

@@ -1,5 +1,5 @@
 try:
-    from PySide import QtCore, QtGui
+    from PyQt5 import QtCore, QtGui
 except ImportError:
     from PyQt4 import QtCore, QtGui
 from util import curr_directory
@@ -27,7 +27,7 @@ def tray_notification(title, text, tray, window):
         if len(text) > 30:
             text = text[:27] + '...'
         tray.showMessage(title, text, QtGui.QSystemTrayIcon.NoIcon, 3000)
-        QtGui.QApplication.alert(window, 0)
+        QtWidgets.QApplication.alert(window, 0)
 
         def message_clicked():
             window.setWindowState(window.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
