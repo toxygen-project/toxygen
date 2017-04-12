@@ -1,4 +1,4 @@
-#Issues
+# Issues
 
 Help us find all bugs in Toxygen! Please provide following info:
 
@@ -9,12 +9,12 @@ Help us find all bugs in Toxygen! Please provide following info:
 
 Want to see new feature in Toxygen? [Ask for it!](https://github.com/toxygen-project/toxygen/issues)
 
-#Pull requests
+# Pull requests
 
 Developer? Feel free to open pull request. Our dev team is small so we glad to get help.
 Don't know what to do? Improve UI, fix [issues](https://github.com/toxygen-project/toxygen/issues) or implement features from our TODO list.
 You can find our TODO's in code, issues list and [here](/README.md). Also you can implement [plugins](/docs/plugins.md) for Toxygen.
 
-#Translations
+# Translations
 
 Help us translate Toxygen! Translation can be created using pyside-lupdate (``pyside-lupdate toxygen.pro``) and QT Linguist.
