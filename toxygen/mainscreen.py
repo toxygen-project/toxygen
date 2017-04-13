@@ -1,7 +1,7 @@
 from menu import *
 from profile import *
 from list_items import *
-from widgets import MultilineEdit, LineEdit, ComboBox
+from widgets import MultilineEdit, ComboBox
 import plugin_support
 from mainscreen_widgets import *
 import settings
@@ -370,7 +370,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
                 s.save()
                 QtWidgets.QApplication.closeAllWindows()
                 event.accept()
-        elif QtGui.QSystemTrayIcon.isSystemTrayAvailable():
+        elif QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
             event.ignore()
             self.hide()
 
@@ -400,7 +400,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.profile.update()
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Escape and QtGui.QSystemTrayIcon.isSystemTrayAvailable():
+        if event.key() == QtCore.Qt.Key_Escape and QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
             self.hide()
         elif event.key() == QtCore.Qt.Key_C and event.modifiers() & QtCore.Qt.ControlModifier and self.messages.selectedIndexes():
             rows = list(map(lambda x: self.messages.row(x), self.messages.selectedItems()))

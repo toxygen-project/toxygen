@@ -106,11 +106,12 @@ class ScreenShotWindow(QtWidgets.QWidget):
             self.rubberband.hide()
             rect = self.rubberband.geometry()
             if rect.width() and rect.height():
-                p = QtGui.QPixmap.grabWindow(QtWidgets.QApplication.desktop().winId(),
-                                             rect.x() + 4,
-                                             rect.y() + 4,
-                                             rect.width() - 8,
-                                             rect.height() - 8)
+                screen = QtWidgets.QApplication.primaryScreen()
+                p = screen.grabWindow(0,
+                                      rect.x() + 4,
+                                      rect.y() + 4,
+                                      rect.width() - 8,
+                                      rect.height() - 8)
                 byte_array = QtCore.QByteArray()
                 buffer = QtCore.QBuffer(byte_array)
                 buffer.open(QtCore.QIODevice.WriteOnly)
@@ -260,7 +261,7 @@ class DropdownMenu(QtWidgets.QWidget):
 
         self.fileTransferButton.clicked.connect(parent.send_file)
         self.screenshotButton.clicked.connect(parent.send_screenshot)
-        self.rightClicked.connect(lambda: parent.send_screenshot(True))
+        self.screenshotButton.rightClicked.connect(lambda: parent.send_screenshot(True))
         self.smileyButton.clicked.connect(parent.send_smiley)
         self.stickerButton.clicked.connect(parent.send_sticker)
 
@@ -414,7 +415,7 @@ class SearchScreen(QtWidgets.QWidget):
         self.search_button.setScaledContents(False)
         self.search_button.setAlignment(QtCore.Qt.AlignCenter)
         self.search_button.setPixmap(pixmap)
-        self.connect(self.search_button, QtCore.SIGNAL('clicked()'), self.search)
+        self.search_button.clicked.connect(self.search)
 
         font = QtGui.QFont()
         font.setPointSize(32)

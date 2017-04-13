@@ -162,7 +162,7 @@ class MessageItem(QtWidgets.QWidget):
         if event.button() == QtCore.Qt.RightButton and event.x() > self.time.x():
             self.listMenu = QtWidgets.QMenu()
             delete_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Delete message'))
-            self.connect(delete_item, QtCore.pyqtSignal("triggered()"), self.delete)
+            delete_item.triggered.connect(self.delete)
             parent_position = self.time.mapToGlobal(QtCore.QPoint(0, 0))
             self.listMenu.move(parent_position)
             self.listMenu.show()
@@ -428,7 +428,7 @@ class FileTransferItem(QtWidgets.QListWidget):
         self.accept_or_pause.setIcon(icon)
         self.accept_or_pause.setIconSize(QtCore.QSize(30, 30))
 
-    def update(self, state, progress, time):
+    def update_transfer_state(self, state, progress, time):
         self.pb.setValue(int(progress * 100))
         if time + 1:
             m, s = divmod(time, 60)

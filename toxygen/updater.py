@@ -3,10 +3,7 @@ import os
 import settings
 import platform
 import urllib
-try:
-    from PyQt5 import QtNetwork, QtCore
-except ImportError:
-    from PyQt4 import QtNetwork, QtCore
+from PyQt5 import QtNetwork, QtCore
 import subprocess
 
 

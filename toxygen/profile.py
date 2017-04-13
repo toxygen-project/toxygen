@@ -1,8 +1,5 @@
 from list_items import *
-try:
-    from PyQt5 import QtCore, QtGui
-except ImportError:
-    from PyQt4 import QtCore, QtGui
+from PyQt5 import QtGui, QtWidgets
 from friend import *
 from settings import *
 from toxcore_enums_and_consts import *
@@ -244,7 +241,7 @@ class Profile(basecontact.BaseContact, Singleton):
                         if message.get_status() in ACTIVE_FILE_TRANSFERS:  # active file transfer
                             try:
                                 ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
-                                ft.set_state_changed_handler(item.update)
+                                ft.set_state_changed_handler(item.update_transfer_state)
                                 ft.signal()
                             except:
                                 print('Incoming not started transfer - no info found')
@@ -564,7 +561,7 @@ class Profile(basecontact.BaseContact, Singleton):
                 if message.get_status() in ACTIVE_FILE_TRANSFERS:  # active file transfer
                     try:
                         ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
-                        ft.set_state_changed_handler(item.update)
+                        ft.set_state_changed_handler(item.update_transfer_state)
                         ft.signal()
                     except:
                         print('Incoming not started transfer - no info found')
@@ -938,7 +935,7 @@ class Profile(basecontact.BaseContact, Singleton):
         if friend_number == self.get_active_number():
             item = self.create_file_transfer_item(tm)
             if accepted:
-                self._file_transfers[(friend_number, file_number)].set_state_changed_handler(item.update)
+                self._file_transfers[(friend_number, file_number)].set_state_changed_handler(item.update_transfer_state)
             self._messages.scrollToBottom()
         else:
             friend.actions = True
@@ -1027,7 +1024,7 @@ class Profile(basecontact.BaseContact, Singleton):
         self._file_transfers[(friend_number, file_number)] = rt
         self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
         if item is not None:
-            rt.set_state_changed_handler(item.update)
+            rt.set_state_changed_handler(item.update_transfer_state)
         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                       TOX_FILE_TRANSFER_STATE['RUNNING'])
 
@@ -1066,7 +1063,7 @@ class Profile(basecontact.BaseContact, Singleton):
                              st.get_file_number())
         item = self.create_file_transfer_item(tm)
         friend.append_message(tm)
-        st.set_state_changed_handler(item.update)
+        st.set_state_changed_handler(item.update_transfer_state)
         self._messages.scrollToBottom()
 
     def send_file(self, path, number=None, is_resend=False, file_id=None):
@@ -1099,7 +1096,7 @@ class Profile(basecontact.BaseContact, Singleton):
                              st.get_file_number())
         if friend_number == self.get_active_number():
             item = self.create_file_transfer_item(tm)
-            st.set_state_changed_handler(item.update)
+            st.set_state_changed_handler(item.update_transfer_state)
             self._messages.scrollToBottom()
         self._contacts[friend_number].append_message(tm)
 

@@ -48,14 +48,14 @@ class QRightClickButton(QtWidgets.QPushButton):
     Button with right click support
     """
 
-    right_clicked = QtCore.pyqtSignal()
+    rightClicked = QtCore.pyqtSignal()
 
     def __init__(self, parent):
         super(QRightClickButton, self).__init__(parent)
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.RightButton:
-            self.right_clicked.emit()
+            self.rightClicked.emit()
         else:
             super(QRightClickButton, self).mousePressEvent(event)
 

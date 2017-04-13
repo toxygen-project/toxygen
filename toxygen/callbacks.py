@@ -1,7 +1,4 @@
-try:
-    from PyQt5 import QtCore
-except ImportError:
-    from PyQt4 import QtCore
+from PyQt5 import QtCore, QtGui, QtWidgets
 from notifications import *
 from settings import Settings
 from profile import Profile

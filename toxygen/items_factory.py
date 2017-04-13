@@ -1,7 +1,4 @@
-try:
-    from PyQt5 import QtCore, QtGui
-except ImportError:
-    from PyQt4 import QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 from list_items import *
 
 
