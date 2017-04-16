@@ -81,6 +81,8 @@ class ScreenShotWindow(QtWidgets.QWidget):
         self.showFullScreen()
         self.setWindowOpacity(0.5)
         self.rubberband = RubberBand()
+        self.rubberband.setWindowFlags(self.rubberband.windowFlags() | QtCore.Qt.FramelessWindowHint)
+        self.rubberband.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
     def closeEvent(self, *args):
         if self.parent.isHidden():
@@ -390,11 +392,13 @@ class MainMenuButton(QtWidgets.QPushButton):
 
 class ClickableLabel(QtWidgets.QLabel):
 
+    clicked = QtCore.pyqtSignal()
+
     def __init__(self, *args):
         super().__init__(*args)
 
     def mouseReleaseEvent(self, ev):
-        self.emit(QtCore.SIGNAL('clicked()'))
+        self.clicked.emit()
 
 
 class SearchScreen(QtWidgets.QWidget):
@@ -502,9 +506,9 @@ class SearchScreen(QtWidgets.QWidget):
     def not_found(text):
         mbox = QtWidgets.QMessageBox()
         mbox_text = QtWidgets.QApplication.translate("MainWindow",
-                                                 'Text "{}" was not found')
+                                                     'Text "{}" was not found')
 
         mbox.setText(mbox_text.format(text))
         mbox.setWindowTitle(QtWidgets.QApplication.translate("MainWindow",
-                                                         'Not found'))
+                                                             'Not found'))
         mbox.exec_()
