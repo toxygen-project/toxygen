@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import time
 import shutil
@@ -7,11 +9,25 @@ import re
 program_version = '0.2.8'
 
 
+def cached(func):
+    saved_result = None
+
+    def wrapped_func():
+        nonlocal saved_result
+        if saved_result is None:
+            saved_result = func()
+
+        return saved_result
+
+    return wrapped_func
+
+
 def log(data):
     with open(curr_directory() + '/logs.log', 'a') as fl:
         fl.write(str(data) + '\n')
 
 
+@cached
 def curr_directory():
     return os.path.dirname(os.path.realpath(__file__))
 
@@ -46,9 +62,8 @@ def convert_time(t):
     return '%02d:%02d' % (h, m)
 
 
+@cached
 def time_offset():
-    if hasattr(time_offset, 'offset'):
-        return time_offset.offset
     hours = int(time.strftime('%H'))
     minutes = int(time.strftime('%M'))
     sec = int(time.time()) - time.timezone
@@ -56,7 +71,6 @@ def time_offset():
     h, m = divmod(m, 60)
     d, h = divmod(h, 24)
     result = hours * 60 + minutes - h * 60 - m
-    time_offset.offset = result
     return result
 
 

@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import sys
 from loginscreen import LoginScreen
 import profile
