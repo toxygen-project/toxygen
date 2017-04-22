@@ -141,4 +141,3 @@ class AV:
 
             if state & TOXAV_FRIEND_CALL_STATE['ACCEPTING_A']:
                 self._calls[friend_number] |= 1
-

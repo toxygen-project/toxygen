@@ -88,6 +88,7 @@ class Profile(basecontact.BaseContact, Singleton):
         if status is not None:
             self._tox.self_set_status(status)
         elif not self._waiting_for_reconnection:
+            self._waiting_for_reconnection = True
             QtCore.QTimer.singleShot(50000, self.reconnect)
 
     def set_name(self, value):

@@ -137,4 +137,3 @@ class MultilineEdit(CenteredWidget):
     def button_click(self):
         self.save(self.edit.toPlainText())
         self.close()
-
