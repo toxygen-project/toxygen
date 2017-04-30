@@ -147,8 +147,9 @@ class Settings(dict, Singleton):
     def supported_languages():
         return {
             'English': 'en_EN',
+            'French': 'fr_FR',
             'Russian': 'ru_RU',
-            'French': 'fr_FR'
+            'Ukrainian': 'uk_UA'
         }
 
     def upgrade(self):
