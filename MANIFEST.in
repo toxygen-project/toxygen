@@ -12,7 +12,7 @@ include toxygen/smileys/starwars/*.png
 include toxygen/smileys/starwars/config.json
 include toxygen/smileys/ksk/*.png
 include toxygen/smileys/ksk/config.json
-include toxygen/styles/style.qss
+include toxygen/styles/*.qss
 include toxygen/translations/*.qm
 include toxygen/libs/libtox.dll
 include toxygen/libs/libsodium.a
