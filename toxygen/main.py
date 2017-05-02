@@ -59,6 +59,10 @@ class Toxygen:
         if platform.system() == 'Linux':
             QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_X11InitThreads)
 
+        with open(curr_directory() + '/styles/dark_style.qss') as fl:
+            style = fl.read()
+        app.setStyleSheet(style)
+
         encrypt_save = toxes.ToxES()
 
         if self.path is not None:
