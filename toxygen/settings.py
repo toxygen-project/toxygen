@@ -156,7 +156,7 @@ class Settings(dict, Singleton):
     def built_in_themes():
         return {
             'dark': '/styles/dark_style.qss',
-            'default': ''
+            'default': '/styles/style.qss'
         }
 
     def upgrade(self):

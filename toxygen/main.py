@@ -187,12 +187,9 @@ class Toxygen:
         # application color scheme
         for theme in settings.built_in_themes().keys():
             if settings['theme'] == theme:
-                try:
-                    with open(curr_directory() + settings.built_in_themes()[theme]) as fl:
-                        style = fl.read()
-                    app.setStyleSheet(style)
-                except IsADirectoryError:
-                    app.setStyleSheet('') # for default style
+                with open(curr_directory() + settings.built_in_themes()[theme]) as fl:
+                    style = fl.read()
+                app.setStyleSheet(style)
 
         lang = Settings.supported_languages()[settings['language']]
         translator = QtCore.QTranslator()

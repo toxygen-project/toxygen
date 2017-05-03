@@ -43,4 +43,7 @@
   <qresource prefix="qdarkstyle">
       <file>dark_style.qss</file>
   </qresource>
+  <qresource prefix="defaultstyle">
+      <file>style.qss</file>
+  </qresource>
 </RCC>
