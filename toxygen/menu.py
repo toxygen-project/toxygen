@@ -581,11 +581,10 @@ class InterfaceSettings(CenteredWidget):
         self.label.setFont(font)
         self.themeSelect = QtGui.QComboBox(self)
         self.themeSelect.setGeometry(QtCore.QRect(30, 40, 120, 30))
-        list_of_themes = ['dark']
-        self.themeSelect.addItems(list_of_themes)
+        self.themeSelect.addItems(list(settings.built_in_themes().keys()))
         theme = settings['theme']
-        if theme in list_of_themes:
-            index = list_of_themes.index(theme)
+        if theme in settings.built_in_themes().keys():
+            index = list(settings.built_in_themes().keys()).index(theme)
         else:
             index = 0
         self.themeSelect.setCurrentIndex(index)
@@ -726,6 +725,14 @@ class InterfaceSettings(CenteredWidget):
     def closeEvent(self, event):
         settings = Settings.get_instance()
         settings['theme'] = str(self.themeSelect.currentText())
+        try:
+            theme = settings['theme']
+            app = QtGui.QApplication.instance()
+            with open(curr_directory() + settings.built_in_themes()[theme]) as fl:
+                style = fl.read()
+            app.setStyleSheet(style)
+        except IsADirectoryError:
+            app.setStyleSheet('') # for default style
         settings['smileys'] = self.smileys.isChecked()
         restart = False
         if settings['mirror_mode'] != self.mirror_mode.isChecked():

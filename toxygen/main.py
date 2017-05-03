@@ -59,10 +59,9 @@ class Toxygen:
         if platform.system() == 'Linux':
             QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_X11InitThreads)
 
-        # application color scheme
-        with open(curr_directory() + '/styles/style.qss') as fl:
-            dark_style = fl.read()
-        app.setStyleSheet(dark_style)
+        with open(curr_directory() + '/styles/dark_style.qss') as fl:
+            style = fl.read()
+        app.setStyleSheet(style)
 
         encrypt_save = toxes.ToxES()
 
@@ -184,6 +183,13 @@ class Toxygen:
                 return
         else:
             settings.set_active_profile()
+
+        # application color scheme
+        for theme in settings.built_in_themes().keys():
+            if settings['theme'] == theme:
+                with open(curr_directory() + settings.built_in_themes()[theme]) as fl:
+                    style = fl.read()
+                app.setStyleSheet(style)
 
         lang = Settings.supported_languages()[settings['language']]
         translator = QtCore.QTranslator()

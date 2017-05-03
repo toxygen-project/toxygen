@@ -99,7 +99,7 @@ class Settings(dict, Singleton):
         Default profile settings
         """
         return {
-            'theme': 'default',
+            'theme': 'dark',
             'ipv6_enabled': True,
             'udp_enabled': True,
             'proxy_type': 0,
@@ -150,6 +150,13 @@ class Settings(dict, Singleton):
             'French': 'fr_FR',
             'Russian': 'ru_RU',
             'Ukrainian': 'uk_UA'
+        }
+
+    @staticmethod
+    def built_in_themes():
+        return {
+            'dark': '/styles/dark_style.qss',
+            'default': '/styles/style.qss'
         }
 
     def upgrade(self):
