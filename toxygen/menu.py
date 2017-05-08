@@ -247,12 +247,12 @@ class ProfileSettings(CenteredWidget):
 
     def set_avatar(self):
         choose = QtWidgets.QApplication.translate("ProfileSettingsForm", "Choose avatar")
-        name = QtWidgets.QFileDialog.getOpenFileName(self, choose, None, 'Images (*.png)',
-                                                     QtGui.QComboBoxQtWidgets.QFileDialog.DontUseNativeDialog)
+        name = QtWidgets.QFileDialog.getOpenFileName(self, choose, None, None, 'Images (*.png)',
+                                                     QtWidgets.QFileDialog.DontUseNativeDialog)
         if name[0]:
             bitmap = QtGui.QPixmap(name[0])
-            bitmap.scaled(QtCore.QSize(128, 128), aspectMode=QtCore.Qt.KeepAspectRatio,
-                          mode=QtCore.Qt.SmoothTransformation)
+            bitmap.scaled(128, 128, QtCore.Qt.KeepAspectRatio,
+                          QtCore.Qt.SmoothTransformation)
 
             byte_array = QtCore.QByteArray()
             buffer = QtCore.QBuffer(byte_array)
@@ -261,14 +261,15 @@ class ProfileSettings(CenteredWidget):
             Profile.get_instance().set_avatar(bytes(byte_array.data()))
 
     def export_profile(self):
-        directory = QtWidgets.QFileDialog.getExistingDirectory(options=QtWidgets.QFileDialog.DontUseNativeDialog,
-                                                           dir=curr_directory()) + '/'
+        directory = QtWidgets.QFileDialog.getExistingDirectory(self, '', curr_directory() + '/',
+                                                               QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
+
         if directory != '/':
             reply = QtWidgets.QMessageBox.question(None,
                                                QtWidgets.QApplication.translate("ProfileSettingsForm",
-                                                                            'Use new path'),
+                                                                                'Use new path'),
                                                QtWidgets.QApplication.translate("ProfileSettingsForm",
-                                                                            'Do you want to move your profile to this location?'),
+                                                                                'Do you want to move your profile to this location?'),
                                                QtWidgets.QMessageBox.Yes,
                                                QtWidgets.QMessageBox.No)
             settings = Settings.get_instance()
@@ -493,7 +494,8 @@ class PrivacySettings(CenteredWidget):
         settings.save()
 
     def new_path(self):
-        directory = QtWidgets.QFileDialog.getExistingDirectory(options=QtWidgets.QFileDialog.DontUseNativeDialog) + '/'
+        directory = QtWidgets.QFileDialog.getExistingDirectory(self, '', curr_directory() + '/',
+                                                               QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog) + '/'
         if directory != '/':
             self.path.setPlainText(directory)
 
@@ -658,10 +660,10 @@ class InterfaceSettings(CenteredWidget):
 
     def import_st(self):
         directory = QtWidgets.QFileDialog.getExistingDirectory(self,
-                                                           QtWidgets.QApplication.translate("MainWindow",
-                                                                                        'Choose folder with sticker pack'),
-                                                           curr_directory(),
-                                                           QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
+                                                               QtWidgets.QApplication.translate("MainWindow",
+                                                                                                'Choose folder with sticker pack'),
+                                                               curr_directory(),
+                                                               QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
 
         if directory:
             src = directory + '/'
