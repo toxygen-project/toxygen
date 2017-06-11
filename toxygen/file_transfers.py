@@ -4,11 +4,7 @@ from os import remove, rename, chdir
 from time import time, sleep
 from tox import Tox
 import settings
-try:
-    from PySide import QtCore
-except ImportError:
-    from PyQt4 import QtCore
-    QtCore.Signal = QtCore.pyqtSignal
+from PyQt5 import QtCore
 
 
 TOX_FILE_TRANSFER_STATE = {
@@ -38,12 +34,12 @@ def is_inline(file_name):
 
 class StateSignal(QtCore.QObject):
 
-    signal = QtCore.Signal(int, float, int)  # state, progress, time in sec
+    signal = QtCore.pyqtSignal(int, float, int)  # state, progress, time in sec
 
 
 class TransferFinishedSignal(QtCore.QObject):
 
-    signal = QtCore.Signal(int, int)  # friend number, file number
+    signal = QtCore.pyqtSignal(int, int)  # friend number, file number
 
 
 class FileTransfer(QtCore.QObject):

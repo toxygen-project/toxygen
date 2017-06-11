@@ -1,9 +1,5 @@
 from toxcore_enums_and_consts import *
-try:
-    from PySide import QtCore, QtGui
-except ImportError:
-    from PyQt4 import QtCore, QtGui
-    QtCore.Slot = QtCore.pyqtSlot
+from PyQt5 import QtCore, QtGui, QtWidgets
 import profile
 from file_transfers import TOX_FILE_TRANSFER_STATE, PAUSED_FILE_TRANSFERS, DO_NOT_SHOW_ACCEPT_BUTTON, ACTIVE_FILE_TRANSFERS, SHOW_PROGRESS_BAR
 from util import curr_directory, convert_time, curr_time
@@ -14,7 +10,7 @@ import settings
 import re
 
 
-class MessageEdit(QtGui.QTextBrowser):
+class MessageEdit(QtWidgets.QTextBrowser):
 
     def __init__(self, text, width, message_type, parent=None):
         super(MessageEdit, self).__init__(parent)
@@ -46,7 +42,7 @@ class MessageEdit(QtGui.QTextBrowser):
 
     def contextMenuEvent(self, event):
         menu = create_menu(self.createStandardContextMenu(event.pos()))
-        quote = menu.addAction(QtGui.QApplication.translate("MainWindow", 'Quote selected text', None, QtGui.QApplication.UnicodeUTF8))
+        quote = menu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Quote selected text'))
         quote.triggered.connect(self.quote_text)
         text = self.textCursor().selection().toPlainText()
         if not text:
@@ -55,7 +51,7 @@ class MessageEdit(QtGui.QTextBrowser):
             import plugin_support
             submenu = plugin_support.PluginLoader.get_instance().get_message_menu(menu, text)
             if len(submenu):
-                plug = menu.addMenu(QtGui.QApplication.translate("MainWindow", 'Plugins', None, QtGui.QApplication.UnicodeUTF8))
+                plug = menu.addMenu(QtWidgets.QApplication.translate("MainWindow", 'Plugins'))
                 plug.addActions(submenu)
         menu.popup(event.globalPos())
         menu.exec_(event.globalPos())
@@ -123,12 +119,12 @@ class MessageEdit(QtGui.QTextBrowser):
         return text
 
 
-class MessageItem(QtGui.QWidget):
+class MessageItem(QtWidgets.QWidget):
     """
     Message in messages list
     """
     def __init__(self, text, time, user='', sent=True, message_type=TOX_MESSAGE_TYPE['NORMAL'], parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         self.name = DataLabel(self)
         self.name.setGeometry(QtCore.QRect(2, 2, 95, 23))
         self.name.setTextFormat(QtCore.Qt.PlainText)
@@ -139,7 +135,7 @@ class MessageItem(QtGui.QWidget):
         self.name.setFont(font)
         self.name.setText(user)
 
-        self.time = QtGui.QLabel(self)
+        self.time = QtWidgets.QLabel(self)
         self.time.setGeometry(QtCore.QRect(parent.width() - 60, 0, 50, 25))
         font.setPointSize(10)
         font.setBold(False)
@@ -164,9 +160,9 @@ class MessageItem(QtGui.QWidget):
 
     def mouseReleaseEvent(self, event):
         if event.button() == QtCore.Qt.RightButton and event.x() > self.time.x():
-            self.listMenu = QtGui.QMenu()
-            delete_item = self.listMenu.addAction(QtGui.QApplication.translate("MainWindow", 'Delete message', None, QtGui.QApplication.UnicodeUTF8))
-            self.connect(delete_item, QtCore.SIGNAL("triggered()"), self.delete)
+            self.listMenu = QtWidgets.QMenu()
+            delete_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Delete message'))
+            delete_item.triggered.connect(self.delete)
             parent_position = self.time.mapToGlobal(QtCore.QPoint(0, 0))
             self.listMenu.move(parent_position)
             self.listMenu.show()
@@ -216,16 +212,16 @@ class MessageItem(QtGui.QWidget):
         return text
 
 
-class ContactItem(QtGui.QWidget):
+class ContactItem(QtWidgets.QWidget):
     """
     Contact in friends list
     """
 
     def __init__(self, parent=None):
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         mode = settings.Settings.get_instance()['compact_mode']
         self.setBaseSize(QtCore.QSize(250, 40 if mode else 70))
-        self.avatar_label = QtGui.QLabel(self)
+        self.avatar_label = QtWidgets.QLabel(self)
         size = 32 if mode else 64
         self.avatar_label.setGeometry(QtCore.QRect(3, 4, size, size))
         self.avatar_label.setScaledContents(False)
@@ -248,14 +244,14 @@ class ContactItem(QtGui.QWidget):
         self.messages.setGeometry(QtCore.QRect(20 if mode else 52, 20 if mode else 50, 30, 20))
 
 
-class StatusCircle(QtGui.QWidget):
+class StatusCircle(QtWidgets.QWidget):
     """
     Connection status
     """
     def __init__(self, parent):
-        QtGui.QWidget.__init__(self, parent)
+        QtWidgets.QWidget.__init__(self, parent)
         self.setGeometry(0, 0, 32, 32)
-        self.label = QtGui.QLabel(self)
+        self.label = QtWidgets.QLabel(self)
         self.label.setGeometry(QtCore.QRect(0, 0, 32, 32))
         self.unread = False
 
@@ -281,12 +277,12 @@ class StatusCircle(QtGui.QWidget):
         self.label.setPixmap(pixmap)
 
 
-class UnreadMessagesCount(QtGui.QWidget):
+class UnreadMessagesCount(QtWidgets.QWidget):
 
     def __init__(self, parent=None):
         super(UnreadMessagesCount, self).__init__(parent)
         self.resize(30, 20)
-        self.label = QtGui.QLabel(self)
+        self.label = QtWidgets.QLabel(self)
         self.label.setGeometry(QtCore.QRect(0, 0, 30, 20))
         self.label.setVisible(False)
         font = QtGui.QFont()
@@ -308,11 +304,11 @@ class UnreadMessagesCount(QtGui.QWidget):
             self.label.setVisible(False)
 
 
-class FileTransferItem(QtGui.QListWidget):
+class FileTransferItem(QtWidgets.QListWidget):
 
     def __init__(self, file_name, size, time, user, friend_number, file_number, state, width, parent=None):
 
-        QtGui.QListWidget.__init__(self, parent)
+        QtWidgets.QListWidget.__init__(self, parent)
         self.resize(QtCore.QSize(width, 34))
         if state == TOX_FILE_TRANSFER_STATE['CANCELLED']:
             self.setStyleSheet('QListWidget { border: 1px solid #B40404; }')
@@ -332,14 +328,14 @@ class FileTransferItem(QtGui.QListWidget):
         self.name.setFont(font)
         self.name.setText(user)
 
-        self.time = QtGui.QLabel(self)
+        self.time = QtWidgets.QLabel(self)
         self.time.setGeometry(QtCore.QRect(width - 60, 7, 50, 25))
         font.setPointSize(10)
         font.setBold(False)
         self.time.setFont(font)
         self.time.setText(convert_time(time))
 
-        self.cancel = QtGui.QPushButton(self)
+        self.cancel = QtWidgets.QPushButton(self)
         self.cancel.setGeometry(QtCore.QRect(width - 125, 2, 30, 30))
         pixmap = QtGui.QPixmap(curr_directory() + '/images/decline.png')
         icon = QtGui.QIcon(pixmap)
@@ -349,7 +345,7 @@ class FileTransferItem(QtGui.QListWidget):
         self.cancel.clicked.connect(lambda: self.cancel_transfer(friend_number, file_number))
         self.cancel.setStyleSheet('QPushButton:hover { border: 1px solid #3A3939; background-color: none;}')
 
-        self.accept_or_pause = QtGui.QPushButton(self)
+        self.accept_or_pause = QtWidgets.QPushButton(self)
         self.accept_or_pause.setGeometry(QtCore.QRect(width - 170, 2, 30, 30))
         if state == TOX_FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']:
             self.accept_or_pause.setVisible(True)
@@ -366,7 +362,7 @@ class FileTransferItem(QtGui.QListWidget):
 
         self.accept_or_pause.setStyleSheet('QPushButton:hover { border: 1px solid #3A3939; background-color: none}')
 
-        self.pb = QtGui.QProgressBar(self)
+        self.pb = QtWidgets.QProgressBar(self)
         self.pb.setGeometry(QtCore.QRect(100, 7, 100, 20))
         self.pb.setValue(0)
         self.pb.setStyleSheet('QProgressBar { background-color: #302F2F; }')
@@ -387,7 +383,7 @@ class FileTransferItem(QtGui.QListWidget):
         self.file_name.setText(file_data)
         self.file_name.setToolTip(file_name)
         self.saved_name = file_name
-        self.time_left = QtGui.QLabel(self)
+        self.time_left = QtWidgets.QLabel(self)
         self.time_left.setGeometry(QtCore.QRect(width - 92, 7, 30, 20))
         font.setPointSize(10)
         self.time_left.setFont(font)
@@ -405,10 +401,10 @@ class FileTransferItem(QtGui.QListWidget):
 
     def accept_or_pause_transfer(self, friend_number, file_number, size):
         if self.state == TOX_FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']:
-            directory = QtGui.QFileDialog.getExistingDirectory(self,
-                                                               QtGui.QApplication.translate("MainWindow", 'Choose folder', None, QtGui.QApplication.UnicodeUTF8),
+            directory = QtWidgets.QFileDialog.getExistingDirectory(self,
+                                                               QtWidgets.QApplication.translate("MainWindow", 'Choose folder'),
                                                                curr_directory(),
-                                                               QtGui.QFileDialog.ShowDirsOnly | QtGui.QFileDialog.DontUseNativeDialog)
+                                                               QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
             self.pb.setVisible(True)
             if directory:
                 pr = profile.Profile.get_instance()
@@ -432,8 +428,7 @@ class FileTransferItem(QtGui.QListWidget):
         self.accept_or_pause.setIcon(icon)
         self.accept_or_pause.setIconSize(QtCore.QSize(30, 30))
 
-    @QtCore.Slot(int, float, int)
-    def update(self, state, progress, time):
+    def update_transfer_state(self, state, progress, time):
         self.pb.setValue(int(progress * 100))
         if time + 1:
             m, s = divmod(time, 60)
@@ -496,14 +491,14 @@ class UnsentFileItem(FileTransferItem):
         pr.cancel_not_started_transfer(self._time)
 
 
-class InlineImageItem(QtGui.QScrollArea):
+class InlineImageItem(QtWidgets.QScrollArea):
 
     def __init__(self, data, width, elem):
 
-        QtGui.QScrollArea.__init__(self)
+        QtWidgets.QScrollArea.__init__(self)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         self._elem = elem
-        self._image_label = QtGui.QLabel(self)
+        self._image_label = QtWidgets.QLabel(self)
         self._image_label.raise_()
         self.setWidget(self._image_label)
         self._image_label.setScaledContents(False)
@@ -537,12 +532,11 @@ class InlineImageItem(QtGui.QScrollArea):
             self._full_size = not self._full_size
             self._elem.setSizeHint(QtCore.QSize(self.width(), self.height()))
         elif event.button() == QtCore.Qt.RightButton:  # save inline
-            directory = QtGui.QFileDialog.getExistingDirectory(self,
-                                                               QtGui.QApplication.translate("MainWindow",
-                                                                                            'Choose folder', None,
-                                                                                            QtGui.QApplication.UnicodeUTF8),
+            directory = QtWidgets.QFileDialog.getExistingDirectory(self,
+                                                               QtWidgets.QApplication.translate("MainWindow",
+                                                                                            'Choose folder'),
                                                                curr_directory(),
-                                                               QtGui.QFileDialog.ShowDirsOnly | QtGui.QFileDialog.DontUseNativeDialog)
+                                                               QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
             if directory:
                 fl = QtCore.QFile(directory + '/toxygen_inline_' + curr_time().replace(':', '_') + '.png')
                 self._pixmap.save(fl, 'PNG')

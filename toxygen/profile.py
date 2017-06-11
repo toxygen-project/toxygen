@@ -1,8 +1,5 @@
 from list_items import *
-try:
-    from PySide import QtCore, QtGui
-except ImportError:
-    from PyQt4 import QtCore, QtGui
+from PyQt5 import QtGui, QtWidgets
 from friend import *
 from settings import *
 from toxcore_enums_and_consts import *
@@ -97,8 +94,7 @@ class Profile(basecontact.BaseContact, Singleton):
         tmp = self.name
         super(Profile, self).set_name(value.encode('utf-8'))
         self._tox.self_set_name(self._name.encode('utf-8'))
-        message = QtGui.QApplication.translate("MainWindow", 'User {} is now known as {}', None,
-                                               QtGui.QApplication.UnicodeUTF8)
+        message = QtWidgets.QApplication.translate("MainWindow", 'User {} is now known as {}')
         message = message.format(tmp, value)
         for friend in self._contacts:
             friend.append_message(InfoMessage(message, time.time()))
@@ -246,7 +242,7 @@ class Profile(basecontact.BaseContact, Singleton):
                         if message.get_status() in ACTIVE_FILE_TRANSFERS:  # active file transfer
                             try:
                                 ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
-                                ft.set_state_changed_handler(item.update)
+                                ft.set_state_changed_handler(item.update_transfer_state)
                                 ft.signal()
                             except:
                                 print('Incoming not started transfer - no info found')
@@ -312,7 +308,7 @@ class Profile(basecontact.BaseContact, Singleton):
         friend.set_name(name)
         name = str(name, 'utf-8')
         if friend.name == name and tmp != name:
-            message = QtGui.QApplication.translate("MainWindow", 'User {} is now known as {}', None, QtGui.QApplication.UnicodeUTF8)
+            message = QtWidgets.QApplication.translate("MainWindow", 'User {} is now known as {}')
             message = message.format(tmp, name)
             friend.append_message(InfoMessage(message, time.time()))
             friend.actions = True
@@ -566,7 +562,7 @@ class Profile(basecontact.BaseContact, Singleton):
                 if message.get_status() in ACTIVE_FILE_TRANSFERS:  # active file transfer
                     try:
                         ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
-                        ft.set_state_changed_handler(item.update)
+                        ft.set_state_changed_handler(item.update_transfer_state)
                         ft.signal()
                     except:
                         print('Incoming not started transfer - no info found')
@@ -663,17 +659,15 @@ class Profile(basecontact.BaseContact, Singleton):
         """
         friend = self._contacts[num]
         name = friend.name
-        dialog = QtGui.QApplication.translate('MainWindow',
-                                              "Enter new alias for friend {} or leave empty to use friend's name:",
-                                              None, QtGui.QApplication.UnicodeUTF8)
+        dialog = QtWidgets.QApplication.translate('MainWindow',
+                                              "Enter new alias for friend {} or leave empty to use friend's name:")
         dialog = dialog.format(name)
-        title = QtGui.QApplication.translate('MainWindow',
-                                             'Set alias',
-                                             None, QtGui.QApplication.UnicodeUTF8)
+        title = QtWidgets.QApplication.translate('MainWindow',
+                                             'Set alias')
         text, ok = QtGui.QInputDialog.getText(None,
                                               title,
                                               dialog,
-                                              QtGui.QLineEdit.Normal,
+                                              QtWidgets.QLineEdit.Normal,
                                               name)
         if ok:
             settings = Settings.get_instance()
@@ -798,9 +792,9 @@ class Profile(basecontact.BaseContact, Singleton):
                     raise Exception('TOX DNS lookup failed')
             if len(tox_id) == TOX_PUBLIC_KEY_SIZE * 2:  # public key
                 self.add_friend(tox_id)
-                msgBox = QtGui.QMessageBox()
-                msgBox.setWindowTitle(QtGui.QApplication.translate("MainWindow", "Friend added", None, QtGui.QApplication.UnicodeUTF8))
-                text = (QtGui.QApplication.translate("MainWindow", 'Friend added without sending friend request', None, QtGui.QApplication.UnicodeUTF8))
+                msgBox = QtWidgets.QMessageBox()
+                msgBox.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Friend added"))
+                text = (QtWidgets.QApplication.translate("MainWindow", 'Friend added without sending friend request'))
                 msgBox.setText(text)
                 msgBox.exec_()
             else:
@@ -826,11 +820,11 @@ class Profile(basecontact.BaseContact, Singleton):
         :param message: message
         """
         try:
-            text = QtGui.QApplication.translate('MainWindow', 'User {} wants to add you to contact list. Message:\n{}', None, QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate('MainWindow', 'User {} wants to add you to contact list. Message:\n{}')
             info = text.format(tox_id, message)
-            fr_req = QtGui.QApplication.translate('MainWindow', 'Friend request', None, QtGui.QApplication.UnicodeUTF8)
-            reply = QtGui.QMessageBox.question(None, fr_req, info, QtGui.QMessageBox.Yes, QtGui.QMessageBox.No)
-            if reply == QtGui.QMessageBox.Yes:  # accepted
+            fr_req = QtWidgets.QApplication.translate('MainWindow', 'Friend request')
+            reply = QtWidgets.QMessageBox.question(None, fr_req, info, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+            if reply == QtWidgets.QMessageBox.Yes:  # accepted
                 self.add_friend(tox_id)
                 data = self._tox.get_savedata()
                 ProfileHelper.get_instance().save_profile(data)
@@ -942,7 +936,7 @@ class Profile(basecontact.BaseContact, Singleton):
         if friend_number == self.get_active_number():
             item = self.create_file_transfer_item(tm)
             if accepted:
-                self._file_transfers[(friend_number, file_number)].set_state_changed_handler(item.update)
+                self._file_transfers[(friend_number, file_number)].set_state_changed_handler(item.update_transfer_state)
             self._messages.scrollToBottom()
         else:
             friend.actions = True
@@ -1031,7 +1025,7 @@ class Profile(basecontact.BaseContact, Singleton):
         self._file_transfers[(friend_number, file_number)] = rt
         self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
         if item is not None:
-            rt.set_state_changed_handler(item.update)
+            rt.set_state_changed_handler(item.update_transfer_state)
         self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                       TOX_FILE_TRANSFER_STATE['RUNNING'])
 
@@ -1070,7 +1064,7 @@ class Profile(basecontact.BaseContact, Singleton):
                              st.get_file_number())
         item = self.create_file_transfer_item(tm)
         friend.append_message(tm)
-        st.set_state_changed_handler(item.update)
+        st.set_state_changed_handler(item.update_transfer_state)
         self._messages.scrollToBottom()
 
     def send_file(self, path, number=None, is_resend=False, file_id=None):
@@ -1103,7 +1097,7 @@ class Profile(basecontact.BaseContact, Singleton):
                              st.get_file_number())
         if friend_number == self.get_active_number():
             item = self.create_file_transfer_item(tm)
-            st.set_state_changed_handler(item.update)
+            st.set_state_changed_handler(item.update_transfer_state)
             self._messages.scrollToBottom()
         self._contacts[friend_number].append_message(tm)
 
@@ -1119,7 +1113,6 @@ class Profile(basecontact.BaseContact, Singleton):
         """
         self._file_transfers[(friend_number, file_number)].send_chunk(position, size)
 
-    @QtCore.Slot(int, int)
     def transfer_finished(self, friend_number, file_number):
         transfer = self._file_transfers[(friend_number, file_number)]
         t = type(transfer)
@@ -1136,7 +1129,7 @@ class Profile(basecontact.BaseContact, Singleton):
             if friend_number == self.get_active_number():
                 count = self._messages.count()
                 if count + i + 1 >= 0:
-                    elem = QtGui.QListWidgetItem()
+                    elem = QtWidgets.QListWidgetItem()
                     item = InlineImageItem(transfer.get_data(), self._messages.width(), elem)
                     elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
                     self._messages.insertItem(count + i + 1, elem)
@@ -1206,11 +1199,9 @@ class Profile(basecontact.BaseContact, Singleton):
             self._call(num, audio, video)
             self._screen.active_call()
             if video:
-                text = QtGui.QApplication.translate("incoming_call", "Outgoing video call", None,
-                                                    QtGui.QApplication.UnicodeUTF8)
+                text = QtWidgets.QApplication.translate("incoming_call", "Outgoing video call")
             else:
-                text = QtGui.QApplication.translate("incoming_call", "Outgoing audio call", None,
-                                                    QtGui.QApplication.UnicodeUTF8)
+                text = QtWidgets.QApplication.translate("incoming_call", "Outgoing audio call")
             self.get_curr_friend().append_message(InfoMessage(text, time.time()))
             self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
             self._messages.scrollToBottom()
@@ -1225,11 +1216,9 @@ class Profile(basecontact.BaseContact, Singleton):
             return
         friend = self.get_friend_by_number(friend_number)
         if video:
-            text = QtGui.QApplication.translate("incoming_call", "Incoming video call", None,
-                                                QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate("incoming_call", "Incoming video call")
         else:
-            text = QtGui.QApplication.translate("incoming_call", "Incoming audio call", None,
-                                                QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate("incoming_call", "Incoming audio call")
         friend.append_message(InfoMessage(text, time.time()))
         self._incoming_calls.add(friend_number)
         if friend_number == self.get_active_number():
@@ -1258,9 +1247,9 @@ class Profile(basecontact.BaseContact, Singleton):
         """
         if friend_number in self._incoming_calls:
             self._incoming_calls.remove(friend_number)
-            text = QtGui.QApplication.translate("incoming_call", "Call declined", None, QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate("incoming_call", "Call declined")
         else:
-            text = QtGui.QApplication.translate("incoming_call", "Call finished", None, QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate("incoming_call", "Call finished")
         self._screen.call_finished()
         self._call.finish_call(friend_number, by_friend)  # finish or decline call
         if hasattr(self, '_call_widget'):

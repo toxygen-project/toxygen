@@ -1,8 +1,5 @@
 from settings import *
-try:
-    from PySide import QtCore, QtGui
-except ImportError:
-    from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui
 from toxcore_enums_and_consts import TOX_PUBLIC_KEY_SIZE
 
 

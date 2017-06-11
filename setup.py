@@ -11,7 +11,8 @@ version = program_version + '.0'
 MODULES = ['numpy']
 
 if system() in ('Windows', 'Darwin'):
-    MODULES.extend(['PyAudio', 'PySide'])
+    MODULES.extend['PyAudio', 'PyQt5']
+
 else:
     try:
         import pyaudio
@@ -65,7 +66,8 @@ setup(name='Toxygen',
       include_package_data=True,
       classifiers=[
           'Programming Language :: Python :: 3 :: Only',
-          'Programming Language :: Python :: 3.4',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
       ],
       entry_points={
           'console_scripts': ['toxygen=toxygen.main:main'],

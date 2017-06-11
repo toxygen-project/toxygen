@@ -1,10 +1,7 @@
-try:
-    from PySide import QtCore, QtGui
-except ImportError:
-    from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 
 
-class DataLabel(QtGui.QLabel):
+class DataLabel(QtWidgets.QLabel):
     """
     Label with elided text
     """
@@ -15,14 +12,14 @@ class DataLabel(QtGui.QLabel):
         super().setText(text)
 
 
-class ComboBox(QtGui.QComboBox):
+class ComboBox(QtWidgets.QComboBox):
 
     def __init__(self, *args):
         super().__init__(*args)
-        self.view().setSizePolicy(QtGui.QSizePolicy.MinimumExpanding, QtGui.QSizePolicy.Expanding)
+        self.view().setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Expanding)
 
 
-class CenteredWidget(QtGui.QWidget):
+class CenteredWidget(QtWidgets.QWidget):
 
     def __init__(self):
         super(CenteredWidget, self).__init__()
@@ -30,12 +27,12 @@ class CenteredWidget(QtGui.QWidget):
 
     def center(self):
         qr = self.frameGeometry()
-        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        cp = QtWidgets.QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
 
-class LineEdit(QtGui.QLineEdit):
+class LineEdit(QtWidgets.QLineEdit):
 
     def __init__(self, parent=None):
         super(LineEdit, self).__init__(parent)
@@ -46,25 +43,27 @@ class LineEdit(QtGui.QLineEdit):
         del menu
 
 
-class QRightClickButton(QtGui.QPushButton):
+class QRightClickButton(QtWidgets.QPushButton):
     """
     Button with right click support
     """
+
+    rightClicked = QtCore.pyqtSignal()
 
     def __init__(self, parent):
         super(QRightClickButton, self).__init__(parent)
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.RightButton:
-            self.emit(QtCore.SIGNAL("rightClicked()"))
+            self.rightClicked.emit()
         else:
             super(QRightClickButton, self).mousePressEvent(event)
 
 
-class RubberBand(QtGui.QRubberBand):
+class RubberBand(QtWidgets.QRubberBand):
 
     def __init__(self):
-        super(RubberBand, self).__init__(QtGui.QRubberBand.Rectangle, None)
+        super(RubberBand, self).__init__(QtWidgets.QRubberBand.Rectangle, None)
         self.setPalette(QtGui.QPalette(QtCore.Qt.transparent))
         self.pen = QtGui.QPen(QtCore.Qt.blue, 4)
         self.pen.setStyle(QtCore.Qt.SolidLine)
@@ -86,29 +85,21 @@ def create_menu(menu):
         text = action.text()
         if 'Link Location' in text:
             text = text.replace('Copy &Link Location',
-                                QtGui.QApplication.translate("MainWindow", "Copy link location", None,
-                                                             QtGui.QApplication.UnicodeUTF8))
+                                QtWidgets.QApplication.translate("MainWindow", "Copy link location"))
         elif '&Copy' in text:
-            text = text.replace('&Copy', QtGui.QApplication.translate("MainWindow", "Copy", None,
-                                                                      QtGui.QApplication.UnicodeUTF8))
+            text = text.replace('&Copy', QtWidgets.QApplication.translate("MainWindow", "Copy"))
         elif 'All' in text:
-            text = text.replace('Select All', QtGui.QApplication.translate("MainWindow", "Select all", None,
-                                                                           QtGui.QApplication.UnicodeUTF8))
+            text = text.replace('Select All', QtWidgets.QApplication.translate("MainWindow", "Select all"))
         elif 'Delete' in text:
-            text = text.replace('Delete', QtGui.QApplication.translate("MainWindow", "Delete", None,
-                                                                       QtGui.QApplication.UnicodeUTF8))
+            text = text.replace('Delete', QtWidgets.QApplication.translate("MainWindow", "Delete"))
         elif '&Paste' in text:
-            text = text.replace('&Paste', QtGui.QApplication.translate("MainWindow", "Paste", None,
-                                                                       QtGui.QApplication.UnicodeUTF8))
+            text = text.replace('&Paste', QtWidgets.QApplication.translate("MainWindow", "Paste"))
         elif 'Cu&t' in text:
-            text = text.replace('Cu&t', QtGui.QApplication.translate("MainWindow", "Cut", None,
-                                                                     QtGui.QApplication.UnicodeUTF8))
+            text = text.replace('Cu&t', QtWidgets.QApplication.translate("MainWindow", "Cut"))
         elif '&Undo' in text:
-            text = text.replace('&Undo', QtGui.QApplication.translate("MainWindow", "Undo", None,
-                                                                      QtGui.QApplication.UnicodeUTF8))
+            text = text.replace('&Undo', QtWidgets.QApplication.translate("MainWindow", "Undo"))
         elif '&Redo' in text:
-            text = text.replace('&Redo', QtGui.QApplication.translate("MainWindow", "Redo", None,
-                                                                      QtGui.QApplication.UnicodeUTF8))
+            text = text.replace('&Redo', QtWidgets.QApplication.translate("MainWindow", "Redo"))
         else:
             menu.removeAction(action)
             continue
@@ -124,12 +115,12 @@ class MultilineEdit(CenteredWidget):
         self.setMinimumSize(QtCore.QSize(350, 200))
         self.setMaximumSize(QtCore.QSize(350, 200))
         self.setWindowTitle(title)
-        self.edit = QtGui.QTextEdit(self)
+        self.edit = QtWidgets.QTextEdit(self)
         self.edit.setGeometry(QtCore.QRect(0, 0, 350, 150))
         self.edit.setText(text)
-        self.button = QtGui.QPushButton(self)
+        self.button = QtWidgets.QPushButton(self)
         self.button.setGeometry(QtCore.QRect(0, 150, 350, 50))
-        self.button.setText(QtGui.QApplication.translate("MainWindow", "Save", None, QtGui.QApplication.UnicodeUTF8))
+        self.button.setText(QtWidgets.QApplication.translate("MainWindow", "Save"))
         self.button.clicked.connect(self.button_click)
         self.center()
         self.save = save

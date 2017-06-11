@@ -4,6 +4,8 @@ import threading
 import settings
 from toxav_enums import *
 import cv2
+import itertools
+import numpy as np
 # TODO: play sound until outgoing call will be started or cancelled and add timeout
 
 
@@ -55,6 +57,7 @@ class AV:
         self._toxav.call(friend_number, 32 if audio else 0, 5000 if video else 0)
         self._calls[friend_number] = Call(audio, video)
         self.start_audio_thread()
+        self.start_video_thread()
 
     def accept_call(self, friend_number, audio_enabled, video_enabled):
 
@@ -133,9 +136,9 @@ class AV:
         self._video_running = True
 
         self._video = cv2.VideoCapture(0)
-        self._video.set(cv2.CV_CAP_PROP_FPS, 25)
-        self._video.set(cv2.CV_CAP_PROP_FRAME_WIDTH, 640)
-        self._video.set(cv2.CV_CAP_PROP_FRAME_HEIGHT, 480)
+        self._video.set(cv2.CAP_PROP_FPS, 25)
+        self._video.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+        self._video.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
 
         self._video_thread = threading.Thread(target=self.send_video)
         self._video_thread.start()
@@ -206,14 +209,23 @@ class AV:
                                 y, u, v = convert_bgr_to_yuv(frame)
                                 self._toxav.video_send_frame(friend_num, width, height, y, u, v)
                             except Exception as e:
-                                print(e)
+                                print('1', e)
             except Exception as e:
-                print(e)
+                print('2', e)
 
         time.sleep(0.01)
 
 
 def convert_bgr_to_yuv(frame):
-    print(frame.tostring())
-    print(dir(frame))
-    return 0, 0, 0
+    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV_I420)
+    y = frame[:480,:].tolist()
+    y = list(itertools.chain.from_iterable(y))
+    v = np.zeros((240, 320), dtype=np.int)
+    v[::2,:] = frame[480:600, :320]
+    v[1::2,:] = frame[480:600, 320:]
+    v = list(itertools.chain.from_iterable(v))
+    u = np.zeros((240, 320), dtype=np.int)
+    u[::2,:] = frame[600:, :320]
+    u[1::2,:] = frame[600:, 320:]
+    u = list(itertools.chain.from_iterable(u))
+    return bytes(y), bytes(v), bytes(u)

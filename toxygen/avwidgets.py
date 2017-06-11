@@ -1,7 +1,4 @@
-try:
-    from PySide import QtCore, QtGui
-except ImportError:
-    from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 import widgets
 import profile
 import util
@@ -20,7 +17,7 @@ class IncomingCallWidget(widgets.CenteredWidget):
         super(IncomingCallWidget, self).__init__()
         self.setWindowFlags(QtCore.Qt.CustomizeWindowHint | QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowStaysOnTopHint)
         self.resize(QtCore.QSize(500, 270))
-        self.avatar_label = QtGui.QLabel(self)
+        self.avatar_label = QtWidgets.QLabel(self)
         self.avatar_label.setGeometry(QtCore.QRect(10, 20, 64, 64))
         self.avatar_label.setScaledContents(False)
         self.name = widgets.DataLabel(self)
@@ -33,11 +30,11 @@ class IncomingCallWidget(widgets.CenteredWidget):
         self.call_type = widgets.DataLabel(self)
         self.call_type.setGeometry(QtCore.QRect(90, 55, 300, 25))
         self.call_type.setFont(font)
-        self.accept_audio = QtGui.QPushButton(self)
+        self.accept_audio = QtWidgets.QPushButton(self)
         self.accept_audio.setGeometry(QtCore.QRect(20, 100, 150, 150))
-        self.accept_video = QtGui.QPushButton(self)
+        self.accept_video = QtWidgets.QPushButton(self)
         self.accept_video.setGeometry(QtCore.QRect(170, 100, 150, 150))
-        self.decline = QtGui.QPushButton(self)
+        self.decline = QtWidgets.QPushButton(self)
         self.decline.setGeometry(QtCore.QRect(320, 100, 150, 150))
         pixmap = QtGui.QPixmap(util.curr_directory() + '/images/accept_audio.png')
         icon = QtGui.QIcon(pixmap)
@@ -119,15 +116,14 @@ class AudioMessageRecorder(widgets.CenteredWidget):
 
     def __init__(self, friend_number, name):
         super(AudioMessageRecorder, self).__init__()
-        self.label = QtGui.QLabel(self)
+        self.label = QtWidgets.QLabel(self)
         self.label.setGeometry(QtCore.QRect(10, 20, 250, 20))
-        text = QtGui.QApplication.translate("MenuWindow", "Send audio message to friend {}", None, QtGui.QApplication.UnicodeUTF8)
+        text = QtWidgets.QApplication.translate("MenuWindow", "Send audio message to friend {}")
         self.label.setText(text.format(name))
-        self.record = QtGui.QPushButton(self)
+        self.record = QtWidgets.QPushButton(self)
         self.record.setGeometry(QtCore.QRect(20, 100, 150, 150))
 
-        self.record.setText(QtGui.QApplication.translate("MenuWindow", "Start recording", None,
-                                                         QtGui.QApplication.UnicodeUTF8))
+        self.record.setText(QtWidgets.QApplication.translate("MenuWindow", "Start recording"))
         self.record.clicked.connect(self.start_or_stop_recording)
         self.recording = False
         self.friend_num = friend_number
@@ -135,8 +131,7 @@ class AudioMessageRecorder(widgets.CenteredWidget):
     def start_or_stop_recording(self):
         if not self.recording:
             self.recording = True
-            self.record.setText(QtGui.QApplication.translate("MenuWindow", "Stop recording", None,
-                                                             QtGui.QApplication.UnicodeUTF8))
+            self.record.setText(QtWidgets.QApplication.translate("MenuWindow", "Stop recording"))
         else:
             self.close()
 

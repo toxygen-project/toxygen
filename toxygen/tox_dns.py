@@ -2,10 +2,7 @@ import json
 import urllib.request
 from util import log
 import settings
-try:
-    from PySide import QtNetwork, QtCore
-except:
-    from PyQt4 import QtNetwork, QtCore
+from PyQt5 import QtNetwork, QtCore
 
 
 def tox_dns(email):

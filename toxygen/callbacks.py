@@ -1,7 +1,4 @@
-try:
-    from PySide import QtCore
-except ImportError:
-    from PyQt4 import QtCore
+from PyQt5 import QtCore, QtGui, QtWidgets
 from notifications import *
 from settings import Settings
 from profile import Profile
@@ -12,6 +9,8 @@ from plugin_support import PluginLoader
 import queue
 import threading
 import util
+import cv2
+import numpy as np
 
 
 # -----------------------------------------------------------------------------------------------------------------
@@ -225,7 +224,7 @@ def tox_file_recv(window, tray):
             if not window.isActiveWindow():
                 friend = profile.get_friend_by_number(friend_number)
                 if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
-                    file_from = QtGui.QApplication.translate("Callback", "File from", None, QtGui.QApplication.UnicodeUTF8)
+                    file_from = QtWidgets.QApplication.translate("Callback", "File from")
                     invoke_in_main_thread(tray_notification, file_from + ' ' + friend.name, file_name, tray, window)
                 if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                     sound_notification(SOUND_NOTIFICATION['FILE_TRANSFER'])
@@ -327,6 +326,9 @@ def callback_audio(toxav, friend_number, samples, audio_samples_per_channel, aud
 
 def video_receive_frame(toxav, friend_number, width, height, y, u, v, ystride, ustride, vstride, user_data):
     pass
+    #frame = cv2.merge((np.asarray(y), np.asarray(u), np.asarray(v)))
+    #frame = cv2.cvtColor(frame, cv2.COLOR_YUV2BGR_I420)
+    #cv2.imshow("frame", frame)
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization

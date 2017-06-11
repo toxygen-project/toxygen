@@ -1,7 +1,4 @@
-try:
-    from PySide import QtCore, QtGui
-except ImportError:
-    from PyQt4 import QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 from list_items import *
 
 
@@ -13,7 +10,7 @@ class ItemsFactory:
 
     def friend_item(self):
         item = ContactItem()
-        elem = QtGui.QListWidgetItem(self._friends)
+        elem = QtWidgets.QListWidgetItem(self._friends)
         elem.setSizeHint(QtCore.QSize(250, item.height()))
         self._friends.addItem(elem)
         self._friends.setItemWidget(elem, item)
@@ -23,7 +20,7 @@ class ItemsFactory:
         item = MessageItem(text, time, name, sent, message_type, self._messages)
         if pixmap is not None:
             item.set_avatar(pixmap)
-        elem = QtGui.QListWidgetItem()
+        elem = QtWidgets.QListWidgetItem()
         elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
         if append:
             self._messages.addItem(elem)
@@ -33,7 +30,7 @@ class ItemsFactory:
         return item
 
     def inline_item(self, data, append):
-        elem = QtGui.QListWidgetItem()
+        elem = QtWidgets.QListWidgetItem()
         item = InlineImageItem(data, self._messages.width(), elem)
         elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
         if append:
@@ -49,7 +46,7 @@ class ItemsFactory:
                               name,
                               time,
                               self._messages.width())
-        elem = QtGui.QListWidgetItem()
+        elem = QtWidgets.QListWidgetItem()
         elem.setSizeHint(QtCore.QSize(self._messages.width() - 30, 34))
         if append:
             self._messages.addItem(elem)
@@ -61,7 +58,7 @@ class ItemsFactory:
     def file_transfer_item(self, data, append):
         data.append(self._messages.width())
         item = FileTransferItem(*data)
-        elem = QtGui.QListWidgetItem()
+        elem = QtWidgets.QListWidgetItem()
         elem.setSizeHint(QtCore.QSize(self._messages.width() - 30, 34))
         if append:
             self._messages.addItem(elem)

@@ -1,9 +1,4 @@
-# -*- coding: utf-8 -*-
-
-try:
-    from PySide import QtCore, QtGui
-except ImportError:
-    from PyQt4 import QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 from widgets import *
 
 
@@ -31,25 +26,25 @@ class LoginScreen(CenteredWidget):
         self.resize(400, 200)
         self.setMinimumSize(QtCore.QSize(400, 200))
         self.setMaximumSize(QtCore.QSize(400, 200))
-        self.new_profile = QtGui.QPushButton(self)
+        self.new_profile = QtWidgets.QPushButton(self)
         self.new_profile.setGeometry(QtCore.QRect(20, 150, 171, 27))
         self.new_profile.clicked.connect(self.create_profile)
-        self.label = QtGui.QLabel(self)
+        self.label = QtWidgets.QLabel(self)
         self.label.setGeometry(QtCore.QRect(20, 70, 101, 17))
         self.new_name = NickEdit(self)
         self.new_name.setGeometry(QtCore.QRect(20, 100, 171, 31))
-        self.load_profile = QtGui.QPushButton(self)
+        self.load_profile = QtWidgets.QPushButton(self)
         self.load_profile.setGeometry(QtCore.QRect(220, 150, 161, 27))
         self.load_profile.clicked.connect(self.load_ex_profile)
-        self.default = QtGui.QCheckBox(self)
+        self.default = QtWidgets.QCheckBox(self)
         self.default.setGeometry(QtCore.QRect(220, 110, 131, 22))
-        self.groupBox = QtGui.QGroupBox(self)
+        self.groupBox = QtWidgets.QGroupBox(self)
         self.groupBox.setGeometry(QtCore.QRect(210, 40, 181, 151))
-        self.comboBox = QtGui.QComboBox(self.groupBox)
+        self.comboBox = QtWidgets.QComboBox(self.groupBox)
         self.comboBox.setGeometry(QtCore.QRect(10, 30, 161, 27))
-        self.groupBox_2 = QtGui.QGroupBox(self)
+        self.groupBox_2 = QtWidgets.QGroupBox(self)
         self.groupBox_2.setGeometry(QtCore.QRect(10, 40, 191, 151))
-        self.toxygen = QtGui.QLabel(self)
+        self.toxygen = QtWidgets.QLabel(self)
         self.groupBox.raise_()
         self.groupBox_2.raise_()
         self.comboBox.raise_()
@@ -71,15 +66,15 @@ class LoginScreen(CenteredWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
-        self.new_name.setPlaceholderText(QtGui.QApplication.translate("login", "Profile name", None, QtGui.QApplication.UnicodeUTF8))
-        self.setWindowTitle(QtGui.QApplication.translate("login", "Log in", None, QtGui.QApplication.UnicodeUTF8))
-        self.new_profile.setText(QtGui.QApplication.translate("login", "Create", None, QtGui.QApplication.UnicodeUTF8))
-        self.label.setText(QtGui.QApplication.translate("login", "Profile name:", None, QtGui.QApplication.UnicodeUTF8))
-        self.load_profile.setText(QtGui.QApplication.translate("login", "Load profile", None, QtGui.QApplication.UnicodeUTF8))
-        self.default.setText(QtGui.QApplication.translate("login", "Use as default", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox.setTitle(QtGui.QApplication.translate("login", "Load existing profile", None, QtGui.QApplication.UnicodeUTF8))
-        self.groupBox_2.setTitle(QtGui.QApplication.translate("login", "Create new profile", None, QtGui.QApplication.UnicodeUTF8))
-        self.toxygen.setText(QtGui.QApplication.translate("login", "toxygen", None, QtGui.QApplication.UnicodeUTF8))
+        self.new_name.setPlaceholderText(QtWidgets.QApplication.translate("login", "Profile name"))
+        self.setWindowTitle(QtWidgets.QApplication.translate("login", "Log in"))
+        self.new_profile.setText(QtWidgets.QApplication.translate("login", "Create"))
+        self.label.setText(QtWidgets.QApplication.translate("login", "Profile name:"))
+        self.load_profile.setText(QtWidgets.QApplication.translate("login", "Load profile"))
+        self.default.setText(QtWidgets.QApplication.translate("login", "Use as default"))
+        self.groupBox.setTitle(QtWidgets.QApplication.translate("login", "Load existing profile"))
+        self.groupBox_2.setTitle(QtWidgets.QApplication.translate("login", "Create new profile"))
+        self.toxygen.setText(QtWidgets.QApplication.translate("login", "toxygen"))
 
     def create_profile(self):
         self.type = 1

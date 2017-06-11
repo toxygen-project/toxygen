@@ -1,8 +1,5 @@
 import os
-try:
-    from PySide import QtCore, QtGui
-except ImportError:
-    from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtWidgets
 
 
 MAX_SHORT_NAME_LENGTH = 5
@@ -137,10 +134,10 @@ class PluginSuperClass:
         :param command: string with command
         """
         if command == 'help':
-            msgbox = QtGui.QMessageBox()
-            title = QtGui.QApplication.translate("PluginWindow", "List of commands for plugin {}", None, QtGui.QApplication.UnicodeUTF8)
+            msgbox = QtWidgets.QMessageBox()
+            title = QtWidgets.QApplication.translate("PluginWindow", "List of commands for plugin {}")
             msgbox.setWindowTitle(title.format(self._name))
-            msgbox.setText(QtGui.QApplication.translate("PluginWindow", "No commands available", None, QtGui.QApplication.UnicodeUTF8))
+            msgbox.setText(QtWidgets.QApplication.translate("PluginWindow", "No commands available"))
             msgbox.exec_()
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -151,7 +148,7 @@ class PluginSuperClass:
         """
         This method loads translations for GUI
         """
-        app = QtGui.QApplication.instance()
+        app = QtWidgets.QApplication.instance()
         langs = self._settings.supported_languages()
         curr_lang = self._settings['language']
         if curr_lang in langs:
