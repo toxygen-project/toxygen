@@ -1,6 +1,8 @@
 language: python
 python:
   - "3.4"
+notifications:
+  email: false
 before_install:
   - sudo apt-get update
   - sudo apt-get install -y checkinstall build-essential

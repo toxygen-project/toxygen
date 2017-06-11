@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import os
 import time
 import shutil
@@ -80,6 +78,7 @@ def append_slash(s):
     return s
 
 
+@cached
 def is_64_bit():
     return sys.maxsize > 2 ** 32
 

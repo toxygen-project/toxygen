@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-
-
 from sqlite3 import connect
 import settings
 from os import chdir

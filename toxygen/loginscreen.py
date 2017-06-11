@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 try:
     from PySide import QtCore, QtGui
 except ImportError:
