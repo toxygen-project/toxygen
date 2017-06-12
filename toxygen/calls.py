@@ -7,6 +7,7 @@ import cv2
 import itertools
 import numpy as np
 # TODO: play sound until outgoing call will be started or cancelled and add timeout
+# TODO: rewrite logic
 
 
 class Call:
@@ -205,30 +206,31 @@ class AV:
                     height, width, channels = frame.shape
                     for friend_num in self._calls:
                         if self._calls[friend_num].video:
-                            try:  # TODO: bgr => yuv
+                            try:
                                 y, u, v = convert_bgr_to_yuv(frame)
                                 self._toxav.video_send_frame(friend_num, width, height, y, u, v)
                             except Exception as e:
-                                print('1', e)
+                                print(e)
             except Exception as e:
-                print('2', e)
+                print(e)
 
         time.sleep(0.01)
 
 
-def convert_bgr_to_yuv(frame):
+def convert_bgr_to_yuv(frame):  # TODO: remove hardcoded values and add docs
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV_I420)
-	
-    y = frame[:480,:].tolist()
+
+    y = frame[:480, :].tolist()
     y = list(itertools.chain.from_iterable(y))
-	
+
     u = np.zeros((240, 320), dtype=np.int)
-    u[::2,:] = frame[480:600, :320]
-    u[1::2,:] = frame[480:600, 320:]
+    u[::2, :] = frame[480:600, :320]
+    u[1::2, :] = frame[480:600, 320:]
     u = list(itertools.chain.from_iterable(u))
-	
+
     v = np.zeros((240, 320), dtype=np.int)
-    v[::2,:] = frame[600:, :320]
-    v[1::2,:] = frame[600:, 320:]
+    v[::2, :] = frame[600:, :320]
+    v[1::2, :] = frame[600:, 320:]
     v = list(itertools.chain.from_iterable(v))
+
     return bytes(y), bytes(u), bytes(v)
