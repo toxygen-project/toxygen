@@ -12,7 +12,6 @@ import util
 import cv2
 import numpy as np
 
-
 # -----------------------------------------------------------------------------------------------------------------
 # Threads
 # -----------------------------------------------------------------------------------------------------------------
@@ -325,10 +324,29 @@ def callback_audio(toxav, friend_number, samples, audio_samples_per_channel, aud
 
 
 def video_receive_frame(toxav, friend_number, width, height, y, u, v, ystride, ustride, vstride, user_data):
-    pass
-    #frame = cv2.merge((np.asarray(y), np.asarray(u), np.asarray(v)))
-    #frame = cv2.cvtColor(frame, cv2.COLOR_YUV2BGR_I420)
-    #cv2.imshow("frame", frame)
+    try:
+        Y = abs(max(width, abs(ystride)))
+        U = abs(max(width//2, abs(ustride)))
+        V = abs(max(width//2, abs(vstride)))
+        y = np.asarray(y[:Y * height], dtype=np.uint8).reshape(height, Y)
+        u = np.asarray(u[:U * height // 2], dtype=np.uint8).reshape(height // 2, U)
+        v = np.asarray(v[:V * height // 2], dtype=np.uint8).reshape(height // 2, V)
+        frame = np.zeros((int(height * 1.5), width), dtype=np.uint8)
+		
+        frame[:height,:] = y[:,:width]
+        #tmp, tmp2 = u[::2,:width], frame[height:height * 5 // 4, :width // 2]
+        #print(tmp.shape, tmp2.shape
+        frame[height:height * 5 // 4, :width // 2] = u[:140:2,:width // 2]
+        frame[height:height * 5 // 4, width // 2:] = u[1:140:2,:width // 2]
+	 
+        frame[height * 5 // 4 + 1:, :width // 2] = v[:140:2,:width // 2]
+        frame[height * 5 // 4 + 1:, width // 2:] = v[1:140:2,:width // 2]
+		
+        frame = cv2.cvtColor(frame, cv2.COLOR_YUV2BGR_I420)
+
+        invoke_in_main_thread(cv2.imshow, str(friend_number), frame)
+    except Exception as ex:
+        print(ex)
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization

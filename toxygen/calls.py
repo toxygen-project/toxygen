@@ -218,14 +218,17 @@ class AV:
 
 def convert_bgr_to_yuv(frame):
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV_I420)
+	
     y = frame[:480,:].tolist()
     y = list(itertools.chain.from_iterable(y))
-    v = np.zeros((240, 320), dtype=np.int)
-    v[::2,:] = frame[480:600, :320]
-    v[1::2,:] = frame[480:600, 320:]
-    v = list(itertools.chain.from_iterable(v))
+	
     u = np.zeros((240, 320), dtype=np.int)
-    u[::2,:] = frame[600:, :320]
-    u[1::2,:] = frame[600:, 320:]
+    u[::2,:] = frame[480:600, :320]
+    u[1::2,:] = frame[480:600, 320:]
     u = list(itertools.chain.from_iterable(u))
-    return bytes(y), bytes(v), bytes(u)
+	
+    v = np.zeros((240, 320), dtype=np.int)
+    v[::2,:] = frame[600:, :320]
+    v[1::2,:] = frame[600:, 320:]
+    v = list(itertools.chain.from_iterable(v))
+    return bytes(y), bytes(u), bytes(v)
