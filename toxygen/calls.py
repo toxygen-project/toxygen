@@ -7,15 +7,47 @@ import cv2
 import itertools
 import numpy as np
 # TODO: play sound until outgoing call will be started or cancelled and add timeout
-# TODO: rewrite logic
 
 
 class Call:
 
-    def __init__(self, audio=False, video=False):
-        self.audio = audio
-        self.video = video
-        # TODO: add widget for call
+    def __init__(self, out_audio, out_video, in_audio=False, in_video=False):
+        self._in_audio = in_audio
+        self._in_video = in_video
+        self._out_audio = out_audio
+        self._out_video = out_video
+
+    def get_in_audio(self):
+        return self._in_audio
+
+    def set_in_audio(self, value):
+        self._in_audio = value
+
+    in_audio = property(get_in_audio, set_in_audio)
+
+    def get_out_audio(self):
+        return self._out_audio
+
+    def set_out_audio(self, value):
+        self._out_audio = value
+
+    out_audio = property(get_out_audio, set_out_audio)
+
+    def get_in_video(self):
+        return self._in_video
+
+    def set_in_video(self, value):
+        self._in_video = value
+
+    in_video = property(get_in_video, set_in_video)
+
+    def get_out_video(self):
+        return self._out_video
+
+    def set_out_video(self, value):
+        self._in_video = value
+
+    out_video = property(get_out_video, set_out_video)
 
 
 class AV:
@@ -41,6 +73,9 @@ class AV:
         self._video_thread = None
         self._video_running = False
 
+        self._video_width = 640
+        self._video_height = 480
+
     def stop(self):
         self._running = False
         self.stop_audio_thread()
@@ -57,15 +92,15 @@ class AV:
         """Call friend with specified number"""
         self._toxav.call(friend_number, 32 if audio else 0, 5000 if video else 0)
         self._calls[friend_number] = Call(audio, video)
-        self.start_audio_thread()
-        self.start_video_thread()
 
     def accept_call(self, friend_number, audio_enabled, video_enabled):
-
         if self._running:
             self._calls[friend_number] = Call(audio_enabled, video_enabled)
             self._toxav.answer(friend_number, 32 if audio_enabled else 0, 5000 if video_enabled else 0)
-            self.start_audio_thread()
+            if audio_enabled:
+                self.start_audio_thread()
+            if video_enabled:
+                self.start_video_thread()
 
     def finish_call(self, friend_number, by_friend=False):
 
@@ -73,20 +108,25 @@ class AV:
             self._toxav.call_control(friend_number, TOXAV_CALL_CONTROL['CANCEL'])
         if friend_number in self._calls:
             del self._calls[friend_number]
-        if not len(self._calls):
+        if not len(list(filter(lambda c: c.out_audio, self._calls))):
             self.stop_audio_thread()
+        if not len(list(filter(lambda c: c.out_video, self._calls))):
+            self.stop_video_thread()
 
     def toxav_call_state_cb(self, friend_number, state):
         """
         New call state
         """
-        pass  # TODO: ignore?
-        # if self._running:
-        #
-        #     if state & TOXAV_FRIEND_CALL_STATE['ACCEPTING_A']:
-        #         self._calls[friend_number].audio = True
-        #     if state & TOXAV_FRIEND_CALL_STATE['ACCEPTING_V']:
-        #         self._calls[friend_number].video = True
+        call = self._calls[friend_number]
+
+        call.in_audio = state | TOXAV_FRIEND_CALL_STATE['SENDING_A']
+        call.in_video = state | TOXAV_FRIEND_CALL_STATE['SENDING_V']
+
+        if state | TOXAV_FRIEND_CALL_STATE['ACCEPTING_A'] and call.out_audio:
+            self.start_audio_thread()
+
+        if state | TOXAV_FRIEND_CALL_STATE['ACCEPTING_V'] and call.out_video:
+            self.start_video_thread()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Threads
@@ -136,10 +176,13 @@ class AV:
 
         self._video_running = True
 
+        self._video_width = 640  # TODO: use settings
+        self._video_height = 480
+
         self._video = cv2.VideoCapture(0)
         self._video.set(cv2.CAP_PROP_FPS, 25)
-        self._video.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
-        self._video.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+        self._video.set(cv2.CAP_PROP_FRAME_WIDTH, self._video_width)
+        self._video.set(cv2.CAP_PROP_FRAME_HEIGHT, self._video_height)
 
         self._video_thread = threading.Thread(target=self.send_video)
         self._video_thread.start()
@@ -170,9 +213,6 @@ class AV:
                                                 output=True)
         self._out_stream.write(samples)
 
-    def video_chunk(self):
-        pass
-
     # -----------------------------------------------------------------------------------------------------------------
     # AV sending
     # -----------------------------------------------------------------------------------------------------------------
@@ -187,7 +227,7 @@ class AV:
                 pcm = self._audio_stream.read(self._audio_sample_count)
                 if pcm:
                     for friend_num in self._calls:
-                        if self._calls[friend_num].audio:
+                        if self._calls[friend_num].out_audio:
                             try:
                                 self._toxav.audio_send_frame(friend_num, pcm, self._audio_sample_count,
                                                              self._audio_channels, self._audio_rate)
@@ -199,15 +239,18 @@ class AV:
             time.sleep(0.01)
 
     def send_video(self):
+        """
+        This method sends video to friends
+        """
         while self._video_running:
             try:
                 result, frame = self._video.read()
                 if result:
                     height, width, channels = frame.shape
                     for friend_num in self._calls:
-                        if self._calls[friend_num].video:
+                        if self._calls[friend_num].out_video:
                             try:
-                                y, u, v = convert_bgr_to_yuv(frame)
+                                y, u, v = self.convert_bgr_to_yuv(frame)
                                 self._toxav.video_send_frame(friend_num, width, height, y, u, v)
                             except Exception as e:
                                 print(e)
@@ -216,51 +259,50 @@ class AV:
 
         time.sleep(0.01)
 
+    def convert_bgr_to_yuv(self, frame):
+        """
+        :param frame: input bgr frame
+        :return y, u, v: y, u, v values of frame
 
-def convert_bgr_to_yuv(frame):  # TODO: remove hardcoded values
-    """
-    :param frame: input bgr frame
-    :return y, u, v: y, u, v values of frame
+        How this function works:
+        OpenCV creates YUV420 frame from BGR
+        This frame has following structure and size:
+        width, height - dim of input frame
+        width, height * 1.5 - dim of output frame
 
-    How this function works:
-    OpenCV creates YUV420 frame from BGR
-    This frame has following structure and size:
-    width, height - dim of input frame
-    width, height * 1.5 - dim of output frame
+                  width
+        -------------------------
+        |                       |
+        |          Y            |      height
+        |                       |
+        -------------------------
+        |           |           |
+        |  U even   |   U odd   |      height // 4
+        |           |           |
+        -------------------------
+        |           |           |
+        |  V even   |   V odd   |      height // 4
+        |           |           |
+        -------------------------
 
-              width
-    -------------------------
-    |                       |
-    |          Y            |      height
-    |                       |
-    -------------------------
-    |           |           |
-    |  U even   |   U odd   |      height // 4
-    |           |           |
-    -------------------------
-    |           |           |
-    |  V even   |   V odd   |      height // 4
-    |           |           |
-    -------------------------
+         width // 2   width // 2
 
-     width // 2   width // 2
+        Y, U, V can be extracted using slices and joined in one list using itertools.chain.from_iterable()
+        Function returns bytes(y), bytes(u), bytes(v), because it is required for ctypes
+        """
+        frame = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV_I420)
 
-    Y, U, V can be extracted using slices and joined in one list using itertools.chain.from_iterable()
-    Function returns bytes(y), bytes(u), bytes(v), because it is required for ctypes
-    """
-    frame = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV_I420)
+        y = frame[:self._video_height, :].tolist()
+        y = list(itertools.chain.from_iterable(y))
 
-    y = frame[:480, :].tolist()
-    y = list(itertools.chain.from_iterable(y))
+        u = np.zeros((self._video_width // 2, self._video_height // 2), dtype=np.int)
+        u[::2, :] = frame[self._video_height:self._video_height * 5 // 4, :self._video_height // 2]
+        u[1::2, :] = frame[self._video_height:self._video_height * 5 // 4, self._video_height // 2:]
+        u = list(itertools.chain.from_iterable(u))
 
-    u = np.zeros((240, 320), dtype=np.int)
-    u[::2, :] = frame[480:600, :320]
-    u[1::2, :] = frame[480:600, 320:]
-    u = list(itertools.chain.from_iterable(u))
+        v = np.zeros((self._video_width // 2, self._video_height // 2), dtype=np.int)
+        v[::2, :] = frame[self._video_height * 5 // 4:, :self._video_height // 2]
+        v[1::2, :] = frame[self._video_height * 5 // 4:, self._video_height // 2:]
+        v = list(itertools.chain.from_iterable(v))
 
-    v = np.zeros((240, 320), dtype=np.int)
-    v[::2, :] = frame[600:, :320]
-    v[1::2, :] = frame[600:, 320:]
-    v = list(itertools.chain.from_iterable(v))
-
-    return bytes(y), bytes(u), bytes(v)
+        return bytes(y), bytes(u), bytes(v)
