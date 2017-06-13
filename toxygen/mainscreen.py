@@ -63,6 +63,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.actionSettings = QtWidgets.QAction(Form)
         self.actionSettings.setObjectName("actionSettings")
         self.audioSettings = QtWidgets.QAction(Form)
+        self.videoSettings = QtWidgets.QAction(Form)
         self.pluginData = QtWidgets.QAction(Form)
         self.importPlugin = QtWidgets.QAction(Form)
         self.reloadPlugins = QtWidgets.QAction(Form)
@@ -75,6 +76,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.menuSettings.addAction(self.actionNotifications)
         self.menuSettings.addAction(self.actionNetwork)
         self.menuSettings.addAction(self.audioSettings)
+        self.menuSettings.addAction(self.videoSettings)
         self.menuSettings.addAction(self.updateSettings)
         self.menuPlugins.addAction(self.pluginData)
         self.menuPlugins.addAction(self.importPlugin)
@@ -94,6 +96,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.actionInterface_settings.triggered.connect(self.interface_settings)
         self.actionNotifications.triggered.connect(self.notification_settings)
         self.audioSettings.triggered.connect(self.audio_settings)
+        self.videoSettings.triggered.connect(self.video_settings)
         self.updateSettings.triggered.connect(self.update_settings)
         self.pluginData.triggered.connect(self.plugins_menu)
         self.lockApp.triggered.connect(self.lock_app)
@@ -458,6 +461,10 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
     def audio_settings(self):
         self.audio_s = AudioSettings()
         self.audio_s.show()
+
+    def video_settings(self):
+        self.video_s = VideoSettings()
+        self.video_s.show()
 
     def update_settings(self):
         self.update_s = UpdateSettings()
