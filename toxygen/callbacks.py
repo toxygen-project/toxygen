@@ -324,21 +324,50 @@ def callback_audio(toxav, friend_number, samples, audio_samples_per_channel, aud
 
 
 def video_receive_frame(toxav, friend_number, width, height, y, u, v, ystride, ustride, vstride, user_data):
+    """
+    Creates yuv frame from y, u, v and shows it using OpenCV
+    For yuv => bgr we need this YUV420 frame:
+
+              width
+    -------------------------
+    |                       |
+    |          Y            |      height
+    |                       |
+    -------------------------
+    |           |           |
+    |  U even   |   U odd   |      height // 4
+    |           |           |
+    -------------------------
+    |           |           |
+    |  V even   |   V odd   |      height // 4
+    |           |           |
+    -------------------------
+
+     width // 2   width // 2
+
+    It can be created from initial y, u, v using slices
+    For more info see callback_video_receive_frame docs
+    """
     try:
         y_size = abs(max(width, abs(ystride)))
-        u_size = abs(max(width//2, abs(ustride)))
-        v_size = abs(max(width//2, abs(vstride)))
+        u_size = abs(max(width // 2, abs(ustride)))
+        v_size = abs(max(width // 2, abs(vstride)))
+
         y = np.asarray(y[:y_size * height], dtype=np.uint8).reshape(height, y_size)
         u = np.asarray(u[:u_size * height // 2], dtype=np.uint8).reshape(height // 2, u_size)
         v = np.asarray(v[:v_size * height // 2], dtype=np.uint8).reshape(height // 2, v_size)
+
+        width -= width % 4
+        height -= height % 4
+
         frame = np.zeros((int(height * 1.5), width), dtype=np.uint8)
 
-        frame[:height, :] = y[:, :width]
-        frame[height:height * 5 // 4, :width // 2] = u[:140:2, :width // 2]  # TODO: remove hardcoded values
-        frame[height:height * 5 // 4, width // 2:] = u[1:140:2, :width // 2]
+        frame[:height, :] = y[:height, :width]
+        frame[height:height * 5 // 4, :width // 2] = u[:height // 2:2, :width // 2]
+        frame[height:height * 5 // 4, width // 2:] = u[1:height // 2:2, :width // 2]
 
-        frame[height * 5 // 4 + 1:, :width // 2] = v[:140:2, :width // 2]
-        frame[height * 5 // 4 + 1:, width // 2:] = v[1:140:2, :width // 2]
+        frame[height * 5 // 4:, :width // 2] = v[:height // 2:2, :width // 2]
+        frame[height * 5 // 4:, width // 2:] = v[1:height // 2:2, :width // 2]
 
         frame = cv2.cvtColor(frame, cv2.COLOR_YUV2BGR_I420)
 
@@ -382,4 +411,3 @@ def init_callbacks(tox, window, tray):
 
     tox.callback_friend_lossless_packet(lossless_packet, 0)
     tox.callback_friend_lossy_packet(lossy_packet, 0)
-

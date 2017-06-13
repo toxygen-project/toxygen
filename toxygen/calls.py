@@ -217,7 +217,37 @@ class AV:
         time.sleep(0.01)
 
 
-def convert_bgr_to_yuv(frame):  # TODO: remove hardcoded values and add docs
+def convert_bgr_to_yuv(frame):  # TODO: remove hardcoded values
+    """
+    :param frame: input bgr frame
+    :return y, u, v: y, u, v values of frame
+
+    How this function works:
+    OpenCV creates YUV420 frame from BGR
+    This frame has following structure and size:
+    width, height - dim of input frame
+    width, height * 1.5 - dim of output frame
+
+              width
+    -------------------------
+    |                       |
+    |          Y            |      height
+    |                       |
+    -------------------------
+    |           |           |
+    |  U even   |   U odd   |      height // 4
+    |           |           |
+    -------------------------
+    |           |           |
+    |  V even   |   V odd   |      height // 4
+    |           |           |
+    -------------------------
+
+     width // 2   width // 2
+
+    Y, U, V can be extracted using slices and joined in one list using itertools.chain.from_iterable()
+    Function returns bytes(y), bytes(u), bytes(v), because it is required for ctypes
+    """
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV_I420)
 
     y = frame[:480, :].tolist()
