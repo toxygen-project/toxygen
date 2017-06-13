@@ -292,17 +292,17 @@ class AV:
         """
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2YUV_I420)
 
-        y = frame[:self._video_height, :].tolist()
+        y = frame[:self._video_height, :]
         y = list(itertools.chain.from_iterable(y))
 
-        u = np.zeros((self._video_width // 2, self._video_height // 2), dtype=np.int)
-        u[::2, :] = frame[self._video_height:self._video_height * 5 // 4, :self._video_height // 2]
-        u[1::2, :] = frame[self._video_height:self._video_height * 5 // 4, self._video_height // 2:]
+        u = np.zeros((self._video_height // 2, self._video_width // 2), dtype=np.int)
+        u[::2, :] = frame[self._video_height:self._video_height * 5 // 4, :self._video_width // 2]
+        u[1::2, :] = frame[self._video_height:self._video_height * 5 // 4, self._video_width // 2:]
         u = list(itertools.chain.from_iterable(u))
 
-        v = np.zeros((self._video_width // 2, self._video_height // 2), dtype=np.int)
-        v[::2, :] = frame[self._video_height * 5 // 4:, :self._video_height // 2]
-        v[1::2, :] = frame[self._video_height * 5 // 4:, self._video_height // 2:]
+        v = np.zeros((self._video_height // 2, self._video_width // 2), dtype=np.int)
+        v[::2, :] = frame[self._video_height * 5 // 4:, :self._video_width // 2]
+        v[1::2, :] = frame[self._video_height * 5 // 4:, self._video_width // 2:]
         v = list(itertools.chain.from_iterable(v))
 
         return bytes(y), bytes(u), bytes(v)
