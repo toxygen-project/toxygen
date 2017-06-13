@@ -179,7 +179,7 @@ class AV:
         self._video_width = 640  # TODO: use settings
         self._video_height = 480
 
-        self._video = cv2.VideoCapture(0)
+        self._video = cv2.VideoCapture(settings.Settings.get_instance().video['device'])
         self._video.set(cv2.CAP_PROP_FPS, 25)
         self._video.set(cv2.CAP_PROP_FRAME_WIDTH, self._video_width)
         self._video.set(cv2.CAP_PROP_FRAME_HEIGHT, self._video_height)

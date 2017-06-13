@@ -823,13 +823,13 @@ class VideoSettings(CenteredWidget):
         self.input.setGeometry(QtCore.QRect(25, 30, 350, 30))
         import cv2
         self.devices = []
-        for i in range(15):
+        for i in range(10):
             v = cv2.VideoCapture(i)
             if v.isOpened():
                 del v
                 self.devices.append(i)
                 self.input.addItem('Device #' + str(i))
-        self.input.setCurrentIndex(self.in_indexes.index(settings.video['device']))
+        self.input.setCurrentIndex(self.devices.index(settings.video['device']))
 
     def retranslateUi(self):
         self.setWindowTitle(QtWidgets.QApplication.translate("videoSettingsForm", "Video settings"))

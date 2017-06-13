@@ -131,6 +131,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.actionAbout_program.setText(QtWidgets.QApplication.translate("MainWindow", "About program"))
         self.actionSettings.setText(QtWidgets.QApplication.translate("MainWindow", "Settings"))
         self.audioSettings.setText(QtWidgets.QApplication.translate("MainWindow", "Audio"))
+        self.videoSettings.setText(QtWidgets.QApplication.translate("MainWindow", "Video"))
         self.updateSettings.setText(QtWidgets.QApplication.translate("MainWindow", "Updates"))
         self.contact_name.setPlaceholderText(QtWidgets.QApplication.translate("MainWindow", "Search"))
         self.sendMessageButton.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Send message"))
