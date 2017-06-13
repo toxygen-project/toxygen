@@ -795,6 +795,52 @@ class AudioSettings(CenteredWidget):
         settings.save()
 
 
+class VideoSettings(CenteredWidget):
+    """
+    Audio calls settings form
+    """
+
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+        self.retranslateUi()
+        self.center()
+
+    def initUI(self):
+        self.setObjectName("videoSettingsForm")
+        self.resize(400, 100)
+        self.setMinimumSize(QtCore.QSize(400, 100))
+        self.setMaximumSize(QtCore.QSize(400, 100))
+        self.in_label = QtWidgets.QLabel(self)
+        self.in_label.setGeometry(QtCore.QRect(25, 5, 350, 20))
+        settings = Settings.get_instance()
+        font = QtGui.QFont()
+        font.setPointSize(16)
+        font.setBold(True)
+        font.setFamily(settings['font'])
+        self.in_label.setFont(font)
+        self.input = QtWidgets.QComboBox(self)
+        self.input.setGeometry(QtCore.QRect(25, 30, 350, 30))
+        import cv2
+        self.devices = []
+        for i in range(15):
+            v = cv2.VideoCapture(i)
+            if v.isOpened():
+                del v
+                self.devices.append(i)
+                self.input.addItem('Device #' + str(i))
+        self.input.setCurrentIndex(self.in_indexes.index(settings.video['device']))
+
+    def retranslateUi(self):
+        self.setWindowTitle(QtWidgets.QApplication.translate("videoSettingsForm", "Video settings"))
+        self.in_label.setText(QtWidgets.QApplication.translate("videoSettingsForm", "Device:"))
+
+    def closeEvent(self, event):
+        settings = Settings.get_instance()
+        settings.video['device'] = self.devices[self.input.currentIndex()]
+        settings.save()
+
+
 class PluginsSettings(CenteredWidget):
     """
     Plugins settings form

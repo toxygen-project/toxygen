@@ -47,6 +47,7 @@ class Settings(dict, Singleton):
         self.audio = {'input': p.get_default_input_device_info()['index'] if input_devices else -1,
                       'output': p.get_default_output_device_info()['index'] if output_devices else -1,
                       'enabled': input_devices and output_devices}
+        self.video = {'device': 0}
 
     @staticmethod
     def get_auto_profile():
