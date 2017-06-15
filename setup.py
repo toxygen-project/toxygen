@@ -8,15 +8,15 @@ import sys
 
 version = program_version + '.0'
 
-MODULES = ['numpy']
+MODULES = ['numpy', 'PyQt5']
 
 if system() in ('Windows', 'Darwin'):
-    MODULES.extend(['PyAudio', 'PyQt5'])
+    MODULES.append('PyAudio')
 else:
     try:
         import pyaudio
     except ImportError:
-        MODULES.append('PyAudio')  # TODO: ?
+        MODULES.append('PyAudio')
 
 DEP_LINKS = []
 
