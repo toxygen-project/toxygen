@@ -6,7 +6,7 @@ from toxav_enums import *
 import cv2
 import itertools
 import numpy as np
-# TODO: play sound until outgoing call will be started or cancelled and add timeout
+# TODO: play sound until outgoing call will be started or cancelled
 
 
 class Call:
@@ -16,6 +16,19 @@ class Call:
         self._in_video = in_video
         self._out_audio = out_audio
         self._out_video = out_video
+        self._is_active = False
+
+    def get_is_active(self):
+        return self._is_active
+
+    def set_is_active(self, value):
+        self._is_active = value
+
+    is_active = property(get_is_active, set_is_active)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Audio
+    # -----------------------------------------------------------------------------------------------------------------
 
     def get_in_audio(self):
         return self._in_audio
@@ -32,6 +45,10 @@ class Call:
         self._out_audio = value
 
     out_audio = property(get_out_audio, set_out_audio)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Video
+    # -----------------------------------------------------------------------------------------------------------------
 
     def get_in_video(self):
         return self._in_video
@@ -92,6 +109,7 @@ class AV:
         """Call friend with specified number"""
         self._toxav.call(friend_number, 32 if audio else 0, 5000 if video else 0)
         self._calls[friend_number] = Call(audio, video)
+        threading.Timer(30.0, lambda: self.finish_not_started_call(friend_number)).start()
 
     def accept_call(self, friend_number, audio_enabled, video_enabled):
         if self._running:
@@ -103,7 +121,6 @@ class AV:
                 self.start_video_thread()
 
     def finish_call(self, friend_number, by_friend=False):
-
         if not by_friend:
             self._toxav.call_control(friend_number, TOXAV_CALL_CONTROL['CANCEL'])
         if friend_number in self._calls:
@@ -113,11 +130,18 @@ class AV:
         if not len(list(filter(lambda c: c.out_video, self._calls))):
             self.stop_video_thread()
 
+    def finish_not_started_call(self, friend_number):
+        if friend_number in self:
+            call = self._calls[friend_number]
+            if not call.is_active:
+                self.finish_call(friend_number)
+
     def toxav_call_state_cb(self, friend_number, state):
         """
         New call state
         """
         call = self._calls[friend_number]
+        call.is_active = True
 
         call.in_audio = state | TOXAV_FRIEND_CALL_STATE['SENDING_A']
         call.in_video = state | TOXAV_FRIEND_CALL_STATE['SENDING_V']
