@@ -808,9 +808,9 @@ class VideoSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("videoSettingsForm")
-        self.resize(400, 100)
-        self.setMinimumSize(QtCore.QSize(400, 100))
-        self.setMaximumSize(QtCore.QSize(400, 100))
+        self.resize(400, 120)
+        self.setMinimumSize(QtCore.QSize(400, 120))
+        self.setMaximumSize(QtCore.QSize(400, 120))
         self.in_label = QtWidgets.QLabel(self)
         self.in_label.setGeometry(QtCore.QRect(25, 5, 350, 20))
         settings = Settings.get_instance()
@@ -819,8 +819,11 @@ class VideoSettings(CenteredWidget):
         font.setBold(True)
         font.setFamily(settings['font'])
         self.in_label.setFont(font)
+        self.video_size = QtWidgets.QComboBox(self)
+        self.video_size.setGeometry(QtCore.QRect(25, 70, 350, 30))
         self.input = QtWidgets.QComboBox(self)
         self.input.setGeometry(QtCore.QRect(25, 30, 350, 30))
+        self.input.currentIndexChanged.connect(self.selectionChanged)
         import cv2
         self.devices = []
         self.frame_max_sizes = []
@@ -836,9 +839,6 @@ class VideoSettings(CenteredWidget):
                 self.devices.append(i)
                 self.frame_max_sizes.append((width, height))
                 self.input.addItem('Device #' + str(i))
-        self.size = QtWidgets.QComboBox(self)
-        self.size.setGeometry(QtCore.QRect(60, 30, 350, 30))
-        self.input.currentIndexChanged.connect(self.selectionChanged)
         index = self.devices.index(settings.video['device'])
         if index + 1:
             self.input.setCurrentIndex(index)
@@ -850,11 +850,14 @@ class VideoSettings(CenteredWidget):
     def closeEvent(self, event):
         settings = Settings.get_instance()
         settings.video['device'] = self.devices[self.input.currentIndex()]
+        text = self.video_size.currentText()
+        settings.video['width'] = int(text.split(' ')[0])
+        settings.video['height'] = int(text.split(' ')[-1])
         settings.save()
 
     def selectionChanged(self):
         width, height = self.frame_max_sizes[self.input.currentIndex()]
-        self.size.clear()
+        self.video_size.clear()
         dims = [
             (320, 240),
             (640, 360),
@@ -866,7 +869,7 @@ class VideoSettings(CenteredWidget):
         ]
         for w, h in dims:
             if w <= width and h <= height:
-                self.size.addItem(str(w) + ' * ' + str(h))
+                self.video_size.addItem(str(w) + ' * ' + str(h))
 
 
 class PluginsSettings(CenteredWidget):
