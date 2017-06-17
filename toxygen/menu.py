@@ -823,13 +823,25 @@ class VideoSettings(CenteredWidget):
         self.input.setGeometry(QtCore.QRect(25, 30, 350, 30))
         import cv2
         self.devices = []
+        self.frame_max_sizes = []
         for i in range(10):
             v = cv2.VideoCapture(i)
             if v.isOpened():
+                v.set(cv2.CAP_PROP_FRAME_WIDTH, 10000)
+                v.set(cv2.CAP_PROP_FRAME_HEIGHT, 10000)
+
+                width = int(v.get(cv2.CAP_PROP_FRAME_WIDTH))
+                height = int(v.get(cv2.CAP_PROP_FRAME_HEIGHT))
                 del v
                 self.devices.append(i)
+                self.frame_max_sizes.append((width, height))
                 self.input.addItem('Device #' + str(i))
-        self.input.setCurrentIndex(self.devices.index(settings.video['device']))
+        self.size = QtWidgets.QComboBox(self)
+        self.size.setGeometry(QtCore.QRect(60, 30, 350, 30))
+        self.input.currentIndexChanged.connect(self.selectionChanged)
+        index = self.devices.index(settings.video['device'])
+        if index + 1:
+            self.input.setCurrentIndex(index)
 
     def retranslateUi(self):
         self.setWindowTitle(QtWidgets.QApplication.translate("videoSettingsForm", "Video settings"))
@@ -839,6 +851,22 @@ class VideoSettings(CenteredWidget):
         settings = Settings.get_instance()
         settings.video['device'] = self.devices[self.input.currentIndex()]
         settings.save()
+
+    def selectionChanged(self):
+        width, height = self.frame_max_sizes[self.input.currentIndex()]
+        self.size.clear()
+        dims = [
+            (320, 240),
+            (640, 360),
+            (640, 480),
+            (720, 480),
+            (1280, 720),
+            (1920, 1080),
+            (2560, 1440)
+        ]
+        for w, h in dims:
+            if w <= width and h <= height:
+                self.size.addItem(str(w) + ' * ' + str(h))
 
 
 class PluginsSettings(CenteredWidget):
