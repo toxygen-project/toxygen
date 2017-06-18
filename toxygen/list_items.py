@@ -533,15 +533,13 @@ class InlineImageItem(QtWidgets.QScrollArea):
             self._elem.setSizeHint(QtCore.QSize(self.width(), self.height()))
         elif event.button() == QtCore.Qt.RightButton:  # save inline
             directory = QtWidgets.QFileDialog.getExistingDirectory(self,
-                                                               QtWidgets.QApplication.translate("MainWindow",
-                                                                                            'Choose folder'),
-                                                               curr_directory(),
-                                                               QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
+                                                                   QtWidgets.QApplication.translate("MainWindow",
+                                                                                                    'Choose folder'),
+                                                                   curr_directory(),
+                                                                   QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
             if directory:
                 fl = QtCore.QFile(directory + '/toxygen_inline_' + curr_time().replace(':', '_') + '.png')
                 self._pixmap.save(fl, 'PNG')
-
-        return False
 
     def mark_as_sent(self):
         return False
