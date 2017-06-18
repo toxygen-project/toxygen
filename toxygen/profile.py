@@ -1257,7 +1257,7 @@ class Profile(basecontact.BaseContact, Singleton):
         if hasattr(self, '_call_widget'):
             self._call_widget[friend_number].close()
             del self._call_widget[friend_number]
-        threading.Timer(3.0, lambda: cv2.destroyWindow(str(friend_number))).start()
+        threading.Timer(2.0, lambda: cv2.destroyWindow(str(friend_number))).start()
         friend = self.get_friend_by_number(friend_number)
         friend.append_message(InfoMessage(text, time.time()))
         if friend_number == self.get_active_number():

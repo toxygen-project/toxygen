@@ -567,13 +567,15 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
     def call_finished(self):
         self.update_call_state('call')
 
-    def update_call_state(self, fl):
+    def update_call_state(self, state):
         os.chdir(curr_directory() + '/images/')
-        pixmap = QtGui.QPixmap(curr_directory() + '/images/{}.png'.format(fl))
+
+        pixmap = QtGui.QPixmap(curr_directory() + '/images/{}.png'.format(state))
         icon = QtGui.QIcon(pixmap)
         self.callButton.setIcon(icon)
         self.callButton.setIconSize(QtCore.QSize(50, 50))
-        pixmap = QtGui.QPixmap(curr_directory() + '/images/{}_video.png')
+
+        pixmap = QtGui.QPixmap(curr_directory() + '/images/{}_video.png'.format(state))
         icon = QtGui.QIcon(pixmap)
         self.videocallButton.setIcon(icon)
         self.videocallButton.setIconSize(QtCore.QSize(35, 35))
