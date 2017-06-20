@@ -329,31 +329,34 @@ class WelcomeScreen(CenteredWidget):
             text = QtWidgets.QApplication.translate('WelcomeScreen', 'Press Esc if you want hide app to tray.')
         elif num == 1:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Right click on screenshot button hides app to tray during screenshot.')
+                                                    'Right click on screenshot button hides app to tray during screenshot.')
         elif num == 2:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'You can use Tox over Tor. For more info read <a href="https://wiki.tox.chat/users/tox_over_tor_tot">this post</a>')
+                                                    'You can use Tox over Tor. For more info read <a href="https://wiki.tox.chat/users/tox_over_tor_tot">this post</a>')
         elif num == 3:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Use Settings -> Interface to customize interface.')
+                                                    'Use Settings -> Interface to customize interface.')
         elif num == 4:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Set profile password via Profile -> Settings. Password allows Toxygen encrypt your history and settings.')
+                                                    'Set profile password via Profile -> Settings. Password allows Toxygen encrypt your history and settings.')
         elif num == 5:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Since v0.1.3 Toxygen supports plugins. <a href="https://github.com/xveduk/toxygen/blob/master/docs/plugins.md">Read more</a>')
-        elif num in (6, 7):
+                                                    'Since v0.1.3 Toxygen supports plugins. <a href="https://github.com/toxygen-project/toxygen/blob/master/docs/plugins.md">Read more</a>')
+        elif num == 6:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Toxygen supports faux offline messages and file transfers. Send message or file to offline friend and he will get it later.')
+                                                    'Toxygen supports faux offline messages and file transfers. Send message or file to offline friend and he will get it later.')
+        elif num == 7:
+            text = QtWidgets.QApplication.translate('WelcomeScreen',
+                                                    'New in Toxygen 0.3.0:<br>Video calls<br>Python3.6 support<br>Migration to PyQt5')
         elif num == 8:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Delete single message in chat: make right click on spinner or message time and choose "Delete" in menu')
+                                                    'Delete single message in chat: make right click on spinner or message time and choose "Delete" in menu')
         elif num == 9:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Use right click on inline image to save it')
+                                                    'Use right click on inline image to save it')
         else:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                'Set new NoSpam to avoid spam friend requests: Profile -> Settings -> Set new NoSpam.')
+                                                    'Set new NoSpam to avoid spam friend requests: Profile -> Settings -> Set new NoSpam.')
         self.text.setHtml(text)
         self.checkbox.stateChanged.connect(self.not_show)
         QtCore.QTimer.singleShot(1000, self.show)

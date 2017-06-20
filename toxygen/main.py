@@ -100,17 +100,17 @@ class Toxygen:
                         msgBox.setWindowTitle(
                             QtWidgets.QApplication.translate("MainWindow", "Error"))
                         text = (QtWidgets.QApplication.translate("MainWindow",
-                                                             'Profile with this name already exists'))
+                                                                 'Profile with this name already exists'))
                         msgBox.setText(text)
                         msgBox.exec_()
                         return
                     self.tox = profile.tox_factory()
                     self.tox.self_set_name(bytes(_login.name, 'utf-8') if _login.name else b'Toxygen User')
-                    self.tox.self_set_status_message(b'Toxing on Toxygen')
+                    self.tox.self_set_status_message(b'Toxing on T03')
                     reply = QtWidgets.QMessageBox.question(None,
-                                                       'Profile {}'.format(name),
-                                                       QtWidgets.QApplication.translate("login",
-                                                                                    'Do you want to set profile password?'),
+                                                           'Profile {}'.format(name),
+                                                           QtWidgets.QApplication.translate("login",
+                                                                                            'Do you want to set profile password?'),
                                                            QtWidgets.QMessageBox.Yes,
                                                            QtWidgets.QMessageBox.No)
                     if reply == QtWidgets.QMessageBox.Yes:
@@ -119,10 +119,10 @@ class Toxygen:
                         self.app.lastWindowClosed.connect(self.app.quit)
                         self.app.exec_()
                     reply = QtWidgets.QMessageBox.question(None,
-                                                       'Profile {}'.format(name),
-                                                       QtWidgets.QApplication.translate("login",
-                                                                                    'Do you want to save profile in default folder? If no, profile will be saved in program folder'),
-                                                       QtWidgets.QMessageBox.Yes,
+                                                           'Profile {}'.format(name),
+                                                           QtWidgets.QApplication.translate("login",
+                                                                                            'Do you want to save profile in default folder? If no, profile will be saved in program folder'),
+                                                           QtWidgets.QMessageBox.Yes,
                                                            QtWidgets.QMessageBox.No)
                     if reply == QtWidgets.QMessageBox.Yes:
                         path = Settings.get_default_path()
@@ -135,7 +135,7 @@ class Toxygen:
                         log('Profile creation exception: ' + str(ex))
                         msgBox = QtWidgets.QMessageBox()
                         msgBox.setText(QtWidgets.QApplication.translate("login",
-                                                                    'Profile saving error! Does Toxygen have permission to write to this directory?'))
+                                                                        'Profile saving error! Does Toxygen have permission to write to this directory?'))
                         msgBox.exec_()
                         return
                     path = Settings.get_default_path()
@@ -162,8 +162,8 @@ class Toxygen:
 
         if Settings.is_active_profile(path, name):  # profile is in use
             reply = QtWidgets.QMessageBox.question(None,
-                                               'Profile {}'.format(name),
-                                               QtWidgets.QApplication.translate("login", 'Other instance of Toxygen uses this profile or profile was not properly closed. Continue?'),
+                                                   'Profile {}'.format(name),
+                                                   QtWidgets.QApplication.translate("login", 'Other instance of Toxygen uses this profile or profile was not properly closed. Continue?'),
                                                    QtWidgets.QMessageBox.Yes,
                                                    QtWidgets.QMessageBox.No)
             if reply != QtWidgets.QMessageBox.Yes:
@@ -283,9 +283,9 @@ class Toxygen:
                     updating = True
                 else:
                     reply = QtWidgets.QMessageBox.question(None,
-                                                       'Toxygen',
-                                                       QtWidgets.QApplication.translate("login",
-                                                                                    'Update for Toxygen was found. Download and install it?'),
+                                                           'Toxygen',
+                                                           QtWidgets.QApplication.translate("login",
+                                                                                            'Update for Toxygen was found. Download and install it?'),
                                                            QtWidgets.QMessageBox.Yes,
                                                            QtWidgets.QMessageBox.No)
                     if reply == QtWidgets.QMessageBox.Yes:
