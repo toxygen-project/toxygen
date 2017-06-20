@@ -19,4 +19,4 @@ Note that we have a lot of branches for different purposes. Master branch is for
 
 # Translations
 
-Help us translate Toxygen! Translation can be created using pyside-lupdate (``pyside-lupdate toxygen.pro``) and QT Linguist.
+Help us translate Toxygen! Translation can be created using pylupdate (``pylupdate5 toxygen.pro``) and QT Linguist.
