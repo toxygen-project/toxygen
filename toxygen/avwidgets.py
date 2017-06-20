@@ -132,29 +132,3 @@ class IncomingCallWidget(widgets.CenteredWidget):
 
     def set_pixmap(self, pixmap):
         self.avatar_label.setPixmap(pixmap)
-
-
-class AudioMessageRecorder(widgets.CenteredWidget):
-
-    def __init__(self, friend_number, name):
-        super(AudioMessageRecorder, self).__init__()
-        self.label = QtWidgets.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(10, 20, 250, 20))
-        text = QtWidgets.QApplication.translate("MenuWindow", "Send audio message to friend {}")
-        self.label.setText(text.format(name))
-        self.record = QtWidgets.QPushButton(self)
-        self.record.setGeometry(QtCore.QRect(20, 100, 150, 150))
-
-        self.record.setText(QtWidgets.QApplication.translate("MenuWindow", "Start recording"))
-        self.record.clicked.connect(self.start_or_stop_recording)
-        self.recording = False
-        self.friend_num = friend_number
-
-    def start_or_stop_recording(self):
-        if not self.recording:
-            self.recording = True
-            self.record.setText(QtWidgets.QApplication.translate("MenuWindow", "Stop recording"))
-        else:
-            self.close()
-
-

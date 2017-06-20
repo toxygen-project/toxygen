@@ -207,8 +207,8 @@ class DropdownMenu(QtWidgets.QWidget):
         super(DropdownMenu, self).__init__(parent)
         self.installEventFilter(self)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        self.setMaximumSize(180, 120)
-        self.setMinimumSize(180, 120)
+        self.setMaximumSize(120, 120)
+        self.setMinimumSize(120, 120)
         self.screenshotButton = QRightClickButton(self)
         self.screenshotButton.setGeometry(QtCore.QRect(0, 60, 60, 60))
         self.screenshotButton.setObjectName("screenshotButton")
@@ -217,14 +217,8 @@ class DropdownMenu(QtWidgets.QWidget):
         self.fileTransferButton.setGeometry(QtCore.QRect(60, 60, 60, 60))
         self.fileTransferButton.setObjectName("fileTransferButton")
 
-        self.audioMessageButton = QtWidgets.QPushButton(self)
-        self.audioMessageButton.setGeometry(QtCore.QRect(120, 60, 60, 60))
-
         self.smileyButton = QtWidgets.QPushButton(self)
         self.smileyButton.setGeometry(QtCore.QRect(0, 0, 60, 60))
-
-        self.videoMessageButton = QtWidgets.QPushButton(self)
-        self.videoMessageButton.setGeometry(QtCore.QRect(120, 0, 60, 60))
 
         self.stickerButton = QtWidgets.QPushButton(self)
         self.stickerButton.setGeometry(QtCore.QRect(60, 0, 60, 60))
@@ -233,22 +227,17 @@ class DropdownMenu(QtWidgets.QWidget):
         icon = QtGui.QIcon(pixmap)
         self.fileTransferButton.setIcon(icon)
         self.fileTransferButton.setIconSize(QtCore.QSize(50, 50))
+
         pixmap = QtGui.QPixmap(util.curr_directory() + '/images/screenshot.png')
         icon = QtGui.QIcon(pixmap)
         self.screenshotButton.setIcon(icon)
         self.screenshotButton.setIconSize(QtCore.QSize(50, 60))
-        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/audio_message.png')
-        icon = QtGui.QIcon(pixmap)
-        self.audioMessageButton.setIcon(icon)
-        self.audioMessageButton.setIconSize(QtCore.QSize(50, 50))
+
         pixmap = QtGui.QPixmap(util.curr_directory() + '/images/smiley.png')
         icon = QtGui.QIcon(pixmap)
         self.smileyButton.setIcon(icon)
         self.smileyButton.setIconSize(QtCore.QSize(50, 50))
-        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/video_message.png')
-        icon = QtGui.QIcon(pixmap)
-        self.videoMessageButton.setIcon(icon)
-        self.videoMessageButton.setIconSize(QtCore.QSize(55, 55))
+
         pixmap = QtGui.QPixmap(util.curr_directory() + '/images/sticker.png')
         icon = QtGui.QIcon(pixmap)
         self.stickerButton.setIcon(icon)
@@ -256,8 +245,6 @@ class DropdownMenu(QtWidgets.QWidget):
 
         self.screenshotButton.setToolTip(QtWidgets.QApplication.translate("MenuWindow", "Send screenshot"))
         self.fileTransferButton.setToolTip(QtWidgets.QApplication.translate("MenuWindow", "Send file"))
-        self.audioMessageButton.setToolTip(QtWidgets.QApplication.translate("MenuWindow", "Send audio message"))
-        self.videoMessageButton.setToolTip(QtWidgets.QApplication.translate("MenuWindow", "Send video message"))
         self.smileyButton.setToolTip(QtWidgets.QApplication.translate("MenuWindow", "Add smiley"))
         self.stickerButton.setToolTip(QtWidgets.QApplication.translate("MenuWindow", "Send sticker"))
 
@@ -270,7 +257,7 @@ class DropdownMenu(QtWidgets.QWidget):
     def leaveEvent(self, event):
         self.close()
 
-    def eventFilter(self, object, event):
+    def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.WindowDeactivate:
             self.close()
         return False

@@ -30,7 +30,8 @@ def tox_dns(email):
         netman.setProxy(proxy)
         for url in urls:
             try:
-                request = QtNetwork.QNetworkRequest(url)
+                request = QtNetwork.QNetworkRequest()
+                request.setUrl(QtCore.QUrl(url))
                 request.setHeader(QtNetwork.QNetworkRequest.ContentTypeHeader, "application/json")
                 reply = netman.post(request, bytes(json.dumps(data), 'utf-8'))
 
