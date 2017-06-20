@@ -153,7 +153,7 @@ class SmileyWindow(QtWidgets.QWidget):
         for i in range(self.page_count):  # buttons with smileys
             elem = QtWidgets.QRadioButton(self)
             elem.setGeometry(QtCore.QRect(i * 20 + 5, 180, 20, 20))
-            elem.clicked.connect(lambda i=i: self.checked(i))
+            elem.clicked.connect(lambda c, t=i: self.checked(t))
             self.radio.append(elem)
         width = max(self.page_count * 20 + 30, (self.page_size + 5) * 8 // 10)
         self.setMaximumSize(width, 200)
@@ -162,7 +162,7 @@ class SmileyWindow(QtWidgets.QWidget):
         for i in range(self.page_size):  # pages - radio buttons
             b = QtWidgets.QPushButton(self)
             b.setGeometry(QtCore.QRect((i // 8) * 20 + 5, (i % 8) * 20, 20, 20))
-            b.clicked.connect(lambda i=i: self.clicked(i))
+            b.clicked.connect(lambda c, t=i: self.clicked(t))
             self.buttons.append(b)
         self.checked(0)
 

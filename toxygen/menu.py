@@ -705,7 +705,7 @@ class InterfaceSettings(CenteredWidget):
         settings['theme'] = str(self.themeSelect.currentText())
         try:
             theme = settings['theme']
-            app = QtGui.QApplication.instance()
+            app = QtWidgets.QApplication.instance()
             with open(curr_directory() + settings.built_in_themes()[theme]) as fl:
                 style = fl.read()
             app.setStyleSheet(style)
@@ -846,9 +846,11 @@ class VideoSettings(CenteredWidget):
                 self.devices.append(i)
                 self.frame_max_sizes.append((width, height))
                 self.input.addItem('Device #' + str(i))
-        index = self.devices.index(settings.video['device'])
-        if index + 1:
+        try:
+            index = self.devices.index(settings.video['device'])
             self.input.setCurrentIndex(index)
+        except:
+            print('Video devices error!')
 
     def retranslateUi(self):
         self.setWindowTitle(QtWidgets.QApplication.translate("videoSettingsForm", "Video settings"))
