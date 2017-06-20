@@ -8,15 +8,20 @@ import sys
 
 version = program_version + '.0'
 
-MODULES = []
+MODULES = ['numpy', 'PyQt5']
 
 if system() in ('Windows', 'Darwin'):
-    MODULES = ['PyAudio', 'PySide']
+    MODULES.append('PyAudio')
 else:
     try:
         import pyaudio
     except ImportError:
-        MODULES = ['PyAudio']
+        MODULES.append('PyAudio')
+
+DEP_LINKS = []
+
+if system() == 'Windows':
+    DEP_LINKS = []  # TODO: add opencv.whl
 
 
 class InstallScript(install):
@@ -55,10 +60,12 @@ setup(name='Toxygen',
       license='GPL3',
       packages=['toxygen', 'toxygen.plugins', 'toxygen.styles'],
       install_requires=MODULES,
+      dependency_links=DEP_LINKS,
       include_package_data=True,
       classifiers=[
           'Programming Language :: Python :: 3 :: Only',
-          'Programming Language :: Python :: 3.4',
+          'Programming Language :: Python :: 3.5',
+          'Programming Language :: Python :: 3.6',
       ],
       entry_points={
           'console_scripts': ['toxygen=toxygen.main:main'],

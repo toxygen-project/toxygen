@@ -1,6 +1,7 @@
 language: python
 python:
-  - "3.4"
+  - "3.5"
+  - "3.6"
 notifications:
   email: false
 before_install:
@@ -9,9 +10,10 @@ before_install:
   - sudo apt-get install portaudio19-dev
   - sudo apt-get install libconfig-dev libvpx-dev check -qq
 install:
-  - pip install PySide --no-index --find-links https://parkin.github.io/python-wheelhouse/;
-  - python ~/virtualenv/python${TRAVIS_PYTHON_VERSION}/bin/pyside_postinstall.py -install
+  - pip install sip
+  - pip install pyqt5
   - pip install pyaudio
+  - pip install opencv-python
 before_script:
 # OPUS
   - wget http://downloads.xiph.org/releases/opus/opus-1.0.3.tar.gz

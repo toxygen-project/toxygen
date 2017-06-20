@@ -1,7 +1,4 @@
-try:
-    from PySide import QtCore, QtGui
-except ImportError:
-    from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 import widgets
 import profile
 import util
@@ -17,11 +14,12 @@ class IncomingCallWidget(widgets.CenteredWidget):
         super(IncomingCallWidget, self).__init__()
         self.setWindowFlags(QtCore.Qt.CustomizeWindowHint | QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowStaysOnTopHint)
         self.resize(QtCore.QSize(500, 270))
-        self.avatar_label = QtGui.QLabel(self)
+        self.avatar_label = QtWidgets.QLabel(self)
         self.avatar_label.setGeometry(QtCore.QRect(10, 20, 64, 64))
         self.avatar_label.setScaledContents(False)
         self.name = widgets.DataLabel(self)
         self.name.setGeometry(QtCore.QRect(90, 20, 300, 25))
+        self._friend_number = friend_number
         font = QtGui.QFont()
         font.setFamily(settings.Settings.get_instance()['font'])
         font.setPointSize(16)
@@ -30,11 +28,11 @@ class IncomingCallWidget(widgets.CenteredWidget):
         self.call_type = widgets.DataLabel(self)
         self.call_type.setGeometry(QtCore.QRect(90, 55, 300, 25))
         self.call_type.setFont(font)
-        self.accept_audio = QtGui.QPushButton(self)
+        self.accept_audio = QtWidgets.QPushButton(self)
         self.accept_audio.setGeometry(QtCore.QRect(20, 100, 150, 150))
-        self.accept_video = QtGui.QPushButton(self)
+        self.accept_video = QtWidgets.QPushButton(self)
         self.accept_video.setGeometry(QtCore.QRect(170, 100, 150, 150))
-        self.decline = QtGui.QPushButton(self)
+        self.decline = QtWidgets.QPushButton(self)
         self.decline.setGeometry(QtCore.QRect(320, 100, 150, 150))
         pixmap = QtGui.QPixmap(util.curr_directory() + '/images/accept_audio.png')
         icon = QtGui.QIcon(pixmap)
@@ -54,10 +52,10 @@ class IncomingCallWidget(widgets.CenteredWidget):
         self.setWindowTitle(text)
         self.name.setText(name)
         self.call_type.setText(text)
-        pr = profile.Profile.get_instance()
-        self.accept_audio.clicked.connect(lambda: pr.accept_call(friend_number, True, False) or self.stop())
-        # self.accept_video.clicked.connect(lambda: pr.start_call(friend_number, True, True))
-        self.decline.clicked.connect(lambda: pr.stop_call(friend_number, False) or self.stop())
+        self._processing = False
+        self.accept_audio.clicked.connect(self.accept_call_with_audio)
+        self.accept_video.clicked.connect(self.accept_call_with_video)
+        self.decline.clicked.connect(self.decline_call)
 
         class SoundPlay(QtCore.QThread):
 
@@ -108,33 +106,29 @@ class IncomingCallWidget(widgets.CenteredWidget):
             self.thread.wait()
         self.close()
 
+    def accept_call_with_audio(self):
+        if self._processing:
+            return
+        self._processing = True
+        pr = profile.Profile.get_instance()
+        pr.accept_call(self._friend_number, True, False)
+        self.stop()
+
+    def accept_call_with_video(self):
+        if self._processing:
+            return
+        self._processing = True
+        pr = profile.Profile.get_instance()
+        pr.accept_call(self._friend_number, True, True)
+        self.stop()
+
+    def decline_call(self):
+        if self._processing:
+            return
+        self._processing = True
+        pr = profile.Profile.get_instance()
+        pr.stop_call(self._friend_number, False)
+        self.stop()
+
     def set_pixmap(self, pixmap):
         self.avatar_label.setPixmap(pixmap)
-
-
-class AudioMessageRecorder(widgets.CenteredWidget):
-
-    def __init__(self, friend_number, name):
-        super(AudioMessageRecorder, self).__init__()
-        self.label = QtGui.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(10, 20, 250, 20))
-        text = QtGui.QApplication.translate("MenuWindow", "Send audio message to friend {}", None, QtGui.QApplication.UnicodeUTF8)
-        self.label.setText(text.format(name))
-        self.record = QtGui.QPushButton(self)
-        self.record.setGeometry(QtCore.QRect(20, 100, 150, 150))
-
-        self.record.setText(QtGui.QApplication.translate("MenuWindow", "Start recording", None,
-                                                         QtGui.QApplication.UnicodeUTF8))
-        self.record.clicked.connect(self.start_or_stop_recording)
-        self.recording = False
-        self.friend_num = friend_number
-
-    def start_or_stop_recording(self):
-        if not self.recording:
-            self.recording = True
-            self.record.setText(QtGui.QApplication.translate("MenuWindow", "Stop recording", None,
-                                                             QtGui.QApplication.UnicodeUTF8))
-        else:
-            self.close()
-
-

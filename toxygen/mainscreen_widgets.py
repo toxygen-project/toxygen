@@ -1,14 +1,11 @@
-try:
-    from PySide import QtCore, QtGui
-except ImportError:
-    from PyQt4 import QtCore, QtGui
+from PyQt5 import QtCore, QtGui, QtWidgets
 from widgets import RubberBand, create_menu, QRightClickButton, CenteredWidget, LineEdit
 from profile import Profile
 import smileys
 import util
 
 
-class MessageArea(QtGui.QPlainTextEdit):
+class MessageArea(QtWidgets.QPlainTextEdit):
     """User types messages here"""
 
     def __init__(self, parent, form):
@@ -20,7 +17,7 @@ class MessageArea(QtGui.QPlainTextEdit):
 
     def keyPressEvent(self, event):
         if event.matches(QtGui.QKeySequence.Paste):
-            mimeData = QtGui.QApplication.clipboard().mimeData()
+            mimeData = QtWidgets.QApplication.clipboard().mimeData()
             if mimeData.hasUrls():
                 for url in mimeData.urls():
                     self.pasteEvent(url.toString())
@@ -67,14 +64,14 @@ class MessageArea(QtGui.QPlainTextEdit):
             e.ignore()
 
     def pasteEvent(self, text=None):
-        text = text or QtGui.QApplication.clipboard().text()
+        text = text or QtWidgets.QApplication.clipboard().text()
         if text.startswith('file://'):
             self.parent.profile.send_file(text[7:])
         else:
             self.insertPlainText(text)
 
 
-class ScreenShotWindow(QtGui.QWidget):
+class ScreenShotWindow(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super(ScreenShotWindow, self).__init__()
@@ -84,6 +81,8 @@ class ScreenShotWindow(QtGui.QWidget):
         self.showFullScreen()
         self.setWindowOpacity(0.5)
         self.rubberband = RubberBand()
+        self.rubberband.setWindowFlags(self.rubberband.windowFlags() | QtCore.Qt.FramelessWindowHint)
+        self.rubberband.setAttribute(QtCore.Qt.WA_TranslucentBackground)
 
     def closeEvent(self, *args):
         if self.parent.isHidden():
@@ -93,7 +92,7 @@ class ScreenShotWindow(QtGui.QWidget):
         self.origin = event.pos()
         self.rubberband.setGeometry(QtCore.QRect(self.origin, QtCore.QSize()))
         self.rubberband.show()
-        QtGui.QWidget.mousePressEvent(self, event)
+        QtWidgets.QWidget.mousePressEvent(self, event)
 
     def mouseMoveEvent(self, event):
         if self.rubberband.isVisible():
@@ -109,11 +108,12 @@ class ScreenShotWindow(QtGui.QWidget):
             self.rubberband.hide()
             rect = self.rubberband.geometry()
             if rect.width() and rect.height():
-                p = QtGui.QPixmap.grabWindow(QtGui.QApplication.desktop().winId(),
-                                             rect.x() + 4,
-                                             rect.y() + 4,
-                                             rect.width() - 8,
-                                             rect.height() - 8)
+                screen = QtWidgets.QApplication.primaryScreen()
+                p = screen.grabWindow(0,
+                                      rect.x() + 4,
+                                      rect.y() + 4,
+                                      rect.width() - 8,
+                                      rect.height() - 8)
                 byte_array = QtCore.QByteArray()
                 buffer = QtCore.QBuffer(byte_array)
                 buffer.open(QtCore.QIODevice.WriteOnly)
@@ -129,7 +129,7 @@ class ScreenShotWindow(QtGui.QWidget):
             super(ScreenShotWindow, self).keyPressEvent(event)
 
 
-class SmileyWindow(QtGui.QWidget):
+class SmileyWindow(QtWidgets.QWidget):
     """
     Smiley selection window
     """
@@ -151,7 +151,7 @@ class SmileyWindow(QtGui.QWidget):
         self.radio = []
         self.parent = parent
         for i in range(self.page_count):  # buttons with smileys
-            elem = QtGui.QRadioButton(self)
+            elem = QtWidgets.QRadioButton(self)
             elem.setGeometry(QtCore.QRect(i * 20 + 5, 180, 20, 20))
             elem.clicked.connect(lambda i=i: self.checked(i))
             self.radio.append(elem)
@@ -160,7 +160,7 @@ class SmileyWindow(QtGui.QWidget):
         self.setMinimumSize(width, 200)
         self.buttons = []
         for i in range(self.page_size):  # pages - radio buttons
-            b = QtGui.QPushButton(self)
+            b = QtWidgets.QPushButton(self)
             b.setGeometry(QtCore.QRect((i // 8) * 20 + 5, (i % 8) * 20, 20, 20))
             b.clicked.connect(lambda i=i: self.clicked(i))
             self.buttons.append(b)
@@ -190,7 +190,7 @@ class SmileyWindow(QtGui.QWidget):
         self.close()
 
 
-class MenuButton(QtGui.QPushButton):
+class MenuButton(QtWidgets.QPushButton):
 
     def __init__(self, parent, enter):
         super(MenuButton, self).__init__(parent)
@@ -201,86 +201,73 @@ class MenuButton(QtGui.QPushButton):
         super(MenuButton, self).enterEvent(event)
 
 
-class DropdownMenu(QtGui.QWidget):
+class DropdownMenu(QtWidgets.QWidget):
 
     def __init__(self, parent):
         super(DropdownMenu, self).__init__(parent)
         self.installEventFilter(self)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        self.setMaximumSize(180, 120)
-        self.setMinimumSize(180, 120)
+        self.setMaximumSize(120, 120)
+        self.setMinimumSize(120, 120)
         self.screenshotButton = QRightClickButton(self)
         self.screenshotButton.setGeometry(QtCore.QRect(0, 60, 60, 60))
         self.screenshotButton.setObjectName("screenshotButton")
 
-        self.fileTransferButton = QtGui.QPushButton(self)
+        self.fileTransferButton = QtWidgets.QPushButton(self)
         self.fileTransferButton.setGeometry(QtCore.QRect(60, 60, 60, 60))
         self.fileTransferButton.setObjectName("fileTransferButton")
 
-        self.audioMessageButton = QtGui.QPushButton(self)
-        self.audioMessageButton.setGeometry(QtCore.QRect(120, 60, 60, 60))
-
-        self.smileyButton = QtGui.QPushButton(self)
+        self.smileyButton = QtWidgets.QPushButton(self)
         self.smileyButton.setGeometry(QtCore.QRect(0, 0, 60, 60))
 
-        self.videoMessageButton = QtGui.QPushButton(self)
-        self.videoMessageButton.setGeometry(QtCore.QRect(120, 0, 60, 60))
-
-        self.stickerButton = QtGui.QPushButton(self)
+        self.stickerButton = QtWidgets.QPushButton(self)
         self.stickerButton.setGeometry(QtCore.QRect(60, 0, 60, 60))
 
         pixmap = QtGui.QPixmap(util.curr_directory() + '/images/file.png')
         icon = QtGui.QIcon(pixmap)
         self.fileTransferButton.setIcon(icon)
         self.fileTransferButton.setIconSize(QtCore.QSize(50, 50))
+
         pixmap = QtGui.QPixmap(util.curr_directory() + '/images/screenshot.png')
         icon = QtGui.QIcon(pixmap)
         self.screenshotButton.setIcon(icon)
         self.screenshotButton.setIconSize(QtCore.QSize(50, 60))
-        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/audio_message.png')
-        icon = QtGui.QIcon(pixmap)
-        self.audioMessageButton.setIcon(icon)
-        self.audioMessageButton.setIconSize(QtCore.QSize(50, 50))
+
         pixmap = QtGui.QPixmap(util.curr_directory() + '/images/smiley.png')
         icon = QtGui.QIcon(pixmap)
         self.smileyButton.setIcon(icon)
         self.smileyButton.setIconSize(QtCore.QSize(50, 50))
-        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/video_message.png')
-        icon = QtGui.QIcon(pixmap)
-        self.videoMessageButton.setIcon(icon)
-        self.videoMessageButton.setIconSize(QtCore.QSize(55, 55))
+
         pixmap = QtGui.QPixmap(util.curr_directory() + '/images/sticker.png')
         icon = QtGui.QIcon(pixmap)
         self.stickerButton.setIcon(icon)
         self.stickerButton.setIconSize(QtCore.QSize(55, 55))
 
-        self.screenshotButton.setToolTip(QtGui.QApplication.translate("MenuWindow", "Send screenshot", None, QtGui.QApplication.UnicodeUTF8))
-        self.fileTransferButton.setToolTip(QtGui.QApplication.translate("MenuWindow", "Send file", None, QtGui.QApplication.UnicodeUTF8))
-        self.audioMessageButton.setToolTip(QtGui.QApplication.translate("MenuWindow", "Send audio message", None, QtGui.QApplication.UnicodeUTF8))
-        self.videoMessageButton.setToolTip(QtGui.QApplication.translate("MenuWindow", "Send video message", None, QtGui.QApplication.UnicodeUTF8))
-        self.smileyButton.setToolTip(QtGui.QApplication.translate("MenuWindow", "Add smiley", None, QtGui.QApplication.UnicodeUTF8))
-        self.stickerButton.setToolTip(QtGui.QApplication.translate("MenuWindow", "Send sticker", None, QtGui.QApplication.UnicodeUTF8))
+        self.screenshotButton.setToolTip(QtWidgets.QApplication.translate("MenuWindow", "Send screenshot"))
+        self.fileTransferButton.setToolTip(QtWidgets.QApplication.translate("MenuWindow", "Send file"))
+        self.smileyButton.setToolTip(QtWidgets.QApplication.translate("MenuWindow", "Add smiley"))
+        self.stickerButton.setToolTip(QtWidgets.QApplication.translate("MenuWindow", "Send sticker"))
 
         self.fileTransferButton.clicked.connect(parent.send_file)
         self.screenshotButton.clicked.connect(parent.send_screenshot)
-        self.connect(self.screenshotButton, QtCore.SIGNAL("rightClicked()"), lambda: parent.send_screenshot(True))
+        self.screenshotButton.rightClicked.connect(lambda: parent.send_screenshot(True))
         self.smileyButton.clicked.connect(parent.send_smiley)
         self.stickerButton.clicked.connect(parent.send_sticker)
 
     def leaveEvent(self, event):
         self.close()
 
-    def eventFilter(self, object, event):
+    def eventFilter(self, obj, event):
         if event.type() == QtCore.QEvent.WindowDeactivate:
             self.close()
         return False
 
 
-class StickerItem(QtGui.QWidget):
+class StickerItem(QtWidgets.QWidget):
 
     def __init__(self, fl):
         super(StickerItem, self).__init__()
-        self._image_label = QtGui.QLabel(self)
+        self._image_label = QtWidgets.QLabel(self)
         self.path = fl
         self.pixmap = QtGui.QPixmap()
         self.pixmap.load(fl)
@@ -290,7 +277,7 @@ class StickerItem(QtGui.QWidget):
         self._image_label.setPixmap(self.pixmap)
 
 
-class StickerWindow(QtGui.QWidget):
+class StickerWindow(QtWidgets.QWidget):
     """Sticker selection window"""
 
     def __init__(self, parent):
@@ -298,16 +285,16 @@ class StickerWindow(QtGui.QWidget):
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setMaximumSize(250, 200)
         self.setMinimumSize(250, 200)
-        self.list = QtGui.QListWidget(self)
+        self.list = QtWidgets.QListWidget(self)
         self.list.setGeometry(QtCore.QRect(0, 0, 250, 200))
         self.arr = smileys.sticker_loader()
         for sticker in self.arr:
             item = StickerItem(sticker)
-            elem = QtGui.QListWidgetItem()
+            elem = QtWidgets.QListWidgetItem()
             elem.setSizeHint(QtCore.QSize(250, item.height()))
             self.list.addItem(elem)
             self.list.setItemWidget(elem, item)
-        self.list.setVerticalScrollMode(QtGui.QAbstractItemView.ScrollPerPixel)
+        self.list.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.list.setSpacing(3)
         self.list.clicked.connect(self.click)
         self.parent = parent
@@ -329,56 +316,44 @@ class WelcomeScreen(CenteredWidget):
         self.setMinimumSize(250, 200)
         self.center()
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
-        self.text = QtGui.QTextBrowser(self)
+        self.text = QtWidgets.QTextBrowser(self)
         self.text.setGeometry(QtCore.QRect(0, 0, 250, 170))
         self.text.setOpenExternalLinks(True)
-        self.checkbox = QtGui.QCheckBox(self)
+        self.checkbox = QtWidgets.QCheckBox(self)
         self.checkbox.setGeometry(QtCore.QRect(5, 170, 240, 30))
-        self.checkbox.setText(QtGui.QApplication.translate('WelcomeScreen', "Don't show again",
-                                                           None, QtGui.QApplication.UnicodeUTF8))
-        self.setWindowTitle(QtGui.QApplication.translate('WelcomeScreen', 'Tip of the day',
-                                                         None, QtGui.QApplication.UnicodeUTF8))
+        self.checkbox.setText(QtWidgets.QApplication.translate('WelcomeScreen', "Don't show again"))
+        self.setWindowTitle(QtWidgets.QApplication.translate('WelcomeScreen', 'Tip of the day'))
         import random
         num = random.randint(0, 10)
         if num == 0:
-            text = QtGui.QApplication.translate('WelcomeScreen', 'Press Esc if you want hide app to tray.',
-                                                None, QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate('WelcomeScreen', 'Press Esc if you want hide app to tray.')
         elif num == 1:
-            text = QtGui.QApplication.translate('WelcomeScreen',
-                                                'Right click on screenshot button hides app to tray during screenshot.',
-                                                None, QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate('WelcomeScreen',
+                                                'Right click on screenshot button hides app to tray during screenshot.')
         elif num == 2:
-            text = QtGui.QApplication.translate('WelcomeScreen',
-                                                'You can use Tox over Tor. For more info read <a href="https://wiki.tox.chat/users/tox_over_tor_tot">this post</a>',
-                                                None, QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate('WelcomeScreen',
+                                                'You can use Tox over Tor. For more info read <a href="https://wiki.tox.chat/users/tox_over_tor_tot">this post</a>')
         elif num == 3:
-            text = QtGui.QApplication.translate('WelcomeScreen',
-                                                'Use Settings -> Interface to customize interface.',
-                                                None, QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate('WelcomeScreen',
+                                                'Use Settings -> Interface to customize interface.')
         elif num == 4:
-            text = QtGui.QApplication.translate('WelcomeScreen',
-                                                'Set profile password via Profile -> Settings. Password allows Toxygen encrypt your history and settings.',
-                                                None, QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate('WelcomeScreen',
+                                                'Set profile password via Profile -> Settings. Password allows Toxygen encrypt your history and settings.')
         elif num == 5:
-            text = QtGui.QApplication.translate('WelcomeScreen',
-                                                'Since v0.1.3 Toxygen supports plugins. <a href="https://github.com/xveduk/toxygen/blob/master/docs/plugins.md">Read more</a>',
-                                                None, QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate('WelcomeScreen',
+                                                'Since v0.1.3 Toxygen supports plugins. <a href="https://github.com/xveduk/toxygen/blob/master/docs/plugins.md">Read more</a>')
         elif num in (6, 7):
-            text = QtGui.QApplication.translate('WelcomeScreen',
-                                                'Toxygen supports faux offline messages and file transfers. Send message or file to offline friend and he will get it later.',
-                                                None, QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate('WelcomeScreen',
+                                                'Toxygen supports faux offline messages and file transfers. Send message or file to offline friend and he will get it later.')
         elif num == 8:
-            text = QtGui.QApplication.translate('WelcomeScreen',
-                                                'Delete single message in chat: make right click on spinner or message time and choose "Delete" in menu',
-                                                None, QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate('WelcomeScreen',
+                                                'Delete single message in chat: make right click on spinner or message time and choose "Delete" in menu')
         elif num == 9:
-            text = QtGui.QApplication.translate('WelcomeScreen',
-                                                'Use right click on inline image to save it',
-                                                None, QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate('WelcomeScreen',
+                                                'Use right click on inline image to save it')
         else:
-            text = QtGui.QApplication.translate('WelcomeScreen',
-                                                'Set new NoSpam to avoid spam friend requests: Profile -> Settings -> Set new NoSpam.',
-                                                None, QtGui.QApplication.UnicodeUTF8)
+            text = QtWidgets.QApplication.translate('WelcomeScreen',
+                                                'Set new NoSpam to avoid spam friend requests: Profile -> Settings -> Set new NoSpam.')
         self.text.setHtml(text)
         self.checkbox.stateChanged.connect(self.not_show)
         QtCore.QTimer.singleShot(1000, self.show)
@@ -390,7 +365,7 @@ class WelcomeScreen(CenteredWidget):
         s.save()
 
 
-class MainMenuButton(QtGui.QPushButton):
+class MainMenuButton(QtWidgets.QPushButton):
 
     def __init__(self, *args):
         super().__init__(*args)
@@ -402,16 +377,18 @@ class MainMenuButton(QtGui.QPushButton):
         super().setText(text)
 
 
-class ClickableLabel(QtGui.QLabel):
+class ClickableLabel(QtWidgets.QLabel):
+
+    clicked = QtCore.pyqtSignal()
 
     def __init__(self, *args):
         super().__init__(*args)
 
     def mouseReleaseEvent(self, ev):
-        self.emit(QtCore.SIGNAL('clicked()'))
+        self.clicked.emit()
 
 
-class SearchScreen(QtGui.QWidget):
+class SearchScreen(QtWidgets.QWidget):
 
     def __init__(self, messages, width, *args):
         super().__init__(*args)
@@ -429,23 +406,23 @@ class SearchScreen(QtGui.QWidget):
         self.search_button.setScaledContents(False)
         self.search_button.setAlignment(QtCore.Qt.AlignCenter)
         self.search_button.setPixmap(pixmap)
-        self.connect(self.search_button, QtCore.SIGNAL('clicked()'), self.search)
+        self.search_button.clicked.connect(self.search)
 
         font = QtGui.QFont()
         font.setPointSize(32)
         font.setBold(True)
 
-        self.prev_button = QtGui.QPushButton(self)
+        self.prev_button = QtWidgets.QPushButton(self)
         self.prev_button.setGeometry(width - 120, 0, 40, 40)
         self.prev_button.clicked.connect(self.prev)
         self.prev_button.setText('\u25B2')
 
-        self.next_button = QtGui.QPushButton(self)
+        self.next_button = QtWidgets.QPushButton(self)
         self.next_button.setGeometry(width - 80, 0, 40, 40)
         self.next_button.clicked.connect(self.next)
         self.next_button.setText('\u25BC')
 
-        self.close_button = QtGui.QPushButton(self)
+        self.close_button = QtWidgets.QPushButton(self)
         self.close_button.setGeometry(width - 40, 0, 40, 40)
         self.close_button.clicked.connect(self.close)
         self.close_button.setText('×')
@@ -458,8 +435,7 @@ class SearchScreen(QtGui.QWidget):
         self.retranslateUi()
 
     def retranslateUi(self):
-        self.search_text.setPlaceholderText(QtGui.QApplication.translate("MainWindow", "Search", None,
-                                                                         QtGui.QApplication.UnicodeUTF8))
+        self.search_text.setPlaceholderText(QtWidgets.QApplication.translate("MainWindow", "Search"))
 
     def show(self):
         super().show()
@@ -515,15 +491,11 @@ class SearchScreen(QtGui.QWidget):
 
     @staticmethod
     def not_found(text):
-        mbox = QtGui.QMessageBox()
-        mbox_text = QtGui.QApplication.translate("MainWindow",
-                                                 'Text "{}" was not found',
-                                                 None,
-                                                 QtGui.QApplication.UnicodeUTF8)
+        mbox = QtWidgets.QMessageBox()
+        mbox_text = QtWidgets.QApplication.translate("MainWindow",
+                                                     'Text "{}" was not found')
 
         mbox.setText(mbox_text.format(text))
-        mbox.setWindowTitle(QtGui.QApplication.translate("MainWindow",
-                                                         'Not found',
-                                                         None,
-                                                         QtGui.QApplication.UnicodeUTF8))
+        mbox.setWindowTitle(QtWidgets.QApplication.translate("MainWindow",
+                                                             'Not found'))
         mbox.exec_()

@@ -1,7 +1,4 @@
-try:
-    from PySide import QtCore
-except ImportError:
-    from PyQt4 import QtCore
+from PyQt5 import QtCore, QtGui, QtWidgets
 from notifications import *
 from settings import Settings
 from profile import Profile
@@ -12,7 +9,8 @@ from plugin_support import PluginLoader
 import queue
 import threading
 import util
-
+import cv2
+import numpy as np
 
 # -----------------------------------------------------------------------------------------------------------------
 # Threads
@@ -225,7 +223,7 @@ def tox_file_recv(window, tray):
             if not window.isActiveWindow():
                 friend = profile.get_friend_by_number(friend_number)
                 if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
-                    file_from = QtGui.QApplication.translate("Callback", "File from", None, QtGui.QApplication.UnicodeUTF8)
+                    file_from = QtWidgets.QApplication.translate("Callback", "File from")
                     invoke_in_main_thread(tray_notification, file_from + ' ' + friend.name, file_name, tray, window)
                 if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                     sound_notification(SOUND_NOTIFICATION['FILE_TRANSFER'])
@@ -315,11 +313,67 @@ def callback_audio(toxav, friend_number, samples, audio_samples_per_channel, aud
     """
     New audio chunk
     """
-    Profile.get_instance().call.chunk(
+    Profile.get_instance().call.audio_chunk(
         bytes(samples[:audio_samples_per_channel * 2 * audio_channels_count]),
         audio_channels_count,
         rate)
 
+# -----------------------------------------------------------------------------------------------------------------
+# Callbacks - video
+# -----------------------------------------------------------------------------------------------------------------
+
+
+def video_receive_frame(toxav, friend_number, width, height, y, u, v, ystride, ustride, vstride, user_data):
+    """
+    Creates yuv frame from y, u, v and shows it using OpenCV
+    For yuv => bgr we need this YUV420 frame:
+
+              width
+    -------------------------
+    |                       |
+    |          Y            |      height
+    |                       |
+    -------------------------
+    |           |           |
+    |  U even   |   U odd   |      height // 4
+    |           |           |
+    -------------------------
+    |           |           |
+    |  V even   |   V odd   |      height // 4
+    |           |           |
+    -------------------------
+
+     width // 2   width // 2
+
+    It can be created from initial y, u, v using slices
+    For more info see callback_video_receive_frame docs
+    """
+    try:
+        y_size = abs(max(width, abs(ystride)))
+        u_size = abs(max(width // 2, abs(ustride)))
+        v_size = abs(max(width // 2, abs(vstride)))
+
+        y = np.asarray(y[:y_size * height], dtype=np.uint8).reshape(height, y_size)
+        u = np.asarray(u[:u_size * height // 2], dtype=np.uint8).reshape(height // 2, u_size)
+        v = np.asarray(v[:v_size * height // 2], dtype=np.uint8).reshape(height // 2, v_size)
+
+        width -= width % 4
+        height -= height % 4
+
+        frame = np.zeros((int(height * 1.5), width), dtype=np.uint8)
+
+        frame[:height, :] = y[:height, :width]
+        frame[height:height * 5 // 4, :width // 2] = u[:height // 2:2, :width // 2]
+        frame[height:height * 5 // 4, width // 2:] = u[1:height // 2:2, :width // 2]
+
+        frame[height * 5 // 4:, :width // 2] = v[:height // 2:2, :width // 2]
+        frame[height * 5 // 4:, width // 2:] = v[1:height // 2:2, :width // 2]
+
+        frame = cv2.cvtColor(frame, cv2.COLOR_YUV2BGR_I420)
+
+        invoke_in_main_thread(cv2.imshow, str(friend_number), frame)
+    except Exception as ex:
+        print(ex)
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
@@ -353,7 +407,7 @@ def init_callbacks(tox, window, tray):
     toxav.callback_call_state(call_state, 0)
     toxav.callback_call(call, 0)
     toxav.callback_audio_receive_frame(callback_audio, 0)
+    toxav.callback_video_receive_frame(video_receive_frame, 0)
 
     tox.callback_friend_lossless_packet(lossless_packet, 0)
     tox.callback_friend_lossy_packet(lossy_packet, 0)
-

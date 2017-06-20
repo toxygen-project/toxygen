@@ -4,7 +4,8 @@ import shutil
 import sys
 import re
 
-program_version = '0.2.9'
+
+program_version = '0.3.0'
 
 
 def cached(func):
