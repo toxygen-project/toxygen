@@ -8,20 +8,13 @@ import sys
 
 version = program_version + '.0'
 
-MODULES = ['numpy', 'PyQt5']
-
-if system() in ('Windows', 'Darwin'):
-    MODULES.append('PyAudio')
-else:
-    try:
-        import pyaudio
-    except ImportError:
-        MODULES.append('PyAudio')
-
+MODULES = ['PyQt5', 'PyAudio']
 DEP_LINKS = []
 
-if system() == 'Windows':
-    DEP_LINKS = []  # TODO: add opencv.whl
+if system() != 'Windows':
+    MODULES.append('numpy')
+else:
+    DEP_LINKS = []  # TODO: add opencv wheel and numpy wheel
 
 
 class InstallScript(install):
