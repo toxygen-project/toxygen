@@ -15,7 +15,7 @@ install:
   - pip install pyaudio
   - pip install opencv-python
 before_script:
-# OPUS
+# Opus
   - wget http://downloads.xiph.org/releases/opus/opus-1.0.3.tar.gz
   - tar xzf opus-1.0.3.tar.gz
   - cd opus-1.0.3

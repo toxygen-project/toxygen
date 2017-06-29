@@ -10,9 +10,7 @@ Toxygen is powerful cross-platform [Tox](https://tox.chat/) client written in pu
 
 ### [Install](/docs/install.md) - [Contribute](/docs/contributing.md) - [Plugins](/docs/plugins.md) - [Compile](/docs/compile.md) - [Contact](/docs/contact.md) - [Updater](https://github.com/toxygen-project/toxygen_updater)
 
-### Supported OS:
-
-![Linux, Windows and OS X](/docs/os.png)
+### Supported OS: Linux and Windows
 
 ### Features:
 

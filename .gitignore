@@ -6,6 +6,7 @@ tests/tests
 tests/libs
 tests/.cache
 tests/__pycache__
+tests/avatars
 toxygen/libs
 .idea
 *~
@@ -23,4 +24,4 @@ toxygen/__pycache__
 html
 Toxygen.egg-info
 *.tox
-
+.cache
