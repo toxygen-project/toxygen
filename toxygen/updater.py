@@ -57,7 +57,10 @@ def get_url(version):
 
 def get_params(url, version):
     if is_from_sources():
-        return ['python3', 'toxygen_updater.py', url, version]
+        if platform.system() == 'Windows':
+            return ['python', 'toxygen_updater.py', url, version]
+        else:
+            return ['python3', 'toxygen_updater.py', url, version]
     elif platform.system() == 'Windows':
         return [util.curr_directory() + '/toxygen_updater.exe', url, version]
     else:
@@ -87,7 +90,8 @@ def send_request(version):
         netman.setProxy(proxy)
     url = test_url(version)
     try:
-        request = QtNetwork.QNetworkRequest(url)
+        request = QtNetwork.QNetworkRequest()
+        request.setUrl(QtCore.QUrl(url))
         reply = netman.get(request)
         while not reply.isFinished():
             QtCore.QThread.msleep(1)

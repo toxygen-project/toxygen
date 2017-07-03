@@ -22,8 +22,11 @@ def cached(func):
 
 
 def log(data):
-    with open(curr_directory() + '/logs.log', 'a') as fl:
-        fl.write(str(data) + '\n')
+    try:
+        with open(curr_directory() + '/logs.log', 'a') as fl:
+            fl.write(str(data) + '\n')
+    except:
+        pass
 
 
 @cached
