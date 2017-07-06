@@ -454,15 +454,6 @@ def clean():
     remove(d)
 
 
-def configure():
-    """Removes unused libs"""
-    d = curr_directory() + '/libs/'
-    if os.path.exists(d + 'libtox.dll'):
-        os.remove(d + 'libtox.dll')
-    if os.path.exists(d + 'libsodium.a'):
-        os.remove(d + 'libsodium.a')
-
-
 def reset():
     Settings.reset_auto_profile()
 

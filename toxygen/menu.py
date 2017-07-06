@@ -857,12 +857,15 @@ class VideoSettings(CenteredWidget):
         self.in_label.setText(QtWidgets.QApplication.translate("videoSettingsForm", "Device:"))
 
     def closeEvent(self, event):
-        settings = Settings.get_instance()
-        settings.video['device'] = self.devices[self.input.currentIndex()]
-        text = self.video_size.currentText()
-        settings.video['width'] = int(text.split(' ')[0])
-        settings.video['height'] = int(text.split(' ')[-1])
-        settings.save()
+        try:
+            settings = Settings.get_instance()
+            settings.video['device'] = self.devices[self.input.currentIndex()]
+            text = self.video_size.currentText()
+            settings.video['width'] = int(text.split(' ')[0])
+            settings.video['height'] = int(text.split(' ')[-1])
+            settings.save()
+        except Exception as ex:
+            print('Saving video  settings error: ' + str(ex))
 
     def selectionChanged(self):
         width, height = self.frame_max_sizes[self.input.currentIndex()]

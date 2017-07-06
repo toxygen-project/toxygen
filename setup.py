@@ -57,5 +57,4 @@ setup(name='Toxygen',
       },
       cmdclass={
           'install': InstallScript,
-      },
-      )
+      })
