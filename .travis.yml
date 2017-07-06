@@ -2,12 +2,16 @@ language: python
 python:
   - "3.5"
   - "3.6"
+os:
+  - linux
+dist: trusty
 notifications:
   email: false
 before_install:
   - sudo apt-get update
   - sudo apt-get install -y checkinstall build-essential
   - sudo apt-get install portaudio19-dev
+  - sudo apt-get install libsecret-1-dev
   - sudo apt-get install libconfig-dev libvpx-dev check -qq
 install:
   - pip install sip
