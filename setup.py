@@ -8,13 +8,10 @@ import sys
 
 version = program_version + '.0'
 
-MODULES = ['PyQt5', 'PyAudio']
-DEP_LINKS = []
+MODULES = ['PyQt5', 'PyAudio', 'numpy']
 
-if system() != 'Windows':
-    MODULES.append('numpy')
-else:
-    DEP_LINKS = []  # TODO: add opencv wheel and numpy wheel
+if system() == 'Windows':
+    MODULES.append('opencv-python')
 
 
 class InstallScript(install):
@@ -23,9 +20,7 @@ class InstallScript(install):
     def run(self):
         install.run(self)
         try:
-            if system() == 'Windows':
-                call(["toxygen", "--configure"])
-            else:
+            if system() != 'Windows':
                 call(["toxygen", "--clean"])
         except:
             try:
@@ -35,9 +30,7 @@ class InstallScript(install):
                     if path[-1] not in ('/', '\\'):
                         path += '/'
                     path += 'bin/toxygen'
-                    if system() == 'Windows':
-                        call([path, "--configure"])
-                    else:
+                    if system() != 'Windows':
                         call([path, "--clean"])
             except:
                 pass
@@ -53,7 +46,6 @@ setup(name='Toxygen',
       license='GPL3',
       packages=['toxygen', 'toxygen.plugins', 'toxygen.styles'],
       install_requires=MODULES,
-      dependency_links=DEP_LINKS,
       include_package_data=True,
       classifiers=[
           'Programming Language :: Python :: 3 :: Only',

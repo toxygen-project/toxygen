@@ -457,22 +457,10 @@ def clean():
 def configure():
     """Removes unused libs"""
     d = curr_directory() + '/libs/'
-    is_64bits = is_64_bit()
-    if not is_64bits:
-        if os.path.exists(d + 'libtox64.dll'):
-            os.remove(d + 'libtox64.dll')
-        if os.path.exists(d + 'libsodium64.a'):
-            os.remove(d + 'libsodium64.a')
-    else:
-        if os.path.exists(d + 'libtox.dll'):
-            os.remove(d + 'libtox.dll')
-        if os.path.exists(d + 'libsodium.a'):
-            os.remove(d + 'libsodium.a')
-        try:
-            os.rename(d + 'libtox64.dll', d + 'libtox.dll')
-            os.rename(d + 'libsodium64.a', d + 'libsodium.a')
-        except:
-            pass
+    if os.path.exists(d + 'libtox.dll'):
+        os.remove(d + 'libtox.dll')
+    if os.path.exists(d + 'libsodium.a'):
+        os.remove(d + 'libsodium.a')
 
 
 def reset():
@@ -489,9 +477,6 @@ def main():
             return
         elif arg == '--help':
             print('Usage:\ntoxygen path_to_profile\ntoxygen tox_id\ntoxygen --version\ntoxygen --reset')
-            return
-        elif arg == '--configure':
-            configure()
             return
         elif arg == '--clean':
             clean()

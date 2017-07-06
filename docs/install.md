@@ -37,11 +37,12 @@ Note: 32-bit Python isn't supported due to bug with videocalls. It is strictly r
 1. [Download and install latest Python 3 64-bit](https://www.python.org/downloads/windows/)
 2. Install PyQt5: ``pip install pyqt5``
 3. Install PyAudio: ``pip install pyaudio``
-4. Download [numpy](http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy) and [OpenCV](http://www.lfd.uci.edu/~gohlke/pythonlibs/#opencv). Install it using ``pip install <file_name>``.
-5. [Download toxygen](https://github.com/toxygen-project/toxygen/archive/master.zip)
-6. Unpack archive
-7. Download latest libtox.dll build, download latest libsodium.a build, put it into \src\libs\
-8. Run \toxygen\main.py.
+4. Install numpy: ``pip install numpy``
+5. Install OpenCV: ``pip install opencv-python``
+6. [Download toxygen](https://github.com/toxygen-project/toxygen/archive/master.zip)
+7. Unpack archive
+8. Download latest libtox.dll build, download latest libsodium.a build, put it into \src\libs\
+9. Run \toxygen\main.py.
 
 Optional: install toxygen using setup.py: ``python setup.py install``
 
