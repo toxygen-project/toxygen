@@ -16,5 +16,3 @@ include toxygen/styles/*.qss
 include toxygen/translations/*.qm
 include toxygen/libs/libtox.dll
 include toxygen/libs/libsodium.a
-include toxygen/libs/libtox64.dll
-include toxygen/libs/libsodium64.a
