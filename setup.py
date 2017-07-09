@@ -8,10 +8,23 @@ import sys
 
 version = program_version + '.0'
 
-MODULES = ['PyQt5', 'PyAudio', 'numpy']
 
 if system() == 'Windows':
-    MODULES.append('opencv-python')
+    MODULES = ['PyQt5', 'PyAudio', 'numpy', 'opencv-python']
+else:
+    MODULES = []
+    try:
+        import pyaudio
+    except ImportError:
+        MODULES.append('PyAudio')
+    try:
+        import PyQt5
+    except ImportError:
+        MODULES.append('PyQt5')
+    try:
+        import numpy
+    except ImportError:
+        MODULES.append('numpy')
 
 
 class InstallScript(install):
