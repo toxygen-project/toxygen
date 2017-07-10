@@ -663,15 +663,15 @@ class Profile(basecontact.BaseContact, Singleton):
         friend = self._contacts[num]
         name = friend.name
         dialog = QtWidgets.QApplication.translate('MainWindow',
-                                              "Enter new alias for friend {} or leave empty to use friend's name:")
+                                                  "Enter new alias for friend {} or leave empty to use friend's name:")
         dialog = dialog.format(name)
         title = QtWidgets.QApplication.translate('MainWindow',
-                                             'Set alias')
-        text, ok = QtGui.QInputDialog.getText(None,
-                                              title,
-                                              dialog,
-                                              QtWidgets.QLineEdit.Normal,
-                                              name)
+                                                 'Set alias')
+        text, ok = QtWidgets.QInputDialog.getText(None,
+                                                  title,
+                                                  dialog,
+                                                  QtWidgets.QLineEdit.Normal,
+                                                  name)
         if ok:
             settings = Settings.get_instance()
             aliases = settings['friends_aliases']
