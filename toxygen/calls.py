@@ -6,6 +6,7 @@ from toxav_enums import *
 import cv2
 import itertools
 import numpy as np
+import screen_sharing
 # TODO: play sound until outgoing call will be started or cancelled
 
 
@@ -203,10 +204,14 @@ class AV:
         self._video_width = s.video['width']
         self._video_height = s.video['height']
 
-        self._video = cv2.VideoCapture(s.video['device'])
-        self._video.set(cv2.CAP_PROP_FPS, 25)
-        self._video.set(cv2.CAP_PROP_FRAME_WIDTH, self._video_width)
-        self._video.set(cv2.CAP_PROP_FRAME_HEIGHT, self._video_height)
+        if s.video['device'] == -1:
+            self._video = screen_sharing.DesktopGrabber(s.video['x'], s.video['y'],
+                                                        s.video['width'], s.video['height'])
+        else:
+            self._video = cv2.VideoCapture(s.video['device'])
+            self._video.set(cv2.CAP_PROP_FPS, 25)
+            self._video.set(cv2.CAP_PROP_FRAME_WIDTH, self._video_width)
+            self._video.set(cv2.CAP_PROP_FRAME_HEIGHT, self._video_height)
 
         self._video_thread = threading.Thread(target=self.send_video)
         self._video_thread.start()

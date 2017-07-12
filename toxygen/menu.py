@@ -832,8 +832,12 @@ class VideoSettings(CenteredWidget):
         self.input.setGeometry(QtCore.QRect(25, 30, 350, 30))
         self.input.currentIndexChanged.connect(self.selectionChanged)
         import cv2
-        self.devices = []
-        self.frame_max_sizes = []
+        self.devices = [-1]
+        screen = QtWidgets.QApplication.primaryScreen()
+        size = screen.size()
+        self.frame_max_sizes = [(size.width(), size.height())]
+        desktop = QtWidgets.QApplication.translate("videoSettingsForm", "Desktop")
+        self.input.addItem(desktop)
         for i in range(10):
             v = cv2.VideoCapture(i)
             if v.isOpened():
