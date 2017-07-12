@@ -57,7 +57,10 @@ class Settings(dict, Singleton):
                 data = fl.read()
             auto = json.loads(data)
             if 'path' in auto and 'name' in auto:
-                return str(auto['path']), str(auto['name'])
+                path = str(auto['path'])
+                name = str(auto['name'])
+                if os.path.isfile(append_slash(path) + name + '.tox'):
+                    return path, name
         return '', ''
 
     @staticmethod

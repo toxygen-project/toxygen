@@ -17,7 +17,7 @@ Run app using ``toxygen`` command.
 2. Install PortAudio: 
 ``sudo apt-get install portaudio19-dev``
 3. For 32-bit Linux install PyQt5: ``sudo apt-get install python3-pyqt5``
-4. Install [OpenCV](http://docs.opencv.org/trunk/d7/d9f/tutorial_linux_install.html)
+4. Install [OpenCV](http://docs.opencv.org/trunk/d7/d9f/tutorial_linux_install.html) or via ``sudo apt-get install python3-opencv``
 5. Install toxygen: 
 ``sudo pip3 install toxygen``
 6. Run toxygen using ``toxygen`` command.
@@ -38,10 +38,10 @@ Note: 32-bit Python isn't supported due to bug with videocalls. It is strictly r
 2. Install PyQt5: ``pip install pyqt5``
 3. Install PyAudio: ``pip install pyaudio``
 4. Install numpy: ``pip install numpy``
-5. Install OpenCV: ``pip install opencv-python`` or via ``sudo apt-get install python3-opencv``
+5. Install OpenCV: ``pip install opencv-python``
 6. [Download toxygen](https://github.com/toxygen-project/toxygen/archive/master.zip)
 7. Unpack archive
-8. Download latest libtox.dll build, download latest libsodium.a build, put it into \src\libs\
+8. Download latest libtox.dll build, download latest libsodium.a build, put it into \toxygen\libs\
 9. Run \toxygen\main.py.
 
 Optional: install toxygen using setup.py: ``python setup.py install``
