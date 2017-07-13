@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from settings import *
 from profile import Profile
 from util import curr_directory, copy
-from widgets import CenteredWidget, DataLabel, LineEdit
+from widgets import CenteredWidget, DataLabel, LineEdit, RubberBandWindow
 import pyaudio
 import toxes
 import plugin_support
@@ -802,6 +802,18 @@ class AudioSettings(CenteredWidget):
         settings.save()
 
 
+class DesktopAreaSelectionWindow(RubberBandWindow):
+
+    def mouseReleaseEvent(self, event):
+        if self.rubberband.isVisible():
+            self.rubberband.hide()
+            rect = self.rubberband.geometry()
+            width, height = rect.width(), rect.height()
+            if width >= 8 and height >= 8:
+                self.parent.save(width, height)
+            self.close()
+
+
 class VideoSettings(CenteredWidget):
     """
     Audio calls settings form
@@ -812,6 +824,7 @@ class VideoSettings(CenteredWidget):
         self.initUI()
         self.retranslateUi()
         self.center()
+        self.desktopAreaSelection = None
 
     def initUI(self):
         self.setObjectName("videoSettingsForm")
@@ -831,6 +844,9 @@ class VideoSettings(CenteredWidget):
         self.input = QtWidgets.QComboBox(self)
         self.input.setGeometry(QtCore.QRect(25, 30, 350, 30))
         self.input.currentIndexChanged.connect(self.selectionChanged)
+        self.button = QtWidgets.QPushButton(self)
+        self.button.clicked.connect(self.button_clicked)
+        self.button.setGeometry(QtCore.QRect(25, 70, 350, 30))
         import cv2
         self.devices = [-1]
         screen = QtWidgets.QApplication.primaryScreen()
@@ -859,6 +875,10 @@ class VideoSettings(CenteredWidget):
     def retranslateUi(self):
         self.setWindowTitle(QtWidgets.QApplication.translate("videoSettingsForm", "Video settings"))
         self.in_label.setText(QtWidgets.QApplication.translate("videoSettingsForm", "Device:"))
+        self.button.setText(QtWidgets.QApplication.translate("videoSettingsForm", "Select region"))
+
+    def button_clicked(self):
+        self.desktopAreaSelection = DesktopAreaSelectionWindow(self)
 
     def closeEvent(self, event):
         try:
@@ -871,7 +891,21 @@ class VideoSettings(CenteredWidget):
         except Exception as ex:
             print('Saving video  settings error: ' + str(ex))
 
+    def save(self, width, height):
+        self.desktopAreaSelection = None
+        settings = Settings.get_instance()
+        settings.video['device'] = -1
+        settings.video['width'] = width
+        settings.video['height'] = height
+        settings.save()
+
     def selectionChanged(self):
+        if self.input.currentIndex() == 0:
+            self.button.setVisible(True)
+            self.video_size.setVisible(False)
+        else:
+            self.button.setVisible(False)
+            self.video_size.setVisible(True)
         width, height = self.frame_max_sizes[self.input.currentIndex()]
         self.video_size.clear()
         dims = [

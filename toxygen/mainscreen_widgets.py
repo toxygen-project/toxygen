@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-from widgets import RubberBand, create_menu, QRightClickButton, CenteredWidget, LineEdit
+from widgets import RubberBandWindow, create_menu, QRightClickButton, CenteredWidget, LineEdit
 from profile import Profile
 import smileys
 import util
@@ -71,37 +71,11 @@ class MessageArea(QtWidgets.QPlainTextEdit):
             self.insertPlainText(text)
 
 
-class ScreenShotWindow(QtWidgets.QWidget):
-
-    def __init__(self, parent):
-        super(ScreenShotWindow, self).__init__()
-        self.parent = parent
-        self.setMouseTracking(True)
-        self.setWindowFlags(self.windowFlags() | QtCore.Qt.FramelessWindowHint | QtCore.Qt.WindowStaysOnTopHint)
-        self.showFullScreen()
-        self.setWindowOpacity(0.5)
-        self.rubberband = RubberBand()
-        self.rubberband.setWindowFlags(self.rubberband.windowFlags() | QtCore.Qt.FramelessWindowHint)
-        self.rubberband.setAttribute(QtCore.Qt.WA_TranslucentBackground)
+class ScreenShotWindow(RubberBandWindow):
 
     def closeEvent(self, *args):
         if self.parent.isHidden():
             self.parent.show()
-
-    def mousePressEvent(self, event):
-        self.origin = event.pos()
-        self.rubberband.setGeometry(QtCore.QRect(self.origin, QtCore.QSize()))
-        self.rubberband.show()
-        QtWidgets.QWidget.mousePressEvent(self, event)
-
-    def mouseMoveEvent(self, event):
-        if self.rubberband.isVisible():
-            self.rubberband.setGeometry(QtCore.QRect(self.origin, event.pos()).normalized())
-            left = QtGui.QRegion(QtCore.QRect(0, 0, self.rubberband.x(), self.height()))
-            right = QtGui.QRegion(QtCore.QRect(self.rubberband.x() + self.rubberband.width(), 0, self.width(), self.height()))
-            top = QtGui.QRegion(0, 0, self.width(), self.rubberband.y())
-            bottom = QtGui.QRegion(0, self.rubberband.y() + self.rubberband.height(), self.width(), self.height())
-            self.setMask(left + right + top + bottom)
 
     def mouseReleaseEvent(self, event):
         if self.rubberband.isVisible():
@@ -120,13 +94,6 @@ class ScreenShotWindow(QtWidgets.QWidget):
                 p.save(buffer, 'PNG')
                 Profile.get_instance().send_screenshot(bytes(byte_array.data()))
             self.close()
-
-    def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Escape:
-            self.rubberband.setHidden(True)
-            self.close()
-        else:
-            super(ScreenShotWindow, self).keyPressEvent(event)
 
 
 class SmileyWindow(QtWidgets.QWidget):
