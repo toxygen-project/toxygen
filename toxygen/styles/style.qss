@@ -2,3 +2,28 @@
 {
     padding-left: 22px;
 }
+
+MessageEdit
+{
+    border: none;
+}
+
+MessageEdit::focus
+{
+    border: none;
+}
+
+MessageItem::focus
+{
+    border: none;
+}
+
+MessageEdit:hover
+{
+    border: none;
+}
+
+MessageEdit
+{
+    background-color: transparent;
+}
