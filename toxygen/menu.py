@@ -810,7 +810,7 @@ class DesktopAreaSelectionWindow(RubberBandWindow):
             rect = self.rubberband.geometry()
             width, height = rect.width(), rect.height()
             if width >= 8 and height >= 8:
-                self.parent.save(width, height)
+                self.parent.save(rect.x(), rect.y(), width, height)
             self.close()
 
 
@@ -891,12 +891,14 @@ class VideoSettings(CenteredWidget):
         except Exception as ex:
             print('Saving video  settings error: ' + str(ex))
 
-    def save(self, width, height):
+    def save(self, x, y, width, height):
         self.desktopAreaSelection = None
         settings = Settings.get_instance()
         settings.video['device'] = -1
         settings.video['width'] = width
         settings.video['height'] = height
+        settings.video['x'] = x
+        settings.video['y'] = y
         settings.save()
 
     def selectionChanged(self):
