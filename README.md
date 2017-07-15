@@ -14,35 +14,34 @@ Toxygen is powerful cross-platform [Tox](https://tox.chat/) client written in pu
 
 ### Features:
 
-- [x] 1v1 messages
-- [x] File transfers
-- [x] Audio calls
-- [x] Video calls
-- [x] Plugins support
-- [x] Chat history
-- [x] Emoticons
-- [x] Stickers
-- [x] Screenshots
-- [x] Name lookups (toxme.io support)
-- [x] Save file encryption
-- [x] Profile import and export
-- [x] Faux offline messaging
-- [x] Faux offline file transfers
-- [x] Inline images
-- [x] Message splitting
-- [x] Proxy support
-- [x] Avatars
-- [x] Multiprofile
-- [x] Multilingual
-- [x] Sound notifications
-- [x] Contact aliases
-- [x] Contact blocking
-- [x] Typing notifications
-- [x] Changing nospam
-- [x] File resuming
-- [x] Read receipts
-- [ ] Desktop sharing
-- [ ] Group chats
+- 1v1 messages
+- File transfers
+- Audio calls
+- Video calls
+- Plugins support
+- Desktop sharing
+- Chat history
+- Emoticons
+- Stickers
+- Screenshots
+- Name lookups (toxme.io support)
+- Save file encryption
+- Profile import and export
+- Faux offline messaging
+- Faux offline file transfers
+- Inline images
+- Message splitting
+- Proxy support
+- Avatars
+- Multiprofile
+- Multilingual
+- Sound notifications
+- Contact aliases
+- Contact blocking
+- Typing notifications
+- Changing nospam
+- File resuming
+- Read receipts
 
 ### Downloads
 [Releases](https://github.com/toxygen-project/toxygen/releases)
