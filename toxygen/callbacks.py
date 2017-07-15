@@ -346,7 +346,6 @@ def video_receive_frame(toxav, friend_number, width, height, y, u, v, ystride, u
      width // 2   width // 2
 
     It can be created from initial y, u, v using slices
-    For more info see callback_video_receive_frame docs
     """
     try:
         y_size = abs(max(width, abs(ystride)))

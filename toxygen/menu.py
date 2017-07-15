@@ -881,6 +881,8 @@ class VideoSettings(CenteredWidget):
         self.desktopAreaSelection = DesktopAreaSelectionWindow(self)
 
     def closeEvent(self, event):
+        if self.input.currentIndex() == 0:
+            return
         try:
             settings = Settings.get_instance()
             settings.video['device'] = self.devices[self.input.currentIndex()]
