@@ -1,5 +1,4 @@
-from ctypes import c_char_p, Structure, c_bool, byref, c_int, c_size_t, POINTER, c_uint16, c_void_p, c_uint64
-from ctypes import create_string_buffer, ArgumentError, CFUNCTYPE, c_uint32, sizeof, c_uint8
+from ctypes import *
 from toxcore_enums_and_consts import *
 from toxav import ToxAV
 from libtox import LibToxCore
@@ -1509,3 +1508,93 @@ class Tox:
             return result
         elif tox_err_get_port == TOX_ERR_GET_PORT['NOT_BOUND']:
             raise RuntimeError('The instance was not bound to any port.')
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Group chats
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def del_groupchat(self, groupnumber):
+        result = Tox.libtoxcore.tox_del_groupchat(self._tox_pointer, c_int(groupnumber), None)
+        return result
+
+    def group_peername(self, groupnumber, peernumber):
+        buffer = create_string_buffer(TOX_MAX_NAME_LENGTH)
+        result = Tox.libtoxcore.tox_group_peername(self._tox_pointer, c_int(groupnumber), c_int(peernumber),
+                                                   buffer, None)
+        return buffer[:]
+
+    def invite_friend(self, friendnumber, groupnumber):
+        result = Tox.libtoxcore.tox_invite_friend(self._tox_pointer, c_int(friendnumber),
+                                                  c_int(groupnumber), None)
+        return result
+
+    def join_groupchat(self, friendnumber, data, length):
+        result = Tox.libtoxcore.tox_join_groupchat(self._tox_pointer,
+                                                   c_int(friendnumber), c_char_p(data), c_uint16(length), None)
+        return result
+
+    def group_message_send(self, groupnumber, message):
+        result = Tox.libtoxcore.tox_group_message_send(self._tox_pointer, c_int(groupnumber), c_char_p(message),
+                                                       c_uint16(len(message)), None)
+        return result
+
+    def group_action_send(self, groupnumber, action):
+        result = Tox.libtoxcore.tox_group_action_send(self._tox_pointer,
+                                                      c_int(groupnumber), c_char_p(action),
+                                                      c_uint16(len(action)), None)
+        return result
+
+    def group_set_title(self, groupnumber, title):
+        result = Tox.libtoxcore.tox_group_set_title(self._tox_pointer, c_int(groupnumber),
+                                                    c_char_p(title), c_uint8(len(title)), None)
+        return result
+
+    def group_get_title(self, groupnumber):
+        buffer = create_string_buffer(TOX_MAX_NAME_LENGTH)
+        result = Tox.libtoxcore.tox_group_get_title(self._tox_pointer,
+                                                    c_int(groupnumber), buffer,
+                                                    c_uint32(TOX_MAX_NAME_LENGTH), None)
+        return buffer[:]
+
+    def group_number_peers(self, groupnumber):
+        result = Tox.libtoxcore.tox_group_number_peers(self._tox_pointer, c_int(groupnumber), None)
+        return result
+
+    # def group_get_names(self):
+    #     result = Tox.libtoxcore.tox_group_get_names(self._tox_pointer, c_int(groupnumber),
+    #                                                 c_char_p(names), None, c_uint16(length), error)
+    #     return result
+
+    def add_av_groupchat(self):
+        result = Tox.libtoxcore.tox_add_av_groupchat(self._tox_pointer, None, None, None)
+        return result
+
+    def join_av_groupchat(self, friendnumber, data, length):
+        result = Tox.libtoxcore.tox_join_av_groupchat(self._tox_pointer, c_int(friendnumber),
+                                                      c_char_p(data), c_uint16(length), None, None, None)
+        return result
+
+    def callback_group_invite(self, callback, user_data=None):
+        c_callback = CFUNCTYPE(None, c_void_p, c_int32, c_uint8, POINTER(c_uint8), c_uint16, c_void_p)
+        self.group_invite_cb = c_callback(callback)
+        Tox.libtoxcore.tox_callback_group_invite(self._tox_pointer, self.group_invite_cb, user_data)
+
+    def callback_group_message(self, callback, user_data=None):
+        c_callback = CFUNCTYPE(None, c_void_p, c_int, c_int, c_char_p, c_uint16, c_void_p)
+        self.group_message_cb = c_callback(callback)
+        Tox.libtoxcore.tox_callback_group_message(self._tox_pointer, self.group_message_cb, user_data)
+
+    def callback_group_action(self, callback, user_data=None):
+        c_callback = CFUNCTYPE(None, c_void_p, c_int, c_int, c_char_p, c_uint16, c_void_p)
+        self.group_action_cb = c_callback(callback)
+        Tox.libtoxcore.tox_callback_group_action(self._tox_pointer, self.group_action_cb, user_data)
+
+    def callback_group_title(self, callback, user_data=None):
+        c_callback = CFUNCTYPE(None, c_void_p, c_int, c_int, c_char_p, c_uint8, c_void_p)
+        self.group_title_cb = c_callback(callback)
+        Tox.libtoxcore.tox_callback_group_title(self._tox_pointer, self.group_title_cb, user_data)
+
+    def callback_group_namelist_change(self, callback, user_data=None):
+        c_callback = CFUNCTYPE(None, c_void_p, c_int, c_int, c_uint8, c_void_p)
+        self.group_namelist_change_cb = c_callback(callback)
+        Tox.libtoxcore.tox_callback_group_namelist_change(self._tox_pointer, self.group_namelist_change_cb, user_data)
