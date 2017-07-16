@@ -375,6 +375,29 @@ def video_receive_frame(toxav, friend_number, width, height, y, u, v, ystride, u
         print(ex)
 
 # -----------------------------------------------------------------------------------------------------------------
+# Callbacks - groups
+# -----------------------------------------------------------------------------------------------------------------
+
+
+def group_invite(tox, friend_number, gc_type, data, length,  user_data):
+    invoke_in_main_thread(Profile.get_instance().group_invite, friend_number, gc_type, data[:length])
+
+
+def group_message(tox, group_number, peer_number, message, length, user_data):
+    invoke_in_main_thread(Profile.get_instance().new_gc_message, group_number,
+                          peer_number, TOX_MESSAGE_TYPE['NORMAL'], message[:length])
+
+
+def group_action(tox, group_number, peer_number, message, length, user_data):
+    invoke_in_main_thread(Profile.get_instance().new_gc_message, group_number,
+                          peer_number, TOX_MESSAGE_TYPE['ACTION'], message[:length])
+
+
+def group_title(tox, group_number, peer_number, title, length, user_data):
+    invoke_in_main_thread(Profile.get_instance().new_gc_title, group_number,
+                          title[:length])
+
+# -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
 # -----------------------------------------------------------------------------------------------------------------
 
@@ -410,3 +433,9 @@ def init_callbacks(tox, window, tray):
 
     tox.callback_friend_lossless_packet(lossless_packet, 0)
     tox.callback_friend_lossy_packet(lossy_packet, 0)
+
+    tox.callback_group_invite(group_invite)
+    tox.callback_group_message(group_message)
+    tox.callback_group_action(group_action)
+    tox.callback_group_title(group_title)
+    tox.callback_group_namelist_change(group_namelist_change)
