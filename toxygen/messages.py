@@ -5,7 +5,9 @@ MESSAGE_TYPE = {
     'ACTION': 1,
     'FILE_TRANSFER': 2,
     'INLINE': 3,
-    'INFO_MESSAGE': 4
+    'INFO_MESSAGE': 4,
+    'GC_TEXT': 5,
+    'GC_ACTION': 6
 }
 
 
@@ -37,6 +39,16 @@ class TextMessage(Message):
 
     def get_data(self):
         return self._message, self._owner, self._time, self._type
+
+
+class GroupChatMessage(TextMessage):
+
+    def __init__(self, message, owner, time, message_type, name):
+        super().__init__(message, owner, time, message_type)
+        self._user_name = name
+
+    def get_data(self):
+        return self._message, self._owner, self._time, self._type, self._user_name
 
 
 class TransferMessage(Message):

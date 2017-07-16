@@ -1528,9 +1528,9 @@ class Tox:
                                                   c_int(groupnumber), None)
         return result
 
-    def join_groupchat(self, friendnumber, data, length):
+    def join_groupchat(self, friendnumber, data):
         result = Tox.libtoxcore.tox_join_groupchat(self._tox_pointer,
-                                                   c_int(friendnumber), c_char_p(data), c_uint16(length), None)
+                                                   c_int(friendnumber), c_char_p(data), c_uint16(len(data)), None)
         return result
 
     def group_message_send(self, groupnumber, message):
@@ -1569,9 +1569,9 @@ class Tox:
         result = Tox.libtoxcore.tox_add_av_groupchat(self._tox_pointer, None, None, None)
         return result
 
-    def join_av_groupchat(self, friendnumber, data, length):
+    def join_av_groupchat(self, friendnumber, data):
         result = Tox.libtoxcore.tox_join_av_groupchat(self._tox_pointer, c_int(friendnumber),
-                                                      c_char_p(data), c_uint16(length), None, None, None)
+                                                      c_char_p(data), c_uint16(len(data)), None, None, None)
         return result
 
     def callback_group_invite(self, callback, user_data=None):

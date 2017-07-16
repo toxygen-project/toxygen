@@ -397,6 +397,10 @@ def group_title(tox, group_number, peer_number, title, length, user_data):
     invoke_in_main_thread(Profile.get_instance().new_gc_title, group_number,
                           title[:length])
 
+
+def group_namelist_change(tox, group_number, peer_number, change, user_data):
+    invoke_in_main_thread(Profile.get_instance().update_gc, group_number)
+
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
 # -----------------------------------------------------------------------------------------------------------------
