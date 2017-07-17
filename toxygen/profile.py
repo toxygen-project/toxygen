@@ -883,7 +883,7 @@ class Profile(basecontact.BaseContact, Singleton):
             QtCore.QTimer.singleShot(50000, self.reconnect)
 
     def close(self):
-        for friend in map(lambda x: type(x) is Friend, self._contacts):
+        for friend in filter(lambda x: type(x) is Friend, self._contacts):
             self.friend_exit(friend.number)
         for i in range(len(self._contacts)):
             del self._contacts[0]
@@ -1348,12 +1348,16 @@ class Profile(basecontact.BaseContact, Singleton):
     def new_gc_title(self, group_number, title):
         gc = self.get_group_by_number(group_number)
         gc.new_title(title)
+        if not self.is_active_a_friend() and self.get_active_number() == group_number:
+            self.update()
 
     def update_gc(self, group_number):
         count = self._tox.group_number_peers(group_number)
         gc = self.get_group_by_number(group_number)
         text = QtWidgets.QApplication.translate('MainWindow', '{} users in chat')
         gc.status_message = text.format(str(count)).encode('utf-8')
+        if not self.is_active_a_friend() and self.get_active_number() == group_number:
+            self.update()
 
     def send_gc_message(self, text):
         group_number = self.get_active_number()
@@ -1384,8 +1388,6 @@ class Profile(basecontact.BaseContact, Singleton):
             text = text.encode('utf-8')
             self._tox.group_set_title(gc.number, text)
             self.new_gc_title(gc.number, text)
-        if num == self.get_active_number() and not self.is_active_a_friend():
-            self.update()
 
 
 def tox_factory(data=None, settings=None):
