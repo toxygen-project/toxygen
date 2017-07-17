@@ -41,6 +41,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.menuAbout.setObjectName("menuAbout")
 
         self.actionAdd_friend = QtWidgets.QAction(window)
+        self.actionAdd_gc = QtWidgets.QAction(window)
         self.actionAdd_friend.setObjectName("actionAdd_friend")
         self.actionprofilesettings = QtWidgets.QAction(window)
         self.actionprofilesettings.setObjectName("actionprofilesettings")
@@ -64,6 +65,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.reloadPlugins = QtWidgets.QAction(window)
         self.lockApp = QtWidgets.QAction(window)
         self.menuProfile.addAction(self.actionAdd_friend)
+        self.menuProfile.addAction(self.actionAdd_gc)
         self.menuProfile.addAction(self.actionSettings)
         self.menuProfile.addAction(self.lockApp)
         self.menuSettings.addAction(self.actionPrivacy_settings)
@@ -86,6 +88,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.actionAbout_program.triggered.connect(self.about_program)
         self.actionNetwork.triggered.connect(self.network_settings)
         self.actionAdd_friend.triggered.connect(self.add_contact)
+        self.actionAdd_gc.triggered.connect(self.create_gc)
         self.actionSettings.triggered.connect(self.profile_settings)
         self.actionPrivacy_settings.triggered.connect(self.privacy_settings)
         self.actionInterface_settings.triggered.connect(self.interface_settings)
@@ -115,6 +118,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.menuSettings.setTitle(QtWidgets.QApplication.translate("MainWindow", "Settings"))
         self.menuAbout.setTitle(QtWidgets.QApplication.translate("MainWindow", "About"))
         self.actionAdd_friend.setText(QtWidgets.QApplication.translate("MainWindow", "Add contact"))
+        self.actionAdd_gc.setText(QtWidgets.QApplication.translate("MainWindow", "Create group chat"))
         self.actionprofilesettings.setText(QtWidgets.QApplication.translate("MainWindow", "Profile"))
         self.actionPrivacy_settings.setText(QtWidgets.QApplication.translate("MainWindow", "Privacy"))
         self.actionInterface_settings.setText(QtWidgets.QApplication.translate("MainWindow", "Interface"))
@@ -430,6 +434,9 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
     def add_contact(self, link=''):
         self.a_c = AddContact(link or '')
         self.a_c.show()
+
+    def create_gc(self):
+        self.profile.create_group_chat()
 
     def profile_settings(self, *args):
         self.p_s = ProfileSettings()

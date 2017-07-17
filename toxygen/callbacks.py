@@ -380,17 +380,18 @@ def video_receive_frame(toxav, friend_number, width, height, y, u, v, ystride, u
 
 
 def group_invite(tox, friend_number, gc_type, data, length,  user_data):
-    invoke_in_main_thread(Profile.get_instance().group_invite, friend_number, gc_type, data[:length])
+    invoke_in_main_thread(Profile.get_instance().group_invite, friend_number, gc_type,
+                          bytes(data[:length]))
 
 
 def group_message(tox, group_number, peer_number, message, length, user_data):
     invoke_in_main_thread(Profile.get_instance().new_gc_message, group_number,
-                          peer_number, TOX_MESSAGE_TYPE['NORMAL'], message[:length])
+                          peer_number, TOX_MESSAGE_TYPE['NORMAL'], str(message, 'utf-8'))
 
 
 def group_action(tox, group_number, peer_number, message, length, user_data):
     invoke_in_main_thread(Profile.get_instance().new_gc_message, group_number,
-                          peer_number, TOX_MESSAGE_TYPE['ACTION'], message[:length])
+                          peer_number, TOX_MESSAGE_TYPE['ACTION'], str(message, 'utf-8'))
 
 
 def group_title(tox, group_number, peer_number, title, length, user_data):

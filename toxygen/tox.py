@@ -90,6 +90,11 @@ class Tox:
             self.file_recv_chunk_cb = None
             self.friend_lossy_packet_cb = None
             self.friend_lossless_packet_cb = None
+            self.group_namelist_change_cb = None
+            self.group_title_cb = None
+            self.group_action_cb = None
+            self.group_message_cb = None
+            self.group_invite_cb = None
 
             self.AV = ToxAV(self._tox_pointer)
 
@@ -1521,7 +1526,7 @@ class Tox:
         buffer = create_string_buffer(TOX_MAX_NAME_LENGTH)
         result = Tox.libtoxcore.tox_group_peername(self._tox_pointer, c_int(groupnumber), c_int(peernumber),
                                                    buffer, None)
-        return buffer[:]
+        return str(buffer[:result], 'utf-8')
 
     def invite_friend(self, friendnumber, groupnumber):
         result = Tox.libtoxcore.tox_invite_friend(self._tox_pointer, c_int(friendnumber),
@@ -1554,24 +1559,30 @@ class Tox:
         result = Tox.libtoxcore.tox_group_get_title(self._tox_pointer,
                                                     c_int(groupnumber), buffer,
                                                     c_uint32(TOX_MAX_NAME_LENGTH), None)
-        return buffer[:]
+        return str(buffer[:result], 'utf-8')
 
     def group_number_peers(self, groupnumber):
         result = Tox.libtoxcore.tox_group_number_peers(self._tox_pointer, c_int(groupnumber), None)
         return result
 
-    # def group_get_names(self):
-    #     result = Tox.libtoxcore.tox_group_get_names(self._tox_pointer, c_int(groupnumber),
-    #                                                 c_char_p(names), None, c_uint16(length), error)
-    #     return result
+    def group_get_names(self, groupnumber):
+        peers_count = self.group_number_peers(groupnumber)
+        arr = (c_char_p * peers_count)()
+        for i in range(peers_count):
+            arr[i] = create_string_buffer(TOX_MAX_NAME_LENGTH)
+        result = Tox.libtoxcore.tox_group_get_names(self._tox_pointer, c_int(groupnumber),
+                                                    arr, None, c_uint16(peers_count), None)
+        arr = map(lambda x: str(x, 'utf-8'), arr)
+        return list(arr)
 
     def add_av_groupchat(self):
-        result = Tox.libtoxcore.tox_add_av_groupchat(self._tox_pointer, None, None, None)
+        result = self.AV.libtoxav.tox_add_av_groupchat(self._tox_pointer, None, None, None)
         return result
 
     def join_av_groupchat(self, friendnumber, data):
-        result = Tox.libtoxcore.tox_join_av_groupchat(self._tox_pointer, c_int(friendnumber),
-                                                      c_char_p(data), c_uint16(len(data)), None, None, None)
+        result = self.AV.libtoxav.tox_join_av_groupchat(self._tox_pointer, c_int(friendnumber),
+                                                        c_char_p(data), c_uint16(len(data)),
+                                                        None, None, None)
         return result
 
     def callback_group_invite(self, callback, user_data=None):

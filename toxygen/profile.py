@@ -252,12 +252,15 @@ class Profile(basecontact.BaseContact, Singleton):
                                 print('Incoming not started transfer - no info found')
                     elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline
                         self.create_inline_item(message.get_data())
-                    else:  # info message
+                    elif message.get_type() < 5:  # info message
                         data = message.get_data()
                         self.create_message_item(data[0],
                                                  data[2],
                                                  '',
                                                  data[3])
+                    else:
+                        data = message.get_data()
+                        self.create_gc_message_item(data[0], data[2], data[1], data[4], data[3])
                 self._messages.scrollToBottom()
                 self._load_history = True
                 if value in self._call:
@@ -271,7 +274,10 @@ class Profile(basecontact.BaseContact, Singleton):
 
             self._screen.account_name.setText(friend.name)
             self._screen.account_status.setText(friend.status_message)
-            avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(friend.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+            if friend.tox_id is None:
+                avatar_path = curr_directory() + '/images/group.png'
+            else:
+                avatar_path = (ProfileHelper.get_path() + 'avatars/{}.png').format(friend.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
             if not os.path.isfile(avatar_path):  # load default image
                 avatar_path = curr_directory() + '/images/avatar.png'
             os.chdir(os.path.dirname(avatar_path))
@@ -466,6 +472,9 @@ class Profile(basecontact.BaseContact, Singleton):
         :param text: message text
         :param friend_num: num of friend
         """
+        if not self.is_active_a_friend():
+            self.send_gc_message(text)
+            return
         if friend_num is None:
             friend_num = self.get_active_number()
         if text.startswith('/plugin '):
@@ -481,8 +490,8 @@ class Profile(basecontact.BaseContact, Singleton):
             friend.inc_receipts()
             if friend.status is not None:
                 self.split_and_send(friend.number, message_type, text.encode('utf-8'))
-            if friend.number == self.get_active_number():
-                t = time.time()
+            t = time.time()
+            if friend.number == self.get_active_number() and self.is_active_a_friend():
                 self.create_message_item(text, t, MESSAGE_OWNER['NOT_SENT'], message_type)
                 self._screen.messageEdit.clear()
                 self._messages.scrollToBottom()
@@ -505,7 +514,7 @@ class Profile(basecontact.BaseContact, Singleton):
         s = Settings.get_instance()
         if hasattr(self, '_history'):
             if s['save_history']:
-                for friend in self._contacts:
+                for friend in filter(lambda x: type(x) is Friend, self._contacts):
                     if not self._history.friend_exists_in_db(friend.tox_id):
                         self._history.add_friend_to_db(friend.tox_id)
                     if not s['save_unsent_only']:
@@ -645,7 +654,7 @@ class Profile(basecontact.BaseContact, Singleton):
             else:
                 pixmap = self.get_pixmap()
         return self._factory.message_item(text, time, name, True,
-                                          message_type, append, pixmap)
+                                          message_type - 5, append, pixmap)
 
     def create_file_transfer_item(self, tm, append=True):
         data = list(tm.get_data())
@@ -1289,7 +1298,7 @@ class Profile(basecontact.BaseContact, Singleton):
 
     def add_gc(self, number):
         widget = self.create_friend_item()
-        gc = GroupChat('', '', widget, self._tox, number)
+        gc = GroupChat('Group chat #' + str(number), '', widget, self._tox, number)
         self._contacts.append(gc)
 
     def create_group_chat(self):
@@ -1299,7 +1308,8 @@ class Profile(basecontact.BaseContact, Singleton):
     def group_invite(self, friend_number, gc_type, data):
         text = QtWidgets.QApplication.translate('MainWindow', 'User {} invites you to group chat. Accept?')
         title = QtWidgets.QApplication.translate('MainWindow', 'Group chat invite')
-        reply = QtWidgets.QMessageBox.question(None, title, text, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
+        friend = self.get_friend_by_number(friend_number)
+        reply = QtWidgets.QMessageBox.question(None, title, text.format(friend.name), QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
         if reply == QtWidgets.QMessageBox.Yes:  # accepted
             if gc_type == TOX_GROUPCHAT_TYPE['TEXT']:
                 number = self._tox.join_groupchat(friend_number, data)
@@ -1309,12 +1319,13 @@ class Profile(basecontact.BaseContact, Singleton):
 
     def new_gc_message(self, group_number, peer_number, message_type, message):
         name = self._tox.group_peername(group_number, peer_number)
+        message_type += 5
         if group_number == self.get_active_number() and not self.is_active_a_friend():  # add message to list
             t = time.time()
             self.create_gc_message_item(message, t, MESSAGE_OWNER['FRIEND'], name, message_type)
             self._messages.scrollToBottom()
             self.get_curr_friend().append_message(
-                GroupChatMessage(message, MESSAGE_OWNER['FRIEND'], t, message_type. name))
+                GroupChatMessage(message, MESSAGE_OWNER['FRIEND'], t, message_type, name))
         else:
             gc = self.get_group_by_number(group_number)
             gc.inc_messages()
@@ -1328,7 +1339,19 @@ class Profile(basecontact.BaseContact, Singleton):
         gc.new_title(title)
 
     def update_gc(self, group_number):
-        pass
+        count = self._tox.group_number_peers(group_number)
+        gc = self.get_group_by_number(group_number)
+        text = QtWidgets.QApplication.translate('MainWindow', '{} users in chat')
+        gc.status_message = text.format(str(count)).encode('utf-8')
+
+    def send_gc_message(self, text):
+        group_number = self.get_active_number()
+        if text.startswith('/me '):
+            text = text[4:]
+            self._tox.group_action_send(group_number, text.encode('utf-8'))
+        else:
+            self._tox.group_message_send(group_number, text.encode('utf-8'))
+        self._screen.messageEdit.clear()
 
 
 def tox_factory(data=None, settings=None):
