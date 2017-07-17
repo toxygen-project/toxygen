@@ -883,7 +883,7 @@ class Profile(basecontact.BaseContact, Singleton):
             QtCore.QTimer.singleShot(50000, self.reconnect)
 
     def close(self):
-        for friend in self._contacts:
+        for friend in map(lambda x: type(x) is Friend, self._contacts):
             self.friend_exit(friend.number)
         for i in range(len(self._contacts)):
             del self._contacts[0]
@@ -1305,6 +1305,17 @@ class Profile(basecontact.BaseContact, Singleton):
         number = self._tox.add_av_groupchat()
         self.add_gc(number)
 
+    def leave_gc(self, num):
+        gc = self._contacts[num]
+        self._tox.del_groupchat(gc.number)
+        del self._contacts[num]
+        self._screen.friends_list.takeItem(num)
+        if num == self._active_friend:  # active friend was deleted
+            if not len(self._contacts):  # last friend was deleted
+                self.set_active(-1)
+            else:
+                self.set_active(0)
+
     def group_invite(self, friend_number, gc_type, data):
         text = QtWidgets.QApplication.translate('MainWindow', 'User {} invites you to group chat. Accept?')
         title = QtWidgets.QApplication.translate('MainWindow', 'Group chat invite')
@@ -1352,6 +1363,29 @@ class Profile(basecontact.BaseContact, Singleton):
         else:
             self._tox.group_message_send(group_number, text.encode('utf-8'))
         self._screen.messageEdit.clear()
+
+    def set_title(self, num):
+        """
+        Set new title for gc
+        """
+        gc = self._contacts[num]
+        name = gc.name
+        dialog = QtWidgets.QApplication.translate('MainWindow',
+                                                  "Enter new title for group {}:")
+        dialog = dialog.format(name)
+        title = QtWidgets.QApplication.translate('MainWindow',
+                                                 'Set title')
+        text, ok = QtWidgets.QInputDialog.getText(None,
+                                                  title,
+                                                  dialog,
+                                                  QtWidgets.QLineEdit.Normal,
+                                                  name)
+        if ok:
+            text = text.encode('utf-8')
+            self._tox.group_set_title(gc.number, text)
+            self.new_gc_title(gc.number, text)
+        if num == self.get_active_number() and not self.is_active_a_friend():
+            self.update()
 
 
 def tox_factory(data=None, settings=None):

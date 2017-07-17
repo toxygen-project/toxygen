@@ -590,7 +590,9 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         auto = QtWidgets.QApplication.translate("MainWindow", 'Disallow auto accept') if allowed else QtWidgets.QApplication.translate("MainWindow", 'Allow auto accept')
         if item is not None:
             self.listMenu = QtWidgets.QMenu()
-            set_alias_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Set alias'))
+            is_friend = type(friend) is Friend
+            if is_friend:
+                set_alias_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Set alias'))
 
             history_menu = self.listMenu.addMenu(QtWidgets.QApplication.translate("MainWindow", 'Chat history'))
             clear_history_item = history_menu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Clear history'))
@@ -600,26 +602,32 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
             copy_menu = self.listMenu.addMenu(QtWidgets.QApplication.translate("MainWindow", 'Copy'))
             copy_name_item = copy_menu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Name'))
             copy_status_item = copy_menu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Status message'))
-            copy_key_item = copy_menu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Public key'))
+            if is_friend:
+                copy_key_item = copy_menu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Public key'))
 
-            auto_accept_item = self.listMenu.addAction(auto)
-            remove_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Remove friend'))
-            block_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Block friend'))
-            notes_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Notes'))
+                auto_accept_item = self.listMenu.addAction(auto)
+                remove_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Remove friend'))
+                block_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Block friend'))
+                notes_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Notes'))
 
-            plugins_loader = plugin_support.PluginLoader.get_instance()
-            if plugins_loader is not None:
-                submenu = plugins_loader.get_menu(self.listMenu, num)
-                if len(submenu):
-                    plug = self.listMenu.addMenu(QtWidgets.QApplication.translate("MainWindow", 'Plugins'))
-                    plug.addActions(submenu)
-            set_alias_item.triggered.connect(lambda: self.set_alias(num))
-            remove_item.triggered.connect(lambda: self.remove_friend(num))
-            block_item.triggered.connect(lambda: self.block_friend(num))
-            copy_key_item.triggered.connect(lambda: self.copy_friend_key(num))
+                plugins_loader = plugin_support.PluginLoader.get_instance()
+                if plugins_loader is not None:
+                    submenu = plugins_loader.get_menu(self.listMenu, num)
+                    if len(submenu):
+                        plug = self.listMenu.addMenu(QtWidgets.QApplication.translate("MainWindow", 'Plugins'))
+                        plug.addActions(submenu)
+                set_alias_item.triggered.connect(lambda: self.set_alias(num))
+                copy_key_item.triggered.connect(lambda: self.copy_friend_key(num))
+                remove_item.triggered.connect(lambda: self.remove_friend(num))
+                block_item.triggered.connect(lambda: self.block_friend(num))
+                auto_accept_item.triggered.connect(lambda: self.auto_accept(num, not allowed))
+                notes_item.triggered.connect(lambda: self.show_note(friend))
+            else:
+                leave_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Leave chat'))
+                set_title_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Set title'))
+                leave_item.triggered.connect(lambda: self.leave_gc(num))
+                set_title_item.triggered.connect(lambda: self.set_title(num))
             clear_history_item.triggered.connect(lambda: self.clear_history(num))
-            auto_accept_item.triggered.connect(lambda: self.auto_accept(num, not allowed))
-            notes_item.triggered.connect(lambda: self.show_note(friend))
             copy_name_item.triggered.connect(lambda: self.copy_name(friend))
             copy_status_item.triggered.connect(lambda: self.copy_status(friend))
             export_to_text_item.triggered.connect(lambda: self.export_history(num))
@@ -681,6 +689,12 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
 
     def clear_history(self, num):
         self.profile.clear_history(num)
+
+    def leave_gc(self, num):
+        self.profile.leave_gc(num)
+
+    def set_title(self, num):
+        self.profile.set_title(num)
 
     def auto_accept(self, num, value):
         settings = Settings.get_instance()
