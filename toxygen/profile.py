@@ -205,6 +205,7 @@ class Profile(basecontact.BaseContact, Singleton):
         if value == -1:  # all friends were deleted
             self._screen.account_name.setText('')
             self._screen.account_status.setText('')
+            self._screen.account_status.setToolTip('')
             self._active_friend = -1
             self._screen.account_avatar.setHidden(True)
             self._messages.clear()
@@ -274,6 +275,7 @@ class Profile(basecontact.BaseContact, Singleton):
 
             self._screen.account_name.setText(friend.name)
             self._screen.account_status.setText(friend.status_message)
+            self._screen.account_status.setToolTip(friend.get_full_status())
             if friend.tox_id is None:
                 avatar_path = curr_directory() + '/images/group.png'
             else:
@@ -354,7 +356,7 @@ class Profile(basecontact.BaseContact, Singleton):
                 elif data[1] == friend_number and not data[2]:
                     self.send_file(data[0], friend_number, True, key)
                     del self._paused_file_transfers[key]
-            if friend_number == self.get_active_number():
+            if friend_number == self.get_active_number() and self.is_active_a_friend():
                 self.update()
         except Exception as ex:
             print('Exception in file sending: ' + str(ex))
@@ -396,7 +398,7 @@ class Profile(basecontact.BaseContact, Singleton):
         """
         Display incoming typing notification
         """
-        if friend_number == self.get_active_number():
+        if friend_number == self.get_active_number() and self.is_active_a_friend():
             self._screen.typing.setVisible(typing)
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -452,7 +454,7 @@ class Profile(basecontact.BaseContact, Singleton):
         :param message_type: message type - plain text or action message (/me)
         :param message: text of message
         """
-        if friend_num == self.get_active_number():  # add message to list
+        if friend_num == self.get_active_number()and self.is_active_a_friend():  # add message to list
             t = time.time()
             self.create_message_item(message, t, MESSAGE_OWNER['FRIEND'], message_type)
             self._messages.scrollToBottom()
@@ -712,7 +714,7 @@ class Profile(basecontact.BaseContact, Singleton):
                 except:
                     pass
             settings.save()
-        if num == self.get_active_number():
+        if num == self.get_active_number() and self.is_active_a_friend():
             self.update()
 
     def friend_public_key(self, num):
@@ -956,7 +958,7 @@ class Profile(basecontact.BaseContact, Singleton):
                                  friend_number,
                                  file_number)
             accepted = False
-        if friend_number == self.get_active_number():
+        if friend_number == self.get_active_number() and self.is_active_a_friend():
             item = self.create_file_transfer_item(tm)
             if accepted:
                 self._file_transfers[(friend_number, file_number)].set_state_changed_handler(item.update_transfer_state)
@@ -987,7 +989,7 @@ class Profile(basecontact.BaseContact, Singleton):
         else:
             if not already_cancelled:
                 self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
-            if friend_number == self.get_active_number():
+            if friend_number == self.get_active_number() and self.is_active_a_friend():
                 tmp = self._messages.count() + i
                 if tmp >= 0:
                     self._messages.itemWidget(self._messages.item(tmp)).update(TOX_FILE_TRANSFER_STATE['CANCELLED'],
@@ -1141,7 +1143,7 @@ class Profile(basecontact.BaseContact, Singleton):
         t = type(transfer)
         if t is ReceiveAvatar:
             self.get_friend_by_number(friend_number).load_avatar()
-            if friend_number == self.get_active_number():
+            if friend_number == self.get_active_number() and self.is_active_a_friend():
                 self.set_active(None)
         elif t is ReceiveToBuffer or (t is SendFromBuffer and Settings.get_instance()['allow_inline']):  # inline image
             print('inline')
@@ -1149,7 +1151,7 @@ class Profile(basecontact.BaseContact, Singleton):
             i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                               TOX_FILE_TRANSFER_STATE['FINISHED'],
                                                                               inline)
-            if friend_number == self.get_active_number():
+            if friend_number == self.get_active_number() and self.is_active_a_friend():
                 count = self._messages.count()
                 if count + i + 1 >= 0:
                     elem = QtWidgets.QListWidgetItem()
@@ -1191,7 +1193,7 @@ class Profile(basecontact.BaseContact, Singleton):
             ra.set_transfer_finished_handler(self.transfer_finished)
         else:
             self.get_friend_by_number(friend_number).load_avatar()
-            if self.get_active_number() == friend_number:
+            if self.get_active_number() == friend_number and self.is_active_a_friend():
                 self.set_active(None)
 
     def reset_avatar(self):
@@ -1216,6 +1218,8 @@ class Profile(basecontact.BaseContact, Singleton):
     def call_click(self, audio=True, video=False):
         """User clicked audio button in main window"""
         num = self.get_active_number()
+        if not self.is_active_a_friend():
+            return
         if num not in self._call and self.is_active_online():  # start call
             if not Settings.get_instance().audio['enabled']:
                 return
@@ -1388,6 +1392,15 @@ class Profile(basecontact.BaseContact, Singleton):
             text = text.encode('utf-8')
             self._tox.group_set_title(gc.number, text)
             self.new_gc_title(gc.number, text)
+
+    def get_group_chats(self):
+        chats = filter(lambda x: type(x) is GroupChat, self._contacts)
+        chats = map(lambda c: (c.name, c.number), chats)
+        return list(chats)
+
+    def invite_friend(self, friend_num, group_number):
+        friend = self._contacts[friend_num]
+        self._tox.invite_friend(friend.number, group_number)
 
 
 def tox_factory(data=None, settings=None):

@@ -384,14 +384,34 @@ def group_invite(tox, friend_number, gc_type, data, length,  user_data):
                           bytes(data[:length]))
 
 
-def group_message(tox, group_number, peer_number, message, length, user_data):
-    invoke_in_main_thread(Profile.get_instance().new_gc_message, group_number,
-                          peer_number, TOX_MESSAGE_TYPE['NORMAL'], str(message, 'utf-8'))
+def show_gc_notification(window, tray, message, group_number):
+    profile = Profile.get_instance()
+    settings = Settings.get_instance()
+    chat = profile.get_group_by_number(group_number)
+    if not window.isActiveWindow() and (profile.name in message or settings['group_notifications']):
+        if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
+            invoke_in_main_thread(tray_notification, chat.name, message, tray, window)
+        if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
+            sound_notification(SOUND_NOTIFICATION['MESSAGE'])
+        invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
 
 
-def group_action(tox, group_number, peer_number, message, length, user_data):
-    invoke_in_main_thread(Profile.get_instance().new_gc_message, group_number,
-                          peer_number, TOX_MESSAGE_TYPE['ACTION'], str(message, 'utf-8'))
+def group_message(window, tray):
+    def wrapped(tox, group_number, peer_number, message, length, user_data):
+        message = str(message[:length], 'utf-8')
+        invoke_in_main_thread(Profile.get_instance().new_gc_message, group_number,
+                              peer_number, TOX_MESSAGE_TYPE['NORMAL'], message)
+        show_gc_notification(window, tray, message, group_number)
+    return wrapped
+
+
+def group_action(window, tray):
+    def wrapped(tox, group_number, peer_number, message, length, user_data):
+        message = str(message[:length], 'utf-8')
+        invoke_in_main_thread(Profile.get_instance().new_gc_message, group_number,
+                              peer_number, TOX_MESSAGE_TYPE['ACTION'], message)
+        show_gc_notification(window, tray, message, group_number)
+    return wrapped
 
 
 def group_title(tox, group_number, peer_number, title, length, user_data):
@@ -440,7 +460,7 @@ def init_callbacks(tox, window, tray):
     tox.callback_friend_lossy_packet(lossy_packet, 0)
 
     tox.callback_group_invite(group_invite)
-    tox.callback_group_message(group_message)
-    tox.callback_group_action(group_action)
+    tox.callback_group_message(group_message(window, tray))
+    tox.callback_group_action(group_action(window, tray))
     tox.callback_group_title(group_title)
     tox.callback_group_namelist_change(group_namelist_change)

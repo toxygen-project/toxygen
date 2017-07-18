@@ -1,7 +1,7 @@
 import contact
 import util
 from PyQt5 import QtGui, QtCore
-import toxcore_enums_and_consts as cnst
+import toxcore_enums_and_consts as constants
 
 
 class GroupChat(contact.Contact):
@@ -9,7 +9,7 @@ class GroupChat(contact.Contact):
     def __init__(self, name, status_message, widget, tox, group_number):
         super().__init__(None, group_number, name, status_message, widget, None)
         self._tox = tox
-        self._status = cnst.TOX_USER_STATUS['NONE']
+        self.set_status(constants.TOX_USER_STATUS['NONE'])
 
     def set_name(self, name):
         self._tox.group_set_title(self._number, name)
@@ -31,3 +31,12 @@ class GroupChat(contact.Contact):
 
     def remove_invalid_unsent_files(self):
         pass
+
+    def get_full_status(self):
+        peers_count = self._tox.group_number_peers(self._number)
+        names = []
+        for i in range(peers_count):
+            name = self._tox.group_peername(self._number, i)
+            names.append(name)
+        names = sorted(names, key=lambda n: n.lower())
+        return '\n'.join(names)

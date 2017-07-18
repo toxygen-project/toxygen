@@ -508,15 +508,17 @@ class NotificationsSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("notificationsForm")
-        self.resize(350, 180)
-        self.setMinimumSize(QtCore.QSize(350, 180))
-        self.setMaximumSize(QtCore.QSize(350, 180))
+        self.resize(350, 210)
+        self.setMinimumSize(QtCore.QSize(350, 210))
+        self.setMaximumSize(QtCore.QSize(350, 210))
         self.enableNotifications = QtWidgets.QCheckBox(self)
         self.enableNotifications.setGeometry(QtCore.QRect(10, 20, 340, 18))
         self.callsSound = QtWidgets.QCheckBox(self)
-        self.callsSound.setGeometry(QtCore.QRect(10, 120, 340, 18))
+        self.callsSound.setGeometry(QtCore.QRect(10, 170, 340, 18))
         self.soundNotifications = QtWidgets.QCheckBox(self)
         self.soundNotifications.setGeometry(QtCore.QRect(10, 70, 340, 18))
+        self.groupNotifications = QtWidgets.QCheckBox(self)
+        self.groupNotifications.setGeometry(QtCore.QRect(10, 120, 340, 18))
         font = QtGui.QFont()
         s = Settings.get_instance()
         font.setFamily(s['font'])
@@ -524,8 +526,10 @@ class NotificationsSettings(CenteredWidget):
         self.callsSound.setFont(font)
         self.soundNotifications.setFont(font)
         self.enableNotifications.setFont(font)
+        self.groupNotifications.setFont(font)
         self.enableNotifications.setChecked(s['notifications'])
         self.soundNotifications.setChecked(s['sound_notifications'])
+        self.groupNotifications.setChecked(s['group_notifications'])
         self.callsSound.setChecked(s['calls_sound'])
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
@@ -533,6 +537,7 @@ class NotificationsSettings(CenteredWidget):
     def retranslateUi(self):
         self.setWindowTitle(QtWidgets.QApplication.translate("notificationsForm", "Notification settings"))
         self.enableNotifications.setText(QtWidgets.QApplication.translate("notificationsForm", "Enable notifications"))
+        self.groupNotifications.setText(QtWidgets.QApplication.translate("notificationsForm", "Notify about all messages in groups"))
         self.callsSound.setText(QtWidgets.QApplication.translate("notificationsForm", "Enable call\'s sound"))
         self.soundNotifications.setText(QtWidgets.QApplication.translate("notificationsForm", "Enable sound notifications"))
 
@@ -540,6 +545,7 @@ class NotificationsSettings(CenteredWidget):
         settings = Settings.get_instance()
         settings['notifications'] = self.enableNotifications.isChecked()
         settings['sound_notifications'] = self.soundNotifications.isChecked()
+        settings['group_notifications'] = self.groupNotifications.isChecked()
         settings['calls_sound'] = self.callsSound.isChecked()
         settings.save()
 

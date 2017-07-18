@@ -144,7 +144,8 @@ class Settings(dict, Singleton):
             'show_welcome_screen': True,
             'close_to_tray': False,
             'font': 'Times New Roman',
-            'update': 1
+            'update': 1,
+            'group_notifications': True
         }
 
     @staticmethod

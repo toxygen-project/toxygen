@@ -5,7 +5,6 @@ from widgets import MultilineEdit, ComboBox
 import plugin_support
 from mainscreen_widgets import *
 import settings
-import platform
 import toxes
 
 
@@ -519,7 +518,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
 
     def send_file(self):
         self.menu.hide()
-        if self.profile.active_friend + 1:
+        if self.profile.active_friend + 1and self.profile.is_active_a_friend():
             choose = QtWidgets.QApplication.translate("MainWindow", 'Choose file')
             name = QtWidgets.QFileDialog.getOpenFileName(self, choose, options=QtWidgets.QFileDialog.DontUseNativeDialog)
             if name[0]:
@@ -527,7 +526,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
 
     def send_screenshot(self, hide=False):
         self.menu.hide()
-        if self.profile.active_friend + 1:
+        if self.profile.active_friend + 1 and self.profile.is_active_a_friend():
             self.sw = ScreenShotWindow(self)
             self.sw.show()
             if hide:
@@ -545,7 +544,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
 
     def send_sticker(self):
         self.menu.hide()
-        if self.profile.active_friend + 1:
+        if self.profile.active_friend + 1 and self.profile.is_active_a_friend():
             self.sticker = StickerWindow(self)
             self.sticker.setGeometry(QtCore.QRect(self.x() if Settings.get_instance()['mirror_mode'] else 270 + self.x(),
                                                   self.y() + self.height() - 200,
@@ -593,6 +592,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
             is_friend = type(friend) is Friend
             if is_friend:
                 set_alias_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Set alias'))
+                set_alias_item.triggered.connect(lambda: self.set_alias(num))
 
             history_menu = self.listMenu.addMenu(QtWidgets.QApplication.translate("MainWindow", 'Chat history'))
             clear_history_item = history_menu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Clear history'))
@@ -610,13 +610,20 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
                 block_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Block friend'))
                 notes_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Notes'))
 
+                chats = self.profile.get_group_chats()
+                if len(chats) and self.profile.is_active_online():
+                    invite_menu = self.listMenu.addMenu(QtWidgets.QApplication.translate("MainWindow", 'Invite to group chat'))
+                    for i in range(len(chats)):
+                        name, number = chats[i]
+                        item = invite_menu.addAction(name)
+                        item.triggered.connect(lambda: self.invite_friend_to_gc(num, number))
+
                 plugins_loader = plugin_support.PluginLoader.get_instance()
                 if plugins_loader is not None:
                     submenu = plugins_loader.get_menu(self.listMenu, num)
                     if len(submenu):
                         plug = self.listMenu.addMenu(QtWidgets.QApplication.translate("MainWindow", 'Plugins'))
                         plug.addActions(submenu)
-                set_alias_item.triggered.connect(lambda: self.set_alias(num))
                 copy_key_item.triggered.connect(lambda: self.copy_friend_key(num))
                 remove_item.triggered.connect(lambda: self.remove_friend(num))
                 block_item.triggered.connect(lambda: self.block_friend(num))
@@ -704,6 +711,9 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         else:
             settings['auto_accept_from_friends'].remove(tox_id)
         settings.save()
+
+    def invite_friend_to_gc(self, friend_number, group_number):
+        self.profile.invite_friend(friend_number, group_number)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click somewhere else

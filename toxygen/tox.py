@@ -1565,24 +1565,14 @@ class Tox:
         result = Tox.libtoxcore.tox_group_number_peers(self._tox_pointer, c_int(groupnumber), None)
         return result
 
-    def group_get_names(self, groupnumber):
-        peers_count = self.group_number_peers(groupnumber)
-        arr = (c_char_p * peers_count)()
-        for i in range(peers_count):
-            arr[i] = create_string_buffer(TOX_MAX_NAME_LENGTH)
-        result = Tox.libtoxcore.tox_group_get_names(self._tox_pointer, c_int(groupnumber),
-                                                    arr, None, c_uint16(peers_count), None)
-        arr = map(lambda x: str(x, 'utf-8'), arr)
-        return list(arr)
-
     def add_av_groupchat(self):
-        result = self.AV.libtoxav.tox_add_av_groupchat(self._tox_pointer, None, None, None)
+        result = self.AV.libtoxav.toxav_add_av_groupchat(self._tox_pointer, None, None)
         return result
 
     def join_av_groupchat(self, friendnumber, data):
-        result = self.AV.libtoxav.tox_join_av_groupchat(self._tox_pointer, c_int(friendnumber),
-                                                        c_char_p(data), c_uint16(len(data)),
-                                                        None, None, None)
+        result = self.AV.libtoxav.toxav_join_av_groupchat(self._tox_pointer, c_int32(friendnumber),
+                                                      c_char_p(data), c_uint16(len(data)),
+                                                      None, None)
         return result
 
     def callback_group_invite(self, callback, user_data=None):
