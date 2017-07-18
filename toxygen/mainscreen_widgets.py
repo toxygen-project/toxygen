@@ -34,6 +34,10 @@ class MessageArea(QtWidgets.QPlainTextEdit):
                 self.parent.send_message()
         elif event.key() == QtCore.Qt.Key_Up and not self.toPlainText():
             self.appendPlainText(Profile.get_instance().get_last_message())
+        elif event.key() == QtCore.Qt.Key_Tab and not self.parent.profile.is_active_a_friend():
+            text = self.toPlainText()
+            pos = self.textCursor().position()
+            self.insertPlainText(Profile.get_instance().get_gc_peer_name(text[:pos]))
         else:
             self.parent.profile.send_typing(True)
             if self.timer.isActive():

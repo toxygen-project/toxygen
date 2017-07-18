@@ -32,11 +32,15 @@ class GroupChat(contact.Contact):
     def remove_invalid_unsent_files(self):
         pass
 
-    def get_full_status(self):
+    def get_names(self):
         peers_count = self._tox.group_number_peers(self._number)
         names = []
         for i in range(peers_count):
             name = self._tox.group_peername(self._number, i)
             names.append(name)
         names = sorted(names, key=lambda n: n.lower())
+        return names
+
+    def get_full_status(self):
+        names = self.get_names()
         return '\n'.join(names)

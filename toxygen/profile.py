@@ -17,6 +17,7 @@ import items_factory
 import cv2
 import threading
 from group_chat import *
+import re
 
 
 class Profile(basecontact.BaseContact, Singleton):
@@ -130,6 +131,7 @@ class Profile(basecontact.BaseContact, Singleton):
         filter_str = filter_str.lower()
         settings = Settings.get_instance()
         number = self.get_active_number()
+        is_friend = self.is_active_a_friend()
         if sorting > 1:
             if sorting & 2:
                 self._contacts = sorted(self._contacts, key=lambda x: int(x.status is not None), reverse=True)
@@ -165,7 +167,7 @@ class Profile(basecontact.BaseContact, Singleton):
         self._sorting, self._filter_string = sorting, filter_str
         settings['sorting'] = self._sorting
         settings.save()
-        self.set_active_by_number(number)
+        self.set_active_by_number_and_type(number, is_friend)
 
     def update_filtration(self):
         """
@@ -291,9 +293,10 @@ class Profile(basecontact.BaseContact, Singleton):
             log('Error in set active: ' + str(ex))
             raise
 
-    def set_active_by_number(self, number):
+    def set_active_by_number_and_type(self, number, is_friend):
         for i in range(len(self._contacts)):
-            if self._contacts[i].number == number:
+            c = self._contacts[i]
+            if c.number == number and (type(c) is Friend == is_friend):
                 self._active_friend = i
                 break
 
@@ -1401,6 +1404,17 @@ class Profile(basecontact.BaseContact, Singleton):
     def invite_friend(self, friend_num, group_number):
         friend = self._contacts[friend_num]
         self._tox.invite_friend(friend.number, group_number)
+
+    def get_gc_peer_name(self, text):
+        gc = self.get_curr_friend()
+        if type(gc) is not GroupChat:
+            return '\t'
+        names = gc.get_names()
+        name = re.split("\s+", text)[-1]
+        suggested_names = list(filter(lambda x: x.startswith(name), names))
+        if not len(suggested_names):
+            return '\t'
+        return suggested_names[0][len(name):]
 
 
 def tox_factory(data=None, settings=None):
