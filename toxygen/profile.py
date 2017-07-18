@@ -1414,7 +1414,7 @@ class Profile(basecontact.BaseContact, Singleton):
         suggested_names = list(filter(lambda x: x.startswith(name), names))
         if not len(suggested_names):
             return '\t'
-        return suggested_names[0][len(name):]
+        return suggested_names[0][len(name):] + ': '
 
 
 def tox_factory(data=None, settings=None):

@@ -86,58 +86,58 @@ peut entrainer une fuite d&apos;IP</translation>
 <context>
     <name>MainWindow</name>
     <message>
-        <location filename="mainscreen.py" line="118"/>
+        <location filename="mainscreen.py" line="121"/>
         <source>Profile</source>
         <translation>Profil</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="124"/>
+        <location filename="mainscreen.py" line="127"/>
         <source>Settings</source>
         <translation>Paramètres</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="417"/>
+        <location filename="mainscreen.py" line="420"/>
         <source>About</source>
         <translation>À Propos</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="117"/>
+        <location filename="mainscreen.py" line="119"/>
         <source>Add contact</source>
         <translation>Ajouter un contact</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="119"/>
+        <location filename="mainscreen.py" line="122"/>
         <source>Privacy</source>
         <translation>Confidentialité</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="120"/>
+        <location filename="mainscreen.py" line="123"/>
         <source>Interface</source>
         <translation>Interface</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="121"/>
+        <location filename="mainscreen.py" line="124"/>
         <source>Notifications</source>
         <translation>Notifications</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="122"/>
+        <location filename="mainscreen.py" line="125"/>
         <source>Network</source>
         <translation>Réseau</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="123"/>
+        <location filename="mainscreen.py" line="126"/>
         <source>About program</source>
         <translation>À propos de toxygen</translation>
     </message>
     <message>
-        <location filename="profile.py" line="827"/>
+        <location filename="profile.py" line="852"/>
         <source>User {} wants to add you to contact list. Message:
 {}</source>
         <translation>L&apos;Utilisateur {} veut vous ajouter à sa liste de contacts. Message : {}</translation>
     </message>
     <message>
-        <location filename="profile.py" line="829"/>
+        <location filename="profile.py" line="854"/>
         <source>Friend request</source>
         <translation>Demande de contact</translation>
     </message>
@@ -147,27 +147,27 @@ peut entrainer une fuite d&apos;IP</translation>
         <translation type="obsolete">Toxygen est un client Tox écris en Python 2.7. Version : </translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="517"/>
+        <location filename="mainscreen.py" line="523"/>
         <source>Choose file</source>
         <translation>Sélectionner un fichier</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="583"/>
+        <location filename="mainscreen.py" line="589"/>
         <source>Disallow auto accept</source>
         <translation>Désactiver l&apos;auto-réception</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="584"/>
+        <location filename="mainscreen.py" line="590"/>
         <source>Allow auto accept</source>
         <translation>Activer l&apos;auto-réception</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="586"/>
+        <location filename="mainscreen.py" line="594"/>
         <source>Set alias</source>
         <translation>Définir un alias</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="589"/>
+        <location filename="mainscreen.py" line="598"/>
         <source>Clear history</source>
         <translation>Vider l&apos;historique</translation>
     </message>
@@ -177,17 +177,17 @@ peut entrainer une fuite d&apos;IP</translation>
         <translation type="obsolete">Copier la clé publique</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="599"/>
+        <location filename="mainscreen.py" line="609"/>
         <source>Remove friend</source>
         <translation>Retirer ce contact</translation>
     </message>
     <message>
-        <location filename="profile.py" line="667"/>
+        <location filename="profile.py" line="692"/>
         <source>Enter new alias for friend {} or leave empty to use friend&apos;s name:</source>
         <translation>Entrez un nouvel alias pour le contact {} ou laissez vide pour garder son nom de base :</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="125"/>
+        <location filename="mainscreen.py" line="128"/>
         <source>Audio</source>
         <translation>Audio</translation>
     </message>
@@ -197,24 +197,24 @@ peut entrainer une fuite d&apos;IP</translation>
         <translation type="obsolete">Trouver le contact</translation>
     </message>
     <message>
-        <location filename="profile.py" line="799"/>
+        <location filename="profile.py" line="824"/>
         <source>Friend added</source>
         <translation>Contact ajouté</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="418"/>
+        <location filename="mainscreen.py" line="421"/>
         <source>Toxygen is Tox client written on Python.
 Version: </source>
         <translation>Toxygen est un client Tox écrit en Python.
 Version :</translation>
     </message>
     <message>
-        <location filename="profile.py" line="800"/>
+        <location filename="profile.py" line="825"/>
         <source>Friend added without sending friend request</source>
         <translation>Contact ajouté sans envoi de demande</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="643"/>
+        <location filename="mainscreen.py" line="665"/>
         <source>Choose folder</source>
         <translation>Sélectionner un dossier</translation>
     </message>
@@ -229,47 +229,47 @@ Version :</translation>
         <translation type="obsolete">Envoyer le fichier</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="129"/>
+        <location filename="mainscreen.py" line="132"/>
         <source>Send message</source>
         <translation>Envoyer le message</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="130"/>
+        <location filename="mainscreen.py" line="133"/>
         <source>Start audio call with friend</source>
         <translation>Démarrer un appel audio avec un ami</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="607"/>
+        <location filename="mainscreen.py" line="625"/>
         <source>Plugins</source>
         <translation>Plugins</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="113"/>
+        <location filename="mainscreen.py" line="115"/>
         <source>List of plugins</source>
         <translation>Liste de plugins</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="408"/>
+        <location filename="mainscreen_widgets.py" line="412"/>
         <source>Search</source>
         <translation>Chercher</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="132"/>
+        <location filename="mainscreen.py" line="135"/>
         <source>All</source>
         <translation>Tous</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="133"/>
+        <location filename="mainscreen.py" line="136"/>
         <source>Online</source>
         <translation>En ligne</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="601"/>
+        <location filename="mainscreen.py" line="611"/>
         <source>Notes</source>
         <translation>Notes</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="628"/>
+        <location filename="mainscreen.py" line="650"/>
         <source>Notes about user</source>
         <translation>Notes sur l&apos;utilisateur</translation>
     </message>
@@ -319,7 +319,7 @@ Version :</translation>
         <translation>Sauvegarder</translation>
     </message>
     <message>
-        <location filename="profile.py" line="315"/>
+        <location filename="profile.py" line="327"/>
         <source>User {} is now known as {}</source>
         <translation>L&apos;utilisateur {} s&apos;appelle désormais {}</translation>
     </message>
@@ -329,32 +329,32 @@ Version :</translation>
         <translation>Supprimer ce message</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="111"/>
+        <location filename="mainscreen.py" line="113"/>
         <source>Lock</source>
         <translation>Verrouiller</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="491"/>
+        <location filename="mainscreen.py" line="497"/>
         <source>Cannot lock app</source>
         <translation>Impossible de verrouiller l&apos;application</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="493"/>
+        <location filename="mainscreen.py" line="499"/>
         <source>Error. Profile password is not set.</source>
         <translation>Erreur. Le profil n&apos;a pas de mot de passe.</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="594"/>
+        <location filename="mainscreen.py" line="603"/>
         <source>Name</source>
         <translation>Nom</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="595"/>
+        <location filename="mainscreen.py" line="604"/>
         <source>Status message</source>
         <translation>Status</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="596"/>
+        <location filename="mainscreen.py" line="606"/>
         <source>Public key</source>
         <translation>Clé publique</translation>
     </message>
@@ -369,32 +369,32 @@ Version :</translation>
         <translation>Un profil ayant ce nom existe déjà</translation>
     </message>
     <message>
-        <location filename="menu.py" line="661"/>
+        <location filename="menu.py" line="667"/>
         <source>Choose folder with sticker pack</source>
         <translation>Sélectionner le dossier contenant le pack de stickers</translation>
     </message>
     <message>
-        <location filename="menu.py" line="673"/>
+        <location filename="menu.py" line="679"/>
         <source>Choose folder with smiley pack</source>
         <translation>Sélectionner le dossier contenant le pack de smileys</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="141"/>
+        <location filename="mainscreen.py" line="144"/>
         <source>Import plugin</source>
         <translation>Importer un plugin</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="470"/>
+        <location filename="mainscreen.py" line="476"/>
         <source>Choose folder with plugin</source>
         <translation>Sélectionner un dossier avec des plugins</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="479"/>
+        <location filename="mainscreen.py" line="485"/>
         <source>Restart Toxygen</source>
         <translation>Redémarrer Toxyger</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="481"/>
+        <location filename="mainscreen.py" line="487"/>
         <source>Plugin will be loaded after restart</source>
         <translation>Le plugin sera chargé après le redémarrage</translation>
     </message>
@@ -404,85 +404,125 @@ Version :</translation>
         <translation>Citer le texte sélectionné</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="588"/>
+        <location filename="mainscreen.py" line="597"/>
         <source>Chat history</source>
         <translation>Historique de la conversation</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="590"/>
+        <location filename="mainscreen.py" line="599"/>
         <source>Export as text</source>
         <translation>Exporter comme texte</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="591"/>
+        <location filename="mainscreen.py" line="600"/>
         <source>Export as HTML</source>
         <translation>Exporter comme HTML</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="127"/>
+        <location filename="mainscreen.py" line="130"/>
         <source>Updates</source>
         <translation>Mises à jour</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="134"/>
+        <location filename="mainscreen.py" line="137"/>
         <source>Online first</source>
         <translation>En ligne d&apos;abord</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="136"/>
+        <location filename="mainscreen.py" line="139"/>
         <source>Online and by name</source>
         <translation>En ligne et par nom</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="137"/>
+        <location filename="mainscreen.py" line="140"/>
         <source>Online first and by name</source>
         <translation>En ligne d&apos;abord puis par nom</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="600"/>
+        <location filename="mainscreen.py" line="610"/>
         <source>Block friend</source>
         <translation>Bloquer le contact</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="470"/>
+        <location filename="mainscreen_widgets.py" line="474"/>
         <source>Not found</source>
         <translation>Non trouvé</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="468"/>
+        <location filename="mainscreen_widgets.py" line="472"/>
         <source>Text &quot;{}&quot; was not found</source>
         <translation>Le texte &quot;{}&quot; n&apos;a pas été trouvé</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="142"/>
+        <location filename="mainscreen.py" line="145"/>
         <source>Reload plugins</source>
         <translation>Recharger les plugins</translation>
     </message>
     <message>
-        <location filename="mainscreen.py" line="126"/>
+        <location filename="mainscreen.py" line="129"/>
         <source>Video</source>
         <translation>Vidéo</translation>
+    </message>
+    <message>
+        <location filename="profile.py" line="1328"/>
+        <source>User {} invites you to group chat. Accept?</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="profile.py" line="1329"/>
+        <source>Group chat invite</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="profile.py" line="1365"/>
+        <source>{} users in chat</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="profile.py" line="1386"/>
+        <source>Enter new title for group {}:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainscreen.py" line="634"/>
+        <source>Set title</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainscreen.py" line="120"/>
+        <source>Create group chat</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainscreen.py" line="615"/>
+        <source>Invite to group chat</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <location filename="mainscreen.py" line="633"/>
+        <source>Leave chat</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
     <name>MenuWindow</name>
     <message>
-        <location filename="mainscreen_widgets.py" line="213"/>
+        <location filename="mainscreen_widgets.py" line="217"/>
         <source>Send screenshot</source>
         <translation>Envoyer une capture d&apos;écran</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="214"/>
+        <location filename="mainscreen_widgets.py" line="218"/>
         <source>Send file</source>
         <translation>Envoyer un fichier</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="215"/>
+        <location filename="mainscreen_widgets.py" line="219"/>
         <source>Add smiley</source>
         <translation>Ajouter un smiley</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="216"/>
+        <location filename="mainscreen_widgets.py" line="220"/>
         <source>Send sticker</source>
         <translation>Ajouter un sticker</translation>
     </message>
@@ -554,42 +594,42 @@ Version :</translation>
 <context>
     <name>PluginsForm</name>
     <message>
-        <location filename="menu.py" line="957"/>
+        <location filename="menu.py" line="967"/>
         <source>Plugins</source>
         <translation>Plugins</translation>
     </message>
     <message>
-        <location filename="menu.py" line="958"/>
+        <location filename="menu.py" line="968"/>
         <source>Open selected plugin</source>
         <translation>Ouvrir le plugin sélectionné</translation>
     </message>
     <message>
-        <location filename="menu.py" line="970"/>
+        <location filename="menu.py" line="980"/>
         <source>No GUI found for this plugin</source>
         <translation>Pas d&apos;interface pour ce plugin</translation>
     </message>
     <message>
-        <location filename="menu.py" line="985"/>
+        <location filename="menu.py" line="995"/>
         <source>No description available</source>
         <translation>Pas de description</translation>
     </message>
     <message>
-        <location filename="menu.py" line="1001"/>
+        <location filename="menu.py" line="1011"/>
         <source>Disable plugin</source>
         <translation>Désactiver le plugin</translation>
     </message>
     <message>
-        <location filename="menu.py" line="1003"/>
+        <location filename="menu.py" line="1013"/>
         <source>Enable plugin</source>
         <translation>Activer le plugin</translation>
     </message>
     <message>
-        <location filename="menu.py" line="993"/>
+        <location filename="menu.py" line="1003"/>
         <source>No plugins found</source>
         <translation>Pas de plugin trouvé</translation>
     </message>
     <message>
-        <location filename="menu.py" line="970"/>
+        <location filename="menu.py" line="980"/>
         <source>Error</source>
         <translation>Erreur</translation>
     </message>
@@ -730,67 +770,67 @@ Version :</translation>
 <context>
     <name>WelcomeScreen</name>
     <message>
-        <location filename="mainscreen_widgets.py" line="291"/>
+        <location filename="mainscreen_widgets.py" line="295"/>
         <source>Don&apos;t show again</source>
         <translation>Ne plus montrer</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="292"/>
+        <location filename="mainscreen_widgets.py" line="296"/>
         <source>Tip of the day</source>
         <translation>Astuce du jou</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="297"/>
+        <location filename="mainscreen_widgets.py" line="301"/>
         <source>Press Esc if you want hide app to tray.</source>
         <translation>Appuyez sur échap pour réduire l&apos;application.</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="303"/>
+        <location filename="mainscreen_widgets.py" line="307"/>
         <source>You can use Tox over Tor. For more info read &lt;a href=&quot;https://wiki.tox.chat/users/tox_over_tor_tot&quot;&gt;this post&lt;/a&gt;</source>
         <translation>Vous pouvez utiliser Tox avec Tor. Pour plus d&apos;informations, voir &lt;a href=&quot;https://wiki.tox.chat/users/tox_over_tor_tot&quot;&gt;cet article&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="309"/>
+        <location filename="mainscreen_widgets.py" line="313"/>
         <source>Set profile password via Profile -&gt; Settings. Password allows Toxygen encrypt your history and settings.</source>
         <translation>Vous pouvez mettre un mot de passe dans Profil -&gt; Paramètres -&gt; Mot de passe pour que toxygen encrypte votre historique et vos paramètres.</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="300"/>
+        <location filename="mainscreen_widgets.py" line="304"/>
         <source>Right click on screenshot button hides app to tray during screenshot.</source>
         <translation>Faire un clic droit sur le bouton de capture d&apos;écran réduit l&apos;application avant de capturer l&apos;écran.</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="306"/>
+        <location filename="mainscreen_widgets.py" line="310"/>
         <source>Use Settings -&gt; Interface to customize interface.</source>
         <translation>Vous pouvez customizer votre interface dans Paramètres -&gt; Interface.</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="315"/>
+        <location filename="mainscreen_widgets.py" line="319"/>
         <source>Toxygen supports faux offline messages and file transfers. Send message or file to offline friend and he will get it later.</source>
         <translation>Toxygen permet d&apos;envoyer des messages et fichiers en différé. Envoyez des messages ou fichiers à un contact hors ligne et il le recevra plus tard.</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="327"/>
+        <location filename="mainscreen_widgets.py" line="331"/>
         <source>Set new NoSpam to avoid spam friend requests: Profile -&gt; Settings -&gt; Set new NoSpam.</source>
         <translation>Vous pouvez empecher le spam dans les demandes de contact avec Profil -&gt; Paramètres -&gt; Nouveau NoSpam.</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="321"/>
+        <location filename="mainscreen_widgets.py" line="325"/>
         <source>Delete single message in chat: make right click on spinner or message time and choose &quot;Delete&quot; in menu</source>
         <translation>Pour supprimer un seul message dans une conversation, faites un clic droit sur l&apos;heure du message et sélectionnez &quot;Supprimer ce message&quot; dans le menu</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="324"/>
+        <location filename="mainscreen_widgets.py" line="328"/>
         <source>Use right click on inline image to save it</source>
         <translation>Pour sauvegarder une image intégrée, faites un clic droit dessus</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="312"/>
+        <location filename="mainscreen_widgets.py" line="316"/>
         <source>Since v0.1.3 Toxygen supports plugins. &lt;a href=&quot;https://github.com/toxygen-project/toxygen/blob/master/docs/plugins.md&quot;&gt;Read more&lt;/a&gt;</source>
         <translation>Depuis la version 0.1.3 Toxygen supporte les plugins. &lt;a href=&quot;https://github.com/toxygen-project/toxygen/blob/master/docs/plugins.md&quot;&gt;En savoir plus&lt;/a&gt;</translation>
     </message>
     <message>
-        <location filename="mainscreen_widgets.py" line="318"/>
+        <location filename="mainscreen_widgets.py" line="322"/>
         <source>New in Toxygen 0.3.0:&lt;br&gt;Video calls&lt;br&gt;Python3.6 support&lt;br&gt;Migration to PyQt5</source>
         <translation>Nouveau dans Toxygen 0.3.0 : &lt;br&gt;Appels vidéo&lt;br&gt;Support de Python3.6&lt;br&gt;Migration vers PyQt5</translation>
     </message>
@@ -798,17 +838,17 @@ Version :</translation>
 <context>
     <name>audioSettingsForm</name>
     <message>
-        <location filename="menu.py" line="794"/>
+        <location filename="menu.py" line="800"/>
         <source>Audio settings</source>
         <translation>Paramètres audio</translation>
     </message>
     <message>
-        <location filename="menu.py" line="795"/>
+        <location filename="menu.py" line="801"/>
         <source>Input device:</source>
         <translation>Péripherique d&apos;entrée :</translation>
     </message>
     <message>
-        <location filename="menu.py" line="796"/>
+        <location filename="menu.py" line="802"/>
         <source>Output device:</source>
         <translation>Péripherique de sortie :</translation>
     </message>
@@ -816,32 +856,32 @@ Version :</translation>
 <context>
     <name>incoming_call</name>
     <message>
-        <location filename="profile.py" line="1223"/>
+        <location filename="profile.py" line="1250"/>
         <source>Incoming video call</source>
         <translation>Appel vidéo entrant</translation>
     </message>
     <message>
-        <location filename="profile.py" line="1225"/>
+        <location filename="profile.py" line="1252"/>
         <source>Incoming audio call</source>
         <translation>Appel audio entrant</translation>
     </message>
     <message>
-        <location filename="profile.py" line="1206"/>
+        <location filename="profile.py" line="1233"/>
         <source>Outgoing video call</source>
         <translation>Appel vidéo sortant</translation>
     </message>
     <message>
-        <location filename="profile.py" line="1208"/>
+        <location filename="profile.py" line="1235"/>
         <source>Outgoing audio call</source>
         <translation>Appel audio sortant</translation>
     </message>
     <message>
-        <location filename="profile.py" line="1254"/>
+        <location filename="profile.py" line="1281"/>
         <source>Call declined</source>
         <translation>Appel refusé</translation>
     </message>
     <message>
-        <location filename="profile.py" line="1256"/>
+        <location filename="profile.py" line="1283"/>
         <source>Call finished</source>
         <translation>Appel terminé</translation>
     </message>
@@ -849,82 +889,82 @@ Version :</translation>
 <context>
     <name>interfaceForm</name>
     <message>
-        <location filename="menu.py" line="644"/>
+        <location filename="menu.py" line="650"/>
         <source>Interface settings</source>
         <translation>Paramètres de l&apos;interface</translation>
     </message>
     <message>
-        <location filename="menu.py" line="645"/>
+        <location filename="menu.py" line="651"/>
         <source>Theme:</source>
         <translation>Thème :</translation>
     </message>
     <message>
-        <location filename="menu.py" line="646"/>
+        <location filename="menu.py" line="652"/>
         <source>Language:</source>
         <translation>Langue :</translation>
     </message>
     <message>
-        <location filename="menu.py" line="647"/>
+        <location filename="menu.py" line="653"/>
         <source>Smileys</source>
         <translation>Smileys</translation>
     </message>
     <message>
-        <location filename="menu.py" line="648"/>
+        <location filename="menu.py" line="654"/>
         <source>Smiley pack:</source>
         <translation>Pack de smileys :</translation>
     </message>
     <message>
-        <location filename="menu.py" line="649"/>
+        <location filename="menu.py" line="655"/>
         <source>Mirror mode</source>
         <translation>Mode miroir</translation>
     </message>
     <message>
-        <location filename="menu.py" line="650"/>
+        <location filename="menu.py" line="656"/>
         <source>Messages font size:</source>
         <translation>Taille des messages :</translation>
     </message>
     <message>
-        <location filename="menu.py" line="743"/>
+        <location filename="menu.py" line="749"/>
         <source>Restart app to apply settings</source>
         <translation>Redémarrer toxygen pour appliquer les paramètres</translation>
     </message>
     <message>
-        <location filename="menu.py" line="743"/>
+        <location filename="menu.py" line="749"/>
         <source>Restart required</source>
         <translation>Redémarrage nécessaire</translation>
     </message>
     <message>
-        <location filename="menu.py" line="651"/>
+        <location filename="menu.py" line="657"/>
         <source>Select unread messages notification color</source>
         <translation>Sélectionner la couleur des messages non-lus</translation>
     </message>
     <message>
-        <location filename="menu.py" line="652"/>
+        <location filename="menu.py" line="658"/>
         <source>Compact contact list</source>
         <translation>Liste de contacts compacte</translation>
     </message>
     <message>
-        <location filename="menu.py" line="653"/>
+        <location filename="menu.py" line="659"/>
         <source>Import smiley pack</source>
         <translation>Importer un pack de smileys</translation>
     </message>
     <message>
-        <location filename="menu.py" line="654"/>
+        <location filename="menu.py" line="660"/>
         <source>Import sticker pack</source>
         <translation>Importer un pack de stickers</translation>
     </message>
     <message>
-        <location filename="menu.py" line="643"/>
+        <location filename="menu.py" line="649"/>
         <source>Show avatars in chat</source>
         <translation>Montrer les avatars dans la conversation</translation>
     </message>
     <message>
-        <location filename="menu.py" line="655"/>
+        <location filename="menu.py" line="661"/>
         <source>Close to tray</source>
         <translation>Réduire</translation>
     </message>
     <message>
-        <location filename="menu.py" line="656"/>
+        <location filename="menu.py" line="662"/>
         <source>Select font</source>
         <translation>Sélectionner la police</translation>
     </message>
@@ -1010,24 +1050,29 @@ Version :</translation>
 <context>
     <name>notificationsForm</name>
     <message>
-        <location filename="menu.py" line="534"/>
+        <location filename="menu.py" line="538"/>
         <source>Notification settings</source>
         <translation>Paramètres de notification</translation>
     </message>
     <message>
-        <location filename="menu.py" line="535"/>
+        <location filename="menu.py" line="539"/>
         <source>Enable notifications</source>
         <translation>Activer les notifications</translation>
     </message>
     <message>
-        <location filename="menu.py" line="536"/>
+        <location filename="menu.py" line="541"/>
         <source>Enable call&apos;s sound</source>
         <translation>Activer les sons d&apos;appel</translation>
     </message>
     <message>
-        <location filename="menu.py" line="537"/>
+        <location filename="menu.py" line="542"/>
         <source>Enable sound notifications</source>
         <translation>Activer les sons de notifications</translation>
+    </message>
+    <message>
+        <location filename="menu.py" line="540"/>
+        <source>Notify about all messages in groups</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1172,57 +1217,57 @@ Version :</translation>
 <context>
     <name>updateSettingsForm</name>
     <message>
-        <location filename="menu.py" line="1041"/>
+        <location filename="menu.py" line="1051"/>
         <source>Update settings</source>
         <translation>Paramètres de mise à jour</translation>
     </message>
     <message>
-        <location filename="menu.py" line="1042"/>
+        <location filename="menu.py" line="1052"/>
         <source>Select update mode:</source>
         <translation>Sélectionner le mode de mise à jour :</translation>
     </message>
     <message>
-        <location filename="menu.py" line="1043"/>
+        <location filename="menu.py" line="1053"/>
         <source>Update Toxygen</source>
         <translation>Mettre à jour toxygen</translation>
     </message>
     <message>
-        <location filename="menu.py" line="1044"/>
+        <location filename="menu.py" line="1054"/>
         <source>Disabled</source>
         <translation>Désactivé</translation>
     </message>
     <message>
-        <location filename="menu.py" line="1045"/>
+        <location filename="menu.py" line="1055"/>
         <source>Manual</source>
         <translation>Manuel</translation>
     </message>
     <message>
-        <location filename="menu.py" line="1046"/>
+        <location filename="menu.py" line="1056"/>
         <source>Auto</source>
         <translation>Automatique</translation>
     </message>
     <message>
-        <location filename="menu.py" line="1065"/>
+        <location filename="menu.py" line="1075"/>
         <source>Error</source>
         <translation>Erreur</translation>
     </message>
     <message>
-        <location filename="menu.py" line="1058"/>
+        <location filename="menu.py" line="1068"/>
         <source>Problems with internet connection</source>
         <translation>Il y à des problèmes avec votre connexion internet</translation>
     </message>
     <message>
-        <location filename="menu.py" line="1066"/>
+        <location filename="menu.py" line="1076"/>
         <source>Updater not found</source>
         <translation>Updater non trouvé</translation>
     </message>
     <message>
-        <location filename="menu.py" line="1077"/>
+        <location filename="menu.py" line="1087"/>
         <source>No updates found</source>
         <translation>Pas de mises à jour trouvés</translation>
     </message>
     <message>
-        <location filename="menu.py" line="1078"/>
+        <location filename="menu.py" line="1088"/>
         <source>Toxygen is up to date</source>
         <translation>Toxygen est à jour</translation>
     </message>
@@ -1230,22 +1275,22 @@ Version :</translation>
 <context>
     <name>videoSettingsForm</name>
     <message>
-        <location filename="menu.py" line="876"/>
+        <location filename="menu.py" line="882"/>
         <source>Video settings</source>
         <translation>Paramètres vidéo</translation>
     </message>
     <message>
-        <location filename="menu.py" line="877"/>
+        <location filename="menu.py" line="883"/>
         <source>Device:</source>
         <translation>Périphérique :</translation>
     </message>
     <message>
-        <location filename="menu.py" line="856"/>
+        <location filename="menu.py" line="862"/>
         <source>Desktop</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="menu.py" line="878"/>
+        <location filename="menu.py" line="884"/>
         <source>Select region</source>
         <translation type="unfinished"></translation>
     </message>
