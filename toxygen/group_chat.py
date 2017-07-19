@@ -44,3 +44,6 @@ class GroupChat(contact.Contact):
     def get_full_status(self):
         names = self.get_names()
         return '\n'.join(names)
+
+    def get_peer_name(self, peer_number):
+        return self._tox.group_peername(self._number, peer_number)

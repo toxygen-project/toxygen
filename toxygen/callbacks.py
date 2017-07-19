@@ -384,13 +384,14 @@ def group_invite(tox, friend_number, gc_type, data, length,  user_data):
                           bytes(data[:length]))
 
 
-def show_gc_notification(window, tray, message, group_number):
+def show_gc_notification(window, tray, message, group_number, peer_number):
     profile = Profile.get_instance()
     settings = Settings.get_instance()
     chat = profile.get_group_by_number(group_number)
+    peer_name = chat.get_peer_name(peer_number)
     if not window.isActiveWindow() and (profile.name in message or settings['group_notifications']):
         if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
-            invoke_in_main_thread(tray_notification, chat.name, message, tray, window)
+            invoke_in_main_thread(tray_notification, chat.name + ' ' + peer_name, message, tray, window)
         if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['MESSAGE'])
         invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
@@ -401,7 +402,7 @@ def group_message(window, tray):
         message = str(message[:length], 'utf-8')
         invoke_in_main_thread(Profile.get_instance().new_gc_message, group_number,
                               peer_number, TOX_MESSAGE_TYPE['NORMAL'], message)
-        show_gc_notification(window, tray, message, group_number)
+        show_gc_notification(window, tray, message, group_number, peer_number)
     return wrapped
 
 
@@ -410,7 +411,7 @@ def group_action(window, tray):
         message = str(message[:length], 'utf-8')
         invoke_in_main_thread(Profile.get_instance().new_gc_message, group_number,
                               peer_number, TOX_MESSAGE_TYPE['ACTION'], message)
-        show_gc_notification(window, tray, message, group_number)
+        show_gc_notification(window, tray, message, group_number, peer_number)
     return wrapped
 
 
