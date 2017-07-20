@@ -61,6 +61,8 @@ class Contact(basecontact.BaseContact):
         """
         Get all chat history from db for current friend
         """
+        if self._message_getter is None:
+            return
         data = list(self._message_getter.get_all())
         if data is not None and len(data):
             data.reverse()
@@ -124,7 +126,7 @@ class Contact(basecontact.BaseContact):
     # -----------------------------------------------------------------------------------------------------------------
 
     def delete_message(self, time):
-        elem = list(filter(lambda x: type(x) is TextMessage and x.get_data()[2] == time, self._corr))[0]
+        elem = list(filter(lambda x: type(x) in (TextMessage, GroupChatMessage) and x.get_data()[2] == time, self._corr))[0]
         tmp = list(filter(lambda x: x.get_type() <= 1, self._corr))
         if elem in tmp[-self._unsaved_messages:] and self._unsaved_messages:
             self._unsaved_messages -= 1
