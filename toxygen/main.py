@@ -106,7 +106,7 @@ class Toxygen:
                         return
                     self.tox = profile.tox_factory()
                     self.tox.self_set_name(bytes(_login.name, 'utf-8') if _login.name else b'Toxygen User')
-                    self.tox.self_set_status_message(b'Toxing on T03')
+                    self.tox.self_set_status_message(b'Toxing on Toxygen')
                     reply = QtWidgets.QMessageBox.question(None,
                                                            'Profile {}'.format(name),
                                                            QtWidgets.QApplication.translate("login",

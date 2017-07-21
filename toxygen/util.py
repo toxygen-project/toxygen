@@ -5,7 +5,7 @@ import sys
 import re
 
 
-program_version = '0.3.2'
+program_version = '0.4.0'
 
 
 def cached(func):
