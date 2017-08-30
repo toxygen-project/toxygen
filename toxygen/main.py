@@ -6,7 +6,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from bootstrap import node_generator
 from mainscreen import MainWindow
 from callbacks import init_callbacks, stop, start
-from util import curr_directory, program_version, remove, is_64_bit
+from util import curr_directory, program_version, remove
 import styles.style
 import platform
 import toxes

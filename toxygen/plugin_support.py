@@ -97,10 +97,13 @@ class PluginLoader(util.Singleton):
         """
         result = []
         for data in self._plugins.values():
-            result.append([data[0].get_name(),  # plugin full name
-                           data[1],  # is enabled
-                           data[0].get_description(),  # plugin description
-                           data[0].get_short_name()])  # key - short unique name
+            try:
+                result.append([data[0].get_name(),  # plugin full name
+                               data[1],  # is enabled
+                               data[0].get_description(),  # plugin description
+                               data[0].get_short_name()])  # key - short unique name
+            except:
+                continue
         return result
 
     def plugin_window(self, key):

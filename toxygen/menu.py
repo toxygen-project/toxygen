@@ -611,7 +611,7 @@ class InterfaceSettings(CenteredWidget):
         self.messages_font_size_label.setFont(font)
         self.messages_font_size = QtWidgets.QComboBox(self)
         self.messages_font_size.setGeometry(QtCore.QRect(30, 330, 160, 30))
-        self.messages_font_size.addItems([str(x) for x in range(10, 19)])
+        self.messages_font_size.addItems([str(x) for x in range(10, 25)])
         self.messages_font_size.setCurrentIndex(settings['message_font_size'] - 10)
 
         self.unread = QtWidgets.QPushButton(self)
