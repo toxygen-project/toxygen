@@ -1281,11 +1281,17 @@ class Profile(basecontact.BaseContact, Singleton):
         else:
             text = QtWidgets.QApplication.translate("incoming_call", "Call finished")
         self._screen.call_finished()
+        is_video = self._call.is_video_call(friend_number)
         self._call.finish_call(friend_number, by_friend)  # finish or decline call
         if hasattr(self, '_call_widget'):
             self._call_widget[friend_number].close()
             del self._call_widget[friend_number]
-        threading.Timer(2.0, lambda: cv2.destroyWindow(str(friend_number))).start()
+
+        def destroy_window():
+            if is_video:
+                cv2.destroyWindow(str(friend_number))
+
+        threading.Timer(2.0, destroy_window).start()
         friend = self.get_friend_by_number(friend_number)
         friend.append_message(InfoMessage(text, time.time()))
         if friend_number == self.get_active_number():

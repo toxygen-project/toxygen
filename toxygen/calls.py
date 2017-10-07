@@ -153,6 +153,9 @@ class AV:
         if state | TOXAV_FRIEND_CALL_STATE['ACCEPTING_V'] and call.out_video:
             self.start_video_thread()
 
+    def is_video_call(self, number):
+        return self._calls[number].in_video
+
     # -----------------------------------------------------------------------------------------------------------------
     # Threads
     # -----------------------------------------------------------------------------------------------------------------

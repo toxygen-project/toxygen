@@ -816,7 +816,7 @@ class DesktopAreaSelectionWindow(RubberBandWindow):
             rect = self.rubberband.geometry()
             width, height = rect.width(), rect.height()
             if width >= 8 and height >= 8:
-                self.parent.save(rect.x(), rect.y(), width, height)
+                self.parent.save(rect.x(), rect.y(), width - (width % 4), height - (height % 4))
             self.close()
 
 
