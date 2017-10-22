@@ -995,11 +995,12 @@ class Profile(basecontact.BaseContact, Singleton):
             if friend_number == self.get_active_number() and self.is_active_a_friend():
                 tmp = self._messages.count() + i
                 if tmp >= 0:
-                    self._messages.itemWidget(self._messages.item(tmp)).update(TOX_FILE_TRANSFER_STATE['CANCELLED'],
-                                                                               0, -1)
+                    self._messages.itemWidget(
+                        self._messages.item(tmp)).update_transfer_state(TOX_FILE_TRANSFER_STATE['CANCELLED'],
+                                                                        0, -1)
 
-    def cancel_not_started_transfer(self, time):
-        self.get_curr_friend().delete_one_unsent_file(time)
+    def cancel_not_started_transfer(self, cancel_time):
+        self.get_curr_friend().delete_one_unsent_file(cancel_time)
         self.update()
 
     def pause_transfer(self, friend_number, file_number, by_friend=False):
