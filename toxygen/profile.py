@@ -72,6 +72,8 @@ class Profile(basecontact.BaseContact, Singleton):
             friend = Friend(message_getter, i, name, status_message, item, tox_id)
             friend.set_alias(alias)
             self._contacts.append(friend)
+        if len(self._contacts):
+            self.set_active(0)
         self.filtration_and_sorting(self._sorting)
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -1241,7 +1243,7 @@ class Profile(basecontact.BaseContact, Singleton):
 
     def incoming_call(self, audio, video, friend_number):
         """
-        Incoming call from friend. Only audio is supported now
+        Incoming call from friend.
         """
         if not Settings.get_instance().audio['enabled']:
             return

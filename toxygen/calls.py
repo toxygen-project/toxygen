@@ -284,12 +284,12 @@ class AV:
                             try:
                                 y, u, v = self.convert_bgr_to_yuv(frame)
                                 self._toxav.video_send_frame(friend_num, width, height, y, u, v)
-                            except Exception as e:
-                                print(e)
-            except Exception as e:
-                print(e)
+                            except:
+                                pass
+            except:
+                pass
 
-        time.sleep(0.01)
+            time.sleep(0.01)
 
     def convert_bgr_to_yuv(self, frame):
         """
