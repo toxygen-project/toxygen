@@ -7,7 +7,7 @@ from bootstrap import node_generator
 from mainscreen import MainWindow
 from callbacks import init_callbacks, stop, start
 from util import curr_directory, program_version, remove
-import styles.style
+import styles.style  # reqired for styles loading
 import platform
 import toxes
 from passwordscreen import PasswordScreen, UnlockAppScreen, SetProfilePasswordScreen
@@ -327,6 +327,7 @@ class Toxygen:
         self.mainloop.wait()
         self.init.wait()
         self.avloop.wait()
+        self.tray.hide()
         data = self.tox.get_savedata()
         ProfileHelper.get_instance().save_profile(data)
         settings.close()

@@ -48,6 +48,7 @@ class InstallScript(install):
             except:
                 pass
 
+
 setup(name='Toxygen',
       version=version,
       description='Toxygen - Tox client',

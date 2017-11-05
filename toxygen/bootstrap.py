@@ -81,4 +81,3 @@ def node_generator():
     arr = sorted(nodes, key=lambda x: x.rand)[:4]
     for elem in arr:
         yield elem.get_data()
-

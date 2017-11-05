@@ -543,7 +543,3 @@ class InlineImageItem(QtWidgets.QScrollArea):
 
     def mark_as_sent(self):
         return False
-
-
-
-
