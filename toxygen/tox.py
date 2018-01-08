@@ -1568,7 +1568,7 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_join(self._tox_pointer, chat_id,
+        result = Tox.libtoxcore.tox_group_join(self._tox_pointer, string_to_bin(chat_id),
                                                password,
                                                len(password) if password is not None else 0,
                                                byref(error))
