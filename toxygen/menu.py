@@ -294,10 +294,10 @@ class NetworkSettings(CenteredWidget):
 
     def initUI(self):
         self.setObjectName("NetworkSettings")
-        self.resize(300, 330)
-        self.setMinimumSize(QtCore.QSize(300, 330))
-        self.setMaximumSize(QtCore.QSize(300, 330))
-        self.setBaseSize(QtCore.QSize(300, 330))
+        self.resize(300, 400)
+        self.setMinimumSize(QtCore.QSize(300, 400))
+        self.setMaximumSize(QtCore.QSize(300, 400))
+        self.setBaseSize(QtCore.QSize(300, 400))
         self.ipv = QtWidgets.QCheckBox(self)
         self.ipv.setGeometry(QtCore.QRect(20, 10, 97, 22))
         self.ipv.setObjectName("ipv")
@@ -332,6 +332,9 @@ class NetworkSettings(CenteredWidget):
         self.warning = QtWidgets.QLabel(self)
         self.warning.setGeometry(QtCore.QRect(5, 270, 290, 60))
         self.warning.setStyleSheet('QLabel { color: #BC1C1C; }')
+        self.nodes = QtWidgets.QCheckBox(self)
+        self.nodes.setGeometry(QtCore.QRect(20, 350, 270, 22))
+        self.nodes.setChecked(settings['download_nodes_list'])
         self.retranslateUi()
         self.proxy.stateChanged.connect(lambda x: self.activate())
         self.activate()
@@ -346,6 +349,7 @@ class NetworkSettings(CenteredWidget):
         self.label_2.setText(QtWidgets.QApplication.translate("Form", "Port:"))
         self.reconnect.setText(QtWidgets.QApplication.translate("NetworkSettings", "Restart TOX core"))
         self.http.setText(QtWidgets.QApplication.translate("Form", "HTTP"))
+        self.nodes.setText(QtWidgets.QApplication.translate("Form", "Download nodes list from tox.chat"))
         self.warning.setText(QtWidgets.QApplication.translate("Form", "WARNING:\nusing proxy with enabled UDP\ncan produce IP leak"))
 
     def activate(self):
@@ -362,6 +366,7 @@ class NetworkSettings(CenteredWidget):
             settings['proxy_type'] = 2 - int(self.http.isChecked()) if self.proxy.isChecked() else 0
             settings['proxy_host'] = str(self.proxyip.text())
             settings['proxy_port'] = int(self.proxyport.text())
+            settings['download_nodes_list'] = self.nodes.isChecked()
             settings.save()
             # recreate tox instance
             Profile.get_instance().reset(self.reset)

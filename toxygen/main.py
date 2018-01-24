@@ -3,7 +3,7 @@ from loginscreen import LoginScreen
 import profile
 from settings import *
 from PyQt5 import QtCore, QtGui, QtWidgets
-from bootstrap import node_generator
+from bootstrap import generate_nodes, download_nodes_list
 from mainscreen import MainWindow
 from callbacks import init_callbacks, stop, start
 from util import curr_directory, program_version, remove
@@ -379,9 +379,11 @@ class Toxygen:
         def run(self):
             # initializing callbacks
             init_callbacks(self.tox, self.ms, self.tray)
+            # download list of nodes if needed
+            download_nodes_list()
             # bootstrap
             try:
-                for data in node_generator():
+                for data in generate_nodes():
                     if self.stop:
                         return
                     self.tox.bootstrap(*data)
@@ -394,7 +396,7 @@ class Toxygen:
                 self.msleep(1000)
             while not self.tox.self_get_connection_status():
                 try:
-                    for data in node_generator():
+                    for data in generate_nodes():
                         if self.stop:
                             return
                         self.tox.bootstrap(*data)

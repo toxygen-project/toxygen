@@ -145,7 +145,8 @@ class Settings(dict, Singleton):
             'close_to_tray': False,
             'font': 'Times New Roman',
             'update': 1,
-            'group_notifications': True
+            'group_notifications': True,
+            'download_nodes_list': False
         }
 
     @staticmethod
