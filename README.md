@@ -18,6 +18,7 @@ Toxygen is powerful cross-platform [Tox](https://tox.chat/) client written in pu
 - File transfers
 - Audio calls
 - Video calls
+- Group chats
 - Plugins support
 - Desktop sharing
 - Chat history

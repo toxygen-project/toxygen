@@ -318,7 +318,7 @@ class WelcomeScreen(CenteredWidget):
                                                     'Toxygen supports faux offline messages and file transfers. Send message or file to offline friend and he will get it later.')
         elif num == 7:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
-                                                    'New in Toxygen 0.3.0:<br>Video calls<br>Python3.6 support<br>Migration to PyQt5')
+                                                    'New in Toxygen 0.4.1:<br>Downloading nodes from tox.chat<br>Bug fixes')
         elif num == 8:
             text = QtWidgets.QApplication.translate('WelcomeScreen',
                                                     'Delete single message in chat: make right click on spinner or message time and choose "Delete" in menu')

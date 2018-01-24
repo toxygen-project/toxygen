@@ -33,6 +33,7 @@ class Invoker(QtCore.QObject):
         event.fn(*event.args, **event.kwargs)
         return True
 
+
 _invoker = Invoker()
 
 
@@ -65,6 +66,7 @@ class FileTransfersThread(threading.Thread):
                 util.log('Queue is Full in _thread')
             except Exception as ex:
                 util.log('Exception in _thread: ' + str(ex))
+
 
 _thread = FileTransfersThread()
 
