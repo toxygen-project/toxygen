@@ -1,10 +1,10 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtGui
 from notifications import *
-from settings import Settings
-from profile import Profile
-from toxcore_enums_and_consts import *
-from toxav_enums import *
-from tox import bin_to_string
+from user_data.settings import Settings
+from contacts.profile import Profile
+from wrapper.toxcore_enums_and_consts import *
+from wrapper.toxav_enums import *
+from wrapper.tox import bin_to_string
 from plugin_support import PluginLoader
 import queue
 import threading

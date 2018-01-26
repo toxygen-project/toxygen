@@ -1,9 +1,9 @@
-from toxygen.profile import *
-from toxygen.tox_dns import tox_dns
-from toxygen.history import History
+from contacts.profile import *
+from network.tox_dns import tox_dns
+from db.history import History
 from toxygen.smileys import SmileyLoader
-from toxygen.messages import *
-import toxygen.toxes as encr
+from messenger.messages import *
+import user_data.toxes as encr
 import toxygen.util as util
 import time
 
@@ -23,15 +23,15 @@ class TestTox:
         assert tox.self_get_status_message() == str(status_message, 'utf-8')
 
 
-class TestProfileHelper:
+class TestProfileManager:
 
     def test_creation(self):
         file_name, path = 'test.tox', os.path.dirname(os.path.realpath(__file__)) + '/'
         data = b'test'
         with open(path + file_name, 'wb') as fl:
             fl.write(data)
-        ph = ProfileHelper(path, file_name[:4])
-        assert ProfileHelper.get_path() == path
+        ph = ProfileManager(path, file_name[:4])
+        assert ProfileManager.get_path() == path
         assert ph.open_profile() == data
         assert os.path.exists(path + 'avatars/')
 
@@ -81,7 +81,7 @@ def create_singletons():
     Settings._instance = Settings.get_default_settings()
     if not os.path.exists(folder):
         os.makedirs(folder)
-    ProfileHelper(folder, 'test')
+    ProfileManager(folder, 'test')
 
 
 def create_friend(name, status_message, number, tox_id):

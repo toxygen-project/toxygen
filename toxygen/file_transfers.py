@@ -1,9 +1,9 @@
-from toxcore_enums_and_consts import TOX_FILE_KIND, TOX_FILE_CONTROL
+from wrapper.toxcore_enums_and_consts import TOX_FILE_KIND, TOX_FILE_CONTROL
 from os.path import basename, getsize, exists, dirname
 from os import remove, rename, chdir
 from time import time, sleep
-from tox import Tox
-import settings
+from wrapper.tox import Tox
+from user_data import settings
 from PyQt5 import QtCore
 
 
@@ -305,7 +305,7 @@ class ReceiveAvatar(ReceiveTransfer):
     MAX_AVATAR_SIZE = 512 * 1024
 
     def __init__(self, tox, friend_number, size, file_number):
-        path = settings.ProfileHelper.get_path() + 'avatars/{}.png'.format(tox.friend_get_public_key(friend_number))
+        path = settings.ProfileManager.get_path() + 'avatars/{}.png'.format(tox.friend_get_public_key(friend_number))
         super(ReceiveAvatar, self).__init__(path + '.tmp', tox, friend_number, size, file_number)
         if size > self.MAX_AVATAR_SIZE:
             self.send_control(TOX_FILE_CONTROL['CANCEL'])
