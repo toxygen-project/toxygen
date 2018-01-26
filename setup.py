@@ -25,6 +25,10 @@ else:
         import numpy
     except ImportError:
         MODULES.append('numpy')
+    try:
+        import cv2
+    except ImportError:
+        MODULES.append('opencv-python')
 
 
 class InstallScript(install):
