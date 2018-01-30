@@ -870,8 +870,11 @@ class Profile(basecontact.BaseContact, Singleton):
         Recreate tox instance
         :param restart: method which calls restart and returns new tox instance
         """
-        for friend in self._contacts:
-            self.friend_exit(friend.number)
+        for contact in self._contacts:
+            if type(contact) is Friend:
+                self.friend_exit(contact.number)
+            else:
+                self.leave_gc(contact.number)
         self._call.stop()
         del self._call
         del self._tox
