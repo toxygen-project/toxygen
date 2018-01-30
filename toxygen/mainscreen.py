@@ -418,8 +418,10 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         import util
         msgBox = QtWidgets.QMessageBox()
         msgBox.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "About"))
-        text = (QtWidgets.QApplication.translate("MainWindow", 'Toxygen is Tox client written on Python.\nVersion: '))
-        msgBox.setText(text + util.program_version + '\nGitHub: https://github.com/toxygen-project/toxygen/')
+        text = (QtWidgets.QApplication.translate("MainWindow", 'Toxygen is Tox client written on Python.<br>Version: '))
+        github = '<br><a href="https://github.com/toxygen-project/toxygen/">Github</a>'
+        submit_a_bug = '<br><a href="https://github.com/toxygen-project/toxygen/issues">Submit a bug</a>'
+        msgBox.setText(text + util.program_version + github + submit_a_bug)
         msgBox.exec_()
 
     def network_settings(self):
