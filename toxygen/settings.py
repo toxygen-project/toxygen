@@ -104,7 +104,7 @@ class Settings(dict, Singleton):
         """
         return {
             'theme': 'dark',
-            'ipv6_enabled': True,
+            'ipv6_enabled': False,
             'udp_enabled': True,
             'proxy_type': 0,
             'proxy_host': '127.0.0.1',

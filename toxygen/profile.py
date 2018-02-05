@@ -1438,6 +1438,8 @@ def tox_factory(data=None, settings=None):
     if settings is None:
         settings = Settings.get_default_settings()
     tox_options = Tox.options_new()
+    # see <https://github.com/irungentoo/toxcore/blob/master/toxcore/tox.h> lines 393-401
+    tox_options.contents.ipv6_enabled = settings['ipv6_enabled']
     tox_options.contents.udp_enabled = settings['udp_enabled']
     tox_options.contents.proxy_type = settings['proxy_type']
     tox_options.contents.proxy_host = bytes(settings['proxy_host'], 'UTF-8')
