@@ -1,24 +1,24 @@
 
 class ToxES:
 
-    def __init__(self, toxencryptsave):
-        self._toxencryptsave = toxencryptsave
-        self._passphrase = None
+    def __init__(self, tox_encrypt_save):
+        self._tox_encrypt_save = tox_encrypt_save
+        self._password = None
 
-    def set_password(self, passphrase):
-        self._passphrase = passphrase
+    def set_password(self, password):
+        self._password = password
 
     def has_password(self):
-        return bool(self._passphrase)
+        return bool(self._password)
 
     def is_password(self, password):
-        return self._passphrase == password
+        return self._password == password
 
     def is_data_encrypted(self, data):
-        return len(data) > 0 and self._toxencryptsave.is_data_encrypted(data)
+        return len(data) > 0 and self._tox_encrypt_save.is_data_encrypted(data)
 
     def pass_encrypt(self, data):
-        return self._toxencryptsave.pass_encrypt(data, self._passphrase)
+        return self._tox_encrypt_save.pass_encrypt(data, self._password)
 
     def pass_decrypt(self, data):
-        return self._toxencryptsave.pass_decrypt(data, self._passphrase)
+        return self._tox_encrypt_save.pass_decrypt(data, self._password)

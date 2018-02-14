@@ -12,72 +12,7 @@ import util
 import cv2
 import numpy as np
 
-# -----------------------------------------------------------------------------------------------------------------
-# Threads
-# -----------------------------------------------------------------------------------------------------------------
-
-
-class InvokeEvent(QtCore.QEvent):
-    EVENT_TYPE = QtCore.QEvent.Type(QtCore.QEvent.registerEventType())
-
-    def __init__(self, fn, *args, **kwargs):
-        QtCore.QEvent.__init__(self, InvokeEvent.EVENT_TYPE)
-        self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
-
-
-class Invoker(QtCore.QObject):
-
-    def event(self, event):
-        event.fn(*event.args, **event.kwargs)
-        return True
-
-
-_invoker = Invoker()
-
-
-def invoke_in_main_thread(fn, *args, **kwargs):
-    QtCore.QCoreApplication.postEvent(_invoker, InvokeEvent(fn, *args, **kwargs))
-
-
-class FileTransfersThread(threading.Thread):
-
-    def __init__(self):
-        self._queue = queue.Queue()
-        self._timeout = 0.01
-        self._continue = True
-        super().__init__()
-
-    def execute(self, function, *args, **kwargs):
-        self._queue.put((function, args, kwargs))
-
-    def stop(self):
-        self._continue = False
-
-    def run(self):
-        while self._continue:
-            try:
-                function, args, kwargs = self._queue.get(timeout=self._timeout)
-                function(*args, **kwargs)
-            except queue.Empty:
-                pass
-            except queue.Full:
-                util.log('Queue is Full in _thread')
-            except Exception as ex:
-                util.log('Exception in _thread: ' + str(ex))
-
-
-_thread = FileTransfersThread()
-
-
-def start():
-    _thread.start()
-
-
-def stop():
-    _thread.stop()
-    _thread.join()
+# TODO: use closures
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - current user

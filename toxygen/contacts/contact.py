@@ -2,7 +2,7 @@ from db.history import *
 from contacts import basecontact
 import util
 from messenger.messages import *
-import file_transfers as ft
+from file_tansfers import file_transfers as ft
 import re
 
 
