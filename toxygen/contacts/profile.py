@@ -6,8 +6,8 @@ from wrapper.toxcore_enums_and_consts import *
 from ctypes import *
 from util import log, Singleton, curr_directory
 from network.tox_dns import tox_dns
-from db.history import *
-from file_tansfers.file_transfers import *
+from db.database import *
+from file_transfers.file_transfers import *
 import time
 from av import calls
 import plugin_support
@@ -38,42 +38,15 @@ class Profile(basecontact.BaseContact, Singleton):
         self._messages = screen.messages
         self._tox = tox
         self._file_transfers = {}  # dict of file transfers. key - tuple (friend_number, file_number)
-        self._call = calls.AV(tox.AV)  # object with data about calls
-        self._call_widgets = {}  # dict of incoming call widgets
-        self._incoming_calls = set()
         self._load_history = True
         self._waiting_for_reconnection = False
         self._factory = items_factory.ItemsFactory(self._screen.friends_list, self._messages)
         settings = Settings.get_instance()
-        self._sorting = settings['sorting']
         self._show_avatars = settings['show_avatars']
-        self._filter_string = ''
-        self._friend_item_height = 40 if settings['compact_mode'] else 70
         self._paused_file_transfers = dict(settings['paused_file_transfers'])
         # key - file id, value: [path, friend number, is incoming, start position]
-        screen.online_contacts.setCurrentIndex(int(self._sorting))
-        aliases = settings['friends_aliases']
-        data = tox.self_get_friend_list()
         self._history = History(tox.self_get_public_key())  # connection to db
-        self._contacts, self._active_friend = [], -1
-        for i in data:  # creates list of friends
-            tox_id = tox.friend_get_public_key(i)
-            try:
-                alias = list(filter(lambda x: x[0] == tox_id, aliases))[0][1]
-            except:
-                alias = ''
-            item = self.create_friend_item()
-            name = alias or tox.friend_get_name(i) or tox_id
-            status_message = tox.friend_get_status_message(i)
-            if not self._history.friend_exists_in_db(tox_id):
-                self._history.add_friend_to_db(tox_id)
-            message_getter = self._history.messages_getter(tox_id)
-            friend = Friend(message_getter, i, name, status_message, item, tox_id)
-            friend.set_alias(alias)
-            self._contacts.append(friend)
-        if len(self._contacts):
-            self.set_active(0)
-        self.filtration_and_sorting(self._sorting)
+
 
     # -----------------------------------------------------------------------------------------------------------------
     # Edit current user's data
@@ -120,189 +93,11 @@ class Profile(basecontact.BaseContact, Singleton):
         return self._tox_id
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Filtration
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def filtration_and_sorting(self, sorting=0, filter_str=''):
-        """
-        Filtration of friends list
-        :param sorting: 0 - no sort, 1 - online only, 2 - online first, 4 - by name
-        :param filter_str: show contacts which name contains this substring
-        """
-        filter_str = filter_str.lower()
-        settings = Settings.get_instance()
-        number = self.get_active_number()
-        is_friend = self.is_active_a_friend()
-        if sorting > 1:
-            if sorting & 2:
-                self._contacts = sorted(self._contacts, key=lambda x: int(x.status is not None), reverse=True)
-            if sorting & 4:
-                if not sorting & 2:
-                    self._contacts = sorted(self._contacts, key=lambda x: x.name.lower())
-                else:  # save results of prev sorting
-                    online_friends = filter(lambda x: x.status is not None, self._contacts)
-                    count = len(list(online_friends))
-                    part1 = self._contacts[:count]
-                    part2 = self._contacts[count:]
-                    part1 = sorted(part1, key=lambda x: x.name.lower())
-                    part2 = sorted(part2, key=lambda x: x.name.lower())
-                    self._contacts = part1 + part2
-            else:  # sort by number
-                online_friends = filter(lambda x: x.status is not None, self._contacts)
-                count = len(list(online_friends))
-                part1 = self._contacts[:count]
-                part2 = self._contacts[count:]
-                part1 = sorted(part1, key=lambda x: x.number)
-                part2 = sorted(part2, key=lambda x: x.number)
-                self._contacts = part1 + part2
-            self._screen.friends_list.clear()
-            for contact in self._contacts:
-                contact.set_widget(self.create_friend_item())
-        for index, friend in enumerate(self._contacts):
-            friend.visibility = (friend.status is not None or not (sorting & 1)) and (filter_str in friend.name.lower())
-            friend.visibility = friend.visibility or friend.messages or friend.actions
-            if friend.visibility:
-                self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, self._friend_item_height))
-            else:
-                self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 0))
-        self._sorting, self._filter_string = sorting, filter_str
-        settings['sorting'] = self._sorting
-        settings.save()
-        self.set_active_by_number_and_type(number, is_friend)
-
-    def update_filtration(self):
-        """
-        Update list of contacts when 1 of friends change connection status
-        """
-        self.filtration_and_sorting(self._sorting, self._filter_string)
-
-    # -----------------------------------------------------------------------------------------------------------------
     # Friend getters
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_friend_by_number(self, num):
         return list(filter(lambda x: x.number == num and type(x) is Friend, self._contacts))[0]
-
-    def get_friend(self, num):
-        if num < 0 or num >= len(self._contacts):
-            return None
-        return self._contacts[num]
-
-    def get_curr_friend(self):
-        return self._contacts[self._active_friend] if self._active_friend + 1 else None
-
-    # -----------------------------------------------------------------------------------------------------------------
-    # Work with active friend
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def get_active(self):
-        return self._active_friend
-
-    def set_active(self, value=None):
-        """
-        Change current active friend or update info
-        :param value: number of new active friend in friend's list or None to update active user's data
-        """
-        if value is None and self._active_friend == -1:  # nothing to update
-            return
-        if value == -1:  # all friends were deleted
-            self._screen.account_name.setText('')
-            self._screen.account_status.setText('')
-            self._screen.account_status.setToolTip('')
-            self._active_friend = -1
-            self._screen.account_avatar.setHidden(True)
-            self._messages.clear()
-            self._screen.messageEdit.clear()
-            return
-        try:
-            self.send_typing(False)
-            self._screen.typing.setVisible(False)
-            if value is not None:
-                if self._active_friend + 1 and self._active_friend != value:
-                    try:
-                        self.get_curr_friend().curr_text = self._screen.messageEdit.toPlainText()
-                    except:
-                        pass
-                friend = self._contacts[value]
-                friend.remove_invalid_unsent_files()
-                if self._active_friend != value:
-                    self._screen.messageEdit.setPlainText(friend.curr_text)
-                self._active_friend = value
-                friend.reset_messages()
-                if not Settings.get_instance()['save_history']:
-                    friend.delete_old_messages()
-                self._messages.clear()
-                friend.load_corr()
-                messages = friend.get_corr()[-PAGE_SIZE:]
-                self._load_history = False
-                for message in messages:
-                    if message.get_type() <= 1:
-                        data = message.get_data()
-                        self.create_message_item(data[0],
-                                                 data[2],
-                                                 data[1],
-                                                 data[3])
-                    elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:
-                        if message.get_status() is None:
-                            self.create_unsent_file_item(message)
-                            continue
-                        item = self.create_file_transfer_item(message)
-                        if message.get_status() in ACTIVE_FILE_TRANSFERS:  # active file transfer
-                            try:
-                                ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
-                                ft.set_state_changed_handler(item.update_transfer_state)
-                                ft.signal()
-                            except:
-                                print('Incoming not started transfer - no info found')
-                    elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline
-                        self.create_inline_item(message.get_data())
-                    elif message.get_type() < 5:  # info message
-                        data = message.get_data()
-                        self.create_message_item(data[0],
-                                                 data[2],
-                                                 '',
-                                                 data[3])
-                    else:
-                        data = message.get_data()
-                        self.create_gc_message_item(data[0], data[2], data[1], data[4], data[3])
-                self._messages.scrollToBottom()
-                self._load_history = True
-                if value in self._call:
-                    self._screen.active_call()
-                elif value in self._incoming_calls:
-                    self._screen.incoming_call()
-                else:
-                    self._screen.call_finished()
-            else:
-                friend = self.get_curr_friend()
-
-            self._screen.account_name.setText(friend.name)
-            self._screen.account_status.setText(friend.status_message)
-            self._screen.account_status.setToolTip(friend.get_full_status())
-            if friend.tox_id is None:
-                avatar_path = curr_directory() + '/images/group.png'
-            else:
-                avatar_path = (ProfileManager.get_path() + 'avatars/{}.png').format(friend.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
-            if not os.path.isfile(avatar_path):  # load default image
-                avatar_path = curr_directory() + '/images/avatar.png'
-            os.chdir(os.path.dirname(avatar_path))
-            pixmap = QtGui.QPixmap(avatar_path)
-            self._screen.account_avatar.setPixmap(pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio,
-                                                                QtCore.Qt.SmoothTransformation))
-        except Exception as ex:  # no friend found. ignore
-            log('Friend value: ' + str(value))
-            log('Error in set active: ' + str(ex))
-            raise
-
-    def set_active_by_number_and_type(self, number, is_friend):
-        for i in range(len(self._contacts)):
-            c = self._contacts[i]
-            if c.number == number and (type(c) is Friend == is_friend):
-                self._active_friend = i
-                break
-
-    active_friend = property(get_active, set_active)
-
     def get_last_message(self):
         if self._active_friend + 1:
             return self.get_curr_friend().get_last_message_text()
@@ -427,6 +222,25 @@ class Profile(basecontact.BaseContact, Singleton):
                 friend.inc_receipts()
         except Exception as ex:
             log('Sending pending messages failed with ' + str(ex))
+
+    def split_message(self, message):
+        messages = []
+        while len(message) > TOX_MAX_MESSAGE_LENGTH:
+            size = TOX_MAX_MESSAGE_LENGTH * 4 / 5
+            last_part = message[size:TOX_MAX_MESSAGE_LENGTH]
+            if ' ' in last_part:
+                index = last_part.index(' ')
+            elif ',' in last_part:
+                index = last_part.index(',')
+            elif '.' in last_part:
+                index = last_part.index('.')
+            else:
+                index = TOX_MAX_MESSAGE_LENGTH - size - 1
+            index += size + 1
+            messages.append(message[:index])
+            message = message[index:]
+
+        return messages
 
     def split_and_send(self, number, message_type, message):
         """
@@ -629,12 +443,6 @@ class Profile(basecontact.BaseContact, Singleton):
     # Friend, message and file transfer items creation
     # -----------------------------------------------------------------------------------------------------------------
 
-    def create_friend_item(self):
-        """
-        Method-factory
-        :return: new widget for friend instance
-        """
-        return self._factory.friend_item()
 
     def create_message_item(self, text, time, owner, message_type, append=True):
         if message_type == MESSAGE_TYPE['INFO_MESSAGE']:
@@ -679,188 +487,6 @@ class Profile(basecontact.BaseContact, Singleton):
         return self._factory.inline_item(data, append)
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Work with friends (remove, block, set alias, get public key)
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def set_alias(self, num):
-        """
-        Set new alias for friend
-        """
-        friend = self._contacts[num]
-        name = friend.name
-        dialog = QtWidgets.QApplication.translate('MainWindow',
-                                                  "Enter new alias for friend {} or leave empty to use friend's name:")
-        dialog = dialog.format(name)
-        title = QtWidgets.QApplication.translate('MainWindow',
-                                                 'Set alias')
-        text, ok = QtWidgets.QInputDialog.getText(None,
-                                                  title,
-                                                  dialog,
-                                                  QtWidgets.QLineEdit.Normal,
-                                                  name)
-        if ok:
-            settings = Settings.get_instance()
-            aliases = settings['friends_aliases']
-            if text:
-                friend.name = bytes(text, 'utf-8')
-                try:
-                    index = list(map(lambda x: x[0], aliases)).index(friend.tox_id)
-                    aliases[index] = (friend.tox_id, text)
-                except:
-                    aliases.append((friend.tox_id, text))
-                friend.set_alias(text)
-            else:  # use default name
-                friend.name = bytes(self._tox.friend_get_name(friend.number), 'utf-8')
-                friend.set_alias('')
-                try:
-                    index = list(map(lambda x: x[0], aliases)).index(friend.tox_id)
-                    del aliases[index]
-                except:
-                    pass
-            settings.save()
-        if num == self.get_active_number() and self.is_active_a_friend():
-            self.update()
-
-    def friend_public_key(self, num):
-        return self._contacts[num].tox_id
-
-    def delete_friend(self, num):
-        """
-        Removes friend from contact list
-        :param num: number of friend in list
-        """
-        friend = self._contacts[num]
-        settings = Settings.get_instance()
-        try:
-            index = list(map(lambda x: x[0], settings['friends_aliases'])).index(friend.tox_id)
-            del settings['friends_aliases'][index]
-        except:
-            pass
-        if friend.tox_id in settings['notes']:
-            del settings['notes'][friend.tox_id]
-        settings.save()
-        self.clear_history(num)
-        if self._history.friend_exists_in_db(friend.tox_id):
-            self._history.delete_friend_from_db(friend.tox_id)
-        self._tox.friend_delete(friend.number)
-        del self._contacts[num]
-        self._screen.friends_list.takeItem(num)
-        if num == self._active_friend:  # active friend was deleted
-            if not len(self._contacts):  # last friend was deleted
-                self.set_active(-1)
-            else:
-                self.set_active(0)
-        data = self._tox.get_savedata()
-        ProfileManager.get_instance().save_profile(data)
-
-    def add_friend(self, tox_id):
-        """
-        Adds friend to list
-        """
-        num = self._tox.friend_add_norequest(tox_id)  # num - friend number
-        item = self.create_friend_item()
-        try:
-            if not self._history.friend_exists_in_db(tox_id):
-                self._history.add_friend_to_db(tox_id)
-            message_getter = self._history.messages_getter(tox_id)
-        except Exception as ex:  # something is wrong
-            log('Accept friend request failed! ' + str(ex))
-            message_getter = None
-        friend = Friend(message_getter, num, tox_id, '', item, tox_id)
-        self._contacts.append(friend)
-
-    def block_user(self, tox_id):
-        """
-        Block user with specified tox id (or public key) - delete from friends list and ignore friend requests
-        """
-        tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
-        if tox_id == self.tox_id[:TOX_PUBLIC_KEY_SIZE * 2]:
-            return
-        settings = Settings.get_instance()
-        if tox_id not in settings['blocked']:
-            settings['blocked'].append(tox_id)
-            settings.save()
-        try:
-            num = self._tox.friend_by_public_key(tox_id)
-            self.delete_friend(num)
-            data = self._tox.get_savedata()
-            ProfileManager.get_instance().save_profile(data)
-        except:  # not in friend list
-            pass
-
-    def unblock_user(self, tox_id, add_to_friend_list):
-        """
-        Unblock user
-        :param tox_id: tox id of contact
-        :param add_to_friend_list: add this contact to friend list or not
-        """
-        s = Settings.get_instance()
-        s['blocked'].remove(tox_id)
-        s.save()
-        if add_to_friend_list:
-            self.add_friend(tox_id)
-            data = self._tox.get_savedata()
-            ProfileManager.get_instance().save_profile(data)
-
-    # -----------------------------------------------------------------------------------------------------------------
-    # Friend requests
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def send_friend_request(self, tox_id, message):
-        """
-        Function tries to send request to contact with specified id
-        :param tox_id: id of new contact or tox dns 4 value
-        :param message: additional message
-        :return: True on success else error string
-        """
-        try:
-            message = message or 'Hello! Add me to your contact list please'
-            if '@' in tox_id:  # value like groupbot@toxme.io
-                tox_id = tox_dns(tox_id)
-                if tox_id is None:
-                    raise Exception('TOX DNS lookup failed')
-            if len(tox_id) == TOX_PUBLIC_KEY_SIZE * 2:  # public key
-                self.add_friend(tox_id)
-                msgBox = QtWidgets.QMessageBox()
-                msgBox.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Friend added"))
-                text = (QtWidgets.QApplication.translate("MainWindow", 'Friend added without sending friend request'))
-                msgBox.setText(text)
-                msgBox.exec_()
-            else:
-                result = self._tox.friend_add(tox_id, message.encode('utf-8'))
-                tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
-                item = self.create_friend_item()
-                if not self._history.friend_exists_in_db(tox_id):
-                    self._history.add_friend_to_db(tox_id)
-                message_getter = self._history.messages_getter(tox_id)
-                friend = Friend(message_getter, result, tox_id, '', item, tox_id)
-                self._contacts.append(friend)
-            data = self._tox.get_savedata()
-            ProfileManager.get_instance().save_profile(data)
-            return True
-        except Exception as ex:  # wrong data
-            log('Friend request failed with ' + str(ex))
-            return str(ex)
-
-    def process_friend_request(self, tox_id, message):
-        """
-        Accept or ignore friend request
-        :param tox_id: tox id of contact
-        :param message: message
-        """
-        try:
-            text = QtWidgets.QApplication.translate('MainWindow', 'User {} wants to add you to contact list. Message:\n{}')
-            info = text.format(tox_id, message)
-            fr_req = QtWidgets.QApplication.translate('MainWindow', 'Friend request')
-            reply = QtWidgets.QMessageBox.question(None, fr_req, info, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
-            if reply == QtWidgets.QMessageBox.Yes:  # accepted
-                self.add_friend(tox_id)
-                data = self._tox.get_savedata()
-                ProfileManager.get_instance().save_profile(data)
-        except Exception as ex:  # something is wrong
-            log('Accept friend request failed! ' + str(ex))
-
-    # -----------------------------------------------------------------------------------------------------------------
     # Reset
     # -----------------------------------------------------------------------------------------------------------------
 
@@ -900,307 +526,6 @@ class Profile(basecontact.BaseContact, Singleton):
         s['paused_file_transfers'] = dict(self._paused_file_transfers) if s['resend_files'] else {}
         s.save()
 
-    # -----------------------------------------------------------------------------------------------------------------
-    # File transfers support
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def incoming_file_transfer(self, friend_number, file_number, size, file_name):
-        """
-        New transfer
-        :param friend_number: number of friend who sent file
-        :param file_number: file number
-        :param size: file size in bytes
-        :param file_name: file name without path
-        """
-        settings = Settings.get_instance()
-        friend = self.get_friend_by_number(friend_number)
-        auto = settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']
-        inline = is_inline(file_name) and settings['allow_inline']
-        file_id = self._tox.file_get_file_id(friend_number, file_number)
-        accepted = True
-        if file_id in self._paused_file_transfers:
-            data = self._paused_file_transfers[file_id]
-            pos = data[-1] if os.path.exists(data[0]) else 0
-            if pos >= size:
-                self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
-                return
-            self._tox.file_seek(friend_number, file_number, pos)
-            self.accept_transfer(None, data[0], friend_number, file_number, size, False, pos)
-            tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
-                                 time.time(),
-                                 TOX_FILE_TRANSFER_STATE['RUNNING'],
-                                 size,
-                                 file_name,
-                                 friend_number,
-                                 file_number)
-        elif inline and size < 1024 * 1024:
-            self.accept_transfer(None, '', friend_number, file_number, size, True)
-            tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
-                                 time.time(),
-                                 TOX_FILE_TRANSFER_STATE['RUNNING'],
-                                 size,
-                                 file_name,
-                                 friend_number,
-                                 file_number)
-
-        elif auto:
-            path = settings['auto_accept_path'] or curr_directory()
-            self.accept_transfer(None, path + '/' + file_name, friend_number, file_number, size)
-            tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
-                                 time.time(),
-                                 TOX_FILE_TRANSFER_STATE['RUNNING'],
-                                 size,
-                                 file_name,
-                                 friend_number,
-                                 file_number)
-        else:
-            tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
-                                 time.time(),
-                                 TOX_FILE_TRANSFER_STATE['INCOMING_NOT_STARTED'],
-                                 size,
-                                 file_name,
-                                 friend_number,
-                                 file_number)
-            accepted = False
-        if friend_number == self.get_active_number() and self.is_active_a_friend():
-            item = self.create_file_transfer_item(tm)
-            if accepted:
-                self._file_transfers[(friend_number, file_number)].set_state_changed_handler(item.update_transfer_state)
-            self._messages.scrollToBottom()
-        else:
-            friend.actions = True
-
-        friend.append_message(tm)
-
-    def cancel_transfer(self, friend_number, file_number, already_cancelled=False):
-        """
-        Stop transfer
-        :param friend_number: number of friend
-        :param file_number: file number
-        :param already_cancelled: was cancelled by friend
-        """
-        i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                          TOX_FILE_TRANSFER_STATE['CANCELLED'])
-        if (friend_number, file_number) in self._file_transfers:
-            tr = self._file_transfers[(friend_number, file_number)]
-            if not already_cancelled:
-                tr.cancel()
-            else:
-                tr.cancelled()
-            if (friend_number, file_number) in self._file_transfers:
-                del tr
-                del self._file_transfers[(friend_number, file_number)]
-        else:
-            if not already_cancelled:
-                self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
-            if friend_number == self.get_active_number() and self.is_active_a_friend():
-                tmp = self._messages.count() + i
-                if tmp >= 0:
-                    self._messages.itemWidget(
-                        self._messages.item(tmp)).update_transfer_state(TOX_FILE_TRANSFER_STATE['CANCELLED'],
-                                                                        0, -1)
-
-    def cancel_not_started_transfer(self, cancel_time):
-        self.get_curr_friend().delete_one_unsent_file(cancel_time)
-        self.update()
-
-    def pause_transfer(self, friend_number, file_number, by_friend=False):
-        """
-        Pause transfer with specified data
-        """
-        tr = self._file_transfers[(friend_number, file_number)]
-        tr.pause(by_friend)
-        t = TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND'] if by_friend else TOX_FILE_TRANSFER_STATE['PAUSED_BY_USER']
-        self.get_friend_by_number(friend_number).update_transfer_data(file_number, t)
-
-    def resume_transfer(self, friend_number, file_number, by_friend=False):
-        """
-        Resume transfer with specified data
-        """
-        self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                      TOX_FILE_TRANSFER_STATE['RUNNING'])
-        tr = self._file_transfers[(friend_number, file_number)]
-        if by_friend:
-            tr.state = TOX_FILE_TRANSFER_STATE['RUNNING']
-            tr.signal()
-        else:
-            tr.send_control(TOX_FILE_CONTROL['RESUME'])
-
-    def accept_transfer(self, item, path, friend_number, file_number, size, inline=False, from_position=0):
-        """
-        :param item: transfer item.
-        :param path: path for saving
-        :param friend_number: friend number
-        :param file_number: file number
-        :param size: file size
-        :param inline: is inline image
-        :param from_position: position for start
-        """
-        path, file_name = os.path.split(path)
-        new_file_name, i = file_name, 1
-        if not from_position:
-            while os.path.isfile(path + '/' + new_file_name):  # file with same name already exists
-                if '.' in file_name:  # has extension
-                    d = file_name.rindex('.')
-                else:  # no extension
-                    d = len(file_name)
-                new_file_name = file_name[:d] + ' ({})'.format(i) + file_name[d:]
-                i += 1
-        path = os.path.join(path, new_file_name)
-        if not inline:
-            rt = ReceiveTransfer(path, self._tox, friend_number, size, file_number, from_position)
-        else:
-            rt = ReceiveToBuffer(self._tox, friend_number, size, file_number)
-        rt.set_transfer_finished_handler(self.transfer_finished)
-        self._file_transfers[(friend_number, file_number)] = rt
-        self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
-        if item is not None:
-            rt.set_state_changed_handler(item.update_transfer_state)
-        self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                      TOX_FILE_TRANSFER_STATE['RUNNING'])
-
-    def send_screenshot(self, data):
-        """
-        Send screenshot to current active friend
-        :param data: raw data - png
-        """
-        self.send_inline(data, 'toxygen_inline.png')
-        self._messages.repaint()
-
-    def send_sticker(self, path):
-        with open(path, 'rb') as fl:
-            data = fl.read()
-        self.send_inline(data, 'sticker.png')
-
-    def send_inline(self, data, file_name, friend_number=None, is_resend=False):
-        friend_number = friend_number or self.get_active_number()
-        friend = self.get_friend_by_number(friend_number)
-        if friend.status is None and not is_resend:
-            m = UnsentFile(file_name, data, time.time())
-            friend.append_message(m)
-            self.update()
-            return
-        elif friend.status is None and is_resend:
-            raise RuntimeError()
-        st = SendFromBuffer(self._tox, friend.number, data, file_name)
-        st.set_transfer_finished_handler(self.transfer_finished)
-        self._file_transfers[(friend.number, st.get_file_number())] = st
-        tm = TransferMessage(MESSAGE_OWNER['ME'],
-                             time.time(),
-                             TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED'],
-                             len(data),
-                             file_name,
-                             friend.number,
-                             st.get_file_number())
-        item = self.create_file_transfer_item(tm)
-        friend.append_message(tm)
-        st.set_state_changed_handler(item.update_transfer_state)
-        self._messages.scrollToBottom()
-
-    def send_file(self, path, number=None, is_resend=False, file_id=None):
-        """
-        Send file to current active friend
-        :param path: file path
-        :param number: friend_number
-        :param is_resend: is 'offline' message
-        :param file_id: file id of transfer
-        """
-        friend_number = self.get_active_number() if number is None else number
-        friend = self.get_friend_by_number(friend_number)
-        if friend.status is None and not is_resend:
-            m = UnsentFile(path, None, time.time())
-            friend.append_message(m)
-            self.update()
-            return
-        elif friend.status is None and is_resend:
-            print('Error in sending')
-            raise RuntimeError()
-        st = SendTransfer(path, self._tox, friend_number, TOX_FILE_KIND['DATA'], file_id)
-        st.set_transfer_finished_handler(self.transfer_finished)
-        self._file_transfers[(friend_number, st.get_file_number())] = st
-        tm = TransferMessage(MESSAGE_OWNER['ME'],
-                             time.time(),
-                             TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED'],
-                             os.path.getsize(path),
-                             os.path.basename(path),
-                             friend_number,
-                             st.get_file_number())
-        if friend_number == self.get_active_number():
-            item = self.create_file_transfer_item(tm)
-            st.set_state_changed_handler(item.update_transfer_state)
-            self._messages.scrollToBottom()
-        self._contacts[friend_number].append_message(tm)
-
-    def incoming_chunk(self, friend_number, file_number, position, data):
-        """
-        Incoming chunk
-        """
-        self._file_transfers[(friend_number, file_number)].write_chunk(position, data)
-
-    def outgoing_chunk(self, friend_number, file_number, position, size):
-        """
-        Outgoing chunk
-        """
-        self._file_transfers[(friend_number, file_number)].send_chunk(position, size)
-
-    def transfer_finished(self, friend_number, file_number):
-        transfer = self._file_transfers[(friend_number, file_number)]
-        t = type(transfer)
-        if t is ReceiveAvatar:
-            self.get_friend_by_number(friend_number).load_avatar()
-            if friend_number == self.get_active_number() and self.is_active_a_friend():
-                self.set_active(None)
-        elif t is ReceiveToBuffer or (t is SendFromBuffer and Settings.get_instance()['allow_inline']):  # inline image
-            print('inline')
-            inline = InlineImage(transfer.get_data())
-            i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                              TOX_FILE_TRANSFER_STATE['FINISHED'],
-                                                                              inline)
-            if friend_number == self.get_active_number() and self.is_active_a_friend():
-                count = self._messages.count()
-                if count + i + 1 >= 0:
-                    elem = QtWidgets.QListWidgetItem()
-                    item = InlineImageItem(transfer.get_data(), self._messages.width(), elem)
-                    elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
-                    self._messages.insertItem(count + i + 1, elem)
-                    self._messages.setItemWidget(elem, item)
-                    self._messages.scrollToBottom()
-        elif t is not SendAvatar:
-            self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                          TOX_FILE_TRANSFER_STATE['FINISHED'])
-        del self._file_transfers[(friend_number, file_number)]
-        del transfer
-
-    # -----------------------------------------------------------------------------------------------------------------
-    # Avatars support
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def send_avatar(self, friend_number):
-        """
-        :param friend_number: number of friend who should get new avatar
-        """
-        avatar_path = (ProfileManager.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
-        if not os.path.isfile(avatar_path):  # reset image
-            avatar_path = None
-        sa = SendAvatar(avatar_path, self._tox, friend_number)
-        self._file_transfers[(friend_number, sa.get_file_number())] = sa
-
-    def incoming_avatar(self, friend_number, file_number, size):
-        """
-        Friend changed avatar
-        :param friend_number: friend number
-        :param file_number: file number
-        :param size: size of avatar or 0 (default avatar)
-        """
-        ra = ReceiveAvatar(self._tox, friend_number, size, file_number)
-        if ra.state != TOX_FILE_TRANSFER_STATE['CANCELLED']:
-            self._file_transfers[(friend_number, file_number)] = ra
-            ra.set_transfer_finished_handler(self.transfer_finished)
-        else:
-            self.get_friend_by_number(friend_number).load_avatar()
-            if self.get_active_number() == friend_number and self.is_active_a_friend():
-                self.set_active(None)
-
     def reset_avatar(self):
         super(Profile, self).reset_avatar()
         for friend in filter(lambda x: x.status is not None, self._contacts):
@@ -1210,92 +535,3 @@ class Profile(basecontact.BaseContact, Singleton):
         super(Profile, self).set_avatar(data)
         for friend in filter(lambda x: x.status is not None, self._contacts):
             self.send_avatar(friend.number)
-
-    # -----------------------------------------------------------------------------------------------------------------
-    # AV support
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def get_call(self):
-        return self._call
-
-    call = property(get_call)
-
-    def call_click(self, audio=True, video=False):
-        """User clicked audio button in main window"""
-        num = self.get_active_number()
-        if not self.is_active_a_friend():
-            return
-        if num not in self._call and self.is_active_online():  # start call
-            if not Settings.get_instance().audio['enabled']:
-                return
-            self._call(num, audio, video)
-            self._screen.active_call()
-            if video:
-                text = QtWidgets.QApplication.translate("incoming_call", "Outgoing video call")
-            else:
-                text = QtWidgets.QApplication.translate("incoming_call", "Outgoing audio call")
-            self.get_curr_friend().append_message(InfoMessage(text, time.time()))
-            self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
-            self._messages.scrollToBottom()
-        elif num in self._call:  # finish or cancel call if you call with active friend
-            self.stop_call(num, False)
-
-    def incoming_call(self, audio, video, friend_number):
-        """
-        Incoming call from friend.
-        """
-        if not Settings.get_instance().audio['enabled']:
-            return
-        friend = self.get_friend_by_number(friend_number)
-        if video:
-            text = QtWidgets.QApplication.translate("incoming_call", "Incoming video call")
-        else:
-            text = QtWidgets.QApplication.translate("incoming_call", "Incoming audio call")
-        friend.append_message(InfoMessage(text, time.time()))
-        self._incoming_calls.add(friend_number)
-        if friend_number == self.get_active_number():
-            self._screen.incoming_call()
-            self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
-            self._messages.scrollToBottom()
-        else:
-            friend.actions = True
-        self._call_widgets[friend_number] = avwidgets.IncomingCallWidget(friend_number, text, friend.name)
-        self._call_widgets[friend_number].set_pixmap(friend.get_pixmap())
-        self._call_widgets[friend_number].show()
-
-    def accept_call(self, friend_number, audio, video):
-        """
-        Accept incoming call with audio or video
-        """
-        self._call.accept_call(friend_number, audio, video)
-        self._screen.active_call()
-        if friend_number in self._incoming_calls:
-            self._incoming_calls.remove(friend_number)
-        del self._call_widgets[friend_number]
-
-    def stop_call(self, friend_number, by_friend):
-        """
-        Stop call with friend
-        """
-        if friend_number in self._incoming_calls:
-            self._incoming_calls.remove(friend_number)
-            text = QtWidgets.QApplication.translate("incoming_call", "Call declined")
-        else:
-            text = QtWidgets.QApplication.translate("incoming_call", "Call finished")
-        self._screen.call_finished()
-        is_video = self._call.is_video_call(friend_number)
-        self._call.finish_call(friend_number, by_friend)  # finish or decline call
-        if hasattr(self, '_call_widget'):
-            self._call_widget[friend_number].close()
-            del self._call_widget[friend_number]
-
-        def destroy_window():
-            if is_video:
-                cv2.destroyWindow(str(friend_number))
-
-        threading.Timer(2.0, destroy_window).start()
-        friend = self.get_friend_by_number(friend_number)
-        friend.append_message(InfoMessage(text, time.time()))
-        if friend_number == self.get_active_number():
-            self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
-            self._messages.scrollToBottom()

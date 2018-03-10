@@ -1,3 +1,7 @@
+import threads
+
+
+
 class App:
 
     def __init__(self, path_or_uri=None):
@@ -247,14 +251,14 @@ class App:
         # create new tox instance
         self.tox = profile.tox_factory(data, Settings.get_instance())
         # init thread
-        self.init = self.InitThread(self.tox, self.ms, self.tray)
+        self.init = threads.InitThread(self.tox, self.ms, self.tray)
         self.init.start()
 
         # starting threads for tox iterate and toxav iterate
-        self.mainloop = self.ToxIterateThread(self.tox)
+        self.mainloop = threads.ToxIterateThread(self.tox)
         self.mainloop.start()
 
-        self.avloop = self.ToxAVIterateThread(self.tox.AV)
+        self.avloop = threads.ToxAVIterateThread(self.tox.AV)
         self.avloop.start()
 
         plugin_helper = PluginLoader.get_instance()

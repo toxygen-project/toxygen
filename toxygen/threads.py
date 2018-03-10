@@ -1,3 +1,11 @@
+from PyQt5 import QtCore
+from communication.callbacks import init_callbacks
+from bootstrap.bootstrap import *
+import threading
+import queue
+from util import util
+
+
 class InitThread(QtCore.QThread):
 
     def __init__(self, tox, ms, tray):
@@ -70,8 +78,8 @@ class FileTransfersThread(threading.Thread):
         self._continue = True
         super().__init__()
 
-    def execute(self, function, *args, **kwargs):
-        self._queue.put((function, args, kwargs))
+    def execute(self, func, *args, **kwargs):
+        self._queue.put((func, args, kwargs))
 
     def stop(self):
         self._continue = False
@@ -79,12 +87,12 @@ class FileTransfersThread(threading.Thread):
     def run(self):
         while self._continue:
             try:
-                function, args, kwargs = self._queue.get(timeout=self._timeout)
-                function(*args, **kwargs)
+                func, args, kwargs = self._queue.get(timeout=self._timeout)
+                func(*args, **kwargs)
             except queue.Empty:
                 pass
             except queue.Full:
-                util.log('Queue is Full in _thread')
+                util.log('Queue is full in _thread')
             except Exception as ex:
                 util.log('Exception in _thread: ' + str(ex))
 
@@ -101,6 +109,8 @@ def stop():
     _thread.join()
 
 
+def execute(func, *args, **kwargs):
+    _thread.execute(func, *args, **kwargs)
 
 
 class InvokeEvent(QtCore.QEvent):
@@ -125,3 +135,4 @@ _invoker = Invoker()
 
 def invoke_in_main_thread(fn, *args, **kwargs):
     QtCore.QCoreApplication.postEvent(_invoker, InvokeEvent(fn, *args, **kwargs))
+

@@ -1,6 +1,6 @@
 import random
 import urllib.request
-from util import log, curr_directory
+from util.util import log, curr_directory
 from user_data import settings
 from PyQt5 import QtNetwork, QtCore
 import json

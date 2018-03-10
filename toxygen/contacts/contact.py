@@ -1,8 +1,8 @@
-from db.history import *
+from db.database import *
 from contacts import basecontact
 import util
 from messenger.messages import *
-from file_tansfers import file_transfers as ft
+from file_transfers import file_transfers as ft
 import re
 
 

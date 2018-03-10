@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtWidgets
-from util import curr_directory
+from util.util import curr_directory
 import wave
 import pyaudio
 

@@ -1,10 +1,8 @@
 import sys
+import app
 from user_data.settings import *
-from util import curr_directory, program_version, remove
+from util.util import curr_directory, program_version, remove
 import argparse
-
-
-
 
 
 def clean():
@@ -24,7 +22,7 @@ def main():
     parser.add_argument('--reset')
     args = parser.parse_args()
     if not len(args):
-        toxygen = Toxygen()
+        toxygen = app.App()
     else:  # started with argument(s)
         arg = sys.argv[1]
         if arg == '--version':
@@ -40,7 +38,7 @@ def main():
             reset()
             return
         else:
-            toxygen = Toxygen(arg)
+            toxygen = app.App(arg)
     toxygen.main()
 
 

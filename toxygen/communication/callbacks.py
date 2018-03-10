@@ -11,6 +11,7 @@ import threading
 import util
 import cv2
 import numpy as np
+from threads import invoke_in_main_thread, execute
 
 # TODO: use closures
 
@@ -19,15 +20,14 @@ import numpy as np
 # -----------------------------------------------------------------------------------------------------------------
 
 
-def self_connection_status(tox_link):
+def self_connection_status(tox, profile):
     """
     Current user changed connection status (offline, UDP, TCP)
     """
-    def wrapped(tox, connection, user_data):
+    def wrapped(tox_link, connection, user_data):
         print('Connection status: ', str(connection))
-        profile = Profile.get_instance()
         if profile.status is None:
-            status = tox_link.self_get_status()
+            status = tox.self_get_status()
             invoke_in_main_thread(profile.set_status, status)
         elif connection == TOX_CONNECTION['NONE']:
             invoke_in_main_thread(profile.set_status, None)
@@ -39,67 +39,73 @@ def self_connection_status(tox_link):
 # -----------------------------------------------------------------------------------------------------------------
 
 
-def friend_status(tox, friend_num, new_status, user_data):
-    """
-    Check friend's status (none, busy, away)
-    """
-    print("Friend's #{} status changed!".format(friend_num))
-    profile = Profile.get_instance()
-    friend = profile.get_friend_by_number(friend_num)
-    if friend.status is None and Settings.get_instance()['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
-        sound_notification(SOUND_NOTIFICATION['FRIEND_CONNECTION_STATUS'])
-    invoke_in_main_thread(friend.set_status, new_status)
-    invoke_in_main_thread(QtCore.QTimer.singleShot, 5000, lambda: profile.send_files(friend_num))
-    invoke_in_main_thread(profile.update_filtration)
-
-
-def friend_connection_status(tox, friend_num, new_status, user_data):
-    """
-    Check friend's connection status (offline, udp, tcp)
-    """
-    print("Friend #{} connection status: {}".format(friend_num, new_status))
-    profile = Profile.get_instance()
-    friend = profile.get_friend_by_number(friend_num)
-    if new_status == TOX_CONNECTION['NONE']:
-        invoke_in_main_thread(profile.friend_exit, friend_num)
-        invoke_in_main_thread(profile.update_filtration)
-        if Settings.get_instance()['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
+def friend_status(profile, settings):
+    def wrapped(tox, friend_num, new_status, user_data):
+        """
+        Check friend's status (none, busy, away)
+        """
+        print("Friend's #{} status changed!".format(friend_num))
+        friend = profile.get_friend_by_number(friend_num)
+        if friend.status is None and settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['FRIEND_CONNECTION_STATUS'])
-    elif friend.status is None:
-        invoke_in_main_thread(profile.send_avatar, friend_num)
-        invoke_in_main_thread(PluginLoader.get_instance().friend_online, friend_num)
+        invoke_in_main_thread(friend.set_status, new_status)
+        invoke_in_main_thread(QtCore.QTimer.singleShot, 5000, lambda: profile.send_files(friend_num))
+        invoke_in_main_thread(profile.update_filtration)
+
+    return wrapped
 
 
-def friend_name(tox, friend_num, name, size, user_data):
-    """
-    Friend changed his name
-    """
-    profile = Profile.get_instance()
-    print('New name friend #' + str(friend_num))
-    invoke_in_main_thread(profile.new_name, friend_num, name)
+def friend_connection_status(profile, settings, plugin_loader):
+    def wrapped(tox, friend_num, new_status, user_data):
+        """
+        Check friend's connection status (offline, udp, tcp)
+        """
+        print("Friend #{} connection status: {}".format(friend_num, new_status))
+        friend = profile.get_friend_by_number(friend_num)
+        if new_status == TOX_CONNECTION['NONE']:
+            invoke_in_main_thread(profile.friend_exit, friend_num)
+            invoke_in_main_thread(profile.update_filtration)
+            if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
+                sound_notification(SOUND_NOTIFICATION['FRIEND_CONNECTION_STATUS'])
+        elif friend.status is None:
+            invoke_in_main_thread(profile.send_avatar, friend_num)
+            invoke_in_main_thread(plugin_loader.friend_online, friend_num)
+
+    return wrapped
 
 
-def friend_status_message(tox, friend_num, status_message, size, user_data):
-    """
-    :return: function for callback friend_status_message. It updates friend's status message
-    and calls window repaint
-    """
-    profile = Profile.get_instance()
-    friend = profile.get_friend_by_number(friend_num)
-    invoke_in_main_thread(friend.set_status_message, status_message)
-    print('User #{} has new status'.format(friend_num))
-    invoke_in_main_thread(profile.send_messages, friend_num)
-    if profile.get_active_number() == friend_num:
-        invoke_in_main_thread(profile.set_active)
+def friend_name(profile):
+    def wrapped(tox, friend_num, name, size, user_data):
+        """
+        Friend changed his name
+        """
+        print('New name friend #' + str(friend_num))
+        invoke_in_main_thread(profile.new_name, friend_num, name)
+
+    return wrapped
 
 
-def friend_message(window, tray):
+def friend_status_message(profile):
+    def wrapped(tox, friend_num, status_message, size, user_data):
+        """
+        :return: function for callback friend_status_message. It updates friend's status message
+        and calls window repaint
+        """
+        friend = profile.get_friend_by_number(friend_num)
+        invoke_in_main_thread(friend.set_status_message, status_message)
+        print('User #{} has new status'.format(friend_num))
+        invoke_in_main_thread(profile.send_messages, friend_num)
+        if profile.get_active_number() == friend_num:
+            invoke_in_main_thread(profile.set_active)
+
+    return wrapped
+
+
+def friend_message(profile, settings, window, tray):
     """
     New message from friend
     """
     def wrapped(tox, friend_number, message_type, message, size, user_data):
-        profile = Profile.get_instance()
-        settings = Settings.get_instance()
         message = str(message, 'utf-8')
         invoke_in_main_thread(profile.new_message, friend_number, message_type, message)
         if not window.isActiveWindow():
@@ -109,6 +115,7 @@ def friend_message(window, tray):
             if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                 sound_notification(SOUND_NOTIFICATION['MESSAGE'])
             invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
+
     return wrapped
 
 
@@ -174,31 +181,40 @@ def tox_file_recv(window, tray):
     return wrapped
 
 
-def file_recv_chunk(tox, friend_number, file_number, position, chunk, length, user_data):
+def file_recv_chunk(file_transfer_handler):
     """
     Incoming chunk
     """
-    _thread.execute(Profile.get_instance().incoming_chunk, friend_number, file_number, position,
-                    chunk[:length] if length else None)
+    def wrapped(tox, friend_number, file_number, position, chunk, length, user_data):
+        execute(file_transfer_handler.incoming_chunk, friend_number, file_number, position,
+                chunk[:length] if length else None)
+
+    return wrapped
 
 
-def file_chunk_request(tox, friend_number, file_number, position, size, user_data):
+def file_chunk_request(file_transfer_handler):
     """
     Outgoing chunk
     """
-    Profile.get_instance().outgoing_chunk(friend_number, file_number, position, size)
+    def wrapped(tox, friend_number, file_number, position, size, user_data):
+        execute(file_transfer_handler.outgoing_chunk, friend_number, file_number, position, size)
+
+    return wrapped
 
 
-def file_recv_control(tox, friend_number, file_number, file_control, user_data):
+def file_recv_control(file_transfer_handler):
     """
     Friend cancelled, paused or resumed file transfer
     """
-    if file_control == TOX_FILE_CONTROL['CANCEL']:
-        invoke_in_main_thread(Profile.get_instance().cancel_transfer, friend_number, file_number, True)
-    elif file_control == TOX_FILE_CONTROL['PAUSE']:
-        invoke_in_main_thread(Profile.get_instance().pause_transfer, friend_number, file_number, True)
-    elif file_control == TOX_FILE_CONTROL['RESUME']:
-        invoke_in_main_thread(Profile.get_instance().resume_transfer, friend_number, file_number, True)
+    def wrapped(tox, friend_number, file_number, file_control, user_data):
+        if file_control == TOX_FILE_CONTROL['CANCEL']:
+            file_transfer_handler.cancel_transfer(friend_number, file_number, True)
+        elif file_control == TOX_FILE_CONTROL['PAUSE']:
+            file_transfer_handler.pause_transfer(friend_number, file_number, True)
+        elif file_control == TOX_FILE_CONTROL['RESUME']:
+            file_transfer_handler.resume_transfer(friend_number, file_number, True)
+
+    return wrapped
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - custom packets

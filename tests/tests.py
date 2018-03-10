@@ -1,6 +1,6 @@
 from contacts.profile import *
 from network.tox_dns import tox_dns
-from db.history import History
+from db.database import History
 from toxygen.smileys import SmileyLoader
 from messenger.messages import *
 import user_data.toxes as encr

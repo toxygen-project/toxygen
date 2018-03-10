@@ -29,9 +29,8 @@ def log(data):
         pass
 
 
-@cached
-def curr_directory():
-    return os.path.dirname(os.path.realpath(__file__))
+def curr_directory(current_file=None):
+    return os.path.dirname(os.path.realpath(current_file or __file__))
 
 
 def curr_time():

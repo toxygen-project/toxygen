@@ -17,22 +17,22 @@ MESSAGE_OWNER = {
     'NOT_SENT': 2
 }
 
-# TODO: unique message id and ngc support
+# TODO: unique message id and ngc support, db name as profile name
 
 
-class History:
+class Database:
 
-    def __init__(self, name):
+    def __init__(self, name, toxes):
         self._name = name
+        self._toxes = toxes
         chdir(settings.ProfileManager.get_path())
         path = settings.ProfileManager.get_path() + self._name + '.hstr'
         if os.path.exists(path):
-            decr = ToxES.get_instance()
             try:
                 with open(path, 'rb') as fin:
                     data = fin.read()
-                if decr.is_data_encrypted(data):
-                    data = decr.pass_decrypt(data)
+                if toxes.is_data_encrypted(data):
+                    data = toxes.pass_decrypt(data)
                     with open(path, 'wb') as fout:
                         fout.write(data)
             except:
@@ -45,12 +45,11 @@ class History:
         db.close()
 
     def save(self):
-        encr = ToxES.get_instance()
-        if encr.has_password():
+        if self._toxes.has_password():
             path = settings.ProfileManager.get_path() + self._name + '.hstr'
             with open(path, 'rb') as fin:
                 data = fin.read()
-            data = encr.pass_encrypt(bytes(data))
+            data = self._toxes.pass_encrypt(bytes(data))
             with open(path, 'wb') as fout:
                 fout.write(data)
 
@@ -136,8 +135,7 @@ class History:
         finally:
             db.close()
 
-    def delete_message(self, tox_id, time):
-        start, end = str(time - 0.01), str(time + 0.01)
+    def delete_message(self, tox_id, message_id):
         chdir(settings.ProfileManager.get_path())
         db = connect(self._name + '.hstr', timeout=TIMEOUT)
         try:
@@ -165,7 +163,7 @@ class History:
             db.close()
 
     def messages_getter(self, tox_id):
-        return History.MessageGetter(self._name, tox_id)
+        return Database.MessageGetter(self._name, tox_id)
 
     class MessageGetter:
 

@@ -1,4 +1,4 @@
-class ProfileManager():
+class ProfileManager:
     """
     Class with methods for search, load and save profiles
     """
