@@ -102,10 +102,10 @@ def friend_status_message(profile):
 
 
 def friend_message(profile, settings, window, tray):
-    """
-    New message from friend
-    """
     def wrapped(tox, friend_number, message_type, message, size, user_data):
+        """
+        New message from friend
+        """
         message = str(message, 'utf-8')
         invoke_in_main_thread(profile.new_message, friend_number, message_type, message)
         if not window.isActiveWindow():
@@ -119,16 +119,17 @@ def friend_message(profile, settings, window, tray):
     return wrapped
 
 
-def friend_request(tox, public_key, message, message_size, user_data):
-    """
-    Called when user get new friend request
-    """
-    print('Friend request')
-    profile = Profile.get_instance()
-    key = ''.join(chr(x) for x in public_key[:TOX_PUBLIC_KEY_SIZE])
-    tox_id = bin_to_string(key, TOX_PUBLIC_KEY_SIZE)
-    if tox_id not in Settings.get_instance()['blocked']:
-        invoke_in_main_thread(profile.process_friend_request, tox_id, str(message, 'utf-8'))
+def friend_request(contacts_manager):
+    def wrapped(tox, public_key, message, message_size, user_data):
+        """
+        Called when user get new friend request
+        """
+        print('Friend request')
+        key = ''.join(chr(x) for x in public_key[:TOX_PUBLIC_KEY_SIZE])
+        tox_id = bin_to_string(key, TOX_PUBLIC_KEY_SIZE)
+        invoke_in_main_thread(contacts_manager.process_friend_request, tox_id, str(message, 'utf-8'))
+
+    return wrapped
 
 
 def friend_typing(tox, friend_number, typing, user_data):

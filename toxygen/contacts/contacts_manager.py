@@ -152,6 +152,10 @@ class ContactsManager:
 
     active_friend = property(get_active, set_active)
 
+    def update(self):
+        if self._active_friend + 1:
+            self.set_active(self._active_friend)
+
     # -----------------------------------------------------------------------------------------------------------------
     # Filtration
     # -----------------------------------------------------------------------------------------------------------------
@@ -389,6 +393,8 @@ class ContactsManager:
         :param tox_id: tox id of contact
         :param message: message
         """
+        if tox_id in self._settings['blocked']:
+            return
         try:
             text = QtWidgets.QApplication.translate('MainWindow', 'User {} wants to add you to contact list. Message:\n{}')
             info = text.format(tox_id, message)

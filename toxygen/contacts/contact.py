@@ -1,4 +1,4 @@
-from db.database import *
+from history.database import *
 from contacts import basecontact
 import util
 from messenger.messages import *
@@ -124,8 +124,8 @@ class Contact(basecontact.BaseContact):
     # Message deletion
     # -----------------------------------------------------------------------------------------------------------------
 
-    def delete_message(self, time):
-        elem = list(filter(lambda x: type(x) in (TextMessage, GroupChatMessage) and x.get_data()[2] == time, self._corr))[0]
+    def delete_message(self, message_id):
+        elem = list(filter(lambda x: type(x) in (TextMessage, GroupChatMessage) and x.message_id == message_id, self._corr))[0]
         tmp = list(filter(lambda x: x.get_type() <= 1, self._corr))
         if elem in tmp[-self._unsaved_messages:] and self._unsaved_messages:
             self._unsaved_messages -= 1

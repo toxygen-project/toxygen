@@ -45,7 +45,6 @@ class Profile(basecontact.BaseContact, Singleton):
         self._show_avatars = settings['show_avatars']
         self._paused_file_transfers = dict(settings['paused_file_transfers'])
         # key - file id, value: [path, friend number, is incoming, start position]
-        self._history = History(tox.self_get_public_key())  # connection to db
 
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -127,10 +126,6 @@ class Profile(basecontact.BaseContact, Singleton):
                 self.create_message_item(message, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
                 self._messages.scrollToBottom()
             self.set_active(None)
-
-    def update(self):
-        if self._active_friend + 1:
-            self.set_active(self._active_friend)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Friend connection status callbacks
@@ -242,29 +237,6 @@ class Profile(basecontact.BaseContact, Singleton):
 
         return messages
 
-    def split_and_send(self, number, message_type, message):
-        """
-        Message splitting. Message length cannot be > TOX_MAX_MESSAGE_LENGTH
-        :param number: friend's number
-        :param message_type: type of message
-        :param message: message text
-        """
-        while len(message) > TOX_MAX_MESSAGE_LENGTH:
-            size = TOX_MAX_MESSAGE_LENGTH * 4 // 5
-            last_part = message[size:TOX_MAX_MESSAGE_LENGTH]
-            if b' ' in last_part:
-                index = last_part.index(b' ')
-            elif b',' in last_part:
-                index = last_part.index(b',')
-            elif b'.' in last_part:
-                index = last_part.index(b'.')
-            else:
-                index = TOX_MAX_MESSAGE_LENGTH - size - 1
-            index += size + 1
-            self._tox.friend_send_message(number, message_type, message[:index])
-            message = message[index:]
-        self._tox.friend_send_message(number, message_type, message)
-
     def new_message(self, friend_num, message_type, message):
         """
         Current user gets new message
@@ -286,30 +258,29 @@ class Profile(basecontact.BaseContact, Singleton):
             if not friend.visibility:
                 self.update_filtration()
 
-    def send_message(self, text, friend_num=None):
+    def send_message_to_friend(self, text, friend_number=None):
         """
         Send message
         :param text: message text
-        :param friend_num: num of friend
+        :param friend_number: number of friend
         """
-        if not self.is_active_a_friend():
-            self.send_gc_message(text)
-            return
-        if friend_num is None:
-            friend_num = self.get_active_number()
+        if friend_number is None:
+            friend_number = self.get_active_number()
         if text.startswith('/plugin '):
-            plugin_support.PluginLoader.get_instance().command(text[8:])
+            self._plugin_loader.command(text[8:])
             self._screen.messageEdit.clear()
-        elif text and friend_num + 1:
+        elif text and friend_number >= 0:
             if text.startswith('/me '):
                 message_type = TOX_MESSAGE_TYPE['ACTION']
                 text = text[4:]
             else:
                 message_type = TOX_MESSAGE_TYPE['NORMAL']
-            friend = self.get_friend_by_number(friend_num)
+            friend = self.get_friend_by_number(friend_number)
             friend.inc_receipts()
             if friend.status is not None:
-                self.split_and_send(friend.number, message_type, text.encode('utf-8'))
+                messages = self.split_message(text.encode('utf-8'))
+                for message in messages:
+                    self._tox.friend_send_message(friend_number, message_type, message)
             t = time.time()
             if friend.number == self.get_active_number() and self.is_active_a_friend():
                 self.create_message_item(text, t, MESSAGE_OWNER['NOT_SENT'], message_type)
@@ -317,127 +288,11 @@ class Profile(basecontact.BaseContact, Singleton):
                 self._messages.scrollToBottom()
             friend.append_message(TextMessage(text, MESSAGE_OWNER['NOT_SENT'], t, message_type))
 
-    def delete_message(self, time):
+    def delete_message(self, message_id):
         friend = self.get_curr_friend()
         friend.delete_message(time)
-        self._history.delete_message(friend.tox_id, time)
+        self._history.delete_message(friend.tox_id, message_id)
         self.update()
-
-    # -----------------------------------------------------------------------------------------------------------------
-    # History support
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def save_history(self):
-        """
-        Save history to db
-        """
-        s = Settings.get_instance()
-        if hasattr(self, '_history'):
-            if s['save_history']:
-                for friend in filter(lambda x: type(x) is Friend, self._contacts):
-                    if not self._history.friend_exists_in_db(friend.tox_id):
-                        self._history.add_friend_to_db(friend.tox_id)
-                    if not s['save_unsent_only']:
-                        messages = friend.get_corr_for_saving()
-                    else:
-                        messages = friend.get_unsent_messages_for_saving()
-                        self._history.delete_messages(friend.tox_id)
-                    self._history.save_messages_to_db(friend.tox_id, messages)
-                    unsent_messages = friend.get_unsent_messages()
-                    unsent_time = unsent_messages[0].get_data()[2] if len(unsent_messages) else time.time() + 1
-                    self._history.update_messages(friend.tox_id, unsent_time)
-            self._history.save()
-            del self._history
-
-    def clear_history(self, num=None, save_unsent=False):
-        """
-        Clear chat history
-        """
-        if num is not None:
-            friend = self._contacts[num]
-            friend.clear_corr(save_unsent)
-            if self._history.friend_exists_in_db(friend.tox_id):
-                self._history.delete_messages(friend.tox_id)
-                self._history.delete_friend_from_db(friend.tox_id)
-        else:  # clear all history
-            for number in range(len(self._contacts)):
-                self.clear_history(number, save_unsent)
-        if num is None or num == self.get_active_number():
-            self.update()
-
-    def load_history(self):
-        """
-        Tries to load next part of messages
-        """
-        if not self._load_history:
-            return
-        self._load_history = False
-        friend = self.get_curr_friend()
-        friend.load_corr(False)
-        data = friend.get_corr()
-        if not data:
-            return
-        data.reverse()
-        data = data[self._messages.count():self._messages.count() + PAGE_SIZE]
-        for message in data:
-            if message.get_type() <= 1:  # text message
-                data = message.get_data()
-                self.create_message_item(data[0],
-                                         data[2],
-                                         data[1],
-                                         data[3],
-                                         False)
-            elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:  # file transfer
-                if message.get_status() is None:
-                    self.create_unsent_file_item(message)
-                    continue
-                item = self.create_file_transfer_item(message, False)
-                if message.get_status() in ACTIVE_FILE_TRANSFERS:  # active file transfer
-                    try:
-                        ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
-                        ft.set_state_changed_handler(item.update_transfer_state)
-                        ft.signal()
-                    except:
-                        print('Incoming not started transfer - no info found')
-            elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline image
-                self.create_inline_item(message.get_data(), False)
-            else:  # info message
-                data = message.get_data()
-                self.create_message_item(data[0],
-                                         data[2],
-                                         '',
-                                         data[3],
-                                         False)
-        self._load_history = True
-
-    def export_db(self, directory):
-        self._history.export(directory)
-
-    def export_history(self, num, as_text=True, _range=None):
-        friend = self._contacts[num]
-        if _range is None:
-            friend.load_all_corr()
-            corr = friend.get_corr()
-        elif _range[1] + 1:
-            corr = friend.get_corr()[_range[0]:_range[1] + 1]
-        else:
-            corr = friend.get_corr()[_range[0]:]
-        arr = []
-        new_line = '\n' if as_text else '<br>'
-        for message in corr:
-            if type(message) is TextMessage:
-                data = message.get_data()
-                if as_text:
-                    x = '[{}] {}: {}\n'
-                else:
-                    x = '[{}] <b>{}:</b> {}<br>'
-                arr.append(x.format(convert_time(data[2]) if data[1] != MESSAGE_OWNER['NOT_SENT'] else 'Unsent',
-                                    friend.name if data[1] == MESSAGE_OWNER['FRIEND'] else self.name,
-                                    data[0]))
-        s = new_line.join(arr)
-        if not as_text:
-            s = '<html><head><meta charset="UTF-8"><title>{}</title></head><body>{}</body></html>'.format(friend.name, s)
-        return s
 
     # -----------------------------------------------------------------------------------------------------------------
     # Friend, message and file transfer items creation
