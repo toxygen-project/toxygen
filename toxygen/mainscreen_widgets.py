@@ -3,6 +3,7 @@ from widgets import RubberBandWindow, create_menu, QRightClickButton, CenteredWi
 from profile import Profile
 import smileys
 import util
+import platform
 
 
 class MessageArea(QtWidgets.QPlainTextEdit):
@@ -70,9 +71,17 @@ class MessageArea(QtWidgets.QPlainTextEdit):
     def pasteEvent(self, text=None):
         text = text or QtWidgets.QApplication.clipboard().text()
         if text.startswith('file://'):
-            self.parent.profile.send_file(text[7:])
+            file_name = self.parse_file_name(text)
+            self.parent.profile.send_file(file_name)
         else:
             self.insertPlainText(text)
+
+    def parse_file_name(self, file_name):
+        import urllib
+        if file_name.endswith('\r\n'):
+            file_name = file_name[:-2]
+        file_name = urllib.parse.unquote(file_name)
+        return file_name[8 if platform.system() == 'Windows' else 7:]
 
 
 class ScreenShotWindow(RubberBandWindow):
