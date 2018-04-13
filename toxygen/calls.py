@@ -63,7 +63,7 @@ class Call:
         return self._out_video
 
     def set_out_video(self, value):
-        self._in_video = value
+        self._out_video = value
 
     out_video = property(get_out_video, set_out_video)
 
@@ -144,8 +144,8 @@ class AV:
         call = self._calls[friend_number]
         call.is_active = True
 
-        call.in_audio = state | TOXAV_FRIEND_CALL_STATE['SENDING_A']
-        call.in_video = state | TOXAV_FRIEND_CALL_STATE['SENDING_V']
+        call.in_audio = state | TOXAV_FRIEND_CALL_STATE['SENDING_A'] > 0
+        call.in_video = state | TOXAV_FRIEND_CALL_STATE['SENDING_V'] > 0
 
         if state | TOXAV_FRIEND_CALL_STATE['ACCEPTING_A'] and call.out_audio:
             self.start_audio_thread()
@@ -154,7 +154,7 @@ class AV:
             self.start_video_thread()
 
     def is_video_call(self, number):
-        return self._calls[number].in_video
+        return number in self and self._calls[number].in_video
 
     # -----------------------------------------------------------------------------------------------------------------
     # Threads
