@@ -1,4 +1,5 @@
 from ui.widgets import *
+import os.path
 
 
 class NickEdit(LineEdit):
@@ -14,12 +15,40 @@ class NickEdit(LineEdit):
             super(NickEdit, self).keyPressEvent(event)
 
 
-class LoginScreen(CenteredWidget):
+class LoginScreenResult:
+
+    def __init__(self, profile_path, load_as_default, password=None):
+        self._profile_path = profile_path
+        self._load_as_default = load_as_default
+        self._password = password
+
+    def get_profile_path(self):
+        return self._profile_path
+
+    profile_path = property(get_profile_path)
+
+    def get_load_as_default(self):
+        return self._load_as_default
+
+    load_as_default = property(get_load_as_default)
+
+    def get_password(self):
+        return self._password
+
+    password = property(get_password)
+
+    def is_new_profile(self):
+        return not os.path.isfile(self._profile_path)
+
+
+class LoginScreen(CenteredWidget, DialogWithResult):
 
     def __init__(self):
-        super(LoginScreen, self).__init__()
+        CenteredWidget.__init__(self)
+        DialogWithResult.__init__(self)
         self.initUI()
         self.center()
+        self._profiles = []
 
     def initUI(self):
         self.resize(400, 200)
@@ -34,7 +63,7 @@ class LoginScreen(CenteredWidget):
         self.new_name.setGeometry(QtCore.QRect(20, 100, 171, 31))
         self.load_profile = QtWidgets.QPushButton(self)
         self.load_profile.setGeometry(QtCore.QRect(220, 150, 161, 27))
-        self.load_profile.clicked.connect(self.load_ex_profile)
+        self.load_profile.clicked.connect(self.load_existing_profile)
         self.default = QtWidgets.QCheckBox(self)
         self.default.setGeometry(QtCore.QRect(220, 110, 131, 22))
         self.groupBox = QtWidgets.QGroupBox(self)
@@ -44,6 +73,7 @@ class LoginScreen(CenteredWidget):
         self.groupBox_2 = QtWidgets.QGroupBox(self)
         self.groupBox_2.setGeometry(QtCore.QRect(10, 40, 191, 151))
         self.toxygen = QtWidgets.QLabel(self)
+        self.toxygen.setGeometry(QtCore.QRect(160, 8, 90, 25))
         self.groupBox.raise_()
         self.groupBox_2.raise_()
         self.comboBox.raise_()
@@ -51,16 +81,11 @@ class LoginScreen(CenteredWidget):
         self.load_profile.raise_()
         self.new_name.raise_()
         self.new_profile.raise_()
-        self.toxygen.setGeometry(QtCore.QRect(160, 8, 90, 25))
         font = QtGui.QFont()
         font.setFamily("Impact")
         font.setPointSize(16)
         self.toxygen.setFont(font)
         self.toxygen.setObjectName("toxygen")
-        self.type = 0
-        self.number = -1
-        self.load_as_default = False
-        self.name = None
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
@@ -80,19 +105,18 @@ class LoginScreen(CenteredWidget):
         self.name = self.new_name.text()
         self.close()
 
-    def load_ex_profile(self):
-        if not self.create_only:
-            self.type = 2
-            self.number = self.comboBox.currentIndex()
-            self.load_as_default = self.default.isChecked()
-            self.close()
+    def load_existing_profile(self):
+        index = self.comboBox.currentIndex()
+        load_as_default = self.default.isChecked()
+        path  = os.path.join(self._profiles[index][0], self._profiles[index][1] + '.tox')
+        result = LoginScreenResult(path, load_as_default)
+        self.close_with_result(result)
 
-    def update_select(self, data):
-        list_of_profiles = []
-        for elem in data:
-            list_of_profiles.append(elem)
-        self.comboBox.addItems(list_of_profiles)
-        self.create_only = not list_of_profiles
+    def update_select(self, profiles):
+        profiles = sorted(profiles, key=lambda p: p[1])
+        self._profiles = list(profiles)
+        self.comboBox.addItems(list(map(lambda p: p[1], profiles)))
+        self.load_profile.setEnabled(len(profiles) > 0)
 
     def update_on_close(self, func):
         self.onclose = func

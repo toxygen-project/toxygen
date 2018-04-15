@@ -1,4 +1,4 @@
-from ui.widgets import CenteredWidget, LineEdit
+from ui.widgets import CenteredWidget, LineEdit, DialogWithResult
 from PyQt5 import QtCore, QtWidgets
 
 
@@ -16,10 +16,11 @@ class PasswordArea(LineEdit):
             super(PasswordArea, self).keyPressEvent(event)
 
 
-class PasswordScreenBase(CenteredWidget):
+class PasswordScreenBase(CenteredWidget, DialogWithResult):
 
     def __init__(self, encrypt):
-        super(PasswordScreenBase, self).__init__()
+        CenteredWidget.__init__(self)
+        DialogWithResult.__init__(self)
         self._encrypt = encrypt
         self.initUI()
 
@@ -73,13 +74,12 @@ class PasswordScreen(PasswordScreenBase):
         if self.password.text():
             try:
                 self._encrypt.set_password(self.password.text())
-                new_data = self._encrypt.pass_decrypt(self._data[0])
+                new_data = self._encrypt.pass_decrypt(self._data)
             except Exception as ex:
                 self.warning.setVisible(True)
                 print('Decryption error:', ex)
             else:
-                self._data[0] = new_data
-                self.close()
+                self.close_with_result(new_data)
 
 
 class UnlockAppScreen(PasswordScreenBase):

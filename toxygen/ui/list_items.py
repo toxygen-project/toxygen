@@ -2,7 +2,7 @@ from wrapper.toxcore_enums_and_consts import *
 from PyQt5 import QtCore, QtGui, QtWidgets
 from contacts import profile
 from file_transfers.file_transfers import TOX_FILE_TRANSFER_STATE, PAUSED_FILE_TRANSFERS, DO_NOT_SHOW_ACCEPT_BUTTON, ACTIVE_FILE_TRANSFERS, SHOW_PROGRESS_BAR
-from util import curr_directory, convert_time, curr_time
+from util.util import curr_directory, convert_time, curr_time
 from ui.widgets import DataLabel, create_menu
 import html as h
 import smileys
@@ -60,8 +60,8 @@ class MessageEdit(QtWidgets.QTextBrowser):
     def quote_text(self):
         text = self.textCursor().selection().toPlainText()
         if text:
-            from ui import mainscreen
-            window = mainscreen.MainWindow.get_instance()
+            from ui import main_screen
+            window = main_screen.MainWindow.get_instance()
             text = '>' + '\n>'.join(text.split('\n'))
             if window.messageEdit.toPlainText():
                 text = '\n' + text

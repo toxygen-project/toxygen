@@ -1,50 +1,60 @@
+import communication.callbacks
 import threads
-
+from PyQt5 import QtWidgets, QtGui, QtCore
+import ui.password_screen as passwordscreen
+from util.util import curr_directory, get_platform, get_images_directory, get_styles_directory, log
+import updater.updater as updater
+import os
+from communication.tox_factory import tox_factory
+import wrapper.libtox as libtox
+import user_data.toxes
+from user_data.settings import Settings
+from ui.login_screen import LoginScreen
+from user_data.profile_manager import ProfileManager
 
 
 class App:
 
-    def __init__(self, path_or_uri=None):
+    def __init__(self, path_to_profile=None, uri=None):
         self.tox = self.ms = self.init = self.app = self.tray = self.mainloop = self.avloop = None
-        if path_or_uri is None:
-            self.uri = self.path = None
-        elif path_or_uri.startswith('tox:'):
-            self.path = None
-            self.uri = path_or_uri[4:]
-        else:
-            self.path = path_or_uri
-            self.uri = None
+        self.uri = self.path = self.toxes = None
+        if uri is not None and uri.startswith('tox:'):
+            self.uri = uri[4:]
+        if path_to_profile is not None:
+            self.path = path_to_profile
 
     def enter_pass(self, data):
         """
         Show password screen
         """
-        tmp = [data]
-        p = PasswordScreen(toxes.ToxES.get_instance(), tmp)
+        p = passwordscreen.PasswordScreen(self.toxes, data)
         p.show()
         self.app.lastWindowClosed.connect(self.app.quit)
         self.app.exec_()
-        if tmp[0] == data:
+        result = p.result
+        if result is None:
             raise SystemExit()
         else:
-            return tmp[0]
+            return result
 
     def main(self):
         """
         Main function of app. loads login screen if needed and starts main screen
         """
-        app = QtWidgets.QApplication(sys.argv)
-        app.setWindowIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
+        app = QtWidgets.QApplication([])
+        icon_file = os.path.join(get_images_directory(), 'icon.png')
+        app.setWindowIcon(QtGui.QIcon(icon_file))
         self.app = app
 
-        if platform.system() == 'Linux':
+        if get_platform() == 'Linux':
             QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_X11InitThreads)
 
-        with open(curr_directory() + '/styles/dark_style.qss') as fl:
+        with open(os.path.join(get_styles_directory(), 'dark_style.qss')) as fl:
             style = fl.read()
         app.setStyleSheet(style)
 
-        encrypt_save = toxes.ToxES()
+        encrypt_save = libtox.LibToxEncryptSave()
+        toxes = user_data.toxes.ToxES(encrypt_save)
 
         if self.path is not None:
             path = os.path.dirname(self.path) + '/'
@@ -70,15 +80,13 @@ class App:
                 ls = LoginScreen()
                 ls.setWindowIconText("Toxygen")
                 profiles = ProfileManager.find_profiles()
-                ls.update_select(map(lambda x: x[1], profiles))
-                _login = self.Login(profiles)
-                ls.update_on_close(_login.login_screen_close)
+                ls.update_select(profiles)
                 ls.show()
                 app.exec_()
-                if not _login.t:
+                result = ls.result
+                if result is None:
                     return
-                elif _login.t == 1:  # create new profile
-                    _login.name = _login.name.strip()
+                elif result.is_new_profile():  # create new profile
                     name = _login.name if _login.name else 'toxygen_user'
                     pr = map(lambda x: x[1], ProfileManager.find_profiles())
                     if name in list(pr):
@@ -130,14 +138,14 @@ class App:
                         settings['language'] = curr_lang
                     settings.save()
                 else:  # load existing profile
-                    path, name = _login.get_data()
-                    if _login.default:
-                        Settings.set_auto_profile(path, name)
-                    data = ProfileManager(path, name).open_profile()
-                    if encrypt_save.is_data_encrypted(data):
+                    path = result.profile_path
+                    if result.load_as_default:
+                        Settings.set_auto_profile(path)
+                    settings = Settings(toxes, path)
+                    data = ProfileManager(settings, toxes, path).open_profile()
+                    if toxes.is_data_encrypted(data):
                         data = self.enter_pass(data)
-                    settings = Settings(name)
-                    self.tox = profile.tox_factory(data, settings)
+                    self.tox = communication.tox_factory.tox_factory(data, settings)
             else:
                 path, name = auto_profile
                 data = ProfileManager(path, name).open_profile()

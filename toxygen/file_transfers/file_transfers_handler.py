@@ -9,6 +9,8 @@ class FileTransfersHandler:
         self._tox = tox
         self._settings = settings
         self._file_transfers = {}
+        self._paused_file_transfers = dict(settings['paused_file_transfers'])
+        # key - file id, value: [path, friend number, is incoming, start position]
 
     # -----------------------------------------------------------------------------------------------------------------
     # File transfers support

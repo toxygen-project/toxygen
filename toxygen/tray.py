@@ -3,6 +3,19 @@ from util.ui import tr
 from util.util import curr_directory
 
 
+class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
+
+    leftClicked = QtCore.pyqtSignal()
+
+    def __init__(self, icon, parent=None):
+        super().__init__(self, icon, parent)
+        self.activated.connect(self.iconActivated)
+
+    def iconActivated(self, reason):
+        if reason == QtGui.QSystemTrayIcon.Trigger:
+            self.leftClicked.emit()
+
+
 class Menu(QtWidgets.QMenu):
 
     def __init__(self, settings, profile, *args):
@@ -39,7 +52,7 @@ class Menu(QtWidgets.QMenu):
 
 
 def init_tray(profile, settings, main_screen):
-    tray = QtWidgets.QSystemTrayIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
+    tray = SystemTrayIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
     tray.setObjectName('tray')
 
     m = Menu(settings, profile)

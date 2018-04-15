@@ -1,8 +1,11 @@
 import sys
 import app
 from user_data.settings import *
-from util.util import curr_directory, program_version, remove
+from util.util import curr_directory, remove
 import argparse
+
+__maintainer__ = 'Ingvar'
+__version__ = '0.5.0'
 
 
 def clean():
@@ -15,30 +18,31 @@ def reset():
     Settings.reset_auto_profile()
 
 
+def print_toxygen_version():
+    print('Toxygen v' + __version__)
+
+
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--version')
-    parser.add_argument('--clean')
-    parser.add_argument('--reset')
+    parser.add_argument('--version', help='Prints Toxygen version')
+    parser.add_argument('--clean', help='Deletes toxcore libs from libs folder')
+    parser.add_argument('--reset', help='Resets default profile')
+    parser.add_argument('profile_path', nargs='?', default=None, help='Resets default profile')
     args = parser.parse_args()
-    if not len(args):
-        toxygen = app.App()
-    else:  # started with argument(s)
-        arg = sys.argv[1]
-        if arg == '--version':
-            print('Toxygen v' + program_version)
-            return
-        elif arg == '--help':
-            print('Usage:\ntoxygen path_to_profile\ntoxygen tox_id\ntoxygen --version\ntoxygen --reset')
-            return
-        elif arg == '--clean':
-            clean()
-            return
-        elif arg == '--reset':
-            reset()
-            return
-        else:
-            toxygen = app.App(arg)
+
+    if args.version:
+        print_toxygen_version()
+        return
+
+    if args.clean:
+        clean()
+        return
+
+    if args.reset:
+        reset()
+        return
+
+    toxygen = app.App(path_to_profile=args.profile_path)
     toxygen.main()
 
 

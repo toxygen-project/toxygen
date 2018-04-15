@@ -3,9 +3,7 @@ import time
 import shutil
 import sys
 import re
-
-
-program_version = '0.5.0'
+import platform
 
 
 def cached(func):
@@ -31,6 +29,18 @@ def log(data):
 
 def curr_directory(current_file=None):
     return os.path.dirname(os.path.realpath(current_file or __file__))
+
+
+def get_base_directory(current_file=None):
+    return os.path.dirname(curr_directory())
+
+
+def get_images_directory():
+    return os.path.join(get_base_directory(), 'images')
+
+
+def get_styles_directory():
+    return os.path.join(get_base_directory(), 'styles')
 
 
 def curr_time():
@@ -95,12 +105,5 @@ def is_re_valid(regex):
         return True
 
 
-class Singleton:
-    _instance = None
-
-    def __init__(self):
-        self.__class__._instance = self
-
-    @classmethod
-    def get_instance(cls):
-        return cls._instance
+def get_platform():
+    return platform.system()

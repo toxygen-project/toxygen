@@ -1,4 +1,4 @@
-import util
+import util.util as util
 from contacts import profile
 import os
 import importlib
@@ -8,15 +8,15 @@ from user_data import toxes
 import sys
 
 
-class PluginLoader(util.Singleton):
+class PluginLoader():
 
-    def __init__(self, tox, settings):
+    def __init__(self, tox, toxes, profile, settings):
         super().__init__()
-        self._profile = profile.Profile.get_instance()
+        self._profile = profile
         self._settings = settings
         self._plugins = {}  # dict. key - plugin unique short name, value - tuple (plugin instance, is active)
         self._tox = tox
-        self._encr = toxes.ToxES.get_instance()
+        self._toxes = toxes
 
     def set_tox(self, tox):
         """
@@ -55,7 +55,7 @@ class PluginLoader(util.Singleton):
                 if inspect.isclass(obj) and hasattr(obj, 'is_plugin') and obj.is_plugin:
                     print('Plugin', elem)
                     try:  # create instance of plugin class
-                        inst = obj(self._tox, self._profile, self._settings, self._encr)
+                        inst = obj(self._tox, self._profile, self._settings, self._toxes)
                         autostart = inst.get_short_name() in self._settings['plugins']
                         if autostart:
                             inst.start()
@@ -158,7 +158,7 @@ class PluginLoader(util.Singleton):
                 try:
                     result.extend(elem[0].get_message_menu(menu, selected_text))
                 except:
-                    continue
+                    pass
         return result
 
     def stop(self):

@@ -1,6 +1,6 @@
 from platform import system
 from ctypes import CDLL
-import util
+import util.util as util
 
 
 class LibToxCore:

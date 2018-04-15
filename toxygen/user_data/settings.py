@@ -1,28 +1,26 @@
 from platform import system
 import json
 import os
-from util import Singleton, curr_directory, log, copy, append_slash
+from util.util import log, curr_directory, append_slash
 import pyaudio
 from user_data.toxes import ToxES
-import smileys
+import smileys_and_stickers as smileys
 
 
-class Settings(dict, Singleton):
+class Settings(dict):
     """
     Settings of current profile + global app settings
     """
 
-    def __init__(self, name):
-        Singleton.__init__(self)
-        self.path = ProfileManager.get_path() + str(name) + '.json'
-        self.name = name
-        if os.path.isfile(self.path):
-            with open(self.path, 'rb') as fl:
+    def __init__(self, toxes, path):
+        self._path = path
+        self._toxes = toxes
+        if os.path.isfile(path):
+            with open(path, 'rb') as fl:
                 data = fl.read()
-            inst = ToxES.get_instance()
             try:
-                if inst.is_data_encrypted(data):
-                    data = inst.pass_decrypt(data)
+                if toxes.is_data_encrypted(data):
+                    data = toxes.pass_decrypt(data)
                 info = json.loads(str(data, 'utf-8'))
             except Exception as ex:
                 info = Settings.get_default_settings()
@@ -175,12 +173,11 @@ class Settings(dict, Singleton):
 
     def save(self):
         text = json.dumps(self)
-        inst = ToxES.get_instance()
-        if inst.has_password():
-            text = bytes(inst.pass_encrypt(bytes(text, 'utf-8')))
+        if self._toxes.has_password():
+            text = bytes(self._toxes.pass_encrypt(bytes(text, 'utf-8')))
         else:
             text = bytes(text, 'utf-8')
-        with open(self.path, 'wb') as fl:
+        with open(self._path, 'wb') as fl:
             fl.write(text)
 
     def close(self):

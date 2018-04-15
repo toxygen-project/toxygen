@@ -1,6 +1,6 @@
 import json
 import urllib.request
-from util import log
+from util.util import log
 from user_data import settings
 from PyQt5 import QtNetwork, QtCore
 

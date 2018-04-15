@@ -5,10 +5,7 @@ from contacts.profile import Profile
 from wrapper.toxcore_enums_and_consts import *
 from wrapper.toxav_enums import *
 from wrapper.tox import bin_to_string
-from plugin_support import PluginLoader
-import queue
-import threading
-import util
+from plugin_support.plugin_support import PluginLoader
 import cv2
 import numpy as np
 from threads import invoke_in_main_thread, execute
@@ -31,6 +28,7 @@ def self_connection_status(tox, profile):
             invoke_in_main_thread(profile.set_status, status)
         elif connection == TOX_CONNECTION['NONE']:
             invoke_in_main_thread(profile.set_status, None)
+
     return wrapped
 
 
@@ -132,41 +130,45 @@ def friend_request(contacts_manager):
     return wrapped
 
 
-def friend_typing(tox, friend_number, typing, user_data):
-    invoke_in_main_thread(Profile.get_instance().friend_typing, friend_number, typing)
+def friend_typing(contacts_manager):
+    def wrapped(tox, friend_number, typing, user_data):
+        invoke_in_main_thread(contacts_manager.friend_typing, friend_number, typing)
+
+    return wrapped
 
 
-def friend_read_receipt(tox, friend_number, message_id, user_data):
-    profile = Profile.get_instance()
-    profile.get_friend_by_number(friend_number).dec_receipt()
-    if friend_number == profile.get_active_number():
-        invoke_in_main_thread(profile.receipt)
+def friend_read_receipt(contacts_manager):
+    def wrapped(tox, friend_number, message_id, user_data):
+        contacts_manager.get_friend_by_number(friend_number).dec_receipt()
+        if friend_number == contacts_manager.get_active_number():
+            invoke_in_main_thread(contacts_manager.receipt)
+
+    return wrapped
+
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - file transfers
 # -----------------------------------------------------------------------------------------------------------------
 
 
-def tox_file_recv(window, tray):
+def tox_file_recv(window, tray, profile, file_transfer_handler, contacts_manager, settings):
     """
     New incoming file
     """
     def wrapped(tox, friend_number, file_number, file_type, size, file_name, file_name_size, user_data):
-        profile = Profile.get_instance()
-        settings = Settings.get_instance()
         if file_type == TOX_FILE_KIND['DATA']:
             print('File')
             try:
                 file_name = str(file_name[:file_name_size], 'utf-8')
             except:
                 file_name = 'toxygen_file'
-            invoke_in_main_thread(profile.incoming_file_transfer,
+            invoke_in_main_thread(file_transfer_handler.incoming_file_transfer,
                                   friend_number,
                                   file_number,
                                   size,
                                   file_name)
             if not window.isActiveWindow():
-                friend = profile.get_friend_by_number(friend_number)
+                friend = contacts_manager.get_friend_by_number(friend_number)
                 if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
                     file_from = QtWidgets.QApplication.translate("Callback", "File from")
                     invoke_in_main_thread(tray_notification, file_from + ' ' + friend.name, file_name, tray, window)
@@ -175,7 +177,7 @@ def tox_file_recv(window, tray):
                 invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
         else:  # AVATAR
             print('Avatar')
-            invoke_in_main_thread(profile.incoming_avatar,
+            invoke_in_main_thread(file_transfer_handler.incoming_avatar,
                                   friend_number,
                                   file_number,
                                   size)
@@ -222,55 +224,69 @@ def file_recv_control(file_transfer_handler):
 # -----------------------------------------------------------------------------------------------------------------
 
 
-def lossless_packet(tox, friend_number, data, length, user_data):
-    """
-    Incoming lossless packet
-    """
-    data = data[:length]
-    plugin = PluginLoader.get_instance()
-    invoke_in_main_thread(plugin.callback_lossless, friend_number, data)
+def lossless_packet(plugin_loader):
+    def wrapped(tox, friend_number, data, length, user_data):
+        """
+        Incoming lossless packet
+        """
+        data = data[:length]
+        invoke_in_main_thread(plugin_loader.callback_lossless, friend_number, data)
+
+    return wrapped
 
 
-def lossy_packet(tox, friend_number, data, length, user_data):
-    """
-    Incoming lossy packet
-    """
-    data = data[:length]
-    plugin = PluginLoader.get_instance()
-    invoke_in_main_thread(plugin.callback_lossy, friend_number, data)
+def lossy_packet(plugin_loader):
+    def wrapped(tox, friend_number, data, length, user_data):
+        """
+        Incoming lossy packet
+        """
+        data = data[:length]
+        plugin = PluginLoader.get_instance()
+        invoke_in_main_thread(plugin.callback_lossy, friend_number, data)
+
+    return wrapped
 
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - audio
 # -----------------------------------------------------------------------------------------------------------------
 
-def call_state(toxav, friend_number, mask, user_data):
-    """
-    New call state
-    """
-    print(friend_number, mask)
-    if mask == TOXAV_FRIEND_CALL_STATE['FINISHED'] or mask == TOXAV_FRIEND_CALL_STATE['ERROR']:
-        invoke_in_main_thread(Profile.get_instance().stop_call, friend_number, True)
-    else:
-        Profile.get_instance().call.toxav_call_state_cb(friend_number, mask)
+def call_state(calls_manager):
+    def wrapped(toxav, friend_number, mask, user_data):
+        """
+        New call state
+        """
+        print(friend_number, mask)
+        if mask == TOXAV_FRIEND_CALL_STATE['FINISHED'] or mask == TOXAV_FRIEND_CALL_STATE['ERROR']:
+            invoke_in_main_thread(calls_manager.stop_call, friend_number, True)
+        else:
+            calls_manager.toxav_call_state_cb(friend_number, mask)
+
+    return wrapped
 
 
-def call(toxav, friend_number, audio, video, user_data):
-    """
-    Incoming call from friend
-    """
-    print(friend_number, audio, video)
-    invoke_in_main_thread(Profile.get_instance().incoming_call, audio, video, friend_number)
+def call(calls_manager):
+    def wrapped(toxav, friend_number, audio, video, user_data):
+        """
+        Incoming call from friend
+        """
+        print(friend_number, audio, video)
+        invoke_in_main_thread(calls_manager.incoming_call, audio, video, friend_number)
+
+    return wrapped
 
 
-def callback_audio(toxav, friend_number, samples, audio_samples_per_channel, audio_channels_count, rate, user_data):
-    """
-    New audio chunk
-    """
-    Profile.get_instance().call.audio_chunk(
-        bytes(samples[:audio_samples_per_channel * 2 * audio_channels_count]),
-        audio_channels_count,
-        rate)
+def callback_audio(calls_manager):
+    def wrapped(toxav, friend_number, samples, audio_samples_per_channel, audio_channels_count, rate, user_data):
+        """
+        New audio chunk
+        """
+        calls_manager.call.audio_chunk(
+            bytes(samples[:audio_samples_per_channel * 2 * audio_channels_count]),
+            audio_channels_count,
+            rate)
+
+    return wrapped
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - video
@@ -333,11 +349,6 @@ def video_receive_frame(toxav, friend_number, width, height, y, u, v, ystride, u
 # -----------------------------------------------------------------------------------------------------------------
 
 
-def group_invite(tox, friend_number, gc_type, data, length,  user_data):
-    invoke_in_main_thread(Profile.get_instance().group_invite, friend_number, gc_type,
-                          bytes(data[:length]))
-
-
 def show_gc_notification(window, tray, message, group_number, peer_number):
     profile = Profile.get_instance()
     settings = Settings.get_instance()
@@ -350,72 +361,40 @@ def show_gc_notification(window, tray, message, group_number, peer_number):
             sound_notification(SOUND_NOTIFICATION['MESSAGE'])
         invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
 
-
-def group_message(window, tray):
-    def wrapped(tox, group_number, peer_number, message, length, user_data):
-        message = str(message[:length], 'utf-8')
-        invoke_in_main_thread(Profile.get_instance().new_gc_message, group_number,
-                              peer_number, TOX_MESSAGE_TYPE['NORMAL'], message)
-        show_gc_notification(window, tray, message, group_number, peer_number)
-    return wrapped
-
-
-def group_action(window, tray):
-    def wrapped(tox, group_number, peer_number, message, length, user_data):
-        message = str(message[:length], 'utf-8')
-        invoke_in_main_thread(Profile.get_instance().new_gc_message, group_number,
-                              peer_number, TOX_MESSAGE_TYPE['ACTION'], message)
-        show_gc_notification(window, tray, message, group_number, peer_number)
-    return wrapped
-
-
-def group_title(tox, group_number, peer_number, title, length, user_data):
-    invoke_in_main_thread(Profile.get_instance().new_gc_title, group_number,
-                          title[:length])
-
-
-def group_namelist_change(tox, group_number, peer_number, change, user_data):
-    invoke_in_main_thread(Profile.get_instance().update_gc, group_number)
-
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
 # -----------------------------------------------------------------------------------------------------------------
 
 
-def init_callbacks(tox, window, tray):
+def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
+                   calls_manager, file_transfer_handler, window, tray):
     """
     Initialization of all callbacks.
     :param tox: tox instance
     :param window: main window
     :param tray: tray (for notifications)
     """
-    tox.callback_self_connection_status(self_connection_status(tox), 0)
+    tox.callback_self_connection_status(self_connection_status(tox, profile), 0)
 
-    tox.callback_friend_status(friend_status, 0)
-    tox.callback_friend_message(friend_message(window, tray), 0)
-    tox.callback_friend_connection_status(friend_connection_status, 0)
-    tox.callback_friend_name(friend_name, 0)
-    tox.callback_friend_status_message(friend_status_message, 0)
-    tox.callback_friend_request(friend_request, 0)
-    tox.callback_friend_typing(friend_typing, 0)
-    tox.callback_friend_read_receipt(friend_read_receipt, 0)
+    tox.callback_friend_status(friend_status(profile, settings), 0)
+    tox.callback_friend_message(friend_message(profile, settings, window, tray), 0)
+    tox.callback_friend_connection_status(friend_connection_status(profile, settings, plugin_loader), 0)
+    tox.callback_friend_name(friend_name(profile), 0)
+    tox.callback_friend_status_message(friend_status_message(profile), 0)
+    tox.callback_friend_request(friend_request(contacts_manager), 0)
+    tox.callback_friend_typing(friend_typing(contacts_manager), 0)
+    tox.callback_friend_read_receipt(friend_read_receipt(contacts_manager), 0)
 
-    tox.callback_file_recv(tox_file_recv(window, tray), 0)
-    tox.callback_file_recv_chunk(file_recv_chunk, 0)
-    tox.callback_file_chunk_request(file_chunk_request, 0)
-    tox.callback_file_recv_control(file_recv_control, 0)
+    tox.callback_file_recv(tox_file_recv(window, tray, profile, file_transfer_handler, contacts_manager, settings), 0)
+    tox.callback_file_recv_chunk(file_recv_chunk(file_transfer_handler), 0)
+    tox.callback_file_chunk_request(file_chunk_request(file_transfer_handler), 0)
+    tox.callback_file_recv_control(file_recv_control(file_transfer_handler), 0)
 
-    toxav = tox.AV
-    toxav.callback_call_state(call_state, 0)
-    toxav.callback_call(call, 0)
-    toxav.callback_audio_receive_frame(callback_audio, 0)
+    toxav.callback_call_state(call_state(calls_manager), 0)
+    toxav.callback_call(call(calls_manager), 0)
+    toxav.callback_audio_receive_frame(callback_audio(calls_manager), 0)
     toxav.callback_video_receive_frame(video_receive_frame, 0)
 
-    tox.callback_friend_lossless_packet(lossless_packet, 0)
-    tox.callback_friend_lossy_packet(lossy_packet, 0)
+    tox.callback_friend_lossless_packet(lossless_packet(plugin_loader), 0)
+    tox.callback_friend_lossy_packet(lossy_packet(plugin_loader), 0)
 
-    tox.callback_group_invite(group_invite)
-    tox.callback_group_message(group_message(window, tray))
-    tox.callback_group_action(group_action(window, tray))
-    tox.callback_group_title(group_title)
-    tox.callback_group_namelist_change(group_namelist_change)

@@ -5,7 +5,7 @@ from collections import OrderedDict
 from PyQt5 import QtCore
 
 
-class SmileyLoader(util.Singleton):
+class SmileyLoader:
     """
     Class which loads smileys packs and insert smileys into messages
     """

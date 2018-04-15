@@ -1,9 +1,9 @@
 from PyQt5 import QtCore
-from communication.callbacks import init_callbacks
 from bootstrap.bootstrap import *
 import threading
 import queue
 from util import util
+
 
 
 class InitThread(QtCore.QThread):

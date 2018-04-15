@@ -3,7 +3,7 @@ from contacts.profile import *
 from ui.list_items import *
 from ui.widgets import MultilineEdit, ComboBox
 import plugin_support
-from ui.mainscreen_widgets import *
+from ui.main_screen_widgets import *
 from user_data import toxes, settings
 
 

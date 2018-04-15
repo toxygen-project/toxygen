@@ -5,7 +5,7 @@ import util
 import pyaudio
 import wave
 from user_data import settings
-from util import curr_directory
+from util.util import curr_directory
 
 
 class IncomingCallWidget(widgets.CenteredWidget):

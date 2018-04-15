@@ -32,6 +32,22 @@ class CenteredWidget(QtWidgets.QWidget):
         self.move(qr.topLeft())
 
 
+class DialogWithResult(QtWidgets.QWidget):
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self._result = None
+
+    def get_result(self):
+        return self._result
+
+    result = property(get_result)
+
+    def close_with_result(self, result):
+        self._result = result
+        self.close()
+
+
 class LineEdit(QtWidgets.QLineEdit):
 
     def __init__(self, parent=None):

@@ -1,11 +1,17 @@
+import util.util as util
+import os
+from user_data.settings import Settings
+
+
 class ProfileManager:
     """
     Class with methods for search, load and save profiles
     """
-    def __init__(self, path, name):
-        path = append_slash(path)
-        self._path = path + name + '.tox'
-        self._directory = path
+    def __init__(self, settings, toxes, path):
+        self._settings = settings
+        self._toxes = toxes
+        self._path = path
+        self._directory = os.path.basename(path)
         # create /avatars if not exists:
         directory = path + 'avatars'
         if not os.path.exists(directory):
@@ -23,9 +29,8 @@ class ProfileManager:
         return self._directory
 
     def save_profile(self, data):
-        inst = ToxES.get_instance()
-        if inst.has_password():
-            data = inst.pass_encrypt(data)
+        if self._toxes.has_password():
+            data = self._toxes.pass_encrypt(data)
         with open(self._path, 'wb') as fl:
             fl.write(data)
         print('Profile saved successfully')
@@ -37,11 +42,11 @@ class ProfileManager:
         with open(path, 'wb') as fout:
             fout.write(data)
         print('Profile exported successfully')
-        copy(self._directory + 'avatars', new_path + 'avatars')
+        util.copy(self._directory + 'avatars', new_path + 'avatars')
         if use_new_path:
             self._path = new_path + os.path.basename(self._path)
             self._directory = new_path
-            Settings.get_instance().update_path()
+            self._settings.update_path()
 
     @staticmethod
     def find_profiles():
@@ -57,7 +62,7 @@ class ProfileManager:
             if fl.endswith('.tox'):
                 name = fl[:-4]
                 result.append((path, name))
-        path = curr_directory()
+        path = util.get_base_directory(__file__)
         # check current directory
         for fl in os.listdir(path):
             if fl.endswith('.tox'):

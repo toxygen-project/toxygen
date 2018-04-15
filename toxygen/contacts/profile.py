@@ -3,10 +3,9 @@ from PyQt5 import QtWidgets
 from contacts.friend import *
 from user_data.settings import *
 from wrapper.toxcore_enums_and_consts import *
-from ctypes import *
-from util import log, Singleton, curr_directory
+from util.util import log, curr_directory
 from network.tox_dns import tox_dns
-from db.database import *
+from history.database import *
 from file_transfers.file_transfers import *
 import time
 from av import calls
@@ -19,7 +18,7 @@ from contacts.group_chat import *
 import re
 
 
-class Profile(basecontact.BaseContact, Singleton):
+class Profile(basecontact.BaseContact):
     """
     Profile of current toxygen user. Contains friends list, tox instance
     """
@@ -33,7 +32,6 @@ class Profile(basecontact.BaseContact, Singleton):
                                          tox.self_get_status_message(),
                                          screen.user_info,
                                          tox.self_get_address())
-        Singleton.__init__(self)
         self._screen = screen
         self._messages = screen.messages
         self._tox = tox
@@ -43,8 +41,6 @@ class Profile(basecontact.BaseContact, Singleton):
         self._factory = items_factory.ItemsFactory(self._screen.friends_list, self._messages)
         settings = Settings.get_instance()
         self._show_avatars = settings['show_avatars']
-        self._paused_file_transfers = dict(settings['paused_file_transfers'])
-        # key - file id, value: [path, friend number, is incoming, start position]
 
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -97,6 +93,7 @@ class Profile(basecontact.BaseContact, Singleton):
 
     def get_friend_by_number(self, num):
         return list(filter(lambda x: x.number == num and type(x) is Friend, self._contacts))[0]
+
     def get_last_message(self):
         if self._active_friend + 1:
             return self.get_curr_friend().get_last_message_text()
