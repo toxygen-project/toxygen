@@ -42,7 +42,7 @@ def main():
         reset()
         return
 
-    toxygen = app.App(path_to_profile=args.profile_path)
+    toxygen = app.App(__version__, path_to_profile=args.profile_path)
     toxygen.main()
 
 

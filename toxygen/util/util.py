@@ -32,7 +32,7 @@ def curr_directory(current_file=None):
 
 
 def get_base_directory(current_file=None):
-    return os.path.dirname(curr_directory())
+    return os.path.dirname(curr_directory(current_file or __file__))
 
 
 def get_images_directory():
@@ -41,6 +41,17 @@ def get_images_directory():
 
 def get_styles_directory():
     return os.path.join(get_base_directory(), 'styles')
+
+
+def get_profile_name_from_path(path):
+    return os.path.basename(path)[:-4]
+
+
+def get_views_path(view_name):
+    ui_folder = os.path.join(get_base_directory(), 'ui')
+    views_folder = os.path.join(ui_folder, 'views')
+
+    return os.path.join(views_folder, view_name + '.ui')
 
 
 def curr_time():

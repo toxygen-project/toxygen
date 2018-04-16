@@ -81,6 +81,7 @@ class BaseContact:
         """
         Tries to load avatar of contact or uses default avatar
         """
+        return
         prefix = ProfileManager.get_path() + 'avatars/'
         avatar_path = prefix + '{}.png'.format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
         if not os.path.isfile(avatar_path) or not os.path.getsize(avatar_path):  # load default image

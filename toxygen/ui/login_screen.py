@@ -5,7 +5,7 @@ import os.path
 class NickEdit(LineEdit):
 
     def __init__(self, parent):
-        super(NickEdit, self).__init__(parent)
+        super().__init__(parent)
         self.parent = parent
 
     def keyPressEvent(self, event):
@@ -108,7 +108,7 @@ class LoginScreen(CenteredWidget, DialogWithResult):
     def load_existing_profile(self):
         index = self.comboBox.currentIndex()
         load_as_default = self.default.isChecked()
-        path  = os.path.join(self._profiles[index][0], self._profiles[index][1] + '.tox')
+        path = os.path.join(self._profiles[index][0], self._profiles[index][1] + '.tox')
         result = LoginScreenResult(path, load_as_default)
         self.close_with_result(result)
 
@@ -118,9 +118,3 @@ class LoginScreen(CenteredWidget, DialogWithResult):
         self.comboBox.addItems(list(map(lambda p: p[1], profiles)))
         self.load_profile.setEnabled(len(profiles) > 0)
 
-    def update_on_close(self, func):
-        self.onclose = func
-
-    def closeEvent(self, event):
-        self.onclose(self.type, self.number, self.load_as_default, self.name)
-        event.accept()

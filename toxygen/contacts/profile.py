@@ -39,8 +39,7 @@ class Profile(basecontact.BaseContact):
         self._load_history = True
         self._waiting_for_reconnection = False
         self._factory = items_factory.ItemsFactory(self._screen.friends_list, self._messages)
-        settings = Settings.get_instance()
-        self._show_avatars = settings['show_avatars']
+        #self._show_avatars = settings['show_avatars']
 
 
     # -----------------------------------------------------------------------------------------------------------------

@@ -70,6 +70,3 @@ class ProfileManager:
                 result.append((path + '/', name))
         return result
 
-    @staticmethod
-    def get_path():
-        return ProfileManager.get_instance().get_dir()

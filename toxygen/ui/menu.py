@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from user_data.settings import *
 from contacts.profile import Profile
-from util import curr_directory, copy
+from util.util import curr_directory, copy
 from ui.widgets import CenteredWidget, DataLabel, LineEdit, RubberBandWindow
 import pyaudio
 from user_data import toxes

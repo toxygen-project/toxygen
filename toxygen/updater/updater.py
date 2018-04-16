@@ -1,4 +1,5 @@
-import util
+import util.util as util
+import util.ui as util_ui
 import os
 from user_data import settings
 import platform
@@ -24,12 +25,11 @@ def updater_available():
         return os.path.exists(util.curr_directory() + '/toxygen_updater')
 
 
-def check_for_updates():
-    current_version = util.program_version
+def check_for_updates(current_version, settings):
     major, minor, patch = list(map(lambda x: int(x), current_version.split('.')))
     versions = generate_versions(major, minor, patch)
     for version in versions:
-        if send_request(version):
+        if send_request(version, settings):
             return version
     return None  # no new version was found
 
@@ -79,14 +79,13 @@ def download(version):
         util.log('Exception: running updater failed with ' + str(ex))
 
 
-def send_request(version):
-    s = settings.Settings.get_instance()
+def send_request(version, settings):
     netman = QtNetwork.QNetworkAccessManager()
     proxy = QtNetwork.QNetworkProxy()
-    if s['proxy_type']:
-        proxy.setType(QtNetwork.QNetworkProxy.Socks5Proxy if s['proxy_type'] == 2 else QtNetwork.QNetworkProxy.HttpProxy)
-        proxy.setHostName(s['proxy_host'])
-        proxy.setPort(s['proxy_port'])
+    if settings['proxy_type']:
+        proxy.setType(QtNetwork.QNetworkProxy.Socks5Proxy if settings['proxy_type'] == 2 else QtNetwork.QNetworkProxy.HttpProxy)
+        proxy.setHostName(settings['proxy_host'])
+        proxy.setPort(settings['proxy_port'])
         netman.setProxy(proxy)
     url = test_url(version)
     try:
@@ -108,3 +107,25 @@ def generate_versions(major, minor, patch):
     new_minor = '.'.join([str(major), str(minor + 1), '0'])
     new_patch = '.'.join([str(major), str(minor), str(patch + 1)])
     return new_major, new_minor, new_patch
+
+
+def start_update_if_needed(version, settings):
+    updating = False
+    if settings['update'] and updater_available() and connection_available():  # auto update
+        version = check_for_updates(version, settings)
+        if version is not None:
+            if settings['update'] == 2:
+                download(version)
+                updating = True
+            else:
+                reply = QtWidgets.QMessageBox.question(None,
+                                                       'Toxygen',
+                                                       QtWidgets.QApplication.translate("login",
+                                                                                        'Update for Toxygen was found. Download and install it?'),
+                                                       QtWidgets.QMessageBox.Yes,
+                                                       QtWidgets.QMessageBox.No)
+                if reply == QtWidgets.QMessageBox.Yes:
+                    download(version)
+                    updating = True
+
+    return updating

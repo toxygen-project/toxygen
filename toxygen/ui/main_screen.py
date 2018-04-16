@@ -5,19 +5,20 @@ from ui.widgets import MultilineEdit, ComboBox
 import plugin_support
 from ui.main_screen_widgets import *
 from user_data import toxes, settings
+import util.util as util
 
 
-class MainWindow(QtWidgets.QMainWindow, Singleton):
+class MainWindow(QtWidgets.QMainWindow):
 
-    def __init__(self, tox, reset, tray):
+    def __init__(self, settings, tox, reset, tray):
         super().__init__()
-        Singleton.__init__(self)
+        self._settings = settings
         self.reset = reset
         self.tray = tray
         self.setAcceptDrops(True)
         self.initUI(tox)
         self._saved = False
-        if settings.Settings.get_instance()['show_welcome_screen']:
+        if settings['show_welcome_screen']:
             self.ws = WelcomeScreen()
 
     def setup_menu(self, window):
@@ -137,7 +138,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.online_contacts.addItem(QtWidgets.QApplication.translate("MainWindow", "Name"))
         self.online_contacts.addItem(QtWidgets.QApplication.translate("MainWindow", "Online and by name"))
         self.online_contacts.addItem(QtWidgets.QApplication.translate("MainWindow", "Online first and by name"))
-        ind = Settings.get_instance()['sorting']
+        ind = self._settings['sorting']
         d = {0: 0, 1: 1, 2: 2, 3: 4, 1 | 4: 4, 2 | 4: 5}
         self.online_contacts.setCurrentIndex(d[ind])
         self.importPlugin.setText(QtWidgets.QApplication.translate("MainWindow", "Import plugin"))
@@ -150,7 +151,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.messageEdit.setObjectName("messageEdit")
         font = QtGui.QFont()
         font.setPointSize(11)
-        font.setFamily(settings.Settings.get_instance()['font'])
+        font.setFamily(self._settings['font'])
         self.messageEdit.setFont(font)
 
         self.sendMessageButton = QtWidgets.QPushButton(Form)
@@ -207,7 +208,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.name = Form.name = DataLabel(Form)
         Form.name.setGeometry(QtCore.QRect(75, 15, 150, 25))
         font = QtGui.QFont()
-        font.setFamily(settings.Settings.get_instance()['font'])
+        font.setFamily(self._settings['font'])
         font.setPointSize(14)
         font.setBold(True)
         Form.name.setFont(font)
@@ -235,7 +236,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.account_name.setGeometry(QtCore.QRect(100, 0, 400, 25))
         self.account_name.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse)
         font = QtGui.QFont()
-        font.setFamily(settings.Settings.get_instance()['font'])
+        font.setFamily(self._settings['font'])
         font.setPointSize(14)
         font.setBold(True)
         self.account_name.setFont(font)
@@ -297,10 +298,9 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
 
     def initUI(self, tox):
         self.setMinimumSize(920, 500)
-        s = Settings.get_instance()
+        s = self._settings
         self.setGeometry(s['x'], s['y'], s['width'], s['height'])
         self.setWindowTitle('Toxygen')
-        os.chdir(curr_directory() + '/images/')
         menu = QtWidgets.QWidget()
         main = QtWidgets.QWidget()
         grid = QtWidgets.QGridLayout()
@@ -317,7 +317,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.setup_right_bottom(message_buttons)
         self.setup_left_center(main_list)
         self.setup_menu(menu)
-        if not Settings.get_instance()['mirror_mode']:
+        if not self._settings['mirror_mode']:
             grid.addWidget(search, 2, 0)
             grid.addWidget(name, 1, 0)
             grid.addWidget(messages, 2, 1, 2, 1)
@@ -391,7 +391,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.account_name.setGeometry(QtCore.QRect(100, 15, self.width() - 560, 25))
         self.account_status.setGeometry(QtCore.QRect(100, 35, self.width() - 560, 25))
         self.messageEdit.setFocus()
-        self.profile.update()
+        #self.profile.update()
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Escape and QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
@@ -561,14 +561,13 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
         self.update_call_state('call')
 
     def update_call_state(self, state):
-        os.chdir(curr_directory() + '/images/')
 
-        pixmap = QtGui.QPixmap(curr_directory() + '/images/{}.png'.format(state))
+        pixmap = QtGui.QPixmap(os.path.join(util.get_images_directory(), '{}.png'.format(state)))
         icon = QtGui.QIcon(pixmap)
         self.callButton.setIcon(icon)
         self.callButton.setIconSize(QtCore.QSize(50, 50))
 
-        pixmap = QtGui.QPixmap(curr_directory() + '/images/{}_video.png'.format(state))
+        pixmap = QtGui.QPixmap(os.path.join(util.get_images_directory(), '{}_video.png'.format(state)))
         icon = QtGui.QIcon(pixmap)
         self.videocallButton.setIcon(icon)
         self.videocallButton.setIconSize(QtCore.QSize(35, 35))
@@ -732,7 +731,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
 
     def show(self):
         super().show()
-        self.profile.update()
+        #self.profile.update()
 
     def filtering(self):
         ind = self.online_contacts.currentIndex()

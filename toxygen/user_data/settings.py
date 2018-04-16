@@ -14,6 +14,7 @@ class Settings(dict):
 
     def __init__(self, toxes, path):
         self._path = path
+        self._profile_path = path.replace('.json', '.tox')
         self._toxes = toxes
         if os.path.isfile(path):
             with open(path, 'rb') as fl:
@@ -25,10 +26,10 @@ class Settings(dict):
             except Exception as ex:
                 info = Settings.get_default_settings()
                 log('Parsing settings error: ' + str(ex))
-            super(Settings, self).__init__(info)
+            super().__init__(info)
             self.upgrade()
         else:
-            super(Settings, self).__init__(Settings.get_default_settings())
+            super().__init__(Settings.get_default_settings())
             self.save()
         smileys.SmileyLoader(self)
         self.locked = False
@@ -181,8 +182,7 @@ class Settings(dict):
             fl.write(text)
 
     def close(self):
-        profile_path = ProfileManager.get_path()
-        path = str(profile_path + str(self.name) + '.lock')
+        path = self._profile_path + '.lock'
         if os.path.isfile(path):
             os.remove(path)
 
@@ -190,8 +190,7 @@ class Settings(dict):
         """
         Mark current profile as active
         """
-        profile_path = ProfileManager.get_path()
-        path = str(profile_path + str(self.name) + '.lock')
+        path = self._profile_path + '.lock'
         with open(path, 'w') as fl:
             fl.write('active')
 
