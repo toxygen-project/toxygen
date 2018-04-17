@@ -1,15 +1,18 @@
-from PyQt5 import QtGui
+from PyQt5 import QtGui, QtCore
 from user_data.settings import Settings
 from contacts.profile import Profile
 from wrapper.toxcore_enums_and_consts import *
 from wrapper.toxav_enums import *
 from wrapper.tox import bin_to_string
-from plugin_support.plugin_support import PluginLoader
+import util.ui as util_ui
+import util.util as util
 import cv2
 import numpy as np
 from middleware.threads import invoke_in_main_thread, execute
+from notifications.tray import tray_notification
+from notifications.sound import *
 
-# TODO: use closures
+# TODO: gc callbacks and refactoring
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - current user
@@ -111,7 +114,8 @@ def friend_message(profile, settings, window, tray):
                 invoke_in_main_thread(tray_notification, friend.name, message, tray, window)
             if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                 sound_notification(SOUND_NOTIFICATION['MESSAGE'])
-            invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
+            icon = os.path.join(util.get_images_directory(), 'icon_new_messages.png')
+            invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
 
     return wrapped
 
@@ -169,11 +173,12 @@ def tox_file_recv(window, tray, profile, file_transfer_handler, contacts_manager
             if not window.isActiveWindow():
                 friend = contacts_manager.get_friend_by_number(friend_number)
                 if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
-                    file_from = QtWidgets.QApplication.translate("Callback", "File from")
+                    file_from = util_ui.tr("File from")
                     invoke_in_main_thread(tray_notification, file_from + ' ' + friend.name, file_name, tray, window)
                 if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                     sound_notification(SOUND_NOTIFICATION['FILE_TRANSFER'])
-                invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
+                icon = os.path.join(util.get_images_directory(), 'icon_new_messages.png')
+                invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
         else:  # AVATAR
             print('Avatar')
             invoke_in_main_thread(file_transfer_handler.incoming_avatar,
@@ -240,8 +245,7 @@ def lossy_packet(plugin_loader):
         Incoming lossy packet
         """
         data = data[:length]
-        plugin = PluginLoader.get_instance()
-        invoke_in_main_thread(plugin.callback_lossy, friend_number, data)
+        invoke_in_main_thread(plugin_loader.callback_lossy, friend_number, data)
 
     return wrapped
 
@@ -358,7 +362,8 @@ def show_gc_notification(window, tray, message, group_number, peer_number):
             invoke_in_main_thread(tray_notification, chat.name + ' ' + peer_name, message, tray, window)
         if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['MESSAGE'])
-        invoke_in_main_thread(tray.setIcon, QtGui.QIcon(curr_directory() + '/images/icon_new_messages.png'))
+        icon = os.path.join(util.get_images_directory(), 'icon_new_messages.png')
+        invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
@@ -366,17 +371,20 @@ def show_gc_notification(window, tray, message, group_number, peer_number):
 
 
 def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
-                   calls_manager, file_transfer_handler, window, tray):
+                   calls_manager, file_transfer_handler, main_window, tray):
     """
     Initialization of all callbacks.
-    :param tox: tox instance
-    :param window: main window
+    :param tox: Tox instance
+    :param profile: Profile instance
+    :param settings: Settings instance
+    :param plugin_loader: PluginLoader instance
+    :param main_window: main window screen
     :param tray: tray (for notifications)
     """
     tox.callback_self_connection_status(self_connection_status(tox, profile), 0)
 
     tox.callback_friend_status(friend_status(profile, settings), 0)
-    tox.callback_friend_message(friend_message(profile, settings, window, tray), 0)
+    tox.callback_friend_message(friend_message(profile, settings, main_window, tray), 0)
     tox.callback_friend_connection_status(friend_connection_status(profile, settings, plugin_loader), 0)
     tox.callback_friend_name(friend_name(profile), 0)
     tox.callback_friend_status_message(friend_status_message(profile), 0)
@@ -384,11 +392,13 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     tox.callback_friend_typing(friend_typing(contacts_manager), 0)
     tox.callback_friend_read_receipt(friend_read_receipt(contacts_manager), 0)
 
-    tox.callback_file_recv(tox_file_recv(window, tray, profile, file_transfer_handler, contacts_manager, settings), 0)
+    tox.callback_file_recv(tox_file_recv(main_window, tray, profile, file_transfer_handler,
+                                         contacts_manager, settings), 0)
     tox.callback_file_recv_chunk(file_recv_chunk(file_transfer_handler), 0)
     tox.callback_file_chunk_request(file_chunk_request(file_transfer_handler), 0)
     tox.callback_file_recv_control(file_recv_control(file_transfer_handler), 0)
 
+    toxav = tox.AV
     toxav.callback_call_state(call_state(calls_manager), 0)
     toxav.callback_call(call(calls_manager), 0)
     toxav.callback_audio_receive_frame(callback_audio(calls_manager), 0)

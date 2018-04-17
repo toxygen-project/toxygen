@@ -1,9 +1,7 @@
-from platform import system
 import json
 import os
-from util.util import log, curr_directory, append_slash
+from util.util import log, get_base_directory, append_slash, get_platform
 import pyaudio
-from user_data.toxes import ToxES
 import smileys.smileys as smileys
 
 
@@ -60,7 +58,7 @@ class Settings(dict):
                 name = str(auto['name'])
                 if os.path.isfile(append_slash(path) + name + '.tox'):
                     return path, name
-        return '', ''
+        return None
 
     @staticmethod
     def set_auto_profile(path, name):
@@ -92,9 +90,8 @@ class Settings(dict):
             fl.write(json.dumps(data))
 
     @staticmethod
-    def is_active_profile(path, name):
-        path = path + name + '.lock'
-        return os.path.isfile(path)
+    def is_active_profile(profile_path):
+        return os.path.isfile(profile_path + '.lock')
 
     @staticmethod
     def get_default_settings():
@@ -204,13 +201,14 @@ class Settings(dict):
 
     @staticmethod
     def get_global_settings_path():
-        return curr_directory() + '/toxygen.json'
+        return os.path.join(get_base_directory(), 'toxygen.json')
 
     @staticmethod
     def get_default_path():
-        if system() == 'Windows':
+        system = get_platform()
+        if system == 'Windows':
             return os.getenv('APPDATA') + '/Tox/'
-        elif system() == 'Darwin':
+        elif system == 'Darwin':
             return os.getenv('HOME') + '/Library/Application Support/Tox/'
         else:
             return os.getenv('HOME') + '/.config/tox/'

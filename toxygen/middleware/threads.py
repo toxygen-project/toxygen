@@ -9,44 +9,44 @@ class BaseThread(threading.Thread):
 
     def __init__(self):
         super().__init__()
-        self._stop = False
+        self._stop_thread = False
 
     def stop_thread(self):
-        self._stop = True
+        self._stop_thread = True
         self.join()
 
 
 class InitThread(BaseThread):
 
-    def __init__(self, tox, ms, tray):
+    def __init__(self, tox, plugin_loader):
         super().__init__()
-        self.tox, self.ms, self.tray = tox, ms, tray
+        self._tox, self._plugin_loader = tox, plugin_loader
 
     def run(self):
-        # initializing callbacks
-        init_callbacks(self.tox, self.ms, self.tray)
         # download list of nodes if needed
         download_nodes_list()
+        # start plugins
+        self._plugin_loader.load()
         # bootstrap
         try:
             for data in generate_nodes():
-                if self._stop:
+                if self._stop_thread:
                     return
-                self.tox.bootstrap(*data)
-                self.tox.add_tcp_relay(*data)
+                self._tox.bootstrap(*data)
+                self._tox.add_tcp_relay(*data)
         except:
             pass
         for _ in range(10):
-            if self._stop:
+            if self._stop_thread:
                 return
             time.sleep(1)
-        while not self.tox.self_get_connection_status():
+        while not self._tox.self_get_connection_status():
             try:
                 for data in generate_nodes():
-                    if self._stop:
+                    if self._stop_thread:
                         return
-                    self.tox.bootstrap(*data)
-                    self.tox.add_tcp_relay(*data)
+                    self._tox.bootstrap(*data)
+                    self._tox.add_tcp_relay(*data)
             except:
                 pass
             finally:
@@ -60,7 +60,7 @@ class ToxIterateThread(BaseThread):
         self._tox = tox
 
     def run(self):
-        while not self._stop:
+        while not self._stop_thread:
             self._tox.iterate()
             time.sleep(self._tox.iteration_interval() / 1000)
 
@@ -72,7 +72,7 @@ class ToxAVIterateThread(BaseThread):
         self._toxav = toxav
 
     def run(self):
-        while not self._stop:
+        while not self._stop_thread:
             self._toxav.iterate()
             time.sleep(self._toxav.iteration_interval() / 1000)
 
@@ -88,7 +88,7 @@ class FileTransfersThread(BaseThread):
         self._queue.put((func, args, kwargs))
 
     def run(self):
-        while not self._stop:
+        while not self._stop_thread:
             try:
                 func, args, kwargs = self._queue.get(timeout=self._timeout)
                 func(*args, **kwargs)
@@ -103,11 +103,11 @@ class FileTransfersThread(BaseThread):
 _thread = FileTransfersThread()
 
 
-def start():
+def start_file_transfer_thread():
     _thread.start()
 
 
-def stop():
+def stop_file_transfer_thread():
     _thread.stop_thread()
 
 

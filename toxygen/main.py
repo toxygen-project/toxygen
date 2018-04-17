@@ -1,4 +1,3 @@
-import sys
 import app
 from user_data.settings import *
 from util.util import curr_directory, remove
@@ -11,7 +10,7 @@ __version__ = '0.5.0'
 
 def clean():
     """Removes all windows libs from libs folder"""
-    d = curr_directory() + '/libs/'
+    d = os.path.join(curr_directory(__file__), 'libs')
     remove(d)
 
 
@@ -25,10 +24,11 @@ def print_toxygen_version():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--version', help='Prints Toxygen version')
-    parser.add_argument('--clean', help='Deletes toxcore libs from libs folder')
-    parser.add_argument('--reset', help='Resets default profile')
-    parser.add_argument('profile_path', nargs='?', default=None, help='Resets default profile')
+    parser.add_argument('--version', action='store_true', help='Prints Toxygen version')
+    parser.add_argument('--clean', action='store_true', help='Deletes toxcore libs from libs folder')
+    parser.add_argument('--reset', action='store_true', help='Resets default profile')
+    parser.add_argument('--uri', help='Adds specified TOX ID to friends')
+    parser.add_argument('profile', nargs='?', default=None, help='Path to TOX profile')
     args = parser.parse_args()
 
     if args.version:
@@ -43,7 +43,7 @@ def main():
         reset()
         return
 
-    toxygen = app.App(__version__, path_to_profile=args.profile_path)
+    toxygen = app.App(__version__, args.profile, args.uri)
     toxygen.main()
 
 
