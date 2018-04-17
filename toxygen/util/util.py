@@ -35,12 +35,33 @@ def get_base_directory(current_file=None):
     return os.path.dirname(curr_directory(current_file or __file__))
 
 
+@cached
 def get_images_directory():
-    return os.path.join(get_base_directory(), 'images')
+    return get_app_directory('images')
 
 
+@cached
 def get_styles_directory():
-    return os.path.join(get_base_directory(), 'styles')
+    return get_app_directory('styles')
+
+
+@cached
+def get_sounds_directory():
+    return get_app_directory('sounds')
+
+
+@cached
+def get_stickers_directory():
+    return get_app_directory('stickers')
+
+
+@cached
+def get_translations_directory():
+    return get_app_directory('translations')
+
+
+def get_app_directory(directory_name):
+    return os.path.join(get_base_directory(), directory_name)
 
 
 def get_profile_name_from_path(path):

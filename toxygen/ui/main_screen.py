@@ -6,6 +6,7 @@ import plugin_support
 from ui.main_screen_widgets import *
 from user_data import toxes, settings
 import util.util as util
+import util.ui as util_ui
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -414,12 +415,10 @@ class MainWindow(QtWidgets.QMainWindow):
     # -----------------------------------------------------------------------------------------------------------------
 
     def about_program(self):
-        import util
-        msgBox = QtWidgets.QMessageBox()
-        msgBox.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "About"))
-        text = (QtWidgets.QApplication.translate("MainWindow", 'Toxygen is Tox client written on Python.\nVersion: '))
-        msgBox.setText(text + util.program_version + '\nGitHub: https://github.com/toxygen-project/toxygen/')
-        msgBox.exec_()
+        text = util_ui.tr('Toxygen is Tox client written on Python.\nVersion: ')
+        text += '' + '\nGitHub: https://github.com/toxygen-project/toxygen/'
+        title = util_ui.tr('About')
+        util_ui.message_box(text, title)
 
     def network_settings(self):
         self.n_s = NetworkSettings(self.reset)

@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from util.ui import tr
-from util.util import curr_directory
+from util.util import get_images_directory
+import os.path
 
 
 class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
@@ -8,11 +9,11 @@ class SystemTrayIcon(QtWidgets.QSystemTrayIcon):
     leftClicked = QtCore.pyqtSignal()
 
     def __init__(self, icon, parent=None):
-        super().__init__(self, icon, parent)
-        self.activated.connect(self.iconActivated)
+        super().__init__(icon, parent)
+        self.activated.connect(self.icon_activated)
 
-    def iconActivated(self, reason):
-        if reason == QtGui.QSystemTrayIcon.Trigger:
+    def icon_activated(self, reason):
+        if reason == QtWidgets.QSystemTrayIcon.Trigger:
             self.leftClicked.emit()
 
 
@@ -52,20 +53,21 @@ class Menu(QtWidgets.QMenu):
 
 
 def init_tray(profile, settings, main_screen):
-    tray = SystemTrayIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
+    icon = os.path.join(get_images_directory(), 'icon.png')
+    tray = SystemTrayIcon(QtGui.QIcon(icon))
     tray.setObjectName('tray')
 
-    m = Menu(settings, profile)
-    show = m.addAction(tr('Open Toxygen'))
-    sub = m.addMenu(tr('Set status'))
+    menu = Menu(settings, profile)
+    show = menu.addAction(tr('Open Toxygen'))
+    sub = menu.addMenu(tr('Set status'))
     online = sub.addAction(tr('Online'))
     away = sub.addAction(tr('Away'))
     busy = sub.addAction(tr('Busy'))
     online.setCheckable(True)
     away.setCheckable(True)
     busy.setCheckable(True)
-    m.act = sub
-    exit = m.addAction(tr('Exit'))
+    menu.act = sub
+    exit = menu.addAction(tr('Exit'))
 
     def show_window():
         def show():
@@ -96,12 +98,12 @@ def init_tray(profile, settings, main_screen):
 
     show.triggered.connect(show_window)
     exit.triggered.connect(close_app)
-    m.aboutToShow.connect(lambda: m.aboutToShowHandler())
-    online.triggered.connect(lambda: m.newStatus(0))
-    away.triggered.connect(lambda: m.newStatus(1))
-    busy.triggered.connect(lambda: m.newStatus(2))
+    menu.aboutToShow.connect(lambda: menu.aboutToShowHandler())
+    online.triggered.connect(lambda: menu.newStatus(0))
+    away.triggered.connect(lambda: menu.newStatus(1))
+    busy.triggered.connect(lambda: menu.newStatus(2))
 
-    tray.setContextMenu(m)
+    tray.setContextMenu(menu)
     tray.show()
     tray.activated.connect(tray_activated)
 

@@ -1,5 +1,4 @@
 from PyQt5 import QtGui
-from notifications import *
 from user_data.settings import Settings
 from contacts.profile import Profile
 from wrapper.toxcore_enums_and_consts import *
@@ -8,7 +7,7 @@ from wrapper.tox import bin_to_string
 from plugin_support.plugin_support import PluginLoader
 import cv2
 import numpy as np
-from threads import invoke_in_main_thread, execute
+from middleware.threads import invoke_in_main_thread, execute
 
 # TODO: use closures
 

@@ -4,7 +4,7 @@ import os
 from util.util import log, curr_directory, append_slash
 import pyaudio
 from user_data.toxes import ToxES
-import smileys_and_stickers as smileys
+import smileys.smileys as smileys
 
 
 class Settings(dict):

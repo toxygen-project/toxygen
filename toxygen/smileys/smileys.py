@@ -47,6 +47,7 @@ class SmileyLoader:
     def get_smileys_path(self):
         return util.curr_directory() + '/smileys/' + self._curr_pack + '/' if self._curr_pack is not None else None
 
+    @staticmethod
     def get_packs_list(self):
         d = util.curr_directory() + '/smileys/'
         return [x[1] for x in os.walk(d)][0]
@@ -71,18 +72,3 @@ class SmileyLoader:
                 if file_name.endswith('.gif'):  # animated smiley
                     edit.addAnimation(QtCore.QUrl(file_name), self.get_smileys_path() + file_name)
         return ' '.join(arr)
-
-
-def sticker_loader():
-    """
-    :return list of stickers
-    """
-    result = []
-    d = util.curr_directory() + '/stickers/'
-    keys = [x[1] for x in os.walk(d)][0]
-    for key in keys:
-        path = d + key + '/'
-        files = filter(lambda f: f.endswith('.png'), os.listdir(path))
-        files = map(lambda f: str(path + f), files)
-        result.extend(files)
-    return result

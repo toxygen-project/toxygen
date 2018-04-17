@@ -11,7 +11,7 @@ import time
 from av import calls
 import plugin_support
 from contacts import basecontact
-from ui import items_factory, avwidgets
+from ui import items_factory, av_widgets
 import cv2
 import threading
 from contacts.group_chat import *

@@ -2,7 +2,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from ui.widgets import RubberBandWindow, create_menu, QRightClickButton, CenteredWidget, LineEdit
 from contacts.profile import Profile
 import smileys
-import util
+import util.util as util
 
 
 class MessageArea(QtWidgets.QPlainTextEdit):
@@ -194,7 +194,7 @@ class DropdownMenu(QtWidgets.QWidget):
         self.stickerButton = QtWidgets.QPushButton(self)
         self.stickerButton.setGeometry(QtCore.QRect(60, 0, 60, 60))
 
-        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/file.png')
+        pixmap = QtGui.QPixmap(util.get_images_directory() + 'file.png')
         icon = QtGui.QIcon(pixmap)
         self.fileTransferButton.setIcon(icon)
         self.fileTransferButton.setIconSize(QtCore.QSize(50, 50))

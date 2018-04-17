@@ -2,11 +2,11 @@ from setuptools import setup
 from setuptools.command.install import install
 from platform import system
 from subprocess import call
-from toxygen.util import program_version
+import main
 import sys
 
 
-version = program_version + '.0'
+version = main.__version__ + '.0'
 
 
 if system() == 'Windows':

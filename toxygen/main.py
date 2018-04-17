@@ -4,6 +4,7 @@ from user_data.settings import *
 from util.util import curr_directory, remove
 import argparse
 
+
 __maintainer__ = 'Ingvar'
 __version__ = '0.5.0'
 

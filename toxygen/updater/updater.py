@@ -118,14 +118,8 @@ def start_update_if_needed(version, settings):
                 download(version)
                 updating = True
             else:
-                reply = QtWidgets.QMessageBox.question(None,
-                                                       'Toxygen',
-                                                       QtWidgets.QApplication.translate("login",
-                                                                                        'Update for Toxygen was found. Download and install it?'),
-                                                       QtWidgets.QMessageBox.Yes,
-                                                       QtWidgets.QMessageBox.No)
-                if reply == QtWidgets.QMessageBox.Yes:
+                reply = util_ui.question(util_ui.tr('Update for Toxygen was found. Download and install it?'))
+                if reply:
                     download(version)
                     updating = True
-
     return updating
