@@ -22,7 +22,7 @@ class App:
     def __init__(self, version, path_to_profile=None, uri=None):
         self._version = version
         self._app = self._settings = self._profile_manager = self._plugin_loader = None
-        self._tox = self._ms = self._init = self.tray = self._main_loop = self._av_loop = None
+        self._tox = self._ms = self._init = self._main_loop = self._av_loop = None
         self._uri = self._toxes = self._tray = None
         if uri is not None and uri.startswith('tox:'):
             self._uri = uri[4:]
@@ -63,15 +63,7 @@ class App:
         else:
             auto_profile = Settings.get_auto_profile()
             if auto_profile is None:   # no default profile
-                # show login screen if default profile not found
-                self.load_login_screen_translations()
-                ls = LoginScreen()
-                ls.setWindowIconText("Toxygen")
-                profiles = ProfileManager.find_profiles()
-                ls.update_select(profiles)
-                ls.show()
-                self._app.exec_()
-                result = ls.result
+                result = self.select_profile()
                 if result is None:
                     return
                 if result.is_new_profile():  # create new profile
@@ -207,6 +199,16 @@ class App:
 
     def create_tox(self, data):
         return tox_factory(data, self._settings)
+
+    def select_profile(self):
+        self.load_login_screen_translations()
+        ls = LoginScreen()
+        profiles = ProfileManager.find_profiles()
+        ls.update_select(profiles)
+        ls.show()
+        self._app.exec_()
+
+        return ls.result
 
     def load_existing_profile(self, profile_path):
         self._settings = Settings(self._toxes, profile_path.replace('.tox', '.json'))

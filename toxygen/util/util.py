@@ -79,6 +79,10 @@ def curr_time():
     return time.strftime('%H:%M')
 
 
+def join_path(a, b):
+    return os.path.join(a, b)
+
+
 def copy(src, dest):
     if not os.path.exists(dest):
         os.makedirs(dest)

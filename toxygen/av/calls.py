@@ -1,12 +1,12 @@
 import pyaudio
 import time
 import threading
-from user_data import settings
 from wrapper.toxav_enums import *
 import cv2
 import itertools
 import numpy as np
 from av import screen_sharing
+from av.call import Call
 
 
 # TODO: play sound until outgoing call will be started or cancelled
@@ -14,8 +14,9 @@ from av import screen_sharing
 
 class AV:
 
-    def __init__(self, toxav):
+    def __init__(self, toxav, settings):
         self._toxav = toxav
+        self._settings = settings
         self._running = True
 
         self._calls = {}  # dict: key - friend number, value - Call instance
@@ -118,7 +119,7 @@ class AV:
                                               rate=self._audio_rate,
                                               channels=self._audio_channels,
                                               input=True,
-                                              input_device_index=settings.Settings.get_instance().audio['input'],
+                                              input_device_index=self._settings.audio['input'],
                                               frames_per_buffer=self._audio_sample_count * 10)
 
         self._audio_thread = threading.Thread(target=self.send_audio)
@@ -147,15 +148,14 @@ class AV:
             return
 
         self._video_running = True
-        s = settings.Settings.get_instance()
         self._video_width = s.video['width']
         self._video_height = s.video['height']
 
         if s.video['device'] == -1:
-            self._video = screen_sharing.DesktopGrabber(s.video['x'], s.video['y'],
-                                                        s.video['width'], s.video['height'])
+            self._video = screen_sharing.DesktopGrabber(self._settings.video['x'], self._settings.video['y'],
+                                                        self._settings.video['width'], self._settings.video['height'])
         else:
-            self._video = cv2.VideoCapture(s.video['device'])
+            self._video = cv2.VideoCapture(self._settings.video['device'])
             self._video.set(cv2.CAP_PROP_FPS, 25)
             self._video.set(cv2.CAP_PROP_FRAME_WIDTH, self._video_width)
             self._video.set(cv2.CAP_PROP_FRAME_HEIGHT, self._video_height)
@@ -185,7 +185,7 @@ class AV:
             self._out_stream = self._audio.open(format=pyaudio.paInt16,
                                                 channels=channels_count,
                                                 rate=rate,
-                                                output_device_index=settings.Settings.get_instance().audio['output'],
+                                                output_device_index=self._settings.audio['output'],
                                                 output=True)
         self._out_stream.write(samples)
 

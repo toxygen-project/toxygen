@@ -1,6 +1,7 @@
 from user_data.settings import *
 from PyQt5 import QtCore, QtGui
 from wrapper.toxcore_enums_and_consts import TOX_PUBLIC_KEY_SIZE
+import util.util as util
 
 
 class BaseContact:
@@ -11,13 +12,14 @@ class BaseContact:
     Base class for all contacts.
     """
 
-    def __init__(self, name, status_message, widget, tox_id):
+    def __init__(self, profile_manager, name, status_message, widget, tox_id):
         """
         :param name: name, example: 'Toxygen user'
         :param status_message: status message, example: 'Toxing on Toxygen'
         :param widget: ContactItem instance
         :param tox_id: tox id of contact
         """
+        self._profile_manager = profile_manager
         self._name, self._status_message = name, status_message
         self._status, self._widget = None, widget
         self._tox_id = tox_id
@@ -81,11 +83,7 @@ class BaseContact:
         """
         Tries to load avatar of contact or uses default avatar
         """
-        return
-        prefix = ProfileManager.get_path() + 'avatars/'
-        avatar_path = prefix + '{}.png'.format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
-        if not os.path.isfile(avatar_path) or not os.path.getsize(avatar_path):  # load default image
-            avatar_path = curr_directory() + '/images/avatar.png'
+        avatar_path = self.get_avatar_path()
         width = self._widget.avatar_label.width()
         pixmap = QtGui.QPixmap(avatar_path)
         self._widget.avatar_label.setPixmap(pixmap.scaled(width, width, QtCore.Qt.KeepAspectRatio,
@@ -93,13 +91,13 @@ class BaseContact:
         self._widget.avatar_label.repaint()
 
     def reset_avatar(self):
-        avatar_path = (ProfileManager.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        avatar_path = self.get_avatar_path()
         if os.path.isfile(avatar_path):
             os.remove(avatar_path)
             self.load_avatar()
 
     def set_avatar(self, avatar):
-        avatar_path = (ProfileManager.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
+        avatar_path = self.get_avatar_path()
         with open(avatar_path, 'wb') as f:
             f.write(avatar)
         self.load_avatar()
@@ -107,6 +105,17 @@ class BaseContact:
     def get_pixmap(self):
         return self._widget.avatar_label.pixmap()
 
+    def get_avatar_path(self):
+        directory = util.join_path(self._profile_manager.get_path(), 'avatars')
+        avatar_path = util.join_path(directory, '{}.png'.format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2]))
+        if not os.path.isfile(avatar_path) or not os.path.getsize(avatar_path):  # load default image
+            avatar_path = util.join_path(util.get_images_directory(), self.get_default_avatar_name())
+
+        return avatar_path
+
+    @staticmethod
+    def get_default_avatar_name():
+        return 'avatar.png'
     # -----------------------------------------------------------------------------------------------------------------
     # Widgets
     # -----------------------------------------------------------------------------------------------------------------

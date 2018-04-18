@@ -22,12 +22,13 @@ class Profile(basecontact.BaseContact):
     """
     Profile of current toxygen user. Contains friends list, tox instance
     """
-    def __init__(self, tox, screen):
+    def __init__(self, profile_manager, tox, screen):
         """
         :param tox: tox instance
         :param screen: ref to main screen
         """
         basecontact.BaseContact.__init__(self,
+                                         profile_manager,
                                          tox.self_get_name(),
                                          tox.self_get_status_message(),
                                          screen.user_info,
@@ -87,43 +88,6 @@ class Profile(basecontact.BaseContact):
         return self._tox_id
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Friend getters
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def get_friend_by_number(self, num):
-        return list(filter(lambda x: x.number == num and type(x) is Friend, self._contacts))[0]
-
-    def get_last_message(self):
-        if self._active_friend + 1:
-            return self.get_curr_friend().get_last_message_text()
-        else:
-            return ''
-
-    def get_active_number(self):
-        return self.get_curr_friend().number if self._active_friend + 1 else -1
-
-    def get_active_name(self):
-        return self.get_curr_friend().name if self._active_friend + 1 else ''
-
-    def is_active_online(self):
-        return self._active_friend + 1 and self.get_curr_friend().status is not None
-
-    def new_name(self, number, name):
-        friend = self.get_friend_by_number(number)
-        tmp = friend.name
-        friend.set_name(name)
-        name = str(name, 'utf-8')
-        if friend.name == name and tmp != name:
-            message = QtWidgets.QApplication.translate("MainWindow", 'User {} is now known as {}')
-            message = message.format(tmp, name)
-            friend.append_message(InfoMessage(message, time.time()))
-            friend.actions = True
-            if number == self.get_active_number():
-                self.create_message_item(message, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
-                self._messages.scrollToBottom()
-            self.set_active(None)
-
-    # -----------------------------------------------------------------------------------------------------------------
     # Friend connection status callbacks
     # -----------------------------------------------------------------------------------------------------------------
 
@@ -167,29 +131,6 @@ class Profile(basecontact.BaseContact):
                 elif type(ft) is ReceiveTransfer and ft.state != TOX_FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']:
                     self._paused_file_transfers[ft.get_id()] = [ft.get_path(), friend_num, True, ft.total_size()]
                 self.cancel_transfer(friend_num, file_num, True)
-
-    # -----------------------------------------------------------------------------------------------------------------
-    # Typing notifications
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def send_typing(self, typing):
-        """
-        Send typing notification to a friend
-        """
-        if Settings.get_instance()['typing_notifications'] and self._active_friend + 1:
-            try:
-                friend = self.get_curr_friend()
-                if friend.status is not None:
-                    self._tox.self_set_typing(friend.number, typing)
-            except:
-                pass
-
-    def friend_typing(self, friend_number, typing):
-        """
-        Display incoming typing notification
-        """
-        if friend_number == self.get_active_number() and self.is_active_a_friend():
-            self._screen.typing.setVisible(typing)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private messages
@@ -293,7 +234,6 @@ class Profile(basecontact.BaseContact):
     # -----------------------------------------------------------------------------------------------------------------
     # Friend, message and file transfer items creation
     # -----------------------------------------------------------------------------------------------------------------
-
 
     def create_message_item(self, text, time, owner, message_type, append=True):
         if message_type == MESSAGE_TYPE['INFO_MESSAGE']:

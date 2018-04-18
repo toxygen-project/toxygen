@@ -4,15 +4,16 @@ import av.calls
 from PyQt5 import QtWidgets
 from messenger.messages import *
 import time
+from ui import av_widgets
 
 
 class CallsManager:
 
-    def __init__(self, tox):
+    def __init__(self, tox, settings):
         self._call = av.calls.AV(tox.AV)  # object with data about calls
         self._call_widgets = {}  # dict of incoming call widgets
         self._incoming_calls = set()
-
+        self._settings = settings
 
     # -----------------------------------------------------------------------------------------------------------------
     # AV support
@@ -29,7 +30,7 @@ class CallsManager:
         if not self.is_active_a_friend():
             return
         if num not in self._call and self.is_active_online():  # start call
-            if not Settings.get_instance().audio['enabled']:
+            if not self._settings.audio['enabled']:
                 return
             self._call(num, audio, video)
             self._screen.active_call()
@@ -47,7 +48,7 @@ class CallsManager:
         """
         Incoming call from friend.
         """
-        if not Settings.get_instance().audio['enabled']:
+        if not self._settings.audio['enabled']:
             return
         friend = self.get_friend_by_number(friend_number)
         if video:
@@ -62,7 +63,7 @@ class CallsManager:
             self._messages.scrollToBottom()
         else:
             friend.actions = True
-        self._call_widgets[friend_number] = avwidgets.IncomingCallWidget(friend_number, text, friend.name)
+        self._call_widgets[friend_number] = av_widgets.IncomingCallWidget(friend_number, text, friend.name)
         self._call_widgets[friend_number].set_pixmap(friend.get_pixmap())
         self._call_widgets[friend_number].show()
 

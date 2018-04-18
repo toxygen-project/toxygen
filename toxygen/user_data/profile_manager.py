@@ -13,7 +13,7 @@ class ProfileManager:
         self._path = path
         self._directory = os.path.basename(path)
         # create /avatars if not exists:
-        directory = path + 'avatars'
+        directory = util.join_path(self._directory, 'avatars')
         if not os.path.exists(directory):
             os.makedirs(directory)
 

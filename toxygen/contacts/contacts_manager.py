@@ -1,36 +1,56 @@
+import util.util as util
+import util.ui as util_ui
+from contacts.friend import Friend
+import os
+from PyQt5 import QtCore, QtGui, QtWidgets
+from messenger.messages import *
+from wrapper.toxcore_enums_and_consts import *
+from network.tox_dns import tox_dns
 
 
 class ContactsManager:
 
-    def __init__(self, tox, settings, screen):
+    def __init__(self, tox, settings, screen, profile_manager):
         self._tox = tox
         self._settings = settings
+        self._screen = screen
+        self._profile_manager = profile_manager
+        self._messages = screen.messages
         self._contacts, self._active_friend = [], -1
         self._sorting = settings['sorting']
-        data = tox.self_get_friend_list()
         self._filter_string = ''
         self._friend_item_height = 40 if settings['compact_mode'] else 70
         screen.online_contacts.setCurrentIndex(int(self._sorting))
-        aliases = settings['friends_aliases']
-        for i in data:  # creates list of friends
-            tox_id = tox.friend_get_public_key(i)
+        self.load_contacts()
+
+    def load_contacts(self):
+        self.load_friends()
+        self.load_groups()
+        if len(self._contacts):
+            self.set_active(0)
+        self.filtration_and_sorting(self._sorting)
+
+    def load_friends(self):
+        aliases = self._settings['friends_aliases']
+        friend_numbers = self._tox.self_get_friend_list()
+        for friend_number in friend_numbers:  # creates list of friends
+            tox_id = self._tox.friend_get_public_key(friend_number)
             try:
                 alias = list(filter(lambda x: x[0] == tox_id, aliases))[0][1]
             except:
                 alias = ''
             item = self.create_friend_item()
-            name = alias or tox.friend_get_name(i) or tox_id
-            status_message = tox.friend_get_status_message(i)
+            name = alias or self._tox.friend_get_name(friend_number) or tox_id
+            status_message = self._tox.friend_get_status_message(i)
             if not self._history.friend_exists_in_db(tox_id):
                 self._history.add_friend_to_db(tox_id)
             message_getter = self._history.messages_getter(tox_id)
-            friend = Friend(message_getter, i, name, status_message, item, tox_id)
+            friend = Friend(self._profile_manager, message_getter, friend_number, name, status_message, item, tox_id)
             friend.set_alias(alias)
             self._contacts.append(friend)
-        if len(self._contacts):
-            self.set_active(0)
-        self.filtration_and_sorting(self._sorting)
 
+    def load_groups(self):
+        pass
 
     def get_friend(self, num):
         if num < 0 or num >= len(self._contacts):
@@ -39,6 +59,10 @@ class ContactsManager:
 
     def get_curr_friend(self):
         return self._contacts[self._active_friend] if self._active_friend + 1 else None
+
+    def save_profile(self):
+        data = self._tox.get_savedata()
+        self._profile_manager.save_profile(data)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Work with active friend
@@ -78,7 +102,7 @@ class ContactsManager:
                     self._screen.messageEdit.setPlainText(friend.curr_text)
                 self._active_friend = value
                 friend.reset_messages()
-                if not Settings.get_instance()['save_history']:
+                if not self._settings['save_history']:
                     friend.delete_old_messages()
                 self._messages.clear()
                 friend.load_corr()
@@ -128,19 +152,14 @@ class ContactsManager:
             self._screen.account_name.setText(friend.name)
             self._screen.account_status.setText(friend.status_message)
             self._screen.account_status.setToolTip(friend.get_full_status())
-            if friend.tox_id is None:
-                avatar_path = curr_directory() + '/images/group.png'
-            else:
-                avatar_path = (ProfileManager.get_path() + 'avatars/{}.png').format(friend.tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
-            if not os.path.isfile(avatar_path):  # load default image
-                avatar_path = curr_directory() + '/images/avatar.png'
+            avatar_path = friend.get_avatar_path()
             os.chdir(os.path.dirname(avatar_path))
             pixmap = QtGui.QPixmap(avatar_path)
             self._screen.account_avatar.setPixmap(pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio,
                                                                 QtCore.Qt.SmoothTransformation))
         except Exception as ex:  # no friend found. ignore
-            log('Friend value: ' + str(value))
-            log('Error in set active: ' + str(ex))
+            util.log('Friend value: ' + str(value))
+            util.log('Error in set active: ' + str(ex))
             raise
 
     def set_active_by_number_and_type(self, number, is_friend):
@@ -167,7 +186,6 @@ class ContactsManager:
         :param filter_str: show contacts which name contains this substring
         """
         filter_str = filter_str.lower()
-        settings = Settings.get_instance()
         number = self.get_active_number()
         is_friend = self.is_active_a_friend()
         if sorting > 1:
@@ -203,8 +221,8 @@ class ContactsManager:
             else:
                 self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 0))
         self._sorting, self._filter_string = sorting, filter_str
-        settings['sorting'] = self._sorting
-        settings.save()
+        self._settings['sorting'] = self._sorting
+        self._settings.save()
         self.set_active_by_number_and_type(number, is_friend)
 
     def update_filtration(self):
@@ -213,7 +231,6 @@ class ContactsManager:
         """
         self.filtration_and_sorting(self._sorting, self._filter_string)
 
-
     def create_friend_item(self):
         """
         Method-factory
@@ -221,7 +238,42 @@ class ContactsManager:
         """
         return self._factory.friend_item()
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # Friend getters
+    # -----------------------------------------------------------------------------------------------------------------
 
+    def get_friend_by_number(self, num):
+        return list(filter(lambda x: x.number == num and type(x) is Friend, self._contacts))[0]
+
+    def get_last_message(self):
+        if self._active_friend + 1:
+            return self.get_curr_friend().get_last_message_text()
+        else:
+            return ''
+
+    def get_active_number(self):
+        return self.get_curr_friend().number if self._active_friend + 1 else -1
+
+    def get_active_name(self):
+        return self.get_curr_friend().name if self._active_friend + 1 else ''
+
+    def is_active_online(self):
+        return self._active_friend + 1 and self.get_curr_friend().status is not None
+
+    def new_name(self, number, name):
+        friend = self.get_friend_by_number(number)
+        tmp = friend.name
+        friend.set_name(name)
+        name = str(name, 'utf-8')
+        if friend.name == name and tmp != name:
+            message = QtWidgets.QApplication.translate("MainWindow", 'User {} is now known as {}')
+            message = message.format(tmp, name)
+            friend.append_message(InfoMessage(message, time.time()))
+            friend.actions = True
+            if number == self.get_active_number():
+                self.create_message_item(message, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+                self._messages.scrollToBottom()
+            self.set_active(None)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Work with friends (remove, block, set alias, get public key)
@@ -233,19 +285,11 @@ class ContactsManager:
         """
         friend = self._contacts[num]
         name = friend.name
-        dialog = QtWidgets.QApplication.translate('MainWindow',
-                                                  "Enter new alias for friend {} or leave empty to use friend's name:")
-        dialog = dialog.format(name)
-        title = QtWidgets.QApplication.translate('MainWindow',
-                                                 'Set alias')
-        text, ok = QtWidgets.QInputDialog.getText(None,
-                                                  title,
-                                                  dialog,
-                                                  QtWidgets.QLineEdit.Normal,
-                                                  name)
+        text = util_ui.tr("Enter new alias for friend {} or leave empty to use friend's name:").format(name)
+        title = util_ui.tr('Set alias')
+        text, ok = util_ui.text_dialog(text, title, name)
         if ok:
-            settings = Settings.get_instance()
-            aliases = settings['friends_aliases']
+            aliases = self._settings['friends_aliases']
             if text:
                 friend.name = bytes(text, 'utf-8')
                 try:
@@ -262,7 +306,7 @@ class ContactsManager:
                     del aliases[index]
                 except:
                     pass
-            settings.save()
+            self._settings.save()
         if num == self.get_active_number() and self.is_active_a_friend():
             self.update()
 
@@ -275,15 +319,14 @@ class ContactsManager:
         :param num: number of friend in list
         """
         friend = self._contacts[num]
-        settings = Settings.get_instance()
         try:
-            index = list(map(lambda x: x[0], settings['friends_aliases'])).index(friend.tox_id)
-            del settings['friends_aliases'][index]
+            index = list(map(lambda x: x[0], self._settings['friends_aliases'])).index(friend.tox_id)
+            del self._settings['friends_aliases'][index]
         except:
             pass
-        if friend.tox_id in settings['notes']:
-            del settings['notes'][friend.tox_id]
-        settings.save()
+        if friend.tox_id in self._settings['notes']:
+            del self._settings['notes'][friend.tox_id]
+        self._settings.save()
         self.clear_history(num)
         if self._history.friend_exists_in_db(friend.tox_id):
             self._history.delete_friend_from_db(friend.tox_id)
@@ -296,7 +339,7 @@ class ContactsManager:
             else:
                 self.set_active(0)
         data = self._tox.get_savedata()
-        ProfileManager.get_instance().save_profile(data)
+        self._profile_manager.save_profile(data)
 
     def add_friend(self, tox_id):
         """
@@ -309,7 +352,7 @@ class ContactsManager:
                 self._history.add_friend_to_db(tox_id)
             message_getter = self._history.messages_getter(tox_id)
         except Exception as ex:  # something is wrong
-            log('Accept friend request failed! ' + str(ex))
+            util.log('Accept friend request failed! ' + str(ex))
             message_getter = None
         friend = Friend(message_getter, num, tox_id, '', item, tox_id)
         self._contacts.append(friend)
@@ -319,17 +362,15 @@ class ContactsManager:
         Block user with specified tox id (or public key) - delete from friends list and ignore friend requests
         """
         tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
-        if tox_id == self.tox_id[:TOX_PUBLIC_KEY_SIZE * 2]:
+        if tox_id == self._tox.self_get_address[:TOX_PUBLIC_KEY_SIZE * 2]:
             return
-        settings = Settings.get_instance()
-        if tox_id not in settings['blocked']:
-            settings['blocked'].append(tox_id)
-            settings.save()
+        if tox_id not in self._settings['blocked']:
+            self._settings['blocked'].append(tox_id)
+            self._settings.save()
         try:
             num = self._tox.friend_by_public_key(tox_id)
             self.delete_friend(num)
-            data = self._tox.get_savedata()
-            ProfileManager.get_instance().save_profile(data)
+            self.save_profile()
         except:  # not in friend list
             pass
 
@@ -339,13 +380,11 @@ class ContactsManager:
         :param tox_id: tox id of contact
         :param add_to_friend_list: add this contact to friend list or not
         """
-        s = Settings.get_instance()
-        s['blocked'].remove(tox_id)
-        s.save()
+        self._settings['blocked'].remove(tox_id)
+        self._settings.save()
         if add_to_friend_list:
             self.add_friend(tox_id)
-            data = self._tox.get_savedata()
-            ProfileManager.get_instance().save_profile(data)
+            self.save_profile()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Friend requests
@@ -366,11 +405,9 @@ class ContactsManager:
                     raise Exception('TOX DNS lookup failed')
             if len(tox_id) == TOX_PUBLIC_KEY_SIZE * 2:  # public key
                 self.add_friend(tox_id)
-                msgBox = QtWidgets.QMessageBox()
-                msgBox.setWindowTitle(QtWidgets.QApplication.translate("MainWindow", "Friend added"))
-                text = (QtWidgets.QApplication.translate("MainWindow", 'Friend added without sending friend request'))
-                msgBox.setText(text)
-                msgBox.exec_()
+                title = util_ui.tr('Friend added')
+                text = util_ui.tr('Friend added without sending friend request')
+                util_ui.message_box(text, title)
             else:
                 result = self._tox.friend_add(tox_id, message.encode('utf-8'))
                 tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
@@ -380,11 +417,10 @@ class ContactsManager:
                 message_getter = self._history.messages_getter(tox_id)
                 friend = Friend(message_getter, result, tox_id, '', item, tox_id)
                 self._contacts.append(friend)
-            data = self._tox.get_savedata()
-            ProfileManager.get_instance().save_profile(data)
+            self.save_profile()
             return True
         except Exception as ex:  # wrong data
-            log('Friend request failed with ' + str(ex))
+            util.log('Friend request failed with ' + str(ex))
             return str(ex)
 
     def process_friend_request(self, tox_id, message):
@@ -396,13 +432,34 @@ class ContactsManager:
         if tox_id in self._settings['blocked']:
             return
         try:
-            text = QtWidgets.QApplication.translate('MainWindow', 'User {} wants to add you to contact list. Message:\n{}')
-            info = text.format(tox_id, message)
-            fr_req = QtWidgets.QApplication.translate('MainWindow', 'Friend request')
-            reply = QtWidgets.QMessageBox.question(None, fr_req, info, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
-            if reply == QtWidgets.QMessageBox.Yes:  # accepted
+            text = util_ui.tr('User {} wants to add you to contact list. Message:\n{}')
+            reply = util_ui.question(text.format(tox_id, message), util_ui.tr('Friend request'))
+            if reply:  # accepted
                 self.add_friend(tox_id)
                 data = self._tox.get_savedata()
-                ProfileManager.get_instance().save_profile(data)
+                self._profile_manager.save_profile(data)
         except Exception as ex:  # something is wrong
-            log('Accept friend request failed! ' + str(ex))
+            util.log('Accept friend request failed! ' + str(ex))
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Typing notifications
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def send_typing(self, typing):
+        """
+        Send typing notification to a friend
+        """
+        if self._settings['typing_notifications'] and self._active_friend + 1:
+            try:
+                friend = self.get_curr_friend()
+                if friend.status is not None:
+                    self._tox.self_set_typing(friend.number, typing)
+            except:
+                pass
+
+    def friend_typing(self, friend_number, typing):
+        """
+        Display incoming typing notification
+        """
+        if friend_number == self.get_active_number() and self.is_active_a_friend():
+            self._screen.typing.setVisible(typing)
