@@ -53,6 +53,6 @@ class Call:
         return self._out_video
 
     def set_out_video(self, value):
-        self._in_video = value
+        self._out_video = value
 
     out_video = property(get_out_video, set_out_video)

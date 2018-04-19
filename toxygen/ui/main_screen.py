@@ -657,15 +657,18 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def export_history(self, num, as_text=True):
         s = self.profile.export_history(num, as_text)
-        directory = QtWidgets.QFileDialog.getExistingDirectory(None,
-                                                           QtWidgets.QApplication.translate("MainWindow",
-                                                                                            'Choose folder'),
-                                                           curr_directory(),
-                                                           QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
+        extension = 'txt' if as_text else 'html'
+        file_name, _ = QtWidgets.QFileDialog.getSaveFileName(None,
+                                                              QtWidgets.QApplication.translate("MainWindow",
+                                                                                               'Choose file name'),
+                                                              curr_directory(),
+                                                              filter=extension,
+                                                              options=QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
 
-        if directory:
-            name = 'exported_history_{}.{}'.format(convert_time(time.time()), 'txt' if as_text else 'html')
-            with open(directory + '/' + name, 'wt') as fl:
+        if file_name:
+            if not file_name.endswith('.' + extension):
+                file_name += '.' + extension
+            with open(file_name, 'wt') as fl:
                 fl.write(s)
 
     def set_alias(self, num):

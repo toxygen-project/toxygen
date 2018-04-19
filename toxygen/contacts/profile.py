@@ -22,7 +22,7 @@ class Profile(basecontact.BaseContact):
     """
     Profile of current toxygen user. Contains friends list, tox instance
     """
-    def __init__(self, profile_manager, tox, screen):
+    def __init__(self, profile_manager, tox, screen, file_transfer_handler):
         """
         :param tox: tox instance
         :param screen: ref to main screen
@@ -33,6 +33,7 @@ class Profile(basecontact.BaseContact):
                                          tox.self_get_status_message(),
                                          screen.user_info,
                                          tox.self_get_address())
+        self._file_transfer_handler = file_transfer_handler
         self._screen = screen
         self._messages = screen.messages
         self._tox = tox
@@ -41,7 +42,6 @@ class Profile(basecontact.BaseContact):
         self._waiting_for_reconnection = False
         self._factory = items_factory.ItemsFactory(self._screen.friends_list, self._messages)
         #self._show_avatars = settings['show_avatars']
-
 
     # -----------------------------------------------------------------------------------------------------------------
     # Edit current user's data
@@ -318,11 +318,11 @@ class Profile(basecontact.BaseContact):
         s.save()
 
     def reset_avatar(self):
-        super(Profile, self).reset_avatar()
+        super().reset_avatar()
         for friend in filter(lambda x: x.status is not None, self._contacts):
             self.send_avatar(friend.number)
 
     def set_avatar(self, data):
-        super(Profile, self).set_avatar(data)
+        super().set_avatar(data)
         for friend in filter(lambda x: x.status is not None, self._contacts):
             self.send_avatar(friend.number)

@@ -8,6 +8,6 @@ Animated smileys (.gif) are supported too.
 
 # Stickers
 
-Sticker is inline image. If you want to create your own smiley pack, create directory in src/stickers/ and place your stickers there.
+Sticker is inline image. If you want to create your own sticker pack, create directory in src/stickers/ and place your stickers there.
 
 Users can import smileys and stickers using menu: Settings -> Interface
