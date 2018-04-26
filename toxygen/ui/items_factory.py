@@ -3,9 +3,9 @@ from ui.list_items import *
 
 class ItemsFactory:
 
-    def __init__(self, friends_list, messages):
-        self._friends = friends_list
-        self._messages = messages
+    def __init__(self, settings, plugin_loader, smiley_loader, main_screen):
+        self._settings, self._plugin_loader = settings, plugin_loader
+        self._smiley_loader, self._main_screen = smiley_loader, main_screen
 
     def friend_item(self):
         item = ContactItem()

@@ -2,7 +2,6 @@ from sqlite3 import connect
 from user_data import settings
 from os import chdir
 import os.path
-from user_data.toxes import ToxES
 
 
 PAGE_SIZE = 42
@@ -14,10 +13,11 @@ SAVE_MESSAGES = 500
 MESSAGE_OWNER = {
     'ME': 0,
     'FRIEND': 1,
-    'NOT_SENT': 2
+    'NOT_SENT': 2,
+    'GC_PEER': 3
 }
 
-# TODO: unique message id and ngc support, db name as profile name
+# TODO: unique message id and ngc support, profile name as db name
 
 
 class Database:
@@ -58,9 +58,8 @@ class Database:
         new_path = directory + self._name + '.hstr'
         with open(path, 'rb') as fin:
             data = fin.read()
-        encr = ToxES.get_instance()
-        if encr.has_password():
-            data = encr.pass_encrypt(data)
+        if self._toxes.has_password():
+            data = self._toxes.pass_encrypt(data)
         with open(new_path, 'wb') as fout:
             fout.write(data)
 

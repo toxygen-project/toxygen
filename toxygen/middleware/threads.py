@@ -18,13 +18,13 @@ class BaseThread(threading.Thread):
 
 class InitThread(BaseThread):
 
-    def __init__(self, tox, plugin_loader):
+    def __init__(self, tox, plugin_loader, settings):
         super().__init__()
-        self._tox, self._plugin_loader = tox, plugin_loader
+        self._tox, self._plugin_loader, self._settings = tox, plugin_loader, settings
 
     def run(self):
         # download list of nodes if needed
-        download_nodes_list()
+        download_nodes_list(self._settings)
         # start plugins
         self._plugin_loader.load()
         # bootstrap

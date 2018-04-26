@@ -21,6 +21,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._saved = False
         if settings['show_welcome_screen']:
             self.ws = WelcomeScreen()
+        self.profile = None
 
     def setup_menu(self, window):
         self.menubar = QtWidgets.QMenuBar(window)
@@ -108,42 +109,42 @@ class MainWindow(QtWidgets.QMainWindow):
         if event.type() == QtCore.QEvent.WindowActivate:
             self.tray.setIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
             self.messages.repaint()
-        return super(MainWindow, self).event(event)
+        return super().event(event)
 
     def retranslateUi(self):
-        self.lockApp.setText(QtWidgets.QApplication.translate("MainWindow", "Lock"))
-        self.menuPlugins.setTitle(QtWidgets.QApplication.translate("MainWindow", "Plugins"))
-        self.pluginData.setText(QtWidgets.QApplication.translate("MainWindow", "List of plugins"))
-        self.menuProfile.setTitle(QtWidgets.QApplication.translate("MainWindow", "Profile"))
-        self.menuSettings.setTitle(QtWidgets.QApplication.translate("MainWindow", "Settings"))
-        self.menuAbout.setTitle(QtWidgets.QApplication.translate("MainWindow", "About"))
-        self.actionAdd_friend.setText(QtWidgets.QApplication.translate("MainWindow", "Add contact"))
-        self.actionAdd_gc.setText(QtWidgets.QApplication.translate("MainWindow", "Create group chat"))
-        self.actionprofilesettings.setText(QtWidgets.QApplication.translate("MainWindow", "Profile"))
-        self.actionPrivacy_settings.setText(QtWidgets.QApplication.translate("MainWindow", "Privacy"))
-        self.actionInterface_settings.setText(QtWidgets.QApplication.translate("MainWindow", "Interface"))
-        self.actionNotifications.setText(QtWidgets.QApplication.translate("MainWindow", "Notifications"))
-        self.actionNetwork.setText(QtWidgets.QApplication.translate("MainWindow", "Network"))
-        self.actionAbout_program.setText(QtWidgets.QApplication.translate("MainWindow", "About program"))
-        self.actionSettings.setText(QtWidgets.QApplication.translate("MainWindow", "Settings"))
-        self.audioSettings.setText(QtWidgets.QApplication.translate("MainWindow", "Audio"))
-        self.videoSettings.setText(QtWidgets.QApplication.translate("MainWindow", "Video"))
-        self.updateSettings.setText(QtWidgets.QApplication.translate("MainWindow", "Updates"))
-        self.contact_name.setPlaceholderText(QtWidgets.QApplication.translate("MainWindow", "Search"))
-        self.sendMessageButton.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Send message"))
-        self.callButton.setToolTip(QtWidgets.QApplication.translate("MainWindow", "Start audio call with friend"))
+        self.lockApp.setText(util_ui.tr("Lock"))
+        self.menuPlugins.setTitle(util_ui.tr("Plugins"))
+        self.pluginData.setText(util_ui.tr("List of plugins"))
+        self.menuProfile.setTitle(util_ui.tr("Profile"))
+        self.menuSettings.setTitle(util_ui.tr("Settings"))
+        self.menuAbout.setTitle(util_ui.tr("About"))
+        self.actionAdd_friend.setText(util_ui.tr("Add contact"))
+        self.actionAdd_gc.setText(util_ui.tr("Create group chat"))
+        self.actionprofilesettings.setText(util_ui.tr("Profile"))
+        self.actionPrivacy_settings.setText(util_ui.tr("Privacy"))
+        self.actionInterface_settings.setText(util_ui.tr("Interface"))
+        self.actionNotifications.setText(util_ui.tr("Notifications"))
+        self.actionNetwork.setText(util_ui.tr("Network"))
+        self.actionAbout_program.setText(util_ui.tr("About program"))
+        self.actionSettings.setText(util_ui.tr("Settings"))
+        self.audioSettings.setText(util_ui.tr("Audio"))
+        self.videoSettings.setText(util_ui.tr("Video"))
+        self.updateSettings.setText(util_ui.tr("Updates"))
+        self.contact_name.setPlaceholderText(util_ui.tr("Search"))
+        self.sendMessageButton.setToolTip(util_ui.tr("Send message"))
+        self.callButton.setToolTip(util_ui.tr("Start audio call with friend"))
         self.online_contacts.clear()
-        self.online_contacts.addItem(QtWidgets.QApplication.translate("MainWindow", "All"))
-        self.online_contacts.addItem(QtWidgets.QApplication.translate("MainWindow", "Online"))
-        self.online_contacts.addItem(QtWidgets.QApplication.translate("MainWindow", "Online first"))
-        self.online_contacts.addItem(QtWidgets.QApplication.translate("MainWindow", "Name"))
-        self.online_contacts.addItem(QtWidgets.QApplication.translate("MainWindow", "Online and by name"))
-        self.online_contacts.addItem(QtWidgets.QApplication.translate("MainWindow", "Online first and by name"))
+        self.online_contacts.addItem(util_ui.tr("All"))
+        self.online_contacts.addItem(util_ui.tr("Online"))
+        self.online_contacts.addItem(util_ui.tr("Online first"))
+        self.online_contacts.addItem(util_ui.tr("Name"))
+        self.online_contacts.addItem(util_ui.tr("Online and by name"))
+        self.online_contacts.addItem(util_ui.tr("Online first and by name"))
         ind = self._settings['sorting']
         d = {0: 0, 1: 1, 2: 2, 3: 4, 1 | 4: 4, 2 | 4: 5}
         self.online_contacts.setCurrentIndex(d[ind])
-        self.importPlugin.setText(QtWidgets.QApplication.translate("MainWindow", "Import plugin"))
-        self.reloadPlugins.setText(QtWidgets.QApplication.translate("MainWindow", "Reload plugins"))
+        self.importPlugin.setText(util_ui.tr("Import plugin"))
+        self.reloadPlugins.setText(util_ui.tr("Reload plugins"))
 
     def setup_right_bottom(self, Form):
         Form.resize(650, 60)
@@ -353,28 +354,27 @@ class MainWindow(QtWidgets.QMainWindow):
         self.user_info = name
         self.friend_info = info
         self.retranslateUi()
-        self.profile = Profile(tox, self)
 
     def closeEvent(self, event):
-        s = Settings.get_instance()
-        if not s['close_to_tray'] or s.closing:
-            if not self._saved:
-                self._saved = True
-                self.profile.save_history()
-                self.profile.close()
-                s['x'] = self.geometry().x()
-                s['y'] = self.geometry().y()
-                s['width'] = self.width()
-                s['height'] = self.height()
-                s.save()
-                QtWidgets.QApplication.closeAllWindows()
-                event.accept()
+        if not self._settings['close_to_tray'] or self._settings.closing:
+            if self._saved:
+                return
+            self._saved = True
+            self.profile.save_history()
+            self.profile.close()
+            self._settings['x'] = self.geometry().x()
+            self._settings['y'] = self.geometry().y()
+            self._settings['width'] = self.width()
+            self._settings['height'] = self.height()
+            self._settings.save()
+            QtWidgets.QApplication.closeAllWindows()
+            event.accept()
         elif QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
             event.ignore()
             self.hide()
 
     def close_window(self):
-        Settings.get_instance().closing = True
+        self._settings.closing = True
         self.close()
 
     def resizeEvent(self, *args, **kwargs):
@@ -471,7 +471,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def import_plugin(self):
         import util
         directory = QtWidgets.QFileDialog.getExistingDirectory(self,
-                                                           QtWidgets.QApplication.translate("MainWindow", 'Choose folder with plugin'),
+                                                           util_ui.tr('Choose folder with plugin'),
                                                            util.curr_directory(),
                                                            QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
         if directory:
@@ -480,9 +480,9 @@ class MainWindow(QtWidgets.QMainWindow):
             util.copy(src, dest)
             msgBox = QtWidgets.QMessageBox()
             msgBox.setWindowTitle(
-                QtWidgets.QApplication.translate("MainWindow", "Restart Toxygen"))
+                util_ui.tr("Restart Toxygen"))
             msgBox.setText(
-                QtWidgets.QApplication.translate("MainWindow", 'Plugin will be loaded after restart'))
+                util_ui.tr('Plugin will be loaded after restart'))
             msgBox.exec_()
 
     def lock_app(self):
@@ -492,9 +492,9 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             msgBox = QtWidgets.QMessageBox()
             msgBox.setWindowTitle(
-                QtWidgets.QApplication.translate("MainWindow", "Cannot lock app"))
+                util_ui.tr("Cannot lock app"))
             msgBox.setText(
-                QtWidgets.QApplication.translate("MainWindow", 'Error. Profile password is not set.'))
+                util_ui.tr('Error. Profile password is not set.'))
             msgBox.exec_()
 
     def show_menu(self):
@@ -517,7 +517,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def send_file(self):
         self.menu.hide()
         if self.profile.active_friend + 1and self.profile.is_active_a_friend():
-            choose = QtWidgets.QApplication.translate("MainWindow", 'Choose file')
+            choose = util_ui.tr('Choose file')
             name = QtWidgets.QFileDialog.getOpenFileName(self, choose, options=QtWidgets.QFileDialog.DontUseNativeDialog)
             if name[0]:
                 self.profile.send_file(name[0])
@@ -583,33 +583,33 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         settings = Settings.get_instance()
         allowed = friend.tox_id in settings['auto_accept_from_friends']
-        auto = QtWidgets.QApplication.translate("MainWindow", 'Disallow auto accept') if allowed else QtWidgets.QApplication.translate("MainWindow", 'Allow auto accept')
+        auto = util_ui.tr('Disallow auto accept') if allowed else util_ui.tr('Allow auto accept')
         if item is not None:
             self.listMenu = QtWidgets.QMenu()
             is_friend = type(friend) is Friend
             if is_friend:
-                set_alias_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Set alias'))
+                set_alias_item = self.listMenu.addAction(util_ui.tr('Set alias'))
                 set_alias_item.triggered.connect(lambda: self.set_alias(num))
 
-            history_menu = self.listMenu.addMenu(QtWidgets.QApplication.translate("MainWindow", 'Chat history'))
-            clear_history_item = history_menu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Clear history'))
-            export_to_text_item = history_menu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Export as text'))
-            export_to_html_item = history_menu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Export as HTML'))
+            history_menu = self.listMenu.addMenu(util_ui.tr('Chat history'))
+            clear_history_item = history_menu.addAction(util_ui.tr('Clear history'))
+            export_to_text_item = history_menu.addAction(util_ui.tr('Export as text'))
+            export_to_html_item = history_menu.addAction(util_ui.tr('Export as HTML'))
 
-            copy_menu = self.listMenu.addMenu(QtWidgets.QApplication.translate("MainWindow", 'Copy'))
-            copy_name_item = copy_menu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Name'))
-            copy_status_item = copy_menu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Status message'))
+            copy_menu = self.listMenu.addMenu(util_ui.tr('Copy'))
+            copy_name_item = copy_menu.addAction(util_ui.tr('Name'))
+            copy_status_item = copy_menu.addAction(util_ui.tr('Status message'))
             if is_friend:
-                copy_key_item = copy_menu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Public key'))
+                copy_key_item = copy_menu.addAction(util_ui.tr('Public key'))
 
                 auto_accept_item = self.listMenu.addAction(auto)
-                remove_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Remove friend'))
-                block_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Block friend'))
-                notes_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Notes'))
+                remove_item = self.listMenu.addAction(util_ui.tr('Remove friend'))
+                block_item = self.listMenu.addAction(util_ui.tr('Block friend'))
+                notes_item = self.listMenu.addAction(util_ui.tr('Notes'))
 
                 chats = self.profile.get_group_chats()
                 if len(chats) and self.profile.is_active_online():
-                    invite_menu = self.listMenu.addMenu(QtWidgets.QApplication.translate("MainWindow", 'Invite to group chat'))
+                    invite_menu = self.listMenu.addMenu(util_ui.tr('Invite to group chat'))
                     for i in range(len(chats)):
                         name, number = chats[i]
                         item = invite_menu.addAction(name)
@@ -619,7 +619,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 if plugins_loader is not None:
                     submenu = plugins_loader.get_menu(self.listMenu, num)
                     if len(submenu):
-                        plug = self.listMenu.addMenu(QtWidgets.QApplication.translate("MainWindow", 'Plugins'))
+                        plug = self.listMenu.addMenu(util_ui.tr('Plugins'))
                         plug.addActions(submenu)
                 copy_key_item.triggered.connect(lambda: self.copy_friend_key(num))
                 remove_item.triggered.connect(lambda: self.remove_friend(num))
@@ -627,8 +627,8 @@ class MainWindow(QtWidgets.QMainWindow):
                 auto_accept_item.triggered.connect(lambda: self.auto_accept(num, not allowed))
                 notes_item.triggered.connect(lambda: self.show_note(friend))
             else:
-                leave_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Leave chat'))
-                set_title_item = self.listMenu.addAction(QtWidgets.QApplication.translate("MainWindow", 'Set title'))
+                leave_item = self.listMenu.addAction(util_ui.tr('Leave chat'))
+                set_title_item = self.listMenu.addAction(util_ui.tr('Set title'))
                 leave_item.triggered.connect(lambda: self.leave_gc(num))
                 set_title_item.triggered.connect(lambda: self.set_title(num))
             clear_history_item.triggered.connect(lambda: self.clear_history(num))
@@ -643,7 +643,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def show_note(self, friend):
         s = Settings.get_instance()
         note = s['notes'][friend.tox_id] if friend.tox_id in s['notes'] else ''
-        user = QtWidgets.QApplication.translate("MainWindow", 'Notes about user')
+        user = util_ui.tr('Notes about user')
         user = '{} {}'.format(user, friend.name)
 
         def save_note(text):

@@ -106,7 +106,7 @@ class BaseContact:
         return self._widget.avatar_label.pixmap()
 
     def get_avatar_path(self):
-        directory = util.join_path(self._profile_manager.get_path(), 'avatars')
+        directory = util.join_path(self._profile_manager.get_dir(), 'avatars')
         avatar_path = util.join_path(directory, '{}.png'.format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2]))
         if not os.path.isfile(avatar_path) or not os.path.getsize(avatar_path):  # load default image
             avatar_path = util.join_path(util.get_images_directory(), self.get_default_avatar_name())

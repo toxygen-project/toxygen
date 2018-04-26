@@ -38,13 +38,12 @@ def save_nodes(nodes):
         fl.write(nodes)
 
 
-def download_nodes_list():
+def download_nodes_list(settings):
     url = 'https://nodes.tox.chat/json'
-    s = settings.Settings.get_instance()
-    if not s['download_nodes_list']:
+    if not settings['download_nodes_list']:
         return
 
-    if not s['proxy_type']:  # no proxy
+    if not settings['proxy_type']:  # no proxy
         try:
             req = urllib.request.Request(url)
             req.add_header('Content-Type', 'application/json')
@@ -57,9 +56,9 @@ def download_nodes_list():
         netman = QtNetwork.QNetworkAccessManager()
         proxy = QtNetwork.QNetworkProxy()
         proxy.setType(
-            QtNetwork.QNetworkProxy.Socks5Proxy if s['proxy_type'] == 2 else QtNetwork.QNetworkProxy.HttpProxy)
-        proxy.setHostName(s['proxy_host'])
-        proxy.setPort(s['proxy_port'])
+            QtNetwork.QNetworkProxy.Socks5Proxy if settings['proxy_type'] == 2 else QtNetwork.QNetworkProxy.HttpProxy)
+        proxy.setHostName(settings['proxy_host'])
+        proxy.setPort(settings['proxy_port'])
         netman.setProxy(proxy)
         try:
             request = QtNetwork.QNetworkRequest()

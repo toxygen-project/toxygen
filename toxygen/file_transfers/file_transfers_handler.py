@@ -1,14 +1,18 @@
 from file_transfers.file_transfers import *
 from messenger.messages import *
+from history.database import MESSAGE_OWNER
 import os
+import util.util as util
 
 
 class FileTransfersHandler:
 
-    def __init__(self, tox, settings):
+    def __init__(self, tox, settings, contact_provider):
         self._tox = tox
         self._settings = settings
+        self._contact_provider = contact_provider
         self._file_transfers = {}
+        # key = (friend number, file number), value - transfer instance
         self._paused_file_transfers = dict(settings['paused_file_transfers'])
         # key - file id, value: [path, friend number, is incoming, start position]
 
@@ -24,9 +28,9 @@ class FileTransfersHandler:
         :param size: file size in bytes
         :param file_name: file name without path
         """
-        friend = self.get_friend_by_number(friend_number)
-        auto = self._settings['allow_auto_accept'] and friend.tox_id in settings['auto_accept_from_friends']
-        inline = is_inline(file_name) and settings['allow_inline']
+        friend = self._get_friend_by_number(friend_number)
+        auto = self._settings['allow_auto_accept'] and friend.tox_id in self._settings['auto_accept_from_friends']
+        inline = is_inline(file_name) and self._settings['allow_inline']
         file_id = self._tox.file_get_file_id(friend_number, file_number)
         accepted = True
         if file_id in self._paused_file_transfers:
@@ -55,7 +59,7 @@ class FileTransfersHandler:
                                  file_number)
 
         elif auto:
-            path = settings['auto_accept_path'] or curr_directory()
+            path = self._settings['auto_accept_path'] or util.curr_directory()
             self.accept_transfer(None, path + '/' + file_name, friend_number, file_number, size)
             tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
                                  time.time(),
@@ -90,7 +94,7 @@ class FileTransfersHandler:
         :param file_number: file number
         :param already_cancelled: was cancelled by friend
         """
-        i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+        i = self._get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                           TOX_FILE_TRANSFER_STATE['CANCELLED'])
         if (friend_number, file_number) in self._file_transfers:
             tr = self._file_transfers[(friend_number, file_number)]
@@ -128,8 +132,8 @@ class FileTransfersHandler:
         """
         Resume transfer with specified data
         """
-        self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                      TOX_FILE_TRANSFER_STATE['RUNNING'])
+        # self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+        #                                                               TOX_FILE_TRANSFER_STATE['RUNNING'])
         tr = self._file_transfers[(friend_number, file_number)]
         if by_friend:
             tr.state = TOX_FILE_TRANSFER_STATE['RUNNING']
@@ -261,7 +265,7 @@ class FileTransfersHandler:
             self.get_friend_by_number(friend_number).load_avatar()
             if friend_number == self.get_active_number() and self.is_active_a_friend():
                 self.set_active(None)
-        elif t is ReceiveToBuffer or (t is SendFromBuffer and Settings.get_instance()['allow_inline']):  # inline image
+        elif t is ReceiveToBuffer or (t is SendFromBuffer and self._settings.get_instance()['allow_inline']):  # inline image
             print('inline')
             inline = InlineImage(transfer.get_data())
             i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
@@ -286,13 +290,10 @@ class FileTransfersHandler:
     # Avatars support
     # -----------------------------------------------------------------------------------------------------------------
 
-    def send_avatar(self, friend_number):
+    def send_avatar(self, friend_number, avatar_path=None):
         """
         :param friend_number: number of friend who should get new avatar
         """
-        avatar_path = (ProfileManager.get_path() + 'avatars/{}.png').format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2])
-        if not os.path.isfile(avatar_path):  # reset image
-            avatar_path = None
         sa = SendAvatar(avatar_path, self._tox, friend_number)
         self._file_transfers[(friend_number, sa.get_file_number())] = sa
 
@@ -311,3 +312,6 @@ class FileTransfersHandler:
             self.get_friend_by_number(friend_number).load_avatar()
             if self.get_active_number() == friend_number and self.is_active_a_friend():
                 self.set_active(None)
+
+    def _get_friend_by_number(self, friend_number):
+        return self._contact_provider.get_friend_by_number(friend_number)

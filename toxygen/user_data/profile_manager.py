@@ -11,11 +11,11 @@ class ProfileManager:
         self._settings = settings
         self._toxes = toxes
         self._path = path
-        self._directory = os.path.basename(path)
+        self._directory = os.path.dirname(path)
         # create /avatars if not exists:
-        directory = util.join_path(self._directory, 'avatars')
-        if not os.path.exists(directory):
-            os.makedirs(directory)
+        avatars_directory = util.join_path(self._directory, 'avatars')
+        if not os.path.exists(avatars_directory):
+            os.makedirs(avatars_directory)
 
     def open_profile(self):
         with open(self._path, 'rb') as fl:

@@ -66,14 +66,14 @@ class QRightClickButton(QtWidgets.QPushButton):
 
     rightClicked = QtCore.pyqtSignal()
 
-    def __init__(self, parent):
-        super(QRightClickButton, self).__init__(parent)
+    def __init__(self, parent=None):
+        super().__init__(parent)
 
     def mousePressEvent(self, event):
         if event.button() == QtCore.Qt.RightButton:
             self.rightClicked.emit()
         else:
-            super(QRightClickButton, self).mousePressEvent(event)
+            super().mousePressEvent(event)
 
 
 class RubberBand(QtWidgets.QRubberBand):

@@ -16,6 +16,7 @@ class AddContact(CenteredWidget):
         super(AddContact, self).__init__()
         self.initUI(tox_id)
         self._adding = False
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
     def initUI(self, tox_id):
         self.setObjectName('AddContact')

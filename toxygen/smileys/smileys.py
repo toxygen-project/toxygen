@@ -25,7 +25,7 @@ class SmileyLoader:
         pack_name = self._settings['smiley_pack']
         if self._settings['smileys'] and self._curr_pack != pack_name:
             self._curr_pack = pack_name
-            path = self.get_smileys_path() + 'config.json'
+            path = util.join_path(self.get_smileys_path(), 'config.json')
             try:
                 with open(path, encoding='utf8') as fl:
                     self._smileys = json.loads(fl.read())
@@ -45,7 +45,7 @@ class SmileyLoader:
                 print('Smiley pack {} was not loaded. Error: {}'.format(pack_name, ex))
 
     def get_smileys_path(self):
-        return util.curr_directory() + '/smileys/' + self._curr_pack + '/' if self._curr_pack is not None else None
+        return util.join_path(util.get_smileys_directory(), self._curr_pack) if self._curr_pack is not None else None
 
     @staticmethod
     def get_packs_list(self):

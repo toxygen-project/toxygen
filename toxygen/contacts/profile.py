@@ -40,7 +40,8 @@ class Profile(basecontact.BaseContact):
         self._file_transfers = {}  # dict of file transfers. key - tuple (friend_number, file_number)
         self._load_history = True
         self._waiting_for_reconnection = False
-        self._factory = items_factory.ItemsFactory(self._screen.friends_list, self._messages)
+        #self._factory = items_factory.ItemsFactory(self._screen.friends_list, self._messages)
+        self._contacts_manager = None
         #self._show_avatars = settings['show_avatars']
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -77,7 +78,7 @@ class Profile(basecontact.BaseContact):
             self._messages.scrollToBottom()
 
     def set_status_message(self, value):
-        super(Profile, self).set_status_message(value)
+        super().set_status_message(value)
         self._tox.self_set_status_message(self._status_message.encode('utf-8'))
 
     def new_nospam(self):
@@ -85,6 +86,7 @@ class Profile(basecontact.BaseContact):
         import random
         self._tox.self_set_nospam(random.randint(0, 4294967295))  # no spam - uint32
         self._tox_id = self._tox.self_get_address()
+
         return self._tox_id
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -296,7 +298,7 @@ class Profile(basecontact.BaseContact):
         self.status = None
         for friend in self._contacts:
             friend.number = self._tox.friend_by_public_key(friend.tox_id)  # numbers update
-        self.update_filtration()
+        self._contacts_manager.update_filtration()
 
     def reconnect(self):
         self._waiting_for_reconnection = False

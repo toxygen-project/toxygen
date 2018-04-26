@@ -1,3 +1,4 @@
+from history.database import MESSAGE_OWNER
 
 
 MESSAGE_TYPE = {
@@ -9,27 +10,53 @@ MESSAGE_TYPE = {
 }
 
 
+class MessageAuthor:
+
+    def __init__(self, author_name, author_type):
+        self.name = author_name
+        self.type = author_type
+
+
 class Message:
 
-    def __init__(self, message_id, message_type, owner, time):
+    def __init__(self, message_id, message_type, author, time):
         self._time = time
         self._type = message_type
-        self._owner = owner
+        self._author = author
         self._message_id = message_id
+        self._widget = None
 
     def get_type(self):
         return self._type
 
-    def get_owner(self):
-        return self._owner
+    type = property(get_type)
 
-    def mark_as_sent(self):
-        self._owner = 0
+    def get_author(self):
+        return self._author
+
+    author = property(get_author)
 
     def get_message_id(self):
         return self._message_id
 
     message_id = property(get_message_id)
+
+    def get_widget(self):
+        if self._widget is None:
+            self._widget = self._create_widget()
+
+        return self._widget
+
+    widget = property(get_widget)
+
+    def remove_widget(self):
+        self._widget = None
+
+    def mark_as_sent(self):
+        self._author.author_type = MESSAGE_OWNER['ME']
+
+    def _create_widget(self):
+        pass
 
 
 class TextMessage(Message):
@@ -38,11 +65,14 @@ class TextMessage(Message):
     """
 
     def __init__(self, id, message, owner, time, message_type):
-        super(TextMessage, self).__init__(id, message_type, owner, time)
+        super().__init__(id, message_type, owner, time)
         self._message = message
 
     def get_data(self):
         return self._message, self._owner, self._time, self._type
+
+    def _create_widget(self):
+        return
 
 
 class GroupChatMessage(TextMessage):
@@ -61,7 +91,7 @@ class TransferMessage(Message):
     """
 
     def __init__(self, id, owner, time, status, size, name, friend_number, file_number):
-        super(TransferMessage, self).__init__(MESSAGE_TYPE['FILE_TRANSFER'], owner, time)
+        super().__init__(MESSAGE_TYPE['FILE_TRANSFER'], owner, time)
         self._status = status
         self._size = size
         self._file_name = name
@@ -88,7 +118,7 @@ class TransferMessage(Message):
 
 class UnsentFile(Message):
     def __init__(self, id, path, data, time):
-        super(UnsentFile, self).__init__(id, MESSAGE_TYPE['FILE_TRANSFER'], 0, time)
+        super().__init__(id, MESSAGE_TYPE['FILE_TRANSFER'], 0, time)
         self._data, self._path = data, path
 
     def get_data(self):
@@ -104,7 +134,7 @@ class InlineImage(Message):
     """
 
     def __init__(self, id, data):
-        super(InlineImage, self).__init__(id, MESSAGE_TYPE['INLINE'], None, None)
+        super().__init__(id, MESSAGE_TYPE['INLINE'], None, None)
         self._data = data
 
     def get_data(self):
@@ -114,4 +144,4 @@ class InlineImage(Message):
 class InfoMessage(TextMessage):
 
     def __init__(self, id, message, time):
-        super(InfoMessage, self).__init__(id, message, None, time, MESSAGE_TYPE['INFO_MESSAGE'])
+        super().__init__(id, message, None, time, MESSAGE_TYPE['INFO_MESSAGE'])

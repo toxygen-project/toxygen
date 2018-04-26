@@ -56,6 +56,11 @@ def get_stickers_directory():
 
 
 @cached
+def get_smileys_directory():
+    return get_app_directory('smileys')
+
+
+@cached
 def get_translations_directory():
     return get_app_directory('translations')
 
@@ -143,3 +148,12 @@ def is_re_valid(regex):
 
 def get_platform():
     return platform.system()
+
+
+class ToxSave:
+
+    def __init__(self, tox):
+        self._tox = tox
+
+    def set_tox(self, tox):
+        self._tox = tox

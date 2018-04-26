@@ -15,6 +15,11 @@ from plugin_support.plugin_support import PluginLoader
 from ui.main_screen import MainWindow
 from ui import tray
 import util.ui as util_ui
+import util.util as util
+from contacts.profile import Profile
+from file_transfers.file_transfers_handler import FileTransfersHandler
+from contacts.contact_provider import ContactProvider
+from contacts.friend_factory import FriendFactory
 
 
 class App:
@@ -23,7 +28,7 @@ class App:
         self._version = version
         self._app = self._settings = self._profile_manager = self._plugin_loader = None
         self._tox = self._ms = self._init = self._main_loop = self._av_loop = None
-        self._uri = self._toxes = self._tray = None
+        self._uri = self._toxes = self._tray = self._file_transfer_handler = self._contacts_provider = None
         if uri is not None and uri.startswith('tox:'):
             self._uri = uri[4:]
         self._path = path_to_profile
@@ -93,7 +98,11 @@ class App:
             return
 
         self._ms = MainWindow(self._settings, self._tox, self.reset, self._tray)
-        profile = self._ms.profile
+        self._friend_factory = FriendFactory(None, self._profile_manager, self._settings, self._tox)
+        self._contacts_provider = ContactProvider(self._tox, self._friend_factory)
+        self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider)
+        profile = Profile(self._profile_manager, self._tox, self._ms, self._file_transfer_handler)
+        self._ms.profile = profile
         self._ms.show()
 
         self._tray = tray.init_tray(profile, self._settings, self._ms)
@@ -110,7 +119,17 @@ class App:
             self._ms.add_contact(self._uri)
 
         self._app.lastWindowClosed.connect(self._app.quit)
-        self._app.exec_()
+        # main
+        while True:
+            try:
+                self._app.exec_()
+            except KeyboardInterrupt:
+                print('Closing Toxygen...')
+                break
+            except Exception as ex:
+                util.log('Unhandled exception: ' + str(ex))
+            else:
+                break
 
         self._plugin_loader.stop()
         self.stop_threads()
@@ -132,7 +151,7 @@ class App:
         self._tox = self.create_tox(data)
         self.start_threads()
 
-        self._plugin_loader.set_tox(self._tox)
+        # TODO: foreach in list of tox savers set_tox
 
         return self._tox
 
@@ -178,7 +197,7 @@ class App:
 
     def start_threads(self):
         # init thread
-        self._init = threads.InitThread(self._tox, self._plugin_loader)
+        self._init = threads.InitThread(self._tox, self._plugin_loader, self._settings)
         self._init.start()
 
         # starting threads for tox iterate and toxav iterate
