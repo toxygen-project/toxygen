@@ -1,6 +1,6 @@
 from file_transfers.file_transfers import *
 from messenger.messages import *
-from history.database import MESSAGE_OWNER
+from history.database import MESSAGE_AUTHOR
 import os
 import util.util as util
 
@@ -15,6 +15,13 @@ class FileTransfersHandler:
         # key = (friend number, file number), value - transfer instance
         self._paused_file_transfers = dict(settings['paused_file_transfers'])
         # key - file id, value: [path, friend number, is incoming, start position]
+        
+    def __del__(self):
+        self._settings['paused_file_transfers'] = self._paused_file_transfers if self._settings['resend_files'] else {}
+        self._settings.save()
+
+    def _get_friend_by_number(self, friend_number):
+        return self._contact_provider.get_friend_by_number(friend_number)
 
     # -----------------------------------------------------------------------------------------------------------------
     # File transfers support
@@ -41,7 +48,7 @@ class FileTransfersHandler:
                 return
             self._tox.file_seek(friend_number, file_number, pos)
             self.accept_transfer(None, data[0], friend_number, file_number, size, False, pos)
-            tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
+            tm = TransferMessage(MESSAGE_AUTHOR['FRIEND'],
                                  time.time(),
                                  TOX_FILE_TRANSFER_STATE['RUNNING'],
                                  size,
@@ -50,7 +57,7 @@ class FileTransfersHandler:
                                  file_number)
         elif inline and size < 1024 * 1024:
             self.accept_transfer(None, '', friend_number, file_number, size, True)
-            tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
+            tm = TransferMessage(MESSAGE_AUTHOR['FRIEND'],
                                  time.time(),
                                  TOX_FILE_TRANSFER_STATE['RUNNING'],
                                  size,
@@ -61,7 +68,7 @@ class FileTransfersHandler:
         elif auto:
             path = self._settings['auto_accept_path'] or util.curr_directory()
             self.accept_transfer(None, path + '/' + file_name, friend_number, file_number, size)
-            tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
+            tm = TransferMessage(MESSAGE_AUTHOR['FRIEND'],
                                  time.time(),
                                  TOX_FILE_TRANSFER_STATE['RUNNING'],
                                  size,
@@ -69,7 +76,7 @@ class FileTransfersHandler:
                                  friend_number,
                                  file_number)
         else:
-            tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
+            tm = TransferMessage(MESSAGE_AUTHOR['FRIEND'],
                                  time.time(),
                                  TOX_FILE_TRANSFER_STATE['INCOMING_NOT_STARTED'],
                                  size,
@@ -180,7 +187,6 @@ class FileTransfersHandler:
         :param data: raw data - png
         """
         self.send_inline(data, 'toxygen_inline.png')
-        self._messages.repaint()
 
     def send_sticker(self, path):
         with open(path, 'rb') as fl:
@@ -200,7 +206,7 @@ class FileTransfersHandler:
         st = SendFromBuffer(self._tox, friend.number, data, file_name)
         st.set_transfer_finished_handler(self.transfer_finished)
         self._file_transfers[(friend.number, st.get_file_number())] = st
-        tm = TransferMessage(MESSAGE_OWNER['ME'],
+        tm = TransferMessage(MESSAGE_AUTHOR['ME'],
                              time.time(),
                              TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED'],
                              len(data),
@@ -233,7 +239,7 @@ class FileTransfersHandler:
         st = SendTransfer(path, self._tox, friend_number, TOX_FILE_KIND['DATA'], file_id)
         st.set_transfer_finished_handler(self.transfer_finished)
         self._file_transfers[(friend_number, st.get_file_number())] = st
-        tm = TransferMessage(MESSAGE_OWNER['ME'],
+        tm = TransferMessage(MESSAGE_AUTHOR['ME'],
                              time.time(),
                              TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED'],
                              os.path.getsize(path),
@@ -293,6 +299,7 @@ class FileTransfersHandler:
     def send_avatar(self, friend_number, avatar_path=None):
         """
         :param friend_number: number of friend who should get new avatar
+        :param avatar_path: path to avatar or None if reset
         """
         sa = SendAvatar(avatar_path, self._tox, friend_number)
         self._file_transfers[(friend_number, sa.get_file_number())] = sa
@@ -312,6 +319,3 @@ class FileTransfersHandler:
             self.get_friend_by_number(friend_number).load_avatar()
             if self.get_active_number() == friend_number and self.is_active_a_friend():
                 self.set_active(None)
-
-    def _get_friend_by_number(self, friend_number):
-        return self._contact_provider.get_friend_by_number(friend_number)

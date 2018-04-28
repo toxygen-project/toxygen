@@ -1,4 +1,5 @@
 from PyQt5 import QtWidgets
+import util.util as util
 
 
 def tr(s):
@@ -23,6 +24,11 @@ def text_dialog(text, title='', default_value=''):
     text, ok = QtWidgets.QInputDialog.getText(None, title, text, QtWidgets.QLineEdit.Normal, default_value)
 
     return text, ok
+
+
+def directory_dialog(caption=''):
+    return QtWidgets.QFileDialog.getExistingDirectory(None, caption, util.curr_directory(),
+                                                      QtWidgets.QFileDialog.DontUseNativeDialog)
 
 
 # TODO: move all dialogs here

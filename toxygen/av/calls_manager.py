@@ -9,8 +9,8 @@ from ui import av_widgets
 
 class CallsManager:
 
-    def __init__(self, tox, settings):
-        self._call = av.calls.AV(tox.AV)  # object with data about calls
+    def __init__(self, toxAV, settings):
+        self._call = av.calls.AV(toxAV, settings)  # object with data about calls
         self._call_widgets = {}  # dict of incoming call widgets
         self._incoming_calls = set()
         self._settings = settings

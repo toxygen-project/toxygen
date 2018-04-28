@@ -79,7 +79,7 @@ class QRightClickButton(QtWidgets.QPushButton):
 class RubberBand(QtWidgets.QRubberBand):
 
     def __init__(self):
-        super(RubberBand, self).__init__(QtWidgets.QRubberBand.Rectangle, None)
+        super().__init__(QtWidgets.QRubberBand.Rectangle, None)
         self.setPalette(QtGui.QPalette(QtCore.Qt.transparent))
         self.pen = QtGui.QPen(QtCore.Qt.blue, 4)
         self.pen.setStyle(QtCore.Qt.SolidLine)

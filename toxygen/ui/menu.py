@@ -7,13 +7,15 @@ import pyaudio
 from user_data import toxes
 import plugin_support
 import updater
+import util.ui as util_ui
 
 
 class AddContact(CenteredWidget):
     """Add contact form"""
 
-    def __init__(self, tox_id=''):
-        super(AddContact, self).__init__()
+    def __init__(self, contacts_manager, tox_id=''):
+        super().__init__()
+        self._contacts_manager = contacts_manager
         self.initUI(tox_id)
         self._adding = False
         self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
@@ -61,8 +63,10 @@ class AddContact(CenteredWidget):
         if self._adding:
             return
         self._adding = True
-        profile = Profile.get_instance()
-        send = profile.send_friend_request(self.tox_id.text().strip(), self.message_edit.toPlainText())
+        tox_id = self.tox_id.text().strip()
+        if tox_id.startswith('tox:'):
+            tox_id = tox_id[4:]
+        send = self._contacts_manager.send_friend_request(tox_id, self.message_edit.toPlainText())
         self._adding = False
         if send is True:
             # request was successful
@@ -71,17 +75,18 @@ class AddContact(CenteredWidget):
             self.error_label.setText(send)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtWidgets.QApplication.translate('AddContact', "Add contact"))
-        self.sendRequestButton.setText(QtWidgets.QApplication.translate("Form", "Send request"))
-        self.label.setText(QtWidgets.QApplication.translate('AddContact', "TOX ID:"))
-        self.message.setText(QtWidgets.QApplication.translate('AddContact', "Message:"))
-        self.tox_id.setPlaceholderText(QtWidgets.QApplication.translate('AddContact', "TOX ID or public key of contact"))
+        self.setWindowTitle(util_ui.tr('Add contact'))
+        self.sendRequestButton.setText(util_ui.tr('Send request'))
+        self.label.setText(util_ui.tr('TOX ID:'))
+        self.message.setText(util_ui.tr('Message:'))
+        self.tox_id.setPlaceholderText(util_ui.tr('TOX ID or public key of contact'))
 
 
 class ProfileSettings(CenteredWidget):
     """Form with profile settings such as name, status, TOX ID"""
-    def __init__(self):
-        super(ProfileSettings, self).__init__()
+    def __init__(self, profile):
+        super().__init__()
+        self._profile = profile
         self.initUI()
         self.center()
 
@@ -91,13 +96,12 @@ class ProfileSettings(CenteredWidget):
         self.setMaximumSize(QtCore.QSize(700, 600))
         self.nick = LineEdit(self)
         self.nick.setGeometry(QtCore.QRect(30, 60, 350, 27))
-        profile = Profile.get_instance()
-        self.nick.setText(profile.name)
+        self.nick.setText(self._profile.name)
         self.status = QtWidgets.QComboBox(self)
         self.status.setGeometry(QtCore.QRect(400, 60, 200, 27))
         self.status_message = LineEdit(self)
         self.status_message.setGeometry(QtCore.QRect(30, 130, 350, 27))
-        self.status_message.setText(profile.status_message)
+        self.status_message.setText(self._profile.status_message)
         self.label = QtWidgets.QLabel(self)
         self.label.setGeometry(QtCore.QRect(40, 30, 91, 25))
         font = QtGui.QFont()
@@ -164,37 +168,37 @@ class ProfileSettings(CenteredWidget):
         self.auto = path + name == ProfileManager.get_path() + Settings.get_instance().name
         self.default.clicked.connect(self.auto_profile)
         self.retranslateUi()
-        if profile.status is not None:
-            self.status.setCurrentIndex(profile.status)
+        if self._profile.status is not None:
+            self.status.setCurrentIndex(self._profile.status)
         else:
             self.status.setVisible(False)
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
-        self.export.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Export profile"))
-        self.setWindowTitle(QtWidgets.QApplication.translate("ProfileSettingsForm", "Profile settings"))
-        self.label.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Name:"))
-        self.label_2.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Status:"))
-        self.label_3.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "TOX ID:"))
-        self.copyId.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Copy TOX ID"))
-        self.new_avatar.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "New avatar"))
-        self.delete_avatar.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Reset avatar"))
-        self.new_nospam.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "New NoSpam"))
-        self.profilepass.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Profile password"))
-        self.password.setPlaceholderText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Password (at least 8 symbols)"))
-        self.confirm_password.setPlaceholderText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Confirm password"))
-        self.set_password.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Set password"))
-        self.not_match.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Passwords do not match"))
-        self.leave_blank.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Leaving blank will reset current password"))
-        self.warning.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "There is no way to recover lost passwords"))
-        self.status.addItem(QtWidgets.QApplication.translate("ProfileSettingsForm", "Online"))
-        self.status.addItem(QtWidgets.QApplication.translate("ProfileSettingsForm", "Away"))
-        self.status.addItem(QtWidgets.QApplication.translate("ProfileSettingsForm", "Busy"))
-        self.copy_pk.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Copy public key"))
+        self.export.setText(util_ui.tr("Export profile"))
+        self.setWindowTitle(util_ui.tr("Profile settings"))
+        self.label.setText(util_ui.tr("Name:"))
+        self.label_2.setText(util_ui.tr("Status:"))
+        self.label_3.setText(util_ui.tr("TOX ID:"))
+        self.copyId.setText(util_ui.tr("Copy TOX ID"))
+        self.new_avatar.setText(util_ui.tr("New avatar"))
+        self.delete_avatar.setText(util_ui.tr("Reset avatar"))
+        self.new_nospam.setText(util_ui.tr("New NoSpam"))
+        self.profilepass.setText(util_ui.tr("Profile password"))
+        self.password.setPlaceholderText(util_ui.tr("Password (at least 8 symbols)"))
+        self.confirm_password.setPlaceholderText(util_ui.tr("Confirm password"))
+        self.set_password.setText(util_ui.tr("Set password"))
+        self.not_match.setText(util_ui.tr("Passwords do not match"))
+        self.leave_blank.setText(util_ui.tr("Leaving blank will reset current password"))
+        self.warning.setText(util_ui.tr("There is no way to recover lost passwords"))
+        self.status.addItem(util_ui.tr("Online"))
+        self.status.addItem(util_ui.tr("Away"))
+        self.status.addItem(util_ui.tr("Busy"))
+        self.copy_pk.setText(util_ui.tr("Copy public key"))
         if self.auto:
-            self.default.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Mark as not default profile"))
+            self.default.setText(util_ui.tr("Mark as not default profile"))
         else:
-            self.default.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Mark as default profile"))
+            self.default.setText(util_ui.tr("Mark as default profile"))
 
     def auto_profile(self):
         if self.auto:
@@ -203,10 +207,10 @@ class ProfileSettings(CenteredWidget):
             Settings.set_auto_profile(ProfileManager.get_path(), Settings.get_instance().name)
         self.auto = not self.auto
         if self.auto:
-            self.default.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Mark as not default profile"))
+            self.default.setText(util_ui.tr("Mark as not default profile"))
         else:
             self.default.setText(
-                QtWidgets.QApplication.translate("ProfileSettingsForm", "Mark as default profile"))
+                util_ui.tr("Mark as default profile"))
 
     def new_password(self):
         if self.password.text() == self.confirm_password.text():
@@ -216,10 +220,10 @@ class ProfileSettings(CenteredWidget):
                 self.close()
             else:
                 self.not_match.setText(
-                    QtWidgets.QApplication.translate("ProfileSettingsForm", "Password must be at least 8 symbols"))
+                    util_ui.tr("Password must be at least 8 symbols"))
             self.not_match.setVisible(True)
         else:
-            self.not_match.setText(QtWidgets.QApplication.translate("ProfileSettingsForm", "Passwords do not match"))
+            self.not_match.setText(util_ui.tr("Passwords do not match"))
             self.not_match.setVisible(True)
 
     def copy(self):
@@ -244,10 +248,10 @@ class ProfileSettings(CenteredWidget):
         self.tox_id.setText(Profile.get_instance().new_nospam())
 
     def reset_avatar(self):
-        Profile.get_instance().reset_avatar()
+        self._profile.reset_avatar()
 
     def set_avatar(self):
-        choose = QtWidgets.QApplication.translate("ProfileSettingsForm", "Choose avatar")
+        choose = util_ui.tr("Choose avatar")
         name = QtWidgets.QFileDialog.getOpenFileName(self, choose, None, 'Images (*.png)',
                                                      options=QtWidgets.QFileDialog.DontUseNativeDialog)
         if name[0]:
@@ -262,21 +266,15 @@ class ProfileSettings(CenteredWidget):
             Profile.get_instance().set_avatar(bytes(byte_array.data()))
 
     def export_profile(self):
-        directory = QtWidgets.QFileDialog.getExistingDirectory(self, '', curr_directory(),
-                                                               QtWidgets.QFileDialog.DontUseNativeDialog) + '/'
+        directory = util_ui.directory_dialog() + '/'
         if directory != '/':
-            reply = QtWidgets.QMessageBox.question(None,
-                                               QtWidgets.QApplication.translate("ProfileSettingsForm",
-                                                                                'Use new path'),
-                                               QtWidgets.QApplication.translate("ProfileSettingsForm",
-                                                                                'Do you want to move your profile to this location?'),
-                                               QtWidgets.QMessageBox.Yes,
-                                               QtWidgets.QMessageBox.No)
+            reply = util_ui.question(util_ui.tr('Do you want to move your profile to this location?'),
+                                     util_ui.tr('Use new path'))
             settings = Settings.get_instance()
             settings.export(directory)
             profile = Profile.get_instance()
             profile.export_db(directory)
-            ProfileManager.get_instance().export_profile(directory, reply == QtWidgets.QMessageBox.Yes)
+            ProfileManager.get_instance().export_profile(directory, reply)
 
     def closeEvent(self, event):
         profile = Profile.get_instance()
@@ -287,8 +285,9 @@ class ProfileSettings(CenteredWidget):
 
 class NetworkSettings(CenteredWidget):
     """Network settings form: UDP, Ipv6 and proxy"""
-    def __init__(self, reset):
-        super(NetworkSettings, self).__init__()
+    def __init__(self, settings, reset):
+        super().__init__()
+        self._settings = settings
         self.reset = reset
         self.initUI()
         self.center()
@@ -323,35 +322,34 @@ class NetworkSettings(CenteredWidget):
         self.reconnect = QtWidgets.QPushButton(self)
         self.reconnect.setGeometry(QtCore.QRect(40, 230, 231, 30))
         self.reconnect.clicked.connect(self.restart_core)
-        settings = Settings.get_instance()
-        self.ipv.setChecked(settings['ipv6_enabled'])
-        self.udp.setChecked(settings['udp_enabled'])
-        self.proxy.setChecked(settings['proxy_type'])
-        self.proxyip.setText(settings['proxy_host'])
-        self.proxyport.setText(str(settings['proxy_port']))
-        self.http.setChecked(settings['proxy_type'] == 1)
+        self.ipv.setChecked(self._settings['ipv6_enabled'])
+        self.udp.setChecked(self._settings['udp_enabled'])
+        self.proxy.setChecked(self._settings['proxy_type'])
+        self.proxyip.setText(self._settings['proxy_host'])
+        self.proxyport.setText(str(self._settings['proxy_port']))
+        self.http.setChecked(self._settings['proxy_type'] == 1)
         self.warning = QtWidgets.QLabel(self)
         self.warning.setGeometry(QtCore.QRect(5, 270, 290, 60))
         self.warning.setStyleSheet('QLabel { color: #BC1C1C; }')
         self.nodes = QtWidgets.QCheckBox(self)
         self.nodes.setGeometry(QtCore.QRect(20, 350, 270, 22))
-        self.nodes.setChecked(settings['download_nodes_list'])
+        self.nodes.setChecked(self._settings['download_nodes_list'])
         self.retranslateUi()
         self.proxy.stateChanged.connect(lambda x: self.activate())
         self.activate()
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtWidgets.QApplication.translate("NetworkSettings", "Network settings"))
-        self.ipv.setText(QtWidgets.QApplication.translate("Form", "IPv6"))
-        self.udp.setText(QtWidgets.QApplication.translate("Form", "UDP"))
-        self.proxy.setText(QtWidgets.QApplication.translate("Form", "Proxy"))
-        self.label.setText(QtWidgets.QApplication.translate("Form", "IP:"))
-        self.label_2.setText(QtWidgets.QApplication.translate("Form", "Port:"))
-        self.reconnect.setText(QtWidgets.QApplication.translate("NetworkSettings", "Restart TOX core"))
-        self.http.setText(QtWidgets.QApplication.translate("Form", "HTTP"))
-        self.nodes.setText(QtWidgets.QApplication.translate("Form", "Download nodes list from tox.chat"))
-        self.warning.setText(QtWidgets.QApplication.translate("Form", "WARNING:\nusing proxy with enabled UDP\ncan produce IP leak"))
+        self.setWindowTitle(util_ui.tr("Network settings"))
+        self.ipv.setText(util_ui.tr("IPv6"))
+        self.udp.setText(util_ui.tr("UDP"))
+        self.proxy.setText(util_ui.tr("Proxy"))
+        self.label.setText(util_ui.tr("IP:"))
+        self.label_2.setText(util_ui.tr("Port:"))
+        self.reconnect.setText(util_ui.tr("Restart TOX core"))
+        self.http.setText(util_ui.tr("HTTP"))
+        self.nodes.setText(util_ui.tr("Download nodes list from tox.chat"))
+        self.warning.setText(util_ui.tr("WARNING:\nusing proxy with enabled UDP\ncan produce IP leak"))
 
     def activate(self):
         bl = self.proxy.isChecked()
@@ -361,14 +359,13 @@ class NetworkSettings(CenteredWidget):
 
     def restart_core(self):
         try:
-            settings = Settings.get_instance()
-            settings['ipv6_enabled'] = self.ipv.isChecked()
-            settings['udp_enabled'] = self.udp.isChecked()
-            settings['proxy_type'] = 2 - int(self.http.isChecked()) if self.proxy.isChecked() else 0
-            settings['proxy_host'] = str(self.proxyip.text())
-            settings['proxy_port'] = int(self.proxyport.text())
-            settings['download_nodes_list'] = self.nodes.isChecked()
-            settings.save()
+            self._settings['ipv6_enabled'] = self.ipv.isChecked()
+            self._settings['udp_enabled'] = self.udp.isChecked()
+            self._settings['proxy_type'] = 2 - int(self.http.isChecked()) if self.proxy.isChecked() else 0
+            self._settings['proxy_host'] = str(self.proxyip.text())
+            self._settings['proxy_port'] = int(self.proxyport.text())
+            self._settings['download_nodes_list'] = self.nodes.isChecked()
+            self._settings.save()
             # recreate tox instance
             Profile.get_instance().reset(self.reset)
             self.close()
@@ -380,7 +377,7 @@ class PrivacySettings(CenteredWidget):
     """Privacy settings form: history, typing notifications"""
 
     def __init__(self):
-        super(PrivacySettings, self).__init__()
+        super().__init__()
         self.initUI()
         self.center()
 

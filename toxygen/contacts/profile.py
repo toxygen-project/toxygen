@@ -16,6 +16,7 @@ import cv2
 import threading
 from contacts.group_chat import *
 import re
+import util.ui as util_ui
 
 
 class Profile(basecontact.BaseContact):
@@ -69,7 +70,7 @@ class Profile(basecontact.BaseContact):
         tmp = self.name
         super(Profile, self).set_name(value.encode('utf-8'))
         self._tox.self_set_name(self._name.encode('utf-8'))
-        message = QtWidgets.QApplication.translate("MainWindow", 'User {} is now known as {}')
+        message = util_ui.tr('User {} is now known as {}')
         message = message.format(tmp, value)
         for friend in self._contacts:
             friend.append_message(InfoMessage(message, time.time()))
@@ -290,14 +291,9 @@ class Profile(basecontact.BaseContact):
         """
         for friend in self._contacts:
             self.friend_exit(friend.number)
-        self._call.stop()
-        del self._call
         del self._tox
         self._tox = restart()
-        self._call = calls.AV(self._tox.AV)
         self.status = None
-        for friend in self._contacts:
-            friend.number = self._tox.friend_by_public_key(friend.tox_id)  # numbers update
         self._contacts_manager.update_filtration()
 
     def reconnect(self):
@@ -315,9 +311,6 @@ class Profile(basecontact.BaseContact):
         if hasattr(self, '_call'):
             self._call.stop()
             del self._call
-        s = Settings.get_instance()
-        s['paused_file_transfers'] = dict(self._paused_file_transfers) if s['resend_files'] else {}
-        s.save()
 
     def reset_avatar(self):
         super().reset_avatar()

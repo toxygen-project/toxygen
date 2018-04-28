@@ -20,6 +20,9 @@ from contacts.profile import Profile
 from file_transfers.file_transfers_handler import FileTransfersHandler
 from contacts.contact_provider import ContactProvider
 from contacts.friend_factory import FriendFactory
+from contacts.contacts_manager import ContactsManager
+from av.calls_manager import CallsManager
+from history.database import Database
 
 
 class App:
@@ -29,6 +32,7 @@ class App:
         self._app = self._settings = self._profile_manager = self._plugin_loader = None
         self._tox = self._ms = self._init = self._main_loop = self._av_loop = None
         self._uri = self._toxes = self._tray = self._file_transfer_handler = self._contacts_provider = None
+        self._friend_factory = self._calls_manager = self._contacts_manager = None
         if uri is not None and uri.startswith('tox:'):
             self._uri = uri[4:]
         self._path = path_to_profile
@@ -97,23 +101,8 @@ class App:
         if self.try_to_update():
             return
 
-        self._ms = MainWindow(self._settings, self._tox, self.reset, self._tray)
-        self._friend_factory = FriendFactory(None, self._profile_manager, self._settings, self._tox)
-        self._contacts_provider = ContactProvider(self._tox, self._friend_factory)
-        self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider)
-        profile = Profile(self._profile_manager, self._tox, self._ms, self._file_transfer_handler)
-        self._ms.profile = profile
-        self._ms.show()
-
-        self._tray = tray.init_tray(profile, self._settings, self._ms)
-        self._tray.show()
-
-        self._plugin_loader = PluginLoader(self._tox, self._toxes, profile, self._settings)  # plugins support
+        self.create_dependencies()
         self.start_threads()
-
-        # callbacks initialization
-        callbacks.init_callbacks(self._tox, profile, self._settings, self._plugin_loader, None, None, None,
-                                 self._ms, self._tray)
 
         if self._uri is not None:
             self._ms.add_contact(self._uri)
@@ -131,6 +120,9 @@ class App:
             else:
                 break
 
+        self.stop_app()
+
+    def stop_app(self):
         self._plugin_loader.stop()
         self.stop_threads()
         self._tray.hide()
@@ -154,6 +146,28 @@ class App:
         # TODO: foreach in list of tox savers set_tox
 
         return self._tox
+
+    def create_dependencies(self):
+        self._ms = MainWindow(self._settings, self._tox, self.reset, self._tray)
+        db = Database(self._path.replace('.tox', '.db'), self._toxes)
+        self._friend_factory = FriendFactory(self._profile_manager, self._settings, self._tox, db)
+        self._contacts_provider = ContactProvider(self._tox, self._friend_factory)
+        self._contacts_manager = ContactsManager(self._tox, self._settings, self._ms, self._profile_manager,
+                                                 self._contacts_provider, db)
+        self._calls_manager = CallsManager(self._tox.AV, self._settings)
+        self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider)
+        profile = Profile(self._profile_manager, self._tox, self._ms, self._file_transfer_handler)
+        self._ms.profile = profile
+        self._ms.show()
+
+        self._tray = tray.init_tray(profile, self._settings, self._ms)
+        self._tray.show()
+
+        self._plugin_loader = PluginLoader(self._tox, self._toxes, profile, self._settings)  # plugins support
+
+        # callbacks initialization
+        callbacks.init_callbacks(self._tox, profile, self._settings, self._plugin_loader, self._contacts_manager,
+                                 self._calls_manager, self._file_transfer_handler, self._ms, self._tray)
 
     def load_app_styles(self):
         # application color scheme

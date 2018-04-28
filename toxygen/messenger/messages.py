@@ -1,4 +1,4 @@
-from history.database import MESSAGE_OWNER
+from history.database import MESSAGE_AUTHOR
 
 
 MESSAGE_TYPE = {
@@ -8,6 +8,8 @@ MESSAGE_TYPE = {
     'INLINE': 3,
     'INFO_MESSAGE': 4
 }
+
+PAGE_SIZE = 42
 
 
 class MessageAuthor:
@@ -53,7 +55,7 @@ class Message:
         self._widget = None
 
     def mark_as_sent(self):
-        self._author.author_type = MESSAGE_OWNER['ME']
+        self._author.author_type = MESSAGE_AUTHOR['ME']
 
     def _create_widget(self):
         pass

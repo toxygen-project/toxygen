@@ -1,32 +1,31 @@
 from sqlite3 import connect
-from user_data import settings
-from os import chdir
 import os.path
+import util.util as util
 
-
-PAGE_SIZE = 42
 
 TIMEOUT = 11
 
 SAVE_MESSAGES = 500
 
-MESSAGE_OWNER = {
+MESSAGE_AUTHOR = {
     'ME': 0,
     'FRIEND': 1,
     'NOT_SENT': 2,
     'GC_PEER': 3
 }
 
-# TODO: unique message id and ngc support, profile name as db name
+CONTACT_TYPE = {
+    'FRIEND': 0,
+    'GC_PEER': 1,
+    'GC_PEER_PRIVATE': 2
+}
 
 
 class Database:
 
-    def __init__(self, name, toxes):
-        self._name = name
-        self._toxes = toxes
-        chdir(settings.ProfileManager.get_path())
-        path = settings.ProfileManager.get_path() + self._name + '.hstr'
+    def __init__(self, path, toxes):
+        self._path, self._toxes = path, toxes
+        self._name = os.path.basename(path)
         if os.path.exists(path):
             try:
                 with open(path, 'rb') as fin:
@@ -35,28 +34,35 @@ class Database:
                     data = toxes.pass_decrypt(data)
                     with open(path, 'wb') as fout:
                         fout.write(data)
-            except:
+            except Exception as ex:
+                util.log('Db reading error: ' + str(ex))
                 os.remove(path)
-        db = connect(name + '.hstr', timeout=TIMEOUT)
+        db = self._connect()
         cursor = db.cursor()
-        cursor.execute('CREATE TABLE IF NOT EXISTS friends('
-                       '    tox_id TEXT PRIMARY KEY'
+        cursor.execute('CREATE TABLE IF NOT EXISTS contacts ('
+                       '    tox_id TEXT PRIMARY KEY,'
+                       '    contact_type INTEGER'
                        ')')
         db.close()
 
+    def _connect(self):
+        return connect(self._path, timeout=TIMEOUT)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Public methods
+    # -----------------------------------------------------------------------------------------------------------------
+
     def save(self):
         if self._toxes.has_password():
-            path = settings.ProfileManager.get_path() + self._name + '.hstr'
-            with open(path, 'rb') as fin:
+            with open(self._path, 'rb') as fin:
                 data = fin.read()
             data = self._toxes.pass_encrypt(bytes(data))
-            with open(path, 'wb') as fout:
+            with open(self._path, 'wb') as fout:
                 fout.write(data)
 
     def export(self, directory):
-        path = settings.ProfileManager.get_path() + self._name + '.hstr'
-        new_path = directory + self._name + '.hstr'
-        with open(path, 'rb') as fin:
+        new_path = util.join_path(directory, self._name)
+        with open(self._path, 'rb') as fin:
             data = fin.read()
         if self._toxes.has_password():
             data = self._toxes.pass_encrypt(data)
@@ -64,15 +70,16 @@ class Database:
             fout.write(data)
 
     def add_friend_to_db(self, tox_id):
-        chdir(settings.ProfileManager.get_path())
-        db = connect(self._name + '.hstr', timeout=TIMEOUT)
+        db = self._connect()
         try:
             cursor = db.cursor()
-            cursor.execute('INSERT INTO friends VALUES (?);', (tox_id, ))
+            cursor.execute('INSERT INTO contacts VALUES (?);', (tox_id, ))
             cursor.execute('CREATE TABLE id' + tox_id + '('
                            '    id INTEGER PRIMARY KEY,'
+                           '    message_id INTEGER,'
+                           '    author_name TEXT,'
                            '    message TEXT,'
-                           '    owner INTEGER,'
+                           '    author INTEGER,'
                            '    unix_time REAL,'
                            '    message_type INTEGER'
                            ')')
@@ -84,11 +91,10 @@ class Database:
             db.close()
 
     def delete_friend_from_db(self, tox_id):
-        chdir(settings.ProfileManager.get_path())
-        db = connect(self._name + '.hstr', timeout=TIMEOUT)
+        db = self._connect()
         try:
             cursor = db.cursor()
-            cursor.execute('DELETE FROM friends WHERE tox_id=?;', (tox_id, ))
+            cursor.execute('DELETE FROM contacts WHERE tox_id=?;', (tox_id, ))
             cursor.execute('DROP TABLE id' + tox_id + ';')
             db.commit()
         except:
@@ -98,21 +104,20 @@ class Database:
             db.close()
 
     def friend_exists_in_db(self, tox_id):
-        chdir(settings.ProfileManager.get_path())
-        db = connect(self._name + '.hstr', timeout=TIMEOUT)
+        db = self._connect()
         cursor = db.cursor()
-        cursor.execute('SELECT 0 FROM friends WHERE tox_id=?', (tox_id, ))
+        cursor.execute('SELECT 1 FROM contacts WHERE tox_id=?', (tox_id, ))
         result = cursor.fetchone()
         db.close()
         return result is not None
 
     def save_messages_to_db(self, tox_id, messages_iter):
-        chdir(settings.ProfileManager.get_path())
-        db = connect(self._name + '.hstr', timeout=TIMEOUT)
+        db = self._connect()
         try:
             cursor = db.cursor()
-            cursor.executemany('INSERT INTO id' + tox_id + '(message, owner, unix_time, message_type) '
-                               'VALUES (?, ?, ?, ?);', messages_iter)
+            cursor.executemany('INSERT INTO id' + tox_id +
+                               '(message, message_id, author_name, author, unix_time, message_type) ' +
+                               'VALUES (?, ?, ?, ?, ?, ?);', messages_iter)
             db.commit()
         except:
             print('Database is locked!')
@@ -120,13 +125,12 @@ class Database:
         finally:
             db.close()
 
-    def update_messages(self, tox_id, unsent_time):
-        chdir(settings.ProfileManager.get_path())
-        db = connect(self._name + '.hstr', timeout=TIMEOUT)
+    def update_messages(self, tox_id, message_id):
+        db = self._connect()
         try:
             cursor = db.cursor()
-            cursor.execute('UPDATE id' + tox_id + ' SET owner = 0 '
-                           'WHERE unix_time < ' + str(unsent_time) + ' AND owner = 2;')
+            cursor.execute('UPDATE id' + tox_id + ' SET author = 0 '
+                           'WHERE message_id = ' + str(message_id) + ' AND author = 2;')
             db.commit()
         except:
             print('Database is locked!')
@@ -134,13 +138,11 @@ class Database:
         finally:
             db.close()
 
-    def delete_message(self, tox_id, message_id):
-        chdir(settings.ProfileManager.get_path())
-        db = connect(self._name + '.hstr', timeout=TIMEOUT)
+    def delete_message(self, tox_id, unique_id):
+        db = self._connect()
         try:
             cursor = db.cursor()
-            cursor.execute('DELETE FROM id' + tox_id + ' WHERE unix_time < ' + end + ' AND unix_time > ' +
-                           start + ';')
+            cursor.execute('DELETE FROM id' + tox_id + ' WHERE id = ' + str(unique_id) + ';')
             db.commit()
         except:
             print('Database is locked!')
@@ -149,8 +151,7 @@ class Database:
             db.close()
 
     def delete_messages(self, tox_id):
-        chdir(settings.ProfileManager.get_path())
-        db = connect(self._name + '.hstr', timeout=TIMEOUT)
+        db = self._connect()
         try:
             cursor = db.cursor()
             cursor.execute('DELETE FROM id' + tox_id + ';')
@@ -162,46 +163,44 @@ class Database:
             db.close()
 
     def messages_getter(self, tox_id):
-        return Database.MessageGetter(self._name, tox_id)
+        return Database.MessageGetter(self._path, tox_id)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Messages loading
+    # -----------------------------------------------------------------------------------------------------------------
 
     class MessageGetter:
 
-        def __init__(self, name, tox_id):
+        def __init__(self, path, tox_id):
             self._count = 0
-            self._name = name
+            self._path = path
             self._tox_id = tox_id
             self._db = self._cursor = None
 
-        def connect(self):
-            chdir(settings.ProfileManager.get_path())
-            self._db = connect(self._name + '.hstr', timeout=TIMEOUT)
+        def _connect(self):
+            self._db = connect(self._path, timeout=TIMEOUT)
             self._cursor = self._db.cursor()
-            self._cursor.execute('SELECT message, owner, unix_time, message_type FROM id' + self._tox_id +
-                                 ' ORDER BY unix_time DESC;')
+            self._cursor.execute('SELECT id, message_id, message, author, unix_time, message_type FROM id' +
+                                 self._tox_id + ' ORDER BY unix_time DESC;')
 
-        def disconnect(self):
+        def _disconnect(self):
             self._db.close()
 
         def get_one(self):
-            self.connect()
-            self.skip()
-            data = self._cursor.fetchone()
-            self._count += 1
-            self.disconnect()
-            return data
+            return self.get(1)
 
         def get_all(self):
-            self.connect()
+            self._connect()
             data = self._cursor.fetchall()
-            self.disconnect()
+            self._disconnect()
             self._count = len(data)
             return data
 
         def get(self, count):
-            self.connect()
+            self._connect()
             self.skip()
             data = self._cursor.fetchmany(count)
-            self.disconnect()
+            self._disconnect()
             self._count += len(data)
             return data
 

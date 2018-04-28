@@ -360,7 +360,6 @@ class MainWindow(QtWidgets.QMainWindow):
             if self._saved:
                 return
             self._saved = True
-            self.profile.save_history()
             self.profile.close()
             self._settings['x'] = self.geometry().x()
             self._settings['y'] = self.geometry().y()
@@ -500,7 +499,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def show_menu(self):
         if not hasattr(self, 'menu'):
             self.menu = DropdownMenu(self)
-        self.menu.setGeometry(QtCore.QRect(0 if Settings.get_instance()['mirror_mode'] else 270,
+        self.menu.setGeometry(QtCore.QRect(0 if self._settings['mirror_mode'] else 270,
                                            self.height() - 120,
                                            180,
                                            120))

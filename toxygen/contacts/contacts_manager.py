@@ -6,31 +6,40 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from messenger.messages import *
 from wrapper.toxcore_enums_and_consts import *
 from network.tox_dns import tox_dns
+from history.history_loader import HistoryLoader
 
 
 class ContactsManager:
 
-    def __init__(self, tox, settings, screen, profile_manager):
+    def __init__(self, tox, settings, screen, profile_manager, contact_provider, db):
         self._tox = tox
         self._settings = settings
         self._screen = screen
         self._profile_manager = profile_manager
+        self._contact_provider = contact_provider
         self._messages = screen.messages
-        self._contacts, self._active_friend = [], -1
+        self._contacts, self._active_contact = [], -1
         self._sorting = settings['sorting']
         self._filter_string = ''
         self._friend_item_height = 40 if settings['compact_mode'] else 70
         screen.online_contacts.setCurrentIndex(int(self._sorting))
-        self.load_contacts()
+        self._history = HistoryLoader(contact_provider, db, settings)
+        self._load_contacts()
 
-    def load_contacts(self):
-        self.load_friends()
-        self.load_groups()
-        if len(self._contacts):
-            self.set_active(0)
+    def __del__(self):
+        del self._history
+        
+    def _is_active_a_friend(self):
+        return type(self.get_curr_contact()) is Friend
+
+    def _load_contacts(self):
+        self._load_friends()
+        self._load_groups()
+        # if len(self._contacts):
+        #     self.set_active(0)
         self.filtration_and_sorting(self._sorting)
 
-    def load_friends(self):
+    def _load_friends(self):
         aliases = self._settings['friends_aliases']
         friend_numbers = self._tox.self_get_friend_list()
         for friend_number in friend_numbers:  # creates list of friends
@@ -41,15 +50,14 @@ class ContactsManager:
                 alias = ''
             item = self.create_friend_item()
             name = alias or self._tox.friend_get_name(friend_number) or tox_id
-            status_message = self._tox.friend_get_status_message(i)
-            if not self._history.friend_exists_in_db(tox_id):
-                self._history.add_friend_to_db(tox_id)
-            message_getter = self._history.messages_getter(tox_id)
+            status_message = self._tox.friend_get_status_message(friend_number)
+            self._history.get_message_getter(tox_id)
+            message_getter = self._history.get_message_getter(tox_id)
             friend = Friend(self._profile_manager, message_getter, friend_number, name, status_message, item, tox_id)
             friend.set_alias(alias)
             self._contacts.append(friend)
 
-    def load_groups(self):
+    def _load_groups(self):
         pass
 
     def get_friend(self, num):
@@ -57,8 +65,8 @@ class ContactsManager:
             return None
         return self._contacts[num]
 
-    def get_curr_friend(self):
-        return self._contacts[self._active_friend] if self._active_friend + 1 else None
+    def get_curr_contact(self):
+        return self._contacts[self._active_contact] if self._active_contact + 1 else None
 
     def save_profile(self):
         data = self._tox.get_savedata()
@@ -69,20 +77,20 @@ class ContactsManager:
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_active(self):
-        return self._active_friend
+        return self._active_contact
 
     def set_active(self, value=None):
         """
         Change current active friend or update info
         :param value: number of new active friend in friend's list or None to update active user's data
         """
-        if value is None and self._active_friend == -1:  # nothing to update
+        if value is None and self._active_contact == -1:  # nothing to update
             return
         if value == -1:  # all friends were deleted
             self._screen.account_name.setText('')
             self._screen.account_status.setText('')
             self._screen.account_status.setToolTip('')
-            self._active_friend = -1
+            self._active_contact = -1
             self._screen.account_avatar.setHidden(True)
             self._messages.clear()
             self._screen.messageEdit.clear()
@@ -91,16 +99,16 @@ class ContactsManager:
             self.send_typing(False)
             self._screen.typing.setVisible(False)
             if value is not None:
-                if self._active_friend + 1 and self._active_friend != value:
+                if self._active_contact + 1 and self._active_contact != value:
                     try:
                         self.get_curr_friend().curr_text = self._screen.messageEdit.toPlainText()
                     except:
                         pass
                 friend = self._contacts[value]
                 friend.remove_invalid_unsent_files()
-                if self._active_friend != value:
+                if self._active_contact != value:
                     self._screen.messageEdit.setPlainText(friend.curr_text)
-                self._active_friend = value
+                self._active_contact = value
                 friend.reset_messages()
                 if not self._settings['save_history']:
                     friend.delete_old_messages()
@@ -166,14 +174,14 @@ class ContactsManager:
         for i in range(len(self._contacts)):
             c = self._contacts[i]
             if c.number == number and (type(c) is Friend == is_friend):
-                self._active_friend = i
+                self._active_contact = i
                 break
 
     active_friend = property(get_active, set_active)
 
     def update(self):
-        if self._active_friend + 1:
-            self.set_active(self._active_friend)
+        if self._active_contact + 1:
+            self.set_active(self._active_contact)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Filtration
@@ -187,7 +195,7 @@ class ContactsManager:
         """
         filter_str = filter_str.lower()
         number = self.get_active_number()
-        is_friend = self.is_active_a_friend()
+        is_friend = self._is_active_a_friend()
         if sorting > 1:
             if sorting & 2:
                 self._contacts = sorted(self._contacts, key=lambda x: int(x.status is not None), reverse=True)
@@ -216,10 +224,10 @@ class ContactsManager:
         for index, friend in enumerate(self._contacts):
             friend.visibility = (friend.status is not None or not (sorting & 1)) and (filter_str in friend.name.lower())
             friend.visibility = friend.visibility or friend.messages or friend.actions
-            if friend.visibility:
-                self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, self._friend_item_height))
-            else:
-                self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 0))
+            # if friend.visibility:
+            #     self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, self._friend_item_height))
+            # else:
+            #     self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 0))
         self._sorting, self._filter_string = sorting, filter_str
         self._settings['sorting'] = self._sorting
         self._settings.save()
@@ -236,7 +244,7 @@ class ContactsManager:
         Method-factory
         :return: new widget for friend instance
         """
-        return self._factory.friend_item()
+        return None #self._factory.friend_item()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Friend getters
@@ -246,19 +254,19 @@ class ContactsManager:
         return list(filter(lambda x: x.number == num and type(x) is Friend, self._contacts))[0]
 
     def get_last_message(self):
-        if self._active_friend + 1:
+        if self._active_contact + 1:
             return self.get_curr_friend().get_last_message_text()
         else:
             return ''
 
     def get_active_number(self):
-        return self.get_curr_friend().number if self._active_friend + 1 else -1
+        return self.get_curr_friend().number if self._active_contact + 1 else -1
 
     def get_active_name(self):
-        return self.get_curr_friend().name if self._active_friend + 1 else ''
+        return self.get_curr_friend().name if self._active_contact + 1 else ''
 
     def is_active_online(self):
-        return self._active_friend + 1 and self.get_curr_friend().status is not None
+        return self._active_contact + 1 and self.get_curr_friend().status is not None
 
     def new_name(self, number, name):
         friend = self.get_friend_by_number(number)
@@ -333,7 +341,7 @@ class ContactsManager:
         self._tox.friend_delete(friend.number)
         del self._contacts[num]
         self._screen.friends_list.takeItem(num)
-        if num == self._active_friend:  # active friend was deleted
+        if num == self._active_contact:  # active friend was deleted
             if not len(self._contacts):  # last friend was deleted
                 self.set_active(-1)
             else:
@@ -449,7 +457,7 @@ class ContactsManager:
         """
         Send typing notification to a friend
         """
-        if self._settings['typing_notifications'] and self._active_friend + 1:
+        if self._settings['typing_notifications'] and self._active_contact + 1:
             try:
                 friend = self.get_curr_friend()
                 if friend.status is not None:

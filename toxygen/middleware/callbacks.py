@@ -377,6 +377,10 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     :param tox: Tox instance
     :param profile: Profile instance
     :param settings: Settings instance
+    :param contacts_manager: ContactsManager instance
+    :param contacts_manager: ContactsManager instance
+    :param calls_manager: CallsManager instance
+    :param file_transfer_handler: FileTransferHandler instance
     :param plugin_loader: PluginLoader instance
     :param main_window: main window screen
     :param tray: tray (for notifications)

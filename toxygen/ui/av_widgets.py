@@ -11,7 +11,7 @@ from util.util import curr_directory
 class IncomingCallWidget(widgets.CenteredWidget):
 
     def __init__(self, friend_number, text, name):
-        super(IncomingCallWidget, self).__init__()
+        super().__init__()
         self.setWindowFlags(QtCore.Qt.CustomizeWindowHint | QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowStaysOnTopHint)
         self.resize(QtCore.QSize(500, 270))
         self.avatar_label = QtWidgets.QLabel(self)

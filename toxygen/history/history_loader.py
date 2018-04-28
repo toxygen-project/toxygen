@@ -1,11 +1,17 @@
 from messenger.messages import *
 
+# TODO: fix history loading and saving
+
 
 class HistoryLoader:
 
-    def __init__(self, db, settings):
+    def __init__(self, contact_provider, db, settings):
+        self._contact_provider = contact_provider
         self._db = db
         self._settings = settings
+           
+    def __del__(self):
+        del self._db
 
     # -----------------------------------------------------------------------------------------------------------------
     # History support
@@ -15,22 +21,20 @@ class HistoryLoader:
         """
         Save history to db
         """
-        if hasattr(self, '_history'):
-            if self._settings['save_history']:
-                for friend in filter(lambda x: type(x) is Friend, self._contacts):
-                    if not self._history.friend_exists_in_db(friend.tox_id):
-                        self._history.add_friend_to_db(friend.tox_id)
-                    if not self._settings['save_unsent_only']:
-                        messages = friend.get_corr_for_saving()
-                    else:
-                        messages = friend.get_unsent_messages_for_saving()
-                        self._history.delete_messages(friend.tox_id)
-                    self._history.save_messages_to_db(friend.tox_id, messages)
-                    unsent_messages = friend.get_unsent_messages()
-                    unsent_time = unsent_messages[0].get_data()[2] if len(unsent_messages) else time.time() + 1
-                    self._history.update_messages(friend.tox_id, unsent_time)
-            self._history.save()
-            del self._history
+        if self._settings['save_db']:
+            for friend in self._contact_provider.get_all_friends():
+                if not self._db.friend_exists_in_db(friend.tox_id):
+                    self._db.add_friend_to_db(friend.tox_id)
+                if not self._settings['save_unsent_only']:
+                    messages = friend.get_corr_for_saving()
+                else:
+                    messages = friend.get_unsent_messages_for_saving()
+                    self._db.delete_messages(friend.tox_id)
+                self._db.save_messages_to_db(friend.tox_id, messages)
+                unsent_messages = friend.get_unsent_messages()
+                # unsent_time = unsent_messages[0].get_data()[2] if len(unsent_messages) else time.time() + 1
+                # self._db.update_messages(friend.tox_id, unsent_time)
+        self._db.save()
 
     def clear_history(self, friend, save_unsent=False):
         """
@@ -45,9 +49,9 @@ class HistoryLoader:
         """
         Tries to load next part of messages
         """
-        if not self._load_history:
+        if not self._load_db:
             return
-        self._load_history = False
+        self._load_db = False
         friend = self.get_curr_friend()
         friend.load_corr(False)
         data = friend.get_corr()
@@ -84,9 +88,16 @@ class HistoryLoader:
                                          '',
                                          data[3],
                                          False)
-        self._load_history = True
+        self._load_db = True
 
-    def export_history(self, friend, as_text=True, _range=None):
+    def get_message_getter(self, friend_public_key):
+        if not self._db.friend_exists_in_db(friend_public_key):
+            self._db.add_friend_to_db(friend_public_key)
+
+        return self._db.messages_getter(friend_public_key)
+
+    @staticmethod
+    def export_history(friend, as_text=True, _range=None):
         if _range is None:
             friend.load_all_corr()
             corr = friend.get_corr()
@@ -95,16 +106,28 @@ class HistoryLoader:
         else:
             corr = friend.get_corr()[_range[0]:]
 
-        generator = TextHistoryGenerator() if as_text else HtmlHistoryGenerator
+        generator = TextHistoryGenerator(corr) if as_text else HtmlHistoryGenerator(corr)
 
-        return generator.generate(corr)
+        return generator.generate()
 
 
-class HtmlHistoryGenerator:
+class HistoryLogsGenerator:
 
-    def generate(self, corr):
+    def __init__(self, history):
+        self._history = history
+
+    def generate(self):
+        return str()
+
+
+class HtmlHistoryGenerator(HistoryLogsGenerator):
+
+    def __init__(self, history):
+        super().__init__(history)
+
+    def generate(self):
         arr = []
-        for message in corr:
+        for message in self._history:
             if type(message) is TextMessage:
                 data = message.get_data()
                 x = '[{}] <b>{}:</b> {}<br>'
@@ -117,11 +140,14 @@ class HtmlHistoryGenerator:
         return s
 
 
-class TextHistoryGenerator:
+class TextHistoryGenerator(HistoryLogsGenerator):
 
-    def generate(self, corr):
+    def __init__(self, history):
+        super().__init__(history)
+
+    def generate(self):
         arr = []
-        for message in corr:
+        for message in self._history:
             if type(message) is TextMessage:
                 data = message.get_data()
                 x = '[{}] {}: {}\n'
