@@ -31,4 +31,19 @@ def directory_dialog(caption=''):
                                                       QtWidgets.QFileDialog.DontUseNativeDialog)
 
 
-# TODO: move all dialogs here
+def file_dialog(caption, file_filter=None):
+    return QtWidgets.QFileDialog.getOpenFileName(None, caption, util.curr_directory(), file_filter,
+                                                 options=QtWidgets.QFileDialog.DontUseNativeDialog)
+
+
+def save_file_dialog(caption, filter=None):
+    return QtWidgets.QFileDialog.getSaveFileName(None, caption, util.curr_directory(),
+                                                 filter=filter,
+                                                 options=QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
+
+
+def close_all_windows():
+    QtWidgets.QApplication.closeAllWindows()
+
+
+# TODO: all dialogs

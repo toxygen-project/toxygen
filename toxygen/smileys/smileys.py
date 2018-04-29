@@ -48,8 +48,8 @@ class SmileyLoader:
         return util.join_path(util.get_smileys_directory(), self._curr_pack) if self._curr_pack is not None else None
 
     @staticmethod
-    def get_packs_list(self):
-        d = util.curr_directory() + '/smileys/'
+    def get_packs_list():
+        d = util.get_smileys_directory()
         return [x[1] for x in os.walk(d)][0]
 
     def get_smileys(self):

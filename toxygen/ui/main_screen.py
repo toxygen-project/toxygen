@@ -2,26 +2,31 @@ from ui.menu import *
 from contacts.profile import *
 from ui.list_items import *
 from ui.widgets import MultilineEdit, ComboBox
-import plugin_support
 from ui.main_screen_widgets import *
-from user_data import toxes, settings
 import util.util as util
 import util.ui as util_ui
 
 
 class MainWindow(QtWidgets.QMainWindow):
 
-    def __init__(self, settings, tox, reset, tray):
+    def __init__(self, settings, tox, tray):
         super().__init__()
         self._settings = settings
-        self.reset = reset
         self.tray = tray
+        self._widget_factory = None
+        self._modal_window = None
         self.setAcceptDrops(True)
         self.initUI(tox)
         self._saved = False
-        if settings['show_welcome_screen']:
-            self.ws = WelcomeScreen()
         self.profile = None
+
+    def set_widget_factory(self, widget_factory):
+        self._widget_factory = widget_factory
+
+    def show(self):
+        super().show()
+        if self._settings['show_welcome_screen']:
+            self._modal_window = self._widget_factory.create_welcome_window()
 
     def setup_menu(self, window):
         self.menubar = QtWidgets.QMenuBar(window)
@@ -366,7 +371,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self._settings['width'] = self.width()
             self._settings['height'] = self.height()
             self._settings.save()
-            QtWidgets.QApplication.closeAllWindows()
+            util_ui.close_all_windows()
             event.accept()
         elif QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
             event.ignore()
@@ -407,7 +412,7 @@ class MainWindow(QtWidgets.QMainWindow):
         elif event.key() == QtCore.Qt.Key_F and event.modifiers() & QtCore.Qt.ControlModifier:
             self.show_search_field()
         else:
-            super(MainWindow, self).keyPressEvent(event)
+            super().keyPressEvent(event)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click in menu
@@ -420,81 +425,66 @@ class MainWindow(QtWidgets.QMainWindow):
         util_ui.message_box(text, title)
 
     def network_settings(self):
-        self.n_s = NetworkSettings(self.reset)
-        self.n_s.show()
+        self._modal_window = self._widget_factory.create_network_settings_window()
+        self._modal_window.show()
 
     def plugins_menu(self):
-        self.p_s = PluginsSettings()
-        self.p_s.show()
+        self._modal_window = self._widget_factory.create_plugins_settings_window()
+        self._modal_window.show()
 
     def add_contact(self, link=''):
-        self.a_c = AddContact(link or '')
-        self.a_c.show()
+        self._modal_window = self._widget_factory.create_add_contact_window(link or '')
+        self._modal_window.show()
 
     def create_gc(self):
         self.profile.create_group_chat()
 
     def profile_settings(self, *args):
-        self.p_s = ProfileSettings()
-        self.p_s.show()
+        self._modal_window = self._widget_factory.create_profile_settings_window()
+        self._modal_window.show()
 
     def privacy_settings(self):
-        self.priv_s = PrivacySettings()
-        self.priv_s.show()
+        self._modal_window = self._widget_factory.create_privacy_settings_window()
+        self._modal_window.show()
 
     def notification_settings(self):
-        self.notif_s = NotificationsSettings()
-        self.notif_s.show()
+        self._modal_window = self._widget_factory.create_notification_settings_window()
+        self._modal_window.show()
 
     def interface_settings(self):
-        self.int_s = InterfaceSettings()
-        self.int_s.show()
+        self._modal_window = self._widget_factory.create_interface_settings_window()
+        self._modal_window.show()
 
     def audio_settings(self):
-        self.audio_s = AudioSettings()
-        self.audio_s.show()
+        self._modal_window = self._widget_factory.create_audio_settings_window()
+        self._modal_window.show()
 
     def video_settings(self):
-        self.video_s = VideoSettings()
-        self.video_s.show()
+        self._modal_window = self._widget_factory.create_video_settings_window()
+        self._modal_window.show()
 
     def update_settings(self):
-        self.update_s = UpdateSettings()
-        self.update_s.show()
+        self._modal_window = self._widget_factory.create_update_settings_window()
+        self._modal_window.show()
 
     def reload_plugins(self):
-        plugin_loader = plugin_support.PluginLoader.get_instance()
-        if plugin_loader is not None:
-            plugin_loader.reload()
+        if self._plugin_loader is not None:
+            self._plugin_loader.reload()
 
     def import_plugin(self):
-        import util
-        directory = QtWidgets.QFileDialog.getExistingDirectory(self,
-                                                           util_ui.tr('Choose folder with plugin'),
-                                                           util.curr_directory(),
-                                                           QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
+        directory = util_ui.directory_dialog(util_ui.tr('Choose folder with plugin'))
         if directory:
             src = directory + '/'
-            dest = curr_directory() + '/plugins/'
+            dest = util.get_plugins_directory()
             util.copy(src, dest)
-            msgBox = QtWidgets.QMessageBox()
-            msgBox.setWindowTitle(
-                util_ui.tr("Restart Toxygen"))
-            msgBox.setText(
-                util_ui.tr('Plugin will be loaded after restart'))
-            msgBox.exec_()
+            util_ui.message_box(util_ui.tr('Plugin will be loaded after restart'), util_ui.tr("Restart Toxygen"))
 
     def lock_app(self):
-        if toxes.ToxES.get_instance().has_password():
-            Settings.get_instance().locked = True
+        if self._toxes.has_password():
+            self._settings.locked = True
             self.hide()
         else:
-            msgBox = QtWidgets.QMessageBox()
-            msgBox.setWindowTitle(
-                util_ui.tr("Cannot lock app"))
-            msgBox.setText(
-                util_ui.tr('Error. Profile password is not set.'))
-            msgBox.exec_()
+            util_ui.message_box(util_ui.tr('Error. Profile password is not set.'), util_ui.tr("Cannot lock app"))
 
     def show_menu(self):
         if not hasattr(self, 'menu'):
@@ -516,8 +506,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def send_file(self):
         self.menu.hide()
         if self.profile.active_friend + 1and self.profile.is_active_a_friend():
-            choose = util_ui.tr('Choose file')
-            name = QtWidgets.QFileDialog.getOpenFileName(self, choose, options=QtWidgets.QFileDialog.DontUseNativeDialog)
+            caption = util_ui.tr('Choose file')
+            name = util_ui.file_dialog(caption)
             if name[0]:
                 self.profile.send_file(name[0])
 
@@ -533,7 +523,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menu.hide()
         if self.profile.active_friend + 1:
             self.smiley = SmileyWindow(self)
-            self.smiley.setGeometry(QtCore.QRect(self.x() if Settings.get_instance()['mirror_mode'] else 270 + self.x(),
+            self.smiley.setGeometry(QtCore.QRect(self.x() if self._settings['mirror_mode'] else 270 + self.x(),
                                                  self.y() + self.height() - 200,
                                                  self.smiley.width(),
                                                  self.smiley.height()))
@@ -543,7 +533,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menu.hide()
         if self.profile.active_friend + 1 and self.profile.is_active_a_friend():
             self.sticker = StickerWindow(self)
-            self.sticker.setGeometry(QtCore.QRect(self.x() if Settings.get_instance()['mirror_mode'] else 270 + self.x(),
+            self.sticker.setGeometry(QtCore.QRect(self.x() if self._settings['mirror_mode'] else 270 + self.x(),
                                                   self.y() + self.height() - 200,
                                                   self.sticker.width(),
                                                   self.sticker.height()))
@@ -580,7 +570,6 @@ class MainWindow(QtWidgets.QMainWindow):
         friend = Profile.get_instance().get_friend(num)
         if friend is None:
             return
-        settings = Settings.get_instance()
         allowed = friend.tox_id in settings['auto_accept_from_friends']
         auto = util_ui.tr('Disallow auto accept') if allowed else util_ui.tr('Allow auto accept')
         if item is not None:
@@ -614,9 +603,8 @@ class MainWindow(QtWidgets.QMainWindow):
                         item = invite_menu.addAction(name)
                         item.triggered.connect(lambda: self.invite_friend_to_gc(num, number))
 
-                plugins_loader = plugin_support.PluginLoader.get_instance()
-                if plugins_loader is not None:
-                    submenu = plugins_loader.get_menu(self.listMenu, num)
+                if self._plugins_loader is not None:
+                    submenu = self._plugins_loader.get_menu(self.listMenu, num)
                     if len(submenu):
                         plug = self.listMenu.addMenu(util_ui.tr('Plugins'))
                         plug.addActions(submenu)
@@ -640,29 +628,23 @@ class MainWindow(QtWidgets.QMainWindow):
             self.listMenu.show()
 
     def show_note(self, friend):
-        s = Settings.get_instance()
-        note = s['notes'][friend.tox_id] if friend.tox_id in s['notes'] else ''
+        note = self._settings['notes'][friend.tox_id] if friend.tox_id in s['notes'] else ''
         user = util_ui.tr('Notes about user')
         user = '{} {}'.format(user, friend.name)
 
         def save_note(text):
-            if friend.tox_id in s['notes']:
-                del s['notes'][friend.tox_id]
+            if friend.tox_id in self._settings['notes']:
+                del self._settings['notes'][friend.tox_id]
             if text:
-                s['notes'][friend.tox_id] = text
-            s.save()
+                self._settings['notes'][friend.tox_id] = text
+            self._settings.save()
         self.note = MultilineEdit(user, note, save_note)
         self.note.show()
 
     def export_history(self, num, as_text=True):
         s = self.profile.export_history(num, as_text)
         extension = 'txt' if as_text else 'html'
-        file_name, _ = QtWidgets.QFileDialog.getSaveFileName(None,
-                                                              QtWidgets.QApplication.translate("MainWindow",
-                                                                                               'Choose file name'),
-                                                              curr_directory(),
-                                                              filter=extension,
-                                                              options=QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
+        file_name, _ = util_ui.save_file_dialog(util_ui.tr('Choose file name'), extension)
 
         if file_name:
             if not file_name.endswith('.' + extension):
@@ -703,13 +685,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.profile.set_title(num)
 
     def auto_accept(self, num, value):
-        settings = Settings.get_instance()
         tox_id = self.profile.friend_public_key(num)
         if value:
-            settings['auto_accept_from_friends'].append(tox_id)
+            self._settings['auto_accept_from_friends'].append(tox_id)
         else:
-            settings['auto_accept_from_friends'].remove(tox_id)
-        settings.save()
+            self._settings['auto_accept_from_friends'].remove(tox_id)
+        self._settings.save()
 
     def invite_friend_to_gc(self, friend_number, group_number):
         self.profile.invite_friend(friend_number, group_number)

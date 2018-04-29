@@ -1,21 +1,12 @@
-from ui.list_items import *
-from PyQt5 import QtWidgets
 from contacts.friend import *
 from user_data.settings import *
 from wrapper.toxcore_enums_and_consts import *
-from util.util import log, curr_directory
-from network.tox_dns import tox_dns
+from util.util import log
 from history.database import *
 from file_transfers.file_transfers import *
 import time
-from av import calls
-import plugin_support
 from contacts import basecontact
-from ui import items_factory, av_widgets
-import cv2
-import threading
 from contacts.group_chat import *
-import re
 import util.ui as util_ui
 
 

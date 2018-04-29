@@ -23,6 +23,8 @@ from contacts.friend_factory import FriendFactory
 from contacts.contacts_manager import ContactsManager
 from av.calls_manager import CallsManager
 from history.database import Database
+from ui.widgets_factory import WidgetsFactory
+from smileys.smileys import SmileyLoader
 
 
 class App:
@@ -148,16 +150,20 @@ class App:
         return self._tox
 
     def create_dependencies(self):
-        self._ms = MainWindow(self._settings, self._tox, self.reset, self._tray)
+        self._ms = MainWindow(self._settings, self._tox, self._tray)
         db = Database(self._path.replace('.tox', '.db'), self._toxes)
         self._friend_factory = FriendFactory(self._profile_manager, self._settings, self._tox, db)
         self._contacts_provider = ContactProvider(self._tox, self._friend_factory)
+        profile = Profile(self._profile_manager, self._tox, self._ms, self._file_transfer_handler)
+        self._smiley_loader = SmileyLoader(self._settings)
+        widgets_factory = WidgetsFactory(self._settings, profile, self._contacts_manager, self._file_transfer_handler,
+                                         self._smiley_loader, self._plugin_loader)
         self._contacts_manager = ContactsManager(self._tox, self._settings, self._ms, self._profile_manager,
                                                  self._contacts_provider, db)
         self._calls_manager = CallsManager(self._tox.AV, self._settings)
         self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider)
-        profile = Profile(self._profile_manager, self._tox, self._ms, self._file_transfer_handler)
         self._ms.profile = profile
+        self._ms.set_widget_factory(widgets_factory)
         self._ms.show()
 
         self._tray = tray.init_tray(profile, self._settings, self._ms)

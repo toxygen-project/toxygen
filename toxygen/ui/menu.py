@@ -5,8 +5,7 @@ from util.util import curr_directory, copy
 from ui.widgets import CenteredWidget, DataLabel, LineEdit, RubberBandWindow
 import pyaudio
 from user_data import toxes
-import plugin_support
-import updater
+import updater.updater as updater
 import util.ui as util_ui
 
 
@@ -228,8 +227,7 @@ class ProfileSettings(CenteredWidget):
 
     def copy(self):
         clipboard = QtWidgets.QApplication.clipboard()
-        profile = Profile.get_instance()
-        clipboard.setText(profile.tox_id)
+        clipboard.setText(self._profile.tox_id)
         pixmap = QtGui.QPixmap(curr_directory() + '/images/accept.png')
         icon = QtGui.QIcon(pixmap)
         self.copyId.setIcon(icon)
@@ -237,8 +235,7 @@ class ProfileSettings(CenteredWidget):
 
     def copy_public_key(self):
         clipboard = QtWidgets.QApplication.clipboard()
-        profile = Profile.get_instance()
-        clipboard.setText(profile.tox_id[:64])
+        clipboard.setText(self._profile.tox_id[:64])
         pixmap = QtGui.QPixmap(curr_directory() + '/images/accept.png')
         icon = QtGui.QIcon(pixmap)
         self.copy_pk.setIcon(icon)
@@ -252,8 +249,7 @@ class ProfileSettings(CenteredWidget):
 
     def set_avatar(self):
         choose = util_ui.tr("Choose avatar")
-        name = QtWidgets.QFileDialog.getOpenFileName(self, choose, None, 'Images (*.png)',
-                                                     options=QtWidgets.QFileDialog.DontUseNativeDialog)
+        name = util_ui.file_dialog(choose, 'Images (*.png)')
         if name[0]:
             bitmap = QtGui.QPixmap(name[0])
             bitmap.scaled(QtCore.QSize(128, 128), aspectRatioMode=QtCore.Qt.KeepAspectRatio,
@@ -263,24 +259,21 @@ class ProfileSettings(CenteredWidget):
             buffer = QtCore.QBuffer(byte_array)
             buffer.open(QtCore.QIODevice.WriteOnly)
             bitmap.save(buffer, 'PNG')
-            Profile.get_instance().set_avatar(bytes(byte_array.data()))
+            self._profile.set_avatar(bytes(byte_array.data()))
 
     def export_profile(self):
         directory = util_ui.directory_dialog() + '/'
         if directory != '/':
             reply = util_ui.question(util_ui.tr('Do you want to move your profile to this location?'),
                                      util_ui.tr('Use new path'))
-            settings = Settings.get_instance()
             settings.export(directory)
-            profile = Profile.get_instance()
-            profile.export_db(directory)
+            self._profile.export_db(directory)
             ProfileManager.get_instance().export_profile(directory, reply)
 
     def closeEvent(self, event):
-        profile = Profile.get_instance()
-        profile.set_name(self.nick.text())
-        profile.set_status_message(self.status_message.text().encode('utf-8'))
-        profile.set_status(self.status.currentIndex())
+        self._profile.set_name(self.nick.text())
+        self._profile.set_status_message(self.status_message.text().encode('utf-8'))
+        self._profile.set_status(self.status.currentIndex())
 
 
 class NetworkSettings(CenteredWidget):
@@ -367,7 +360,7 @@ class NetworkSettings(CenteredWidget):
             self._settings['download_nodes_list'] = self.nodes.isChecked()
             self._settings.save()
             # recreate tox instance
-            Profile.get_instance().reset(self.reset)
+            self._profile.reset()
             self.close()
         except Exception as ex:
             log('Exception in restart: ' + str(ex))
@@ -376,8 +369,13 @@ class NetworkSettings(CenteredWidget):
 class PrivacySettings(CenteredWidget):
     """Privacy settings form: history, typing notifications"""
 
-    def __init__(self):
+    def __init__(self, contacts_manager, settings):
+        """
+        :type contacts_manager: ContactsManager
+        """
         super().__init__()
+        self._contacts_manager = contacts_manager
+        self._settings = settings
         self.initUI()
         self.center()
 
@@ -404,15 +402,14 @@ class PrivacySettings(CenteredWidget):
         self.path.setGeometry(QtCore.QRect(10, 265, 350, 45))
         self.change_path = QtWidgets.QPushButton(self)
         self.change_path.setGeometry(QtCore.QRect(10, 320, 350, 30))
-        settings = Settings.get_instance()
-        self.typingNotifications.setChecked(settings['typing_notifications'])
-        self.fileautoaccept.setChecked(settings['allow_auto_accept'])
-        self.saveHistory.setChecked(settings['save_history'])
-        self.inlines.setChecked(settings['allow_inline'])
-        self.saveUnsentOnly.setChecked(settings['save_unsent_only'])
-        self.saveUnsentOnly.setEnabled(settings['save_history'])
+        self.typingNotifications.setChecked(self._settings['typing_notifications'])
+        self.fileautoaccept.setChecked(self._settings['allow_auto_accept'])
+        self.saveHistory.setChecked(self._settings['save_history'])
+        self.inlines.setChecked(self._settings['allow_inline'])
+        self.saveUnsentOnly.setChecked(self._settings['save_unsent_only'])
+        self.saveUnsentOnly.setEnabled(self._settings['save_history'])
         self.saveHistory.stateChanged.connect(self.update)
-        self.path.setPlainText(settings['auto_accept_path'] or curr_directory())
+        self.path.setPlainText(self._settings['auto_accept_path'] or curr_directory())
         self.change_path.clicked.connect(self.new_path)
         self.block_user_label = QtWidgets.QLabel(self)
         self.block_user_label.setGeometry(QtCore.QRect(10, 360, 350, 30))
@@ -420,12 +417,12 @@ class PrivacySettings(CenteredWidget):
         self.block_id.setGeometry(QtCore.QRect(10, 390, 350, 30))
         self.block = QtWidgets.QPushButton(self)
         self.block.setGeometry(QtCore.QRect(10, 430, 350, 30))
-        self.block.clicked.connect(lambda: Profile.get_instance().block_user(self.block_id.toPlainText()) or self.close())
+        self.block.clicked.connect(lambda: self._contacts_manager.block_user(self.block_id.toPlainText()) or self.close())
         self.blocked_users_label = QtWidgets.QLabel(self)
         self.blocked_users_label.setGeometry(QtCore.QRect(10, 470, 350, 30))
         self.comboBox = QtWidgets.QComboBox(self)
         self.comboBox.setGeometry(QtCore.QRect(10, 500, 350, 30))
-        self.comboBox.addItems(settings['blocked'])
+        self.comboBox.addItems(self._settings['blocked'])
         self.unblock = QtWidgets.QPushButton(self)
         self.unblock.setGeometry(QtCore.QRect(10, 540, 350, 30))
         self.unblock.clicked.connect(lambda: self.unblock_user())
@@ -433,18 +430,18 @@ class PrivacySettings(CenteredWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtWidgets.QApplication.translate("privacySettings", "Privacy settings"))
-        self.saveHistory.setText(QtWidgets.QApplication.translate("privacySettings", "Save chat history"))
-        self.fileautoaccept.setText(QtWidgets.QApplication.translate("privacySettings", "Allow file auto accept"))
-        self.typingNotifications.setText(QtWidgets.QApplication.translate("privacySettings", "Send typing notifications"))
-        self.auto_path.setText(QtWidgets.QApplication.translate("privacySettings", "Auto accept default path:"))
-        self.change_path.setText(QtWidgets.QApplication.translate("privacySettings", "Change"))
-        self.inlines.setText(QtWidgets.QApplication.translate("privacySettings", "Allow inlines"))
-        self.block_user_label.setText(QtWidgets.QApplication.translate("privacySettings", "Block by public key:"))
-        self.blocked_users_label.setText(QtWidgets.QApplication.translate("privacySettings", "Blocked users:"))
-        self.unblock.setText(QtWidgets.QApplication.translate("privacySettings", "Unblock"))
-        self.block.setText(QtWidgets.QApplication.translate("privacySettings", "Block user"))
-        self.saveUnsentOnly.setText(QtWidgets.QApplication.translate("privacySettings", "Save unsent messages only"))
+        self.setWindowTitle(util_ui.tr("Privacy settings"))
+        self.saveHistory.setText(util_ui.tr("Save chat history"))
+        self.fileautoaccept.setText(util_ui.tr("Allow file auto accept"))
+        self.typingNotifications.setText(util_ui.tr("Send typing notifications"))
+        self.auto_path.setText(util_ui.tr("Auto accept default path:"))
+        self.change_path.setText(util_ui.tr("Change"))
+        self.inlines.setText(util_ui.tr("Allow inlines"))
+        self.block_user_label.setText(util_ui.tr("Block by public key:"))
+        self.blocked_users_label.setText(util_ui.tr("Blocked users:"))
+        self.unblock.setText(util_ui.tr("Unblock"))
+        self.block.setText(util_ui.tr("Block user"))
+        self.saveUnsentOnly.setText(util_ui.tr("Save unsent messages only"))
 
     def update(self, new_state):
         self.saveUnsentOnly.setEnabled(new_state)
@@ -454,58 +451,48 @@ class PrivacySettings(CenteredWidget):
     def unblock_user(self):
         if not self.comboBox.count():
             return
-        title = QtWidgets.QApplication.translate("privacySettings", "Add to friend list")
-        info = QtWidgets.QApplication.translate("privacySettings", "Do you want to add this user to friend list?")
-        reply = QtWidgets.QMessageBox.question(None, title, info, QtWidgets.QMessageBox.Yes, QtWidgets.QMessageBox.No)
-        Profile.get_instance().unblock_user(self.comboBox.currentText(), reply == QtWidgets.QMessageBox.Yes)
+        title = util_ui.tr("Add to friend list")
+        info = util_ui.tr("Do you want to add this user to friend list?")
+        reply = util_ui.question(info, title)
+        self._contacts_manager.unblock_user(self.comboBox.currentText(), reply)
         self.close()
 
     def closeEvent(self, event):
-        settings = Settings.get_instance()
-        settings['typing_notifications'] = self.typingNotifications.isChecked()
-        settings['allow_auto_accept'] = self.fileautoaccept.isChecked()
+        self._settings['typing_notifications'] = self.typingNotifications.isChecked()
+        self._settings['allow_auto_accept'] = self.fileautoaccept.isChecked()
+        text = util_ui.tr('History will be cleaned! Continue?')
+        title = util_ui.tr('Chat history')
 
-        if settings['save_history'] and not self.saveHistory.isChecked():  # clear history
-            reply = QtWidgets.QMessageBox.question(None,
-                                               QtWidgets.QApplication.translate("privacySettings",
-                                                                            'Chat history'),
-                                               QtWidgets.QApplication.translate("privacySettings",
-                                                                            'History will be cleaned! Continue?'),
-                                               QtWidgets.QMessageBox.Yes,
-                                               QtWidgets.QMessageBox.No)
-            if reply == QtWidgets.QMessageBox.Yes:
-                Profile.get_instance().clear_history()
-                settings['save_history'] = self.saveHistory.isChecked()
+        if self._settings['save_history'] and not self.saveHistory.isChecked():  # clear history
+            reply = util_ui.question(text, title)
+            if reply:
+                self._history_loader.clear_history()
+                self._settings['save_history'] = self.saveHistory.isChecked()
         else:
-            settings['save_history'] = self.saveHistory.isChecked()
-        if self.saveUnsentOnly.isChecked() and not settings['save_unsent_only']:
-            reply = QtWidgets.QMessageBox.question(None,
-                                               QtWidgets.QApplication.translate("privacySettings",
-                                                                            'Chat history'),
-                                               QtWidgets.QApplication.translate("privacySettings",
-                                                                            'History will be cleaned! Continue?'),
-                                               QtWidgets.QMessageBox.Yes,
-                                               QtWidgets.QMessageBox.No)
-            if reply == QtWidgets.QMessageBox.Yes:
-                Profile.get_instance().clear_history(None, True)
-                settings['save_unsent_only'] = self.saveUnsentOnly.isChecked()
+            self._settings['save_history'] = self.saveHistory.isChecked()
+        if self.saveUnsentOnly.isChecked() and not self._settings['save_unsent_only']:
+            reply = util_ui.question(text, title)
+            if reply:
+                self._history_loader.clear_history(None, True)
+                self._settings['save_unsent_only'] = self.saveUnsentOnly.isChecked()
         else:
-            settings['save_unsent_only'] = self.saveUnsentOnly.isChecked()
-        settings['auto_accept_path'] = self.path.toPlainText()
-        settings['allow_inline'] = self.inlines.isChecked()
-        settings.save()
+            self._settings['save_unsent_only'] = self.saveUnsentOnly.isChecked()
+        self._settings['auto_accept_path'] = self.path.toPlainText()
+        self._settings['allow_inline'] = self.inlines.isChecked()
+        self._settings.save()
 
     def new_path(self):
-        directory = QtWidgets.QFileDialog.getExistingDirectory(options=QtWidgets.QFileDialog.DontUseNativeDialog) + '/'
-        if directory != '/':
+        directory = util_ui.directory_dialog()
+        if directory:
             self.path.setPlainText(directory)
 
 
 class NotificationsSettings(CenteredWidget):
     """Notifications settings form"""
 
-    def __init__(self):
-        super(NotificationsSettings, self).__init__()
+    def __init__(self, setttings):
+        super().__init__()
+        self._settings = setttings
         self.initUI()
         self.center()
 
@@ -523,40 +510,40 @@ class NotificationsSettings(CenteredWidget):
         self.groupNotifications = QtWidgets.QCheckBox(self)
         self.groupNotifications.setGeometry(QtCore.QRect(10, 120, 340, 18))
         font = QtGui.QFont()
-        s = Settings.get_instance()
-        font.setFamily(s['font'])
+        font.setFamily(self._settings['font'])
         font.setPointSize(12)
         self.callsSound.setFont(font)
         self.soundNotifications.setFont(font)
         self.enableNotifications.setFont(font)
         self.groupNotifications.setFont(font)
-        self.enableNotifications.setChecked(s['notifications'])
-        self.soundNotifications.setChecked(s['sound_notifications'])
-        self.groupNotifications.setChecked(s['group_notifications'])
-        self.callsSound.setChecked(s['calls_sound'])
+        self.enableNotifications.setChecked(self._settings['notifications'])
+        self.soundNotifications.setChecked(self._settings['sound_notifications'])
+        self.groupNotifications.setChecked(self._settings['group_notifications'])
+        self.callsSound.setChecked(self._settings['calls_sound'])
         self.retranslateUi()
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtWidgets.QApplication.translate("notificationsForm", "Notification settings"))
-        self.enableNotifications.setText(QtWidgets.QApplication.translate("notificationsForm", "Enable notifications"))
-        self.groupNotifications.setText(QtWidgets.QApplication.translate("notificationsForm", "Notify about all messages in groups"))
-        self.callsSound.setText(QtWidgets.QApplication.translate("notificationsForm", "Enable call\'s sound"))
-        self.soundNotifications.setText(QtWidgets.QApplication.translate("notificationsForm", "Enable sound notifications"))
+        self.setWindowTitle(util_ui.tr("Notification settings"))
+        self.enableNotifications.setText(util_ui.tr("Enable notifications"))
+        self.groupNotifications.setText(util_ui.tr("Notify about all messages in groups"))
+        self.callsSound.setText(util_ui.tr("Enable call\'s sound"))
+        self.soundNotifications.setText(util_ui.tr("Enable sound notifications"))
 
     def closeEvent(self, *args, **kwargs):
-        settings = Settings.get_instance()
-        settings['notifications'] = self.enableNotifications.isChecked()
-        settings['sound_notifications'] = self.soundNotifications.isChecked()
-        settings['group_notifications'] = self.groupNotifications.isChecked()
-        settings['calls_sound'] = self.callsSound.isChecked()
-        settings.save()
+        self._settings['notifications'] = self.enableNotifications.isChecked()
+        self._settings['sound_notifications'] = self.soundNotifications.isChecked()
+        self._settings['group_notifications'] = self.groupNotifications.isChecked()
+        self._settings['calls_sound'] = self.callsSound.isChecked()
+        self._settings.save()
 
 
 class InterfaceSettings(CenteredWidget):
     """Interface settings form"""
-    def __init__(self):
-        super(InterfaceSettings, self).__init__()
+    def __init__(self, settings, smiley_loader):
+        super().__init__()
+        self._settings = settings
+        self._smiley_loader = smiley_loader
         self.initUI()
         self.center()
 
@@ -566,18 +553,17 @@ class InterfaceSettings(CenteredWidget):
         self.setMaximumSize(QtCore.QSize(400, 650))
         self.label = QtWidgets.QLabel(self)
         self.label.setGeometry(QtCore.QRect(30, 10, 370, 20))
-        settings = Settings.get_instance()
         font = QtGui.QFont()
         font.setPointSize(14)
         font.setBold(True)
-        font.setFamily(settings['font'])
+        font.setFamily(self._settings['font'])
         self.label.setFont(font)
         self.themeSelect = QtWidgets.QComboBox(self)
         self.themeSelect.setGeometry(QtCore.QRect(30, 40, 120, 30))
-        self.themeSelect.addItems(list(settings.built_in_themes().keys()))
-        theme = settings['theme']
-        if theme in settings.built_in_themes().keys():
-            index = list(settings.built_in_themes().keys()).index(theme)
+        self.themeSelect.addItems(list(self._settings.built_in_themes().keys()))
+        theme = self._settings['theme']
+        if theme in self._settings.built_in_themes().keys():
+            index = list(self._settings.built_in_themes().keys()).index(theme)
         else:
             index = 0
         self.themeSelect.setCurrentIndex(index)
@@ -586,28 +572,27 @@ class InterfaceSettings(CenteredWidget):
         supported = sorted(Settings.supported_languages().keys(), reverse=True)
         for key in supported:
             self.lang_choose.insertItem(0, key)
-            if settings['language'] == key:
+            if self._settings['language'] == key:
                 self.lang_choose.setCurrentIndex(0)
         self.lang = QtWidgets.QLabel(self)
         self.lang.setGeometry(QtCore.QRect(30, 80, 370, 20))
         self.lang.setFont(font)
         self.mirror_mode = QtWidgets.QCheckBox(self)
         self.mirror_mode.setGeometry(QtCore.QRect(30, 160, 370, 20))
-        self.mirror_mode.setChecked(settings['mirror_mode'])
+        self.mirror_mode.setChecked(self._settings['mirror_mode'])
         self.smileys = QtWidgets.QCheckBox(self)
         self.smileys.setGeometry(QtCore.QRect(30, 190, 120, 20))
-        self.smileys.setChecked(settings['smileys'])
+        self.smileys.setChecked(self._settings['smileys'])
         self.smiley_pack_label = QtWidgets.QLabel(self)
         self.smiley_pack_label.setGeometry(QtCore.QRect(30, 230, 370, 20))
         self.smiley_pack_label.setFont(font)
         self.smiley_pack = QtWidgets.QComboBox(self)
         self.smiley_pack.setGeometry(QtCore.QRect(30, 260, 160, 30))
-        sm = smileys.SmileyLoader.get_instance()
-        self.smiley_pack.addItems(sm.get_packs_list())
+        self.smiley_pack.addItems(self._smiley_loader.get_packs_list())
         try:
-            ind = sm.get_packs_list().index(settings['smiley_pack'])
+            ind = self._smiley_loader.get_packs_list().index(self._settings['smiley_pack'])
         except:
-            ind = sm.get_packs_list().index('default')
+            ind = self._smiley_loader.get_packs_list().index('default')
         self.smiley_pack.setCurrentIndex(ind)
         self.messages_font_size_label = QtWidgets.QLabel(self)
         self.messages_font_size_label.setGeometry(QtCore.QRect(30, 300, 370, 20))
@@ -615,7 +600,7 @@ class InterfaceSettings(CenteredWidget):
         self.messages_font_size = QtWidgets.QComboBox(self)
         self.messages_font_size.setGeometry(QtCore.QRect(30, 330, 160, 30))
         self.messages_font_size.addItems([str(x) for x in range(10, 25)])
-        self.messages_font_size.setCurrentIndex(settings['message_font_size'] - 10)
+        self.messages_font_size.setCurrentIndex(self._settings['message_font_size'] - 10)
 
         self.unread = QtWidgets.QPushButton(self)
         self.unread.setGeometry(QtCore.QRect(30, 470, 340, 30))
@@ -623,15 +608,15 @@ class InterfaceSettings(CenteredWidget):
 
         self.compact_mode = QtWidgets.QCheckBox(self)
         self.compact_mode.setGeometry(QtCore.QRect(30, 380, 370, 20))
-        self.compact_mode.setChecked(settings['compact_mode'])
+        self.compact_mode.setChecked(self._settings['compact_mode'])
 
         self.close_to_tray = QtWidgets.QCheckBox(self)
         self.close_to_tray.setGeometry(QtCore.QRect(30, 410, 370, 20))
-        self.close_to_tray.setChecked(settings['close_to_tray'])
+        self.close_to_tray.setChecked(self._settings['close_to_tray'])
 
         self.show_avatars = QtWidgets.QCheckBox(self)
         self.show_avatars.setGeometry(QtCore.QRect(30, 440, 370, 20))
-        self.show_avatars.setChecked(settings['show_avatars'])
+        self.show_avatars.setChecked(self._settings['show_avatars'])
 
         self.choose_font = QtWidgets.QPushButton(self)
         self.choose_font.setGeometry(QtCore.QRect(30, 510, 340, 30))
@@ -649,54 +634,43 @@ class InterfaceSettings(CenteredWidget):
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
-        self.show_avatars.setText(QtWidgets.QApplication.translate("interfaceForm", "Show avatars in chat"))
-        self.setWindowTitle(QtWidgets.QApplication.translate("interfaceForm", "Interface settings"))
-        self.label.setText(QtWidgets.QApplication.translate("interfaceForm", "Theme:"))
-        self.lang.setText(QtWidgets.QApplication.translate("interfaceForm", "Language:"))
-        self.smileys.setText(QtWidgets.QApplication.translate("interfaceForm", "Smileys"))
-        self.smiley_pack_label.setText(QtWidgets.QApplication.translate("interfaceForm", "Smiley pack:"))
-        self.mirror_mode.setText(QtWidgets.QApplication.translate("interfaceForm", "Mirror mode"))
-        self.messages_font_size_label.setText(QtWidgets.QApplication.translate("interfaceForm", "Messages font size:"))
-        self.unread.setText(QtWidgets.QApplication.translate("interfaceForm", "Select unread messages notification color"))
-        self.compact_mode.setText(QtWidgets.QApplication.translate("interfaceForm", "Compact contact list"))
-        self.import_smileys.setText(QtWidgets.QApplication.translate("interfaceForm", "Import smiley pack"))
-        self.import_stickers.setText(QtWidgets.QApplication.translate("interfaceForm", "Import sticker pack"))
-        self.close_to_tray.setText(QtWidgets.QApplication.translate("interfaceForm", "Close to tray"))
-        self.choose_font.setText(QtWidgets.QApplication.translate("interfaceForm", "Select font"))
+        self.show_avatars.setText(util_ui.tr("Show avatars in chat"))
+        self.setWindowTitle(util_ui.tr("Interface settings"))
+        self.label.setText(util_ui.tr("Theme:"))
+        self.lang.setText(util_ui.tr("Language:"))
+        self.smileys.setText(util_ui.tr("Smileys"))
+        self.smiley_pack_label.setText(util_ui.tr("Smiley pack:"))
+        self.mirror_mode.setText(util_ui.tr("Mirror mode"))
+        self.messages_font_size_label.setText(util_ui.tr("Messages font size:"))
+        self.unread.setText(util_ui.tr("Select unread messages notification color"))
+        self.compact_mode.setText(util_ui.tr("Compact contact list"))
+        self.import_smileys.setText(util_ui.tr("Import smiley pack"))
+        self.import_stickers.setText(util_ui.tr("Import sticker pack"))
+        self.close_to_tray.setText(util_ui.tr("Close to tray"))
+        self.choose_font.setText(util_ui.tr("Select font"))
 
     def import_st(self):
-        directory = QtWidgets.QFileDialog.getExistingDirectory(self,
-                                                           QtWidgets.QApplication.translate("MainWindow",
-                                                                                        'Choose folder with sticker pack'),
-                                                           curr_directory(),
-                                                           QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
-
+        directory = util_ui.directory_dialog(util_ui.tr('Choose folder with sticker pack'))
         if directory:
             src = directory + '/'
             dest = curr_directory() + '/stickers/' + os.path.basename(directory) + '/'
             copy(src, dest)
 
     def import_sm(self):
-        directory = QtWidgets.QFileDialog.getExistingDirectory(self,
-                                                           QtWidgets.QApplication.translate("MainWindow",
-                                                                                        'Choose folder with smiley pack'),
-                                                           curr_directory(),
-                                                           QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
-
+        directory = util_ui.directory_dialog(util_ui.tr('Choose folder with smiley pack'))
         if directory:
             src = directory + '/'
             dest = curr_directory() + '/smileys/' + os.path.basename(directory) + '/'
             copy(src, dest)
 
     def new_font(self):
-        settings = Settings.get_instance()
-        font, ok = QtWidgets.QFontDialog.getFont(QtGui.QFont(settings['font'], 10), self)
+        font, ok = QtWidgets.QFontDialog.getFont(QtGui.QFont(self._settings['font'], 10), self)
         if ok:
-            settings['font'] = font.family()
-            settings.save()
+            self._settings['font'] = font.family()
+            self._settings.save()
             msgBox = QtWidgets.QMessageBox()
-            text = QtWidgets.QApplication.translate("interfaceForm", 'Restart app to apply settings')
-            msgBox.setWindowTitle(QtWidgets.QApplication.translate("interfaceForm", 'Restart required'))
+            text = util_ui.tr('Restart app to apply settings')
+            msgBox.setWindowTitle(util_ui.tr('Restart required'))
             msgBox.setText(text)
             msgBox.exec_()
 
@@ -747,11 +721,7 @@ class InterfaceSettings(CenteredWidget):
         Profile.get_instance().update()
         settings.save()
         if restart:
-            msgBox = QtWidgets.QMessageBox()
-            text = QtWidgets.QApplication.translate("interfaceForm", 'Restart app to apply settings')
-            msgBox.setWindowTitle(QtWidgets.QApplication.translate("interfaceForm", 'Restart required'))
-            msgBox.setText(text)
-            msgBox.exec_()
+            util_ui.message_box(util_ui.tr('Restart app to apply settings'), util_ui.tr('Restart required'))
 
 
 class AudioSettings(CenteredWidget):
@@ -759,8 +729,9 @@ class AudioSettings(CenteredWidget):
     Audio calls settings form
     """
 
-    def __init__(self):
-        super(AudioSettings, self).__init__()
+    def __init__(self, settings):
+        super().__init__()
+        self._settings = settings
         self.initUI()
         self.retranslateUi()
         self.center()
@@ -774,11 +745,10 @@ class AudioSettings(CenteredWidget):
         self.in_label.setGeometry(QtCore.QRect(25, 5, 350, 20))
         self.out_label = QtWidgets.QLabel(self)
         self.out_label.setGeometry(QtCore.QRect(25, 65, 350, 20))
-        settings = Settings.get_instance()
         font = QtGui.QFont()
         font.setPointSize(16)
         font.setBold(True)
-        font.setFamily(settings['font'])
+        font.setFamily(self._settings['font'])
         self.in_label.setFont(font)
         self.out_label.setFont(font)
         self.input = QtWidgets.QComboBox(self)
@@ -795,20 +765,19 @@ class AudioSettings(CenteredWidget):
             if device["maxOutputChannels"]:
                 self.output.addItem(str(device["name"]))
                 self.out_indexes.append(i)
-        self.input.setCurrentIndex(self.in_indexes.index(settings.audio['input']))
-        self.output.setCurrentIndex(self.out_indexes.index(settings.audio['output']))
+        self.input.setCurrentIndex(self.in_indexes.index(self._settings.audio['input']))
+        self.output.setCurrentIndex(self.out_indexes.index(self._settings.audio['output']))
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtWidgets.QApplication.translate("audioSettingsForm", "Audio settings"))
-        self.in_label.setText(QtWidgets.QApplication.translate("audioSettingsForm", "Input device:"))
-        self.out_label.setText(QtWidgets.QApplication.translate("audioSettingsForm", "Output device:"))
+        self.setWindowTitle(util_ui.tr("Audio settings"))
+        self.in_label.setText(util_ui.tr("Input device:"))
+        self.out_label.setText(util_ui.tr("Output device:"))
 
     def closeEvent(self, event):
-        settings = Settings.get_instance()
-        settings.audio['input'] = self.in_indexes[self.input.currentIndex()]
-        settings.audio['output'] = self.out_indexes[self.output.currentIndex()]
-        settings.save()
+        self._settings.audio['input'] = self.in_indexes[self.input.currentIndex()]
+        self._settings.audio['output'] = self.out_indexes[self.output.currentIndex()]
+        self._settings.save()
 
 
 class DesktopAreaSelectionWindow(RubberBandWindow):
@@ -828,8 +797,9 @@ class VideoSettings(CenteredWidget):
     Audio calls settings form
     """
 
-    def __init__(self):
+    def __init__(self, settings):
         super().__init__()
+        self._settings = settings
         self.initUI()
         self.retranslateUi()
         self.center()
@@ -842,11 +812,10 @@ class VideoSettings(CenteredWidget):
         self.setMaximumSize(QtCore.QSize(400, 120))
         self.in_label = QtWidgets.QLabel(self)
         self.in_label.setGeometry(QtCore.QRect(25, 5, 350, 20))
-        settings = Settings.get_instance()
         font = QtGui.QFont()
         font.setPointSize(16)
         font.setBold(True)
-        font.setFamily(settings['font'])
+        font.setFamily(self._settings['font'])
         self.in_label.setFont(font)
         self.video_size = QtWidgets.QComboBox(self)
         self.video_size.setGeometry(QtCore.QRect(25, 70, 350, 30))
@@ -861,7 +830,7 @@ class VideoSettings(CenteredWidget):
         screen = QtWidgets.QApplication.primaryScreen()
         size = screen.size()
         self.frame_max_sizes = [(size.width(), size.height())]
-        desktop = QtWidgets.QApplication.translate("videoSettingsForm", "Desktop")
+        desktop = util_ui.tr("Desktop")
         self.input.addItem(desktop)
         for i in range(10):
             v = cv2.VideoCapture(i)
@@ -876,15 +845,15 @@ class VideoSettings(CenteredWidget):
                 self.frame_max_sizes.append((width, height))
                 self.input.addItem('Device #' + str(i))
         try:
-            index = self.devices.index(settings.video['device'])
+            index = self.devices.index(self._settings.video['device'])
             self.input.setCurrentIndex(index)
         except:
             print('Video devices error!')
 
     def retranslateUi(self):
-        self.setWindowTitle(QtWidgets.QApplication.translate("videoSettingsForm", "Video settings"))
-        self.in_label.setText(QtWidgets.QApplication.translate("videoSettingsForm", "Device:"))
-        self.button.setText(QtWidgets.QApplication.translate("videoSettingsForm", "Select region"))
+        self.setWindowTitle(util_ui.tr("Video settings"))
+        self.in_label.setText(util_ui.tr("Device:"))
+        self.button.setText(util_ui.tr("Select region"))
 
     def button_clicked(self):
         self.desktopAreaSelection = DesktopAreaSelectionWindow(self)
@@ -893,24 +862,22 @@ class VideoSettings(CenteredWidget):
         if self.input.currentIndex() == 0:
             return
         try:
-            settings = Settings.get_instance()
-            settings.video['device'] = self.devices[self.input.currentIndex()]
+            self._settings.video['device'] = self.devices[self.input.currentIndex()]
             text = self.video_size.currentText()
-            settings.video['width'] = int(text.split(' ')[0])
-            settings.video['height'] = int(text.split(' ')[-1])
-            settings.save()
+            self._settings.video['width'] = int(text.split(' ')[0])
+            self._settings.video['height'] = int(text.split(' ')[-1])
+            self._settings.save()
         except Exception as ex:
             print('Saving video  settings error: ' + str(ex))
 
     def save(self, x, y, width, height):
         self.desktopAreaSelection = None
-        settings = Settings.get_instance()
-        settings.video['device'] = -1
-        settings.video['width'] = width
-        settings.video['height'] = height
-        settings.video['x'] = x
-        settings.video['y'] = y
-        settings.save()
+        self._settings.video['device'] = -1
+        self._settings.video['width'] = width
+        self._settings.video['height'] = height
+        self._settings.video['x'] = x
+        self._settings.video['y'] = y
+        self._settings.save()
 
     def selectionChanged(self):
         if self.input.currentIndex() == 0:
@@ -940,8 +907,10 @@ class PluginsSettings(CenteredWidget):
     Plugins settings form
     """
 
-    def __init__(self):
-        super(PluginsSettings, self).__init__()
+    def __init__(self, plugin_loader):
+        super().__init__()
+        self._plugin_loader = plugin_loader
+        self._window = None
         self.initUI()
         self.center()
         self.retranslateUi()
@@ -961,32 +930,27 @@ class PluginsSettings(CenteredWidget):
         self.open = QtWidgets.QPushButton(self)
         self.open.setGeometry(QtCore.QRect(30, 170, 340, 30))
         self.open.clicked.connect(self.open_plugin)
-        self.pl_loader = plugin_support.PluginLoader.get_instance()
         self.update_list()
         self.comboBox.currentIndexChanged.connect(self.show_data)
         self.show_data()
 
     def retranslateUi(self):
-        self.setWindowTitle(QtWidgets.QApplication.translate('PluginsForm', "Plugins"))
-        self.open.setText(QtWidgets.QApplication.translate('PluginsForm', "Open selected plugin"))
+        self.setWindowTitle(util_ui.tr("Plugins"))
+        self.open.setText(util_ui.tr("Open selected plugin"))
 
     def open_plugin(self):
         ind = self.comboBox.currentIndex()
         plugin = self.data[ind]
         window = self.pl_loader.plugin_window(plugin[-1])
         if window is not None:
-            self.window = window
-            self.window.show()
+            self._window = window
+            self._window.show()
         else:
-            msgBox = QtWidgets.QMessageBox()
-            text = QtWidgets.QApplication.translate("PluginsForm", 'No GUI found for this plugin')
-            msgBox.setWindowTitle(QtWidgets.QApplication.translate("PluginsForm", 'Error'))
-            msgBox.setText(text)
-            msgBox.exec_()
+            util_ui.message_box(util_ui.tr('No GUI found for this plugin'), util_ui.tr('Error'))
 
     def update_list(self):
         self.comboBox.clear()
-        data = self.pl_loader.get_plugins_list()
+        data = self._plugin_loader.get_plugins_list()
         self.comboBox.addItems(list(map(lambda x: x[0], data)))
         self.data = data
 
@@ -994,26 +958,26 @@ class PluginsSettings(CenteredWidget):
         ind = self.comboBox.currentIndex()
         if len(self.data):
             plugin = self.data[ind]
-            descr = plugin[2] or QtWidgets.QApplication.translate("PluginsForm", "No description available")
+            descr = plugin[2] or util_ui.tr("No description available")
             self.label.setText(descr)
             if plugin[1]:
-                self.button.setText(QtWidgets.QApplication.translate("PluginsForm", "Disable plugin"))
+                self.button.setText(util_ui.tr("Disable plugin"))
             else:
-                self.button.setText(QtWidgets.QApplication.translate("PluginsForm", "Enable plugin"))
+                self.button.setText(util_ui.tr("Enable plugin"))
         else:
             self.open.setVisible(False)
             self.button.setVisible(False)
-            self.label.setText(QtWidgets.QApplication.translate("PluginsForm", "No plugins found"))
+            self.label.setText(util_ui.tr("No plugins found"))
 
     def button_click(self):
         ind = self.comboBox.currentIndex()
         plugin = self.data[ind]
-        self.pl_loader.toggle_plugin(plugin[-1])
+        self._plugin_loader.toggle_plugin(plugin[-1])
         plugin[1] = not plugin[1]
         if plugin[1]:
-            self.button.setText(QtWidgets.QApplication.translate("PluginsForm", "Disable plugin"))
+            self.button.setText(util_ui.tr("Disable plugin"))
         else:
-            self.button.setText(QtWidgets.QApplication.translate("PluginsForm", "Enable plugin"))
+            self.button.setText(util_ui.tr("Enable plugin"))
 
 
 class UpdateSettings(CenteredWidget):
@@ -1021,8 +985,9 @@ class UpdateSettings(CenteredWidget):
     Updates settings form
     """
 
-    def __init__(self):
-        super(UpdateSettings, self).__init__()
+    def __init__(self, settings):
+        super().__init__()
+        self._settings = settings
         self.initUI()
         self.center()
 
@@ -1033,61 +998,44 @@ class UpdateSettings(CenteredWidget):
         self.setMaximumSize(QtCore.QSize(400, 120))
         self.in_label = QtWidgets.QLabel(self)
         self.in_label.setGeometry(QtCore.QRect(25, 5, 350, 20))
-        settings = Settings.get_instance()
         font = QtGui.QFont()
         font.setPointSize(16)
         font.setBold(True)
-        font.setFamily(settings['font'])
+        font.setFamily(self._settings['font'])
         self.in_label.setFont(font)
         self.autoupdate = QtWidgets.QComboBox(self)
         self.autoupdate.setGeometry(QtCore.QRect(25, 30, 350, 30))
         self.button = QtWidgets.QPushButton(self)
         self.button.setGeometry(QtCore.QRect(25, 70, 350, 30))
-        self.button.setEnabled(settings['update'])
+        self.button.setEnabled(self._settings['update'])
         self.button.clicked.connect(self.update_client)
 
         self.retranslateUi()
-        self.autoupdate.setCurrentIndex(settings['update'])
+        self.autoupdate.setCurrentIndex(self._settings['update'])
         QtCore.QMetaObject.connectSlotsByName(self)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtWidgets.QApplication.translate("updateSettingsForm", "Update settings"))
-        self.in_label.setText(QtWidgets.QApplication.translate("updateSettingsForm", "Select update mode:"))
-        self.button.setText(QtWidgets.QApplication.translate("updateSettingsForm", "Update Toxygen"))
-        self.autoupdate.addItem(QtWidgets.QApplication.translate("updateSettingsForm", "Disabled"))
-        self.autoupdate.addItem(QtWidgets.QApplication.translate("updateSettingsForm", "Manual"))
-        self.autoupdate.addItem(QtWidgets.QApplication.translate("updateSettingsForm", "Auto"))
+        self.setWindowTitle(util_ui.tr("Update settings"))
+        self.in_label.setText(util_ui.tr("Select update mode:"))
+        self.button.setText(util_ui.tr("Update Toxygen"))
+        self.autoupdate.addItem(util_ui.tr("Disabled"))
+        self.autoupdate.addItem(util_ui.tr("Manual"))
+        self.autoupdate.addItem(util_ui.tr("Auto"))
 
     def closeEvent(self, event):
-        settings = Settings.get_instance()
-        settings['update'] = self.autoupdate.currentIndex()
-        settings.save()
+        self._settings['update'] = self.autoupdate.currentIndex()
+        self._settings.save()
 
     def update_client(self):
         if not updater.connection_available():
-            msgBox = QtWidgets.QMessageBox()
-            msgBox.setWindowTitle(
-                QtWidgets.QApplication.translate("updateSettingsForm", "Error"))
-            text = (QtWidgets.QApplication.translate("updateSettingsForm", 'Problems with internet connection'))
-            msgBox.setText(text)
-            msgBox.exec_()
+            util_ui.message_box(util_ui.tr('Problems with internet connection'), util_ui.tr("Error"))
             return
         if not updater.updater_available():
-            msgBox = QtWidgets.QMessageBox()
-            msgBox.setWindowTitle(
-                QtWidgets.QApplication.translate("updateSettingsForm", "Error"))
-            text = (QtWidgets.QApplication.translate("updateSettingsForm", 'Updater not found'))
-            msgBox.setText(text)
-            msgBox.exec_()
+            util_ui.message_box(util_ui.tr('Updater not found'), util_ui.tr("Error"))
             return
         version = updater.check_for_updates()
         if version is not None:
             updater.download(version)
-            QtWidgets.QApplication.closeAllWindows()
+            util_ui.close_all_windows()
         else:
-            msgBox = QtWidgets.QMessageBox()
-            msgBox.setWindowTitle(
-                QtWidgets.QApplication.translate("updateSettingsForm", "No updates found"))
-            text = (QtWidgets.QApplication.translate("updateSettingsForm", 'Toxygen is up to date'))
-            msgBox.setText(text)
-            msgBox.exec_()
+            util_ui.message_box(util_ui.tr('Toxygen is up to date'), util_ui.tr("No updates found"))

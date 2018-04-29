@@ -42,7 +42,7 @@ class InitThread(BaseThread):
             time.sleep(1)
         while not self._tox.self_get_connection_status():
             try:
-                for data in generate_nodes():
+                for data in generate_nodes(None):
                     if self._stop_thread:
                         return
                     self._tox.bootstrap(*data)
@@ -137,4 +137,3 @@ _invoker = Invoker()
 
 def invoke_in_main_thread(fn, *args, **kwargs):
     QtCore.QCoreApplication.postEvent(_invoker, InvokeEvent(fn, *args, **kwargs))
-

@@ -65,6 +65,11 @@ def get_translations_directory():
     return get_app_directory('translations')
 
 
+@cached
+def get_plugins_directory():
+    return get_app_directory('plugins')
+
+
 def get_app_directory(directory_name):
     return os.path.join(get_base_directory(), directory_name)
 
@@ -124,12 +129,6 @@ def time_offset():
     d, h = divmod(h, 24)
     result = hours * 60 + minutes - h * 60 - m
     return result
-
-
-def append_slash(s):
-    if len(s) and s[-1] not in ('\\', '/'):
-        s += '/'
-    return s
 
 
 @cached

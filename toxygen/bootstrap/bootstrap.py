@@ -1,9 +1,11 @@
 import random
 import urllib.request
-from util.util import log, curr_directory
-from user_data import settings
+from util.util import log, curr_directory, join_path
 from PyQt5 import QtNetwork, QtCore
 import json
+
+
+DEFAULT_NODES_COUNT = 4
 
 
 class Node:
@@ -21,11 +23,18 @@ class Node:
         return bytes(self._ip, 'utf-8'), self._port, self._tox_key
 
 
-def generate_nodes():
-    with open(curr_directory() + '/nodes.json', 'rt') as fl:
+def _get_nodes_path():
+    return join_path(curr_directory(__file__), 'nodes.json')
+
+
+def generate_nodes(nodes_count=DEFAULT_NODES_COUNT):
+    with open(_get_nodes_path(), 'rt') as fl:
         json_nodes = json.loads(fl.read())['nodes']
     nodes = map(lambda json_node: Node(json_node), json_nodes)
-    sorted_nodes = sorted(nodes, key=lambda x: x.priority)[-4:]
+    nodes = filter(lambda n: n.priority > 0, nodes)
+    sorted_nodes = sorted(nodes, key=lambda x: x.priority)
+    if nodes_count is not None:
+        sorted_nodes = sorted_nodes[-DEFAULT_NODES_COUNT:]
     for node in sorted_nodes:
         yield node.get_data()
 
@@ -34,7 +43,7 @@ def save_nodes(nodes):
     if not nodes:
         return
     print('Saving nodes...')
-    with open(curr_directory() + '/nodes.json', 'wb') as fl:
+    with open(_get_nodes_path(), 'wb') as fl:
         fl.write(nodes)
 
 

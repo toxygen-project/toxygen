@@ -40,62 +40,62 @@ def self_connection_status(tox, profile):
 
 
 def friend_status(profile, settings):
-    def wrapped(tox, friend_num, new_status, user_data):
+    def wrapped(tox, friend_number, new_status, user_data):
         """
         Check friend's status (none, busy, away)
         """
-        print("Friend's #{} status changed!".format(friend_num))
-        friend = profile.get_friend_by_number(friend_num)
+        print("Friend's #{} status changed!".format(friend_number))
+        friend = profile.get_friend_by_number(friend_number)
         if friend.status is None and settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['FRIEND_CONNECTION_STATUS'])
         invoke_in_main_thread(friend.set_status, new_status)
-        invoke_in_main_thread(QtCore.QTimer.singleShot, 5000, lambda: profile.send_files(friend_num))
+        invoke_in_main_thread(QtCore.QTimer.singleShot, 5000, lambda: profile.send_files(friend_number))
         invoke_in_main_thread(profile.update_filtration)
 
     return wrapped
 
 
 def friend_connection_status(profile, settings, plugin_loader):
-    def wrapped(tox, friend_num, new_status, user_data):
+    def wrapped(tox, friend_number, new_status, user_data):
         """
         Check friend's connection status (offline, udp, tcp)
         """
-        print("Friend #{} connection status: {}".format(friend_num, new_status))
-        friend = profile.get_friend_by_number(friend_num)
+        print("Friend #{} connection status: {}".format(friend_number, new_status))
+        friend = profile.get_friend_by_number(friend_number)
         if new_status == TOX_CONNECTION['NONE']:
-            invoke_in_main_thread(profile.friend_exit, friend_num)
+            invoke_in_main_thread(profile.friend_exit, friend_number)
             invoke_in_main_thread(profile.update_filtration)
             if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                 sound_notification(SOUND_NOTIFICATION['FRIEND_CONNECTION_STATUS'])
         elif friend.status is None:
-            invoke_in_main_thread(profile.send_avatar, friend_num)
-            invoke_in_main_thread(plugin_loader.friend_online, friend_num)
+            invoke_in_main_thread(profile.send_avatar, friend_number)
+            invoke_in_main_thread(plugin_loader.friend_online, friend_number)
 
     return wrapped
 
 
 def friend_name(profile):
-    def wrapped(tox, friend_num, name, size, user_data):
+    def wrapped(tox, friend_number, name, size, user_data):
         """
         Friend changed his name
         """
-        print('New name friend #' + str(friend_num))
-        invoke_in_main_thread(profile.new_name, friend_num, name)
+        print('New name friend #' + str(friend_number))
+        invoke_in_main_thread(profile.new_name, friend_number, name)
 
     return wrapped
 
 
 def friend_status_message(profile):
-    def wrapped(tox, friend_num, status_message, size, user_data):
+    def wrapped(tox, friend_number, status_message, size, user_data):
         """
         :return: function for callback friend_status_message. It updates friend's status message
         and calls window repaint
         """
-        friend = profile.get_friend_by_number(friend_num)
+        friend = profile.get_friend_by_number(friend_number)
         invoke_in_main_thread(friend.set_status_message, status_message)
-        print('User #{} has new status'.format(friend_num))
-        invoke_in_main_thread(profile.send_messages, friend_num)
-        if profile.get_active_number() == friend_num:
+        print('User #{} has new status'.format(friend_number))
+        invoke_in_main_thread(profile.send_messages, friend_number)
+        if profile.get_active_number() == friend_number:
             invoke_in_main_thread(profile.set_active)
 
     return wrapped
