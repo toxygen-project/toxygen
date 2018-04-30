@@ -1,4 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
+import util.ui as util_ui
 
 
 class DataLabel(QtWidgets.QLabel):
@@ -22,7 +23,7 @@ class ComboBox(QtWidgets.QComboBox):
 class CenteredWidget(QtWidgets.QWidget):
 
     def __init__(self):
-        super(CenteredWidget, self).__init__()
+        super().__init__()
         self.center()
 
     def center(self):
@@ -137,21 +138,21 @@ def create_menu(menu):
         text = action.text()
         if 'Link Location' in text:
             text = text.replace('Copy &Link Location',
-                                QtWidgets.QApplication.translate("MainWindow", "Copy link location"))
+                                util_ui.tr("Copy link location"))
         elif '&Copy' in text:
-            text = text.replace('&Copy', QtWidgets.QApplication.translate("MainWindow", "Copy"))
+            text = text.replace('&Copy', util_ui.tr("Copy"))
         elif 'All' in text:
-            text = text.replace('Select All', QtWidgets.QApplication.translate("MainWindow", "Select all"))
+            text = text.replace('Select All', util_ui.tr("Select all"))
         elif 'Delete' in text:
-            text = text.replace('Delete', QtWidgets.QApplication.translate("MainWindow", "Delete"))
+            text = text.replace('Delete', util_ui.tr("Delete"))
         elif '&Paste' in text:
-            text = text.replace('&Paste', QtWidgets.QApplication.translate("MainWindow", "Paste"))
+            text = text.replace('&Paste', util_ui.tr("Paste"))
         elif 'Cu&t' in text:
-            text = text.replace('Cu&t', QtWidgets.QApplication.translate("MainWindow", "Cut"))
+            text = text.replace('Cu&t', util_ui.tr("Cut"))
         elif '&Undo' in text:
-            text = text.replace('&Undo', QtWidgets.QApplication.translate("MainWindow", "Undo"))
+            text = text.replace('&Undo', util_ui.tr("Undo"))
         elif '&Redo' in text:
-            text = text.replace('&Redo', QtWidgets.QApplication.translate("MainWindow", "Redo"))
+            text = text.replace('&Redo', util_ui.tr("Redo"))
         else:
             menu.removeAction(action)
             continue
@@ -172,7 +173,7 @@ class MultilineEdit(CenteredWidget):
         self.edit.setText(text)
         self.button = QtWidgets.QPushButton(self)
         self.button.setGeometry(QtCore.QRect(0, 150, 350, 50))
-        self.button.setText(QtWidgets.QApplication.translate("MainWindow", "Save"))
+        self.button.setText(util_ui.tr("Save"))
         self.button.clicked.connect(self.button_click)
         self.center()
         self.save = save

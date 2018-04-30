@@ -5,6 +5,7 @@ import smileys
 import urllib
 import util.util as util
 import util.ui as util_ui
+from stickers.stickers import load_stickers
 
 
 class MessageArea(QtWidgets.QPlainTextEdit):
@@ -206,30 +207,30 @@ class DropdownMenu(QtWidgets.QWidget):
         self.stickerButton = QtWidgets.QPushButton(self)
         self.stickerButton.setGeometry(QtCore.QRect(60, 0, 60, 60))
 
-        pixmap = QtGui.QPixmap(util.get_images_directory() + 'file.png')
+        pixmap = QtGui.QPixmap(util.join_path(util.get_images_directory(), 'file.png'))
         icon = QtGui.QIcon(pixmap)
         self.fileTransferButton.setIcon(icon)
         self.fileTransferButton.setIconSize(QtCore.QSize(50, 50))
 
-        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/screenshot.png')
+        pixmap = QtGui.QPixmap(util.join_path(util.get_images_directory(), 'screenshot.png'))
         icon = QtGui.QIcon(pixmap)
         self.screenshotButton.setIcon(icon)
         self.screenshotButton.setIconSize(QtCore.QSize(50, 60))
 
-        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/smiley.png')
+        pixmap = QtGui.QPixmap(util.join_path(util.get_images_directory(), 'smiley.png'))
         icon = QtGui.QIcon(pixmap)
         self.smileyButton.setIcon(icon)
         self.smileyButton.setIconSize(QtCore.QSize(50, 50))
 
-        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/sticker.png')
+        pixmap = QtGui.QPixmap(util.join_path(util.get_images_directory(), 'sticker.png'))
         icon = QtGui.QIcon(pixmap)
         self.stickerButton.setIcon(icon)
         self.stickerButton.setIconSize(QtCore.QSize(55, 55))
 
-        self.screenshotButton.setToolTip(QtWidgets.QApplication.translate("MenuWindow", "Send screenshot"))
-        self.fileTransferButton.setToolTip(QtWidgets.QApplication.translate("MenuWindow", "Send file"))
-        self.smileyButton.setToolTip(QtWidgets.QApplication.translate("MenuWindow", "Add smiley"))
-        self.stickerButton.setToolTip(QtWidgets.QApplication.translate("MenuWindow", "Send sticker"))
+        self.screenshotButton.setToolTip(util_ui.tr("Send screenshot"))
+        self.fileTransferButton.setToolTip(util_ui.tr("Send file"))
+        self.smileyButton.setToolTip(util_ui.tr("Add smiley"))
+        self.stickerButton.setToolTip(util_ui.tr("Send sticker"))
 
         self.fileTransferButton.clicked.connect(parent.send_file)
         self.screenshotButton.clicked.connect(parent.send_screenshot)
@@ -263,15 +264,16 @@ class StickerItem(QtWidgets.QWidget):
 class StickerWindow(QtWidgets.QWidget):
     """Sticker selection window"""
 
-    def __init__(self, parent):
+    def __init__(self, parent, file_transfer_handler):
         super().__init__()
+        self._file_transfer_handler = file_transfer_handler
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setMaximumSize(250, 200)
         self.setMinimumSize(250, 200)
         self.list = QtWidgets.QListWidget(self)
         self.list.setGeometry(QtCore.QRect(0, 0, 250, 200))
-        self.arr = smileys.sticker_loader()
-        for sticker in self.arr:
+        self._stickers = load_stickers()
+        for sticker in self._stickers:
             item = StickerItem(sticker)
             elem = QtWidgets.QListWidgetItem()
             elem.setSizeHint(QtCore.QSize(250, item.height()))
@@ -284,7 +286,7 @@ class StickerWindow(QtWidgets.QWidget):
 
     def click(self, index):
         num = index.row()
-        self.parent.profile.send_sticker(self.arr[num])
+        self._file_transfer_handler.send_sticker(self._stickers[num])
         self.close()
 
     def leaveEvent(self, event):
@@ -377,7 +379,7 @@ class SearchScreen(QtWidgets.QWidget):
         self.search_button = ClickableLabel(self)
         self.search_button.setGeometry(width - 160, 0, 40, 40)
         pixmap = QtGui.QPixmap()
-        pixmap.load(util.curr_directory() + '/images/search.png')
+        pixmap.load(util.join_path(util.get_images_directory(), 'search.png'))
         self.search_button.setScaledContents(False)
         self.search_button.setAlignment(QtCore.Qt.AlignCenter)
         self.search_button.setPixmap(pixmap)

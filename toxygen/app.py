@@ -156,8 +156,9 @@ class App:
         self._contacts_provider = ContactProvider(self._tox, self._friend_factory)
         profile = Profile(self._profile_manager, self._tox, self._ms, self._file_transfer_handler)
         self._smiley_loader = SmileyLoader(self._settings)
+        self._plugin_loader = PluginLoader(self._tox, self._toxes, profile, self._settings)  # plugins support
         widgets_factory = WidgetsFactory(self._settings, profile, self._contacts_manager, self._file_transfer_handler,
-                                         self._smiley_loader, self._plugin_loader)
+                                         self._smiley_loader, self._plugin_loader, self._toxes)
         self._contacts_manager = ContactsManager(self._tox, self._settings, self._ms, self._profile_manager,
                                                  self._contacts_provider, db)
         self._calls_manager = CallsManager(self._tox.AV, self._settings)
@@ -167,9 +168,8 @@ class App:
         self._ms.show()
 
         self._tray = tray.init_tray(profile, self._settings, self._ms)
+        self._ms.set_tray(self._tray)
         self._tray.show()
-
-        self._plugin_loader = PluginLoader(self._tox, self._toxes, profile, self._settings)  # plugins support
 
         # callbacks initialization
         callbacks.init_callbacks(self._tox, profile, self._settings, self._plugin_loader, self._contacts_manager,

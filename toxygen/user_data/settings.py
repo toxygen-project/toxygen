@@ -1,6 +1,6 @@
 import json
 import os
-from util.util import log, get_base_directory, append_slash, get_platform
+from util.util import log, get_base_directory, get_platform, join_path
 import pyaudio
 import smileys.smileys as smileys
 
@@ -56,7 +56,7 @@ class Settings(dict):
             if 'path' in auto and 'name' in auto:
                 path = str(auto['path'])
                 name = str(auto['name'])
-                if os.path.isfile(append_slash(path) + name + '.tox'):
+                if os.path.isfile(join_path(path, name + '.tox')):
                     return path, name
         return None
 

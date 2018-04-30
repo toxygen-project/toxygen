@@ -4,13 +4,15 @@ from ui.menu import *
 
 class WidgetsFactory:
 
-    def __init__(self, settings, profile, contacts_manager, file_transfer_handler, smiley_loader, plugin_loader):
+    def __init__(self, settings, profile, contacts_manager, file_transfer_handler, smiley_loader, plugin_loader,
+                 toxes):
         self._settings = settings
         self._profile = profile
         self._contacts_manager = contacts_manager
         self._file_transfer_handler = file_transfer_handler
         self._smiley_loader = smiley_loader
         self._plugin_loader = plugin_loader
+        self._toxes = toxes
 
     def create_screenshot_window(self, *args):
         return ScreenShotWindow(self._file_transfer_handler, *args)
@@ -22,7 +24,7 @@ class WidgetsFactory:
         return WelcomeScreen(self._settings)
 
     def create_profile_settings_window(self):
-        return ProfileSettings(self._profile)
+        return ProfileSettings(self._profile, self._settings, self._toxes)
 
     def create_network_settings_window(self):
         return NetworkSettings(self._settings, self._profile.reset)
@@ -40,7 +42,7 @@ class WidgetsFactory:
         return PluginsSettings(self._plugin_loader)
 
     def create_add_contact_window(self, tox_id):
-        return AddContact(self._contacts_manager, tox_id)
+        return AddContact(self._settings, self._contacts_manager, tox_id)
 
     def create_welcome_window(self):
         return WelcomeScreen(self._settings)

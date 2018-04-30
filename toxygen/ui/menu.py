@@ -1,7 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from user_data.settings import *
 from contacts.profile import Profile
-from util.util import curr_directory, copy
+from util.util import curr_directory, copy, get_stickers_directory, join_path
 from ui.widgets import CenteredWidget, DataLabel, LineEdit, RubberBandWindow
 import pyaudio
 from user_data import toxes
@@ -12,8 +12,9 @@ import util.ui as util_ui
 class AddContact(CenteredWidget):
     """Add contact form"""
 
-    def __init__(self, contacts_manager, tox_id=''):
+    def __init__(self, settings, contacts_manager, tox_id=''):
         super().__init__()
+        self._settings = settings
         self._contacts_manager = contacts_manager
         self.initUI(tox_id)
         self._adding = False
@@ -37,7 +38,7 @@ class AddContact(CenteredWidget):
         self.error_label = DataLabel(self)
         self.error_label.setGeometry(QtCore.QRect(120, 10, 420, 20))
         font = QtGui.QFont()
-        font.setFamily(Settings.get_instance()['font'])
+        font.setFamily(self._settings['font'])
         font.setPointSize(10)
         font.setWeight(30)
         self.error_label.setFont(font)
@@ -83,9 +84,11 @@ class AddContact(CenteredWidget):
 
 class ProfileSettings(CenteredWidget):
     """Form with profile settings such as name, status, TOX ID"""
-    def __init__(self, profile):
+    def __init__(self, profile, settings, toxes):
         super().__init__()
         self._profile = profile
+        self._settings = settings
+        self._toxes = toxes
         self.initUI()
         self.center()
 
@@ -104,7 +107,7 @@ class ProfileSettings(CenteredWidget):
         self.label = QtWidgets.QLabel(self)
         self.label.setGeometry(QtCore.QRect(40, 30, 91, 25))
         font = QtGui.QFont()
-        font.setFamily(Settings.get_instance()['font'])
+        font.setFamily(self._settings['font'])
         font.setPointSize(18)
         font.setWeight(75)
         font.setBold(True)
@@ -119,8 +122,7 @@ class ProfileSettings(CenteredWidget):
         self.tox_id.setGeometry(QtCore.QRect(15, 210, 685, 21))
         font.setPointSize(10)
         self.tox_id.setFont(font)
-        s = profile.tox_id
-        self.tox_id.setText(s)
+        self.tox_id.setText(self._profile.tox_id)
         self.copyId = QtWidgets.QPushButton(self)
         self.copyId.setGeometry(QtCore.QRect(40, 250, 180, 30))
         self.copyId.clicked.connect(self.copy)
@@ -163,7 +165,7 @@ class ProfileSettings(CenteredWidget):
         self.warning.setStyleSheet('QLabel { color: #BC1C1C; }')
         self.default = QtWidgets.QPushButton(self)
         self.default.setGeometry(QtCore.QRect(40, 550, 620, 30))
-        path, name = Settings.get_auto_profile()
+        auto_profile = Settings.get_auto_profile()
         self.auto = path + name == ProfileManager.get_path() + Settings.get_instance().name
         self.default.clicked.connect(self.auto_profile)
         self.retranslateUi()
@@ -214,8 +216,7 @@ class ProfileSettings(CenteredWidget):
     def new_password(self):
         if self.password.text() == self.confirm_password.text():
             if not len(self.password.text()) or len(self.password.text()) >= 8:
-                e = toxes.ToxES.get_instance()
-                e.set_password(self.password.text())
+                self._toxes.set_password(self.password.text())
                 self.close()
             else:
                 self.not_match.setText(
@@ -266,7 +267,7 @@ class ProfileSettings(CenteredWidget):
         if directory != '/':
             reply = util_ui.question(util_ui.tr('Do you want to move your profile to this location?'),
                                      util_ui.tr('Use new path'))
-            settings.export(directory)
+            self._settings.export(directory)
             self._profile.export_db(directory)
             ProfileManager.get_instance().export_profile(directory, reply)
 
@@ -652,9 +653,8 @@ class InterfaceSettings(CenteredWidget):
     def import_st(self):
         directory = util_ui.directory_dialog(util_ui.tr('Choose folder with sticker pack'))
         if directory:
-            src = directory + '/'
-            dest = curr_directory() + '/stickers/' + os.path.basename(directory) + '/'
-            copy(src, dest)
+            dest = join_path(get_stickers_directory(), os.path.basename(directory))
+            copy(directory, dest)
 
     def import_sm(self):
         directory = util_ui.directory_dialog(util_ui.tr('Choose folder with smiley pack'))
@@ -668,6 +668,7 @@ class InterfaceSettings(CenteredWidget):
         if ok:
             self._settings['font'] = font.family()
             self._settings.save()
+            util_ui.question()
             msgBox = QtWidgets.QMessageBox()
             text = util_ui.tr('Restart app to apply settings')
             msgBox.setWindowTitle(util_ui.tr('Restart required'))
@@ -675,51 +676,49 @@ class InterfaceSettings(CenteredWidget):
             msgBox.exec_()
 
     def select_color(self):
-        settings = Settings.get_instance()
-        col = QtWidgets.QColorDialog.getColor(QtGui.QColor(settings['unread_color']))
+        col = QtWidgets.QColorDialog.getColor(QtGui.QColor(self._settings['unread_color']))
 
         if col.isValid():
             name = col.name()
-            settings['unread_color'] = name
-            settings.save()
+            self._settings['unread_color'] = name
+            self._settings.save()
 
     def closeEvent(self, event):
-        settings = Settings.get_instance()
-        settings['theme'] = str(self.themeSelect.currentText())
+        self._settings['theme'] = str(self.themeSelect.currentText())
         try:
-            theme = settings['theme']
+            theme = self._settings['theme']
             app = QtWidgets.QApplication.instance()
-            with open(curr_directory() + settings.built_in_themes()[theme]) as fl:
+            with open(curr_directory() + self._settings.built_in_themes()[theme]) as fl:
                 style = fl.read()
             app.setStyleSheet(style)
         except IsADirectoryError:
             app.setStyleSheet('') # for default style
-        settings['smileys'] = self.smileys.isChecked()
+            self._settings['smileys'] = self.smileys.isChecked()
         restart = False
-        if settings['mirror_mode'] != self.mirror_mode.isChecked():
-            settings['mirror_mode'] = self.mirror_mode.isChecked()
+        if self._settings['mirror_mode'] != self.mirror_mode.isChecked():
+            self._settings['mirror_mode'] = self.mirror_mode.isChecked()
             restart = True
-        if settings['compact_mode'] != self.compact_mode.isChecked():
-            settings['compact_mode'] = self.compact_mode.isChecked()
+        if self._settings['compact_mode'] != self.compact_mode.isChecked():
+            self._settings['compact_mode'] = self.compact_mode.isChecked()
             restart = True
-        if settings['show_avatars'] != self.show_avatars.isChecked():
-            settings['show_avatars'] = self.show_avatars.isChecked()
+        if self._settings['show_avatars'] != self.show_avatars.isChecked():
+            self._settings['show_avatars'] = self.show_avatars.isChecked()
             restart = True
-        settings['smiley_pack'] = self.smiley_pack.currentText()
-        settings['close_to_tray'] = self.close_to_tray.isChecked()
+        self._settings['smiley_pack'] = self.smiley_pack.currentText()
+        self._settings['close_to_tray'] = self.close_to_tray.isChecked()
         smileys.SmileyLoader.get_instance().load_pack()
         language = self.lang_choose.currentText()
-        if settings['language'] != language:
-            settings['language'] = language
+        if self._settings['language'] != language:
+            self._settings['language'] = language
             text = self.lang_choose.currentText()
             path = Settings.supported_languages()[text]
             app = QtWidgets.QApplication.instance()
             app.removeTranslator(app.translator)
             app.translator.load(curr_directory() + '/translations/' + path)
             app.installTranslator(app.translator)
-        settings['message_font_size'] = self.messages_font_size.currentIndex() + 10
+        self._settings['message_font_size'] = self.messages_font_size.currentIndex() + 10
         Profile.get_instance().update()
-        settings.save()
+        self._settings.save()
         if restart:
             util_ui.message_box(util_ui.tr('Restart app to apply settings'), util_ui.tr('Restart required'))
 

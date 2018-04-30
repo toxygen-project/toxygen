@@ -1,4 +1,3 @@
-from ui.menu import *
 from contacts.profile import *
 from ui.list_items import *
 from ui.widgets import MultilineEdit, ComboBox
@@ -12,7 +11,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, settings, tox, tray):
         super().__init__()
         self._settings = settings
-        self.tray = tray
+        self._tray = tray
         self._widget_factory = None
         self._modal_window = None
         self.setAcceptDrops(True)
@@ -22,6 +21,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def set_widget_factory(self, widget_factory):
         self._widget_factory = widget_factory
+
+    def set_tray(self, tray):
+        self._tray = tray
 
     def show(self):
         super().show()
@@ -112,7 +114,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def event(self, event):
         if event.type() == QtCore.QEvent.WindowActivate:
-            self.tray.setIcon(QtGui.QIcon(curr_directory() + '/images/icon.png'))
+            self._tray.setIcon(QtGui.QIcon(util.join_path(util.get_images_directory(), 'icon.png')))
             self.messages.repaint()
         return super().event(event)
 
@@ -168,12 +170,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menuButton = MenuButton(Form, self.show_menu)
         self.menuButton.setGeometry(QtCore.QRect(QtCore.QRect(455, 3, 55, 55)))
 
-        pixmap = QtGui.QPixmap('send.png')
+        pixmap = QtGui.QPixmap(util.join_path(util.get_images_directory(), 'send.png'))
         icon = QtGui.QIcon(pixmap)
         self.sendMessageButton.setIcon(icon)
         self.sendMessageButton.setIconSize(QtCore.QSize(45, 60))
 
-        pixmap = QtGui.QPixmap('menu.png')
+        pixmap = QtGui.QPixmap(util.join_path(util.get_images_directory(), 'menu.png'))
         icon = QtGui.QIcon(pixmap)
         self.menuButton.setIcon(icon)
         self.menuButton.setIconSize(QtCore.QSize(40, 40))
@@ -187,7 +189,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.search_label = QtWidgets.QLabel(Form)
         self.search_label.setGeometry(QtCore.QRect(3, 2, 20, 20))
         pixmap = QtGui.QPixmap()
-        pixmap.load(curr_directory() + '/images/search.png')
+        pixmap.load(util.join_path(util.get_images_directory(), 'search.png'))
         self.search_label.setScaledContents(False)
         self.search_label.setPixmap(pixmap)
 
@@ -267,7 +269,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.typing = QtWidgets.QLabel(Form)
         self.typing.setGeometry(QtCore.QRect(500, 25, 50, 30))
         pixmap = QtGui.QPixmap(QtCore.QSize(50, 30))
-        pixmap.load(curr_directory() + '/images/typing.png')
+        pixmap.load(util.join_path(util.get_images_directory(), 'typing.png'))
         self.typing.setScaledContents(False)
         self.typing.setPixmap(pixmap.scaled(50, 30, QtCore.Qt.KeepAspectRatio))
         self.typing.setVisible(False)
