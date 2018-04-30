@@ -70,6 +70,11 @@ def get_plugins_directory():
     return get_app_directory('plugins')
 
 
+@cached
+def get_libs_directory():
+    return get_app_directory('libs')
+
+
 def get_app_directory(directory_name):
     return os.path.join(get_base_directory(), directory_name)
 

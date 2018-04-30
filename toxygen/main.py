@@ -1,6 +1,6 @@
 import app
 from user_data.settings import *
-from util.util import curr_directory, remove
+from util.util import remove, get_libs_directory
 import argparse
 
 
@@ -10,8 +10,8 @@ __version__ = '0.5.0'
 
 def clean():
     """Removes all windows libs from libs folder"""
-    d = os.path.join(curr_directory(__file__), 'libs')
-    remove(d)
+    directory = get_libs_directory()
+    remove(directory)
 
 
 def reset():

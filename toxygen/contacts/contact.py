@@ -12,7 +12,7 @@ class Contact(basecontact.BaseContact):
     Properties: number, message getter, history etc. Base class for friend and gc classes
     """
 
-    def __init__(self, message_getter, number, profile_manager, name, status_message, widget, tox_id):
+    def __init__(self, profile_manager, message_getter, number, name, status_message, widget, tox_id):
         """
         :param message_getter: gets messages from db
         :param number: number of friend.

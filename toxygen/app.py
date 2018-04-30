@@ -25,6 +25,7 @@ from av.calls_manager import CallsManager
 from history.database import Database
 from ui.widgets_factory import WidgetsFactory
 from smileys.smileys import SmileyLoader
+from ui.items_factory import ItemsFactory
 
 
 class App:
@@ -34,83 +35,16 @@ class App:
         self._app = self._settings = self._profile_manager = self._plugin_loader = None
         self._tox = self._ms = self._init = self._main_loop = self._av_loop = None
         self._uri = self._toxes = self._tray = self._file_transfer_handler = self._contacts_provider = None
-        self._friend_factory = self._calls_manager = self._contacts_manager = None
+        self._friend_factory = self._calls_manager = self._contacts_manager = self._smiley_loader = None
         if uri is not None and uri.startswith('tox:'):
             self._uri = uri[4:]
         self._path = path_to_profile
 
-    def enter_pass(self, data):
-        """
-        Show password screen
-        """
-        p = password_screen.PasswordScreen(self._toxes, data)
-        p.show()
-        self._app.lastWindowClosed.connect(self._app.quit)
-        self._app.exec_()
-        if p.result is not None:
-            return p.result
-        raise SystemExit()
+    # -----------------------------------------------------------------------------------------------------------------
+    # App executing
+    # -----------------------------------------------------------------------------------------------------------------
 
-    def main(self):
-        """
-        Main function of app. loads login screen if needed and starts main screen
-        """
-        self._app = QtWidgets.QApplication([])
-        icon_file = os.path.join(get_images_directory(), 'icon.png')
-        self._app.setWindowIcon(QtGui.QIcon(icon_file))
-
-        if get_platform() == 'Linux':
-            QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_X11InitThreads)
-
-        with open(os.path.join(get_styles_directory(), 'dark_style.qss')) as fl:
-            style = fl.read()
-        self._app.setStyleSheet(style)
-
-        encrypt_save = tox_encrypt_save.ToxEncryptSave()
-        self._toxes = user_data.toxes.ToxES(encrypt_save)
-
-        if self._path is not None:  # toxygen was started with path to profile
-            self.load_existing_profile(self._path)
-        else:
-            auto_profile = Settings.get_auto_profile()
-            if auto_profile is None:   # no default profile
-                result = self.select_profile()
-                if result is None:
-                    return
-                if result.is_new_profile():  # create new profile
-                    self.create_new_profile(result.profile_path)
-                else:  # load existing profile
-                    self.load_existing_profile(result.profile_path)
-                self._path = result.profile_path
-            else:  # default profile
-                path, name = auto_profile
-                self._path = os.path.join(path, name + '.tox')
-                self.load_existing_profile(self._path)
-
-        if Settings.is_active_profile(self._path):  # profile is in use
-            profile_name = get_profile_name_from_path(self._path)
-            title = util_ui.tr('Profile {}').format(profile_name)
-            text = util_ui.tr('Other instance of Toxygen uses this profile or profile was not properly closed. Continue?')
-            reply = util_ui.question(text, title)
-            if not reply:
-                return
-
-        self._settings.set_active_profile()
-
-        self.load_app_styles()
-        self.load_app_translations()
-
-        if self.try_to_update():
-            return
-
-        self.create_dependencies()
-        self.start_threads()
-
-        if self._uri is not None:
-            self._ms.add_contact(self._uri)
-
-        self._app.lastWindowClosed.connect(self._app.quit)
-        # main
+    def _execute_app(self):
         while True:
             try:
                 self._app.exec_()
@@ -122,41 +56,177 @@ class App:
             else:
                 break
 
-        self.stop_app()
-
-    def stop_app(self):
+    def _stop_app(self):
         self._plugin_loader.stop()
-        self.stop_threads()
+        self._stop_threads()
         self._tray.hide()
-        self.save_profile()
+        self._save_profile()
         self._settings.close()
         del self._tox
 
-    def reset(self):
+    # -----------------------------------------------------------------------------------------------------------------
+    # App loading
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def _load_base_style(self):
+        with open(join_path(get_styles_directory(), 'dark_style.qss')) as fl:
+            style = fl.read()
+        self._app.setStyleSheet(style)
+
+    def _load_app_styles(self):
+        # application color scheme
+        for theme in self._settings.built_in_themes().keys():
+            if self._settings['theme'] == theme:
+                with open(curr_directory(__file__) + self._settings.built_in_themes()[theme]) as fl:
+                    style = fl.read()
+                self._app.setStyleSheet(style)
+
+    def _load_login_screen_translations(self):
+        current_language, supported_languages = self._get_languages()
+        if current_language in supported_languages:
+            lang_path = supported_languages[current_language]
+            translator = QtCore.QTranslator()
+            translator.load(get_translations_directory() + lang_path)
+            self._app.installTranslator(translator)
+            self._app.translator = translator
+
+    def _load_icon(self):
+        icon_file = os.path.join(get_images_directory(), 'icon.png')
+        self._app.setWindowIcon(QtGui.QIcon(icon_file))
+
+    @staticmethod
+    def _get_languages():
+        current_locale = QtCore.QLocale()
+        curr_language = current_locale.languageToString(current_locale.language())
+        supported_languages = Settings.supported_languages()
+
+        return curr_language, supported_languages
+
+    def _load_app_translations(self):
+        lang = Settings.supported_languages()[self._settings['language']]
+        translator = QtCore.QTranslator()
+        translator.load(os.path.join(get_translations_directory(), lang))
+        self._app.installTranslator(translator)
+        self._app.translator = translator
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Threads
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def _start_threads(self):
+        # init thread
+        self._init = threads.InitThread(self._tox, self._plugin_loader, self._settings)
+        self._init.start()
+
+        # starting threads for tox iterate and toxav iterate
+        self._main_loop = threads.ToxIterateThread(self._tox)
+        self._main_loop.start()
+        self._av_loop = threads.ToxAVIterateThread(self._tox.AV)
+        self._av_loop.start()
+
+        threads.start_file_transfer_thread()
+
+    def _stop_threads(self):
+        self._init.stop_thread()
+
+        self._av_loop.stop_thread()
+        self._main_loop.stop_thread()
+
+        threads.stop_file_transfer_thread()
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Profiles
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def _select_profile(self):
+        self._load_login_screen_translations()
+        ls = LoginScreen()
+        profiles = ProfileManager.find_profiles()
+        ls.update_select(profiles)
+        ls.show()
+        self._app.exec_()
+
+        return ls.result
+
+    def _load_existing_profile(self, profile_path):
+        self._settings = Settings(self._toxes, profile_path.replace('.tox', '.json'))
+        self._profile_manager = ProfileManager(self._settings, self._toxes, profile_path)
+        data = self._profile_manager.open_profile()
+        if self._toxes.is_data_encrypted(data):
+            data = self._enter_pass(data)
+        self._tox = self._create_tox(data)
+
+    def _create_new_profile(self, profile_path):
+        name = get_profile_name_from_path(profile_path) or 'toxygen_user'
+        if os.path.isfile(profile_path):
+            util_ui.message_box(util_ui.tr('Profile with this name already exists'),
+                                util_ui.tr('Error'))
+            return
+        self._tox = tox_factory()
+        self._tox.self_set_name(bytes(name, 'utf-8') if name else b'Toxygen User')
+        self._tox.self_set_status_message(b'Toxing on Toxygen')
+        # TODO: set profile password
+        self._settings = Settings(self._toxes, self._path.replace('.tox', '.json'))
+        self._profile_manager = ProfileManager(self._settings, self._toxes, profile_path)
+        try:
+            self._save_profile()
+        except Exception as ex:
+            print(ex)
+            log('Profile creation exception: ' + str(ex))
+            text = util_ui.tr('Profile saving error! Does Toxygen have permission to write to this directory?')
+            util_ui.message_box(text, util_ui.tr('Error'))
+            return
+        current_language, supported_languages = self._get_languages()
+        if current_language in supported_languages:
+            self._settings['language'] = current_language
+        self._settings.save()
+
+    def _save_profile(self, data=None):
+        data = data or self._tox.get_savedata()
+        self._profile_manager.save_profile(data)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Other private methods
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def _enter_pass(self, data):
+        """
+        Show password screen
+        """
+        p = password_screen.PasswordScreen(self._toxes, data)
+        p.show()
+        self._app.lastWindowClosed.connect(self._app.quit)
+        self._app.exec_()
+        if p.result is not None:
+            return p.result
+        raise SystemExit()
+
+    def _reset(self):
         """
         Create new tox instance (new network settings)
         :return: tox instance
         """
-        self.stop_threads()
+        self._stop_threads()
         data = self._tox.get_savedata()
-        self.save_profile(data)
+        self._save_profile(data)
         del self._tox
         # create new tox instance
-        self._tox = self.create_tox(data)
-        self.start_threads()
+        self._tox = self._create_tox(data)
+        self._start_threads()
 
         # TODO: foreach in list of tox savers set_tox
 
         return self._tox
 
-    def create_dependencies(self):
+    def _create_dependencies(self):
+        self._smiley_loader = SmileyLoader(self._settings)
         self._ms = MainWindow(self._settings, self._tox, self._tray)
         db = Database(self._path.replace('.tox', '.db'), self._toxes)
-        self._friend_factory = FriendFactory(self._profile_manager, self._settings, self._tox, db)
-        self._contacts_provider = ContactProvider(self._tox, self._friend_factory)
         profile = Profile(self._profile_manager, self._tox, self._ms, self._file_transfer_handler)
-        self._smiley_loader = SmileyLoader(self._settings)
         self._plugin_loader = PluginLoader(self._tox, self._toxes, profile, self._settings)  # plugins support
+        items_factory = ItemsFactory(self._settings, self._plugin_loader, self._smiley_loader, self._ms)
+        self._friend_factory = FriendFactory(self._profile_manager, self._settings, self._tox, db, items_factory)
+        self._contacts_provider = ContactProvider(self._tox, self._friend_factory)
         widgets_factory = WidgetsFactory(self._settings, profile, self._contacts_manager, self._file_transfer_handler,
                                          self._smiley_loader, self._plugin_loader, self._toxes)
         self._contacts_manager = ContactsManager(self._tox, self._settings, self._ms, self._profile_manager,
@@ -175,113 +245,78 @@ class App:
         callbacks.init_callbacks(self._tox, profile, self._settings, self._plugin_loader, self._contacts_manager,
                                  self._calls_manager, self._file_transfer_handler, self._ms, self._tray)
 
-    def load_app_styles(self):
-        # application color scheme
-        for theme in self._settings.built_in_themes().keys():
-            if self._settings['theme'] == theme:
-                with open(curr_directory(__file__) + self._settings.built_in_themes()[theme]) as fl:
-                    style = fl.read()
-                self._app.setStyleSheet(style)
-
-    def load_login_screen_translations(self):
-        current_language, supported_languages = self.get_languages()
-        if current_language in supported_languages:
-            lang_path = supported_languages[current_language]
-            translator = QtCore.QTranslator()
-            translator.load(get_translations_directory() + lang_path)
-            self._app.installTranslator(translator)
-            self._app.translator = translator
-
-    @staticmethod
-    def get_languages():
-        current_locale = QtCore.QLocale()
-        curr_language = current_locale.languageToString(current_locale.language())
-        supported_languages = Settings.supported_languages()
-
-        return curr_language, supported_languages
-
-    def load_app_translations(self):
-        lang = Settings.supported_languages()[self._settings['language']]
-        translator = QtCore.QTranslator()
-        translator.load(os.path.join(get_translations_directory(), lang))
-        self._app.installTranslator(translator)
-        self._app.translator = translator
-
-    def try_to_update(self):
+    def _try_to_update(self):
         updating = updater.start_update_if_needed(self._version, self._settings)
         if updating:
-            self.save_profile()
+            self._save_profile()
             self._settings.close()
             del self._tox
         return updating
 
-    def start_threads(self):
-        # init thread
-        self._init = threads.InitThread(self._tox, self._plugin_loader, self._settings)
-        self._init.start()
-
-        # starting threads for tox iterate and toxav iterate
-        self._main_loop = threads.ToxIterateThread(self._tox)
-        self._main_loop.start()
-        self._av_loop = threads.ToxAVIterateThread(self._tox.AV)
-        self._av_loop.start()
-
-        threads.start_file_transfer_thread()
-
-    def stop_threads(self):
-        self._init.stop_thread()
-
-        self._av_loop.stop_thread()
-        self._main_loop.stop_thread()
-
-        threads.stop_file_transfer_thread()
-
-    def create_tox(self, data):
+    def _create_tox(self, data):
         return tox_factory(data, self._settings)
 
-    def select_profile(self):
-        self.load_login_screen_translations()
-        ls = LoginScreen()
-        profiles = ProfileManager.find_profiles()
-        ls.update_select(profiles)
-        ls.show()
-        self._app.exec_()
+    # -----------------------------------------------------------------------------------------------------------------
+    # Public methods
+    # -----------------------------------------------------------------------------------------------------------------
 
-        return ls.result
+    def main(self):
+        """
+        Main function of app. loads login screen if needed and starts main screen
+        """
+        self._app = QtWidgets.QApplication([])
+        self._load_icon()
 
-    def load_existing_profile(self, profile_path):
-        self._settings = Settings(self._toxes, profile_path.replace('.tox', '.json'))
-        self._profile_manager = ProfileManager(self._settings, self._toxes, profile_path)
-        data = self._profile_manager.open_profile()
-        if self._toxes.is_data_encrypted(data):
-            data = self.enter_pass(data)
-        self._tox = self.create_tox(data)
+        if get_platform() == 'Linux':
+            QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_X11InitThreads)
 
-    def create_new_profile(self, profile_path):
-        name = get_profile_name_from_path(profile_path) or 'toxygen_user'
-        if os.path.isfile(profile_path):
-            util_ui.message_box(util_ui.tr('Profile with this name already exists'),
-                                util_ui.tr('Error'))
+        self._load_base_style()
+
+        encrypt_save = tox_encrypt_save.ToxEncryptSave()
+        self._toxes = user_data.toxes.ToxES(encrypt_save)
+
+        if self._path is not None:  # toxygen was started with path to profile
+            self._load_existing_profile(self._path)
+        else:
+            auto_profile = Settings.get_auto_profile()
+            if auto_profile is None:   # no default profile
+                result = self._select_profile()
+                if result is None:
+                    return
+                if result.is_new_profile():  # create new profile
+                    self._create_new_profile(result.profile_path)
+                else:  # load existing profile
+                    self._load_existing_profile(result.profile_path)
+                self._path = result.profile_path
+            else:  # default profile
+                path, name = auto_profile
+                self._path = os.path.join(path, name + '.tox')
+                self._load_existing_profile(self._path)
+
+        if Settings.is_active_profile(self._path):  # profile is in use
+            profile_name = get_profile_name_from_path(self._path)
+            title = util_ui.tr('Profile {}').format(profile_name)
+            text = util_ui.tr('Other instance of Toxygen uses this profile or profile was not properly closed. Continue?')
+            reply = util_ui.question(text, title)
+            if not reply:
+                return
+
+        self._settings.set_active_profile()
+
+        self._load_app_styles()
+        self._load_app_translations()
+
+        if self._try_to_update():
             return
-        self._tox = tox_factory()
-        self._tox.self_set_name(bytes(name, 'utf-8') if name else b'Toxygen User')
-        self._tox.self_set_status_message(b'Toxing on Toxygen')
-        # TODO: set profile password
-        self._settings = Settings(self._toxes, self._path.replace('.tox', '.json'))
-        self._profile_manager = ProfileManager(self._settings, self._toxes, profile_path)
-        try:
-            self.save_profile()
-        except Exception as ex:
-            print(ex)
-            log('Profile creation exception: ' + str(ex))
-            text = util_ui.tr('Profile saving error! Does Toxygen have permission to write to this directory?')
-            util_ui.message_box(text, util_ui.tr('Error'))
-            return
-        current_language, supported_languages = self.get_languages()
-        if current_language in supported_languages:
-            self._settings['language'] = current_language
-        self._settings.save()
 
-    def save_profile(self, data=None):
-        data = data or self._tox.get_savedata()
-        self._profile_manager.save_profile(data)
+        self._create_dependencies()
+        self._start_threads()
+
+        if self._uri is not None:
+            self._ms.add_contact(self._uri)
+
+        self._app.lastWindowClosed.connect(self._app.quit)
+
+        self._execute_app()
+
+        self._stop_app()

@@ -46,13 +46,13 @@ class ContactProvider(util.ToxSave):
     # GC
     # -----------------------------------------------------------------------------------------------------------------
 
-    def get_all_gc(self):
+    def get_all_groups(self):
         return []
 
-    def get_gc_by_number(self):
+    def get_group_by_number(self):
         pass
 
-    def get_gc_by_public_key(self):
+    def get_group_by_public_key(self):
         pass
 
     # -----------------------------------------------------------------------------------------------------------------

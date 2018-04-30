@@ -8,11 +8,11 @@ class ItemsFactory:
         self._smiley_loader, self._main_screen = smiley_loader, main_screen
 
     def friend_item(self):
-        item = ContactItem()
-        elem = QtWidgets.QListWidgetItem(self._friends)
+        item = ContactItem(self._settings)
+        elem = QtWidgets.QListWidgetItem(self._main_screen.friends_list)
         elem.setSizeHint(QtCore.QSize(250, item.height()))
-        self._friends.addItem(elem)
-        self._friends.setItemWidget(elem, item)
+        self._main_screen.friends_list.addItem(elem)
+        self._main_screen.friends_list.setItemWidget(elem, item)
         return item
 
     def message_item(self, text, time, name, sent, message_type, append, pixmap):

@@ -2,7 +2,7 @@ import util.util as util
 import util.ui as util_ui
 from contacts.friend import Friend
 import os
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui
 from messenger.messages import *
 from wrapper.toxcore_enums_and_consts import *
 from network.tox_dns import tox_dns
@@ -28,6 +28,10 @@ class ContactsManager:
 
     def __del__(self):
         del self._history
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # -----------------------------------------------------------------------------------------------------------------
         
     def _is_active_a_friend(self):
         return type(self.get_curr_contact()) is Friend
@@ -35,30 +39,15 @@ class ContactsManager:
     def _load_contacts(self):
         self._load_friends()
         self._load_groups()
-        # if len(self._contacts):
-        #     self.set_active(0)
+        if len(self._contacts):
+            self.set_active(0)
         self.filtration_and_sorting(self._sorting)
 
     def _load_friends(self):
-        aliases = self._settings['friends_aliases']
-        friend_numbers = self._tox.self_get_friend_list()
-        for friend_number in friend_numbers:  # creates list of friends
-            tox_id = self._tox.friend_get_public_key(friend_number)
-            try:
-                alias = list(filter(lambda x: x[0] == tox_id, aliases))[0][1]
-            except:
-                alias = ''
-            item = self.create_friend_item()
-            name = alias or self._tox.friend_get_name(friend_number) or tox_id
-            status_message = self._tox.friend_get_status_message(friend_number)
-            self._history.get_message_getter(tox_id)
-            message_getter = self._history.get_message_getter(tox_id)
-            friend = Friend(self._profile_manager, message_getter, friend_number, name, status_message, item, tox_id)
-            friend.set_alias(alias)
-            self._contacts.append(friend)
+        self._contacts.extend(self._contact_provider.get_all_friends())
 
     def _load_groups(self):
-        pass
+        self._contacts.extend(self._contact_provider.get_all_groups())
 
     def get_friend(self, num):
         if num < 0 or num >= len(self._contacts):
@@ -101,7 +90,7 @@ class ContactsManager:
             if value is not None:
                 if self._active_contact + 1 and self._active_contact != value:
                     try:
-                        self.get_curr_friend().curr_text = self._screen.messageEdit.toPlainText()
+                        self.get_curr_contact().curr_text = self._screen.messageEdit.toPlainText()
                     except:
                         pass
                 friend = self._contacts[value]
@@ -113,49 +102,49 @@ class ContactsManager:
                 if not self._settings['save_history']:
                     friend.delete_old_messages()
                 self._messages.clear()
-                friend.load_corr()
-                messages = friend.get_corr()[-PAGE_SIZE:]
-                self._load_history = False
-                for message in messages:
-                    if message.get_type() <= 1:
-                        data = message.get_data()
-                        self.create_message_item(data[0],
-                                                 data[2],
-                                                 data[1],
-                                                 data[3])
-                    elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:
-                        if message.get_status() is None:
-                            self.create_unsent_file_item(message)
-                            continue
-                        item = self.create_file_transfer_item(message)
-                        if message.get_status() in ACTIVE_FILE_TRANSFERS:  # active file transfer
-                            try:
-                                ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
-                                ft.set_state_changed_handler(item.update_transfer_state)
-                                ft.signal()
-                            except:
-                                print('Incoming not started transfer - no info found')
-                    elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline
-                        self.create_inline_item(message.get_data())
-                    elif message.get_type() < 5:  # info message
-                        data = message.get_data()
-                        self.create_message_item(data[0],
-                                                 data[2],
-                                                 '',
-                                                 data[3])
-                    else:
-                        data = message.get_data()
-                        self.create_gc_message_item(data[0], data[2], data[1], data[4], data[3])
-                self._messages.scrollToBottom()
-                self._load_history = True
-                if value in self._call:
-                    self._screen.active_call()
-                elif value in self._incoming_calls:
-                    self._screen.incoming_call()
-                else:
-                    self._screen.call_finished()
+                # friend.load_corr()
+                # messages = friend.get_corr()[-PAGE_SIZE:]
+                # self._load_history = False
+                # for message in messages:
+                #     if message.get_type() <= 1:
+                #         data = message.get_data()
+                #         self.create_message_item(data[0],
+                #                                  data[2],
+                #                                  data[1],
+                #                                  data[3])
+                #     elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:
+                #         if message.get_status() is None:
+                #             self.create_unsent_file_item(message)
+                #             continue
+                #         item = self.create_file_transfer_item(message)
+                #         if message.get_status() in ACTIVE_FILE_TRANSFERS:  # active file transfer
+                #             try:
+                #                 ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
+                #                 ft.set_state_changed_handler(item.update_transfer_state)
+                #                 ft.signal()
+                #             except:
+                #                 print('Incoming not started transfer - no info found')
+                #     elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline
+                #         self.create_inline_item(message.get_data())
+                #     elif message.get_type() < 5:  # info message
+                #         data = message.get_data()
+                #         self.create_message_item(data[0],
+                #                                  data[2],
+                #                                  '',
+                #                                  data[3])
+                #     else:
+                #         data = message.get_data()
+                #         self.create_gc_message_item(data[0], data[2], data[1], data[4], data[3])
+                # self._messages.scrollToBottom()
+                # self._load_history = True
+                # if value in self._call:
+                #     self._screen.active_call()
+                # elif value in self._incoming_calls:
+                #     self._screen.incoming_call()
+                # else:
+                #     self._screen.call_finished()
             else:
-                friend = self.get_curr_friend()
+                friend = self.get_curr_contact()
 
             self._screen.account_name.setText(friend.name)
             self._screen.account_status.setText(friend.status_message)
@@ -239,12 +228,12 @@ class ContactsManager:
         """
         self.filtration_and_sorting(self._sorting, self._filter_string)
 
-    def create_friend_item(self):
+    def _create_friend_item(self):
         """
         Method-factory
         :return: new widget for friend instance
         """
-        return None #self._factory.friend_item()
+        return self._factory.friend_item()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Friend getters
@@ -255,18 +244,18 @@ class ContactsManager:
 
     def get_last_message(self):
         if self._active_contact + 1:
-            return self.get_curr_friend().get_last_message_text()
+            return self.get_current_contact().get_last_message_text()
         else:
             return ''
 
     def get_active_number(self):
-        return self.get_curr_friend().number if self._active_contact + 1 else -1
+        return self.get_curr_contact().number if self._active_contact + 1 else -1
 
     def get_active_name(self):
-        return self.get_curr_friend().name if self._active_contact + 1 else ''
+        return self.get_current_contact().name if self._active_contact + 1 else ''
 
     def is_active_online(self):
-        return self._active_contact + 1 and self.get_curr_friend().status is not None
+        return self._active_contact + 1 and self.get_current_contact().status is not None
 
     def new_name(self, number, name):
         friend = self.get_friend_by_number(number)
@@ -274,7 +263,7 @@ class ContactsManager:
         friend.set_name(name)
         name = str(name, 'utf-8')
         if friend.name == name and tmp != name:
-            message = QtWidgets.QApplication.translate("MainWindow", 'User {} is now known as {}')
+            message = util_ui.tr('User {} is now known as {}')
             message = message.format(tmp, name)
             friend.append_message(InfoMessage(message, time.time()))
             friend.actions = True
@@ -353,16 +342,8 @@ class ContactsManager:
         """
         Adds friend to list
         """
-        num = self._tox.friend_add_norequest(tox_id)  # num - friend number
-        item = self.create_friend_item()
-        try:
-            if not self._history.friend_exists_in_db(tox_id):
-                self._history.add_friend_to_db(tox_id)
-            message_getter = self._history.messages_getter(tox_id)
-        except Exception as ex:  # something is wrong
-            util.log('Accept friend request failed! ' + str(ex))
-            message_getter = None
-        friend = Friend(message_getter, num, tox_id, '', item, tox_id)
+        self._tox.friend_add_norequest(tox_id)
+        friend = self._contact_provider.get_friend_by_public_key(tox_id)
         self._contacts.append(friend)
 
     def block_user(self, tox_id):
@@ -459,9 +440,9 @@ class ContactsManager:
         """
         if self._settings['typing_notifications'] and self._active_contact + 1:
             try:
-                friend = self.get_curr_friend()
-                if friend.status is not None:
-                    self._tox.self_set_typing(friend.number, typing)
+                contact = self.get_curr_contact()
+                if contact.status is not None and self._is_active_a_friend():  # TODO: fix - no type check
+                    self._tox.self_set_typing(contact.number, typing)
             except:
                 pass
 

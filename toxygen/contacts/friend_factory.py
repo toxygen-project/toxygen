@@ -3,10 +3,11 @@ from contacts.friend import Friend
 
 class FriendFactory:
 
-    def __init__(self, profile_manager, settings, tox, db):
+    def __init__(self, profile_manager, settings, tox, db, items_factory):
         self._profile_manager = profile_manager
         self._settings, self._tox = settings, tox
         self._db = db
+        self._factory = items_factory
 
     def create_friend_by_number(self, friend_number):
         aliases = self._settings['friends_aliases']

@@ -15,9 +15,9 @@ class ContactItem(QtWidgets.QWidget):
     Contact in friends list
     """
 
-    def __init__(self, parent=None):
+    def __init__(self, settings, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
-        mode = settings.Settings.get_instance()['compact_mode']
+        mode = settings['compact_mode']
         self.setBaseSize(QtCore.QSize(250, 40 if mode else 70))
         self.avatar_label = QtWidgets.QLabel(self)
         size = 32 if mode else 64
@@ -27,7 +27,7 @@ class ContactItem(QtWidgets.QWidget):
         self.name = DataLabel(self)
         self.name.setGeometry(QtCore.QRect(50 if mode else 75, 3 if mode else 10, 150, 15 if mode else 25))
         font = QtGui.QFont()
-        font.setFamily(settings.Settings.get_instance()['font'])
+        font.setFamily(settings['font'])
         font.setPointSize(10 if mode else 12)
         font.setBold(True)
         self.name.setFont(font)
@@ -38,7 +38,7 @@ class ContactItem(QtWidgets.QWidget):
         self.status_message.setFont(font)
         self.connection_status = StatusCircle(self)
         self.connection_status.setGeometry(QtCore.QRect(230, -2 if mode else 5, 32, 32))
-        self.messages = UnreadMessagesCount(self)
+        self.messages = UnreadMessagesCount(settings, self)
         self.messages.setGeometry(QtCore.QRect(20 if mode else 52, 20 if mode else 50, 30, 20))
 
 
@@ -77,23 +77,24 @@ class StatusCircle(QtWidgets.QWidget):
 
 class UnreadMessagesCount(QtWidgets.QWidget):
 
-    def __init__(self, parent=None):
-        super(UnreadMessagesCount, self).__init__(parent)
+    def __init__(self, settings, parent=None):
+        super().__init__(parent)
+        self._settings = settings
         self.resize(30, 20)
         self.label = QtWidgets.QLabel(self)
         self.label.setGeometry(QtCore.QRect(0, 0, 30, 20))
         self.label.setVisible(False)
         font = QtGui.QFont()
-        font.setFamily(settings.Settings.get_instance()['font'])
+        font.setFamily(settings['font'])
         font.setPointSize(12)
         font.setBold(True)
         self.label.setFont(font)
         self.label.setAlignment(QtCore.Qt.AlignVCenter | QtCore.Qt.AlignCenter)
-        color = settings.Settings.get_instance()['unread_color']
+        color = settings['unread_color']
         self.label.setStyleSheet('QLabel { color: white; background-color: ' + color + '; border-radius: 10; }')
 
     def update(self, messages_count):
-        color = settings.Settings.get_instance()['unread_color']
+        color = self._settings['unread_color']
         self.label.setStyleSheet('QLabel { color: white; background-color: ' + color + '; border-radius: 10; }')
         if messages_count:
             self.label.setVisible(True)
