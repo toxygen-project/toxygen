@@ -1,4 +1,4 @@
-from messenger.messages import *
+from history.history_logs_generators import *
 
 # TODO: fix history loading and saving
 
@@ -96,65 +96,21 @@ class HistoryLoader:
 
         return self._db.messages_getter(friend_public_key)
 
-    @staticmethod
-    def export_history(friend, as_text=True, _range=None):
-        if _range is None:
-            friend.load_all_corr()
-            corr = friend.get_corr()
-        elif _range[1] + 1:
-            corr = friend.get_corr()[_range[0]:_range[1] + 1]
-        else:
-            corr = friend.get_corr()[_range[0]:]
+    def delete_history(self, friend):
+        self.clear_history(friend)
+        if self._db.friend_exists_in_db(friend.tox_id):
+            self._db.delete_friend_from_db(friend.tox_id)
 
-        generator = TextHistoryGenerator(corr) if as_text else HtmlHistoryGenerator(corr)
+    @staticmethod
+    def export_history(contact, as_text=True, _range=None):
+        if _range is None:
+            contact.load_all_corr()
+            corr = contact.get_corr()
+        elif _range[1] + 1:
+            corr = contact.get_corr()[_range[0]:_range[1] + 1]
+        else:
+            corr = contact.get_corr()[_range[0]:]
+
+        generator = TextHistoryGenerator(corr, contact.name) if as_text else HtmlHistoryGenerator(corr, contact.name)
 
         return generator.generate()
-
-
-class HistoryLogsGenerator:
-
-    def __init__(self, history):
-        self._history = history
-
-    def generate(self):
-        return str()
-
-
-class HtmlHistoryGenerator(HistoryLogsGenerator):
-
-    def __init__(self, history):
-        super().__init__(history)
-
-    def generate(self):
-        arr = []
-        for message in self._history:
-            if type(message) is TextMessage:
-                data = message.get_data()
-                x = '[{}] <b>{}:</b> {}<br>'
-                arr.append(x.format(convert_time(data[2]) if data[1] != MESSAGE_OWNER['NOT_SENT'] else 'Unsent',
-                                    friend.name if data[1] == MESSAGE_OWNER['FRIEND'] else self.name,
-                                    data[0]))
-        s = '<br>'.join(arr)
-        s = '<html><head><meta charset="UTF-8"><title>{}</title></head><body>{}</body></html>'.format(friend.name,
-                                                                                                          s)
-        return s
-
-
-class TextHistoryGenerator(HistoryLogsGenerator):
-
-    def __init__(self, history):
-        super().__init__(history)
-
-    def generate(self):
-        arr = []
-        for message in self._history:
-            if type(message) is TextMessage:
-                data = message.get_data()
-                x = '[{}] {}: {}\n'
-                arr.append(x.format(convert_time(data[2]) if data[1] != MESSAGE_OWNER['NOT_SENT'] else 'Unsent',
-                                    friend.name if data[1] == MESSAGE_OWNER['FRIEND'] else self.name,
-                                    data[0]))
-        s = '\n'.join(arr)
-
-        return s
-

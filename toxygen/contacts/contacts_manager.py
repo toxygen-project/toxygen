@@ -1,7 +1,6 @@
 import util.util as util
 import util.ui as util_ui
 from contacts.friend import Friend
-import os
 from PyQt5 import QtCore, QtGui
 from messenger.messages import *
 from wrapper.toxcore_enums_and_consts import *
@@ -9,10 +8,10 @@ from network.tox_dns import tox_dns
 from history.history_loader import HistoryLoader
 
 
-# TODO: move messaging and typing notifications to other class
-
-
 class ContactsManager:
+    """
+    Represents contacts list.
+    """
 
     def __init__(self, tox, settings, screen, profile_manager, contact_provider, db):
         self._tox = tox
@@ -134,12 +133,11 @@ class ContactsManager:
                 #     self._screen.call_finished()
             else:
                 friend = self.get_curr_contact()
-
+            # TODO: to separate method
             self._screen.account_name.setText(friend.name)
             self._screen.account_status.setText(friend.status_message)
             self._screen.account_status.setToolTip(friend.get_full_status())
             avatar_path = friend.get_avatar_path()
-            os.chdir(os.path.dirname(avatar_path))
             pixmap = QtGui.QPixmap(avatar_path)
             self._screen.account_avatar.setPixmap(pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio,
                                                                 QtCore.Qt.SmoothTransformation))
@@ -171,6 +169,7 @@ class ContactsManager:
         :param sorting: 0 - no sort, 1 - online only, 2 - online first, 4 - by name
         :param filter_str: show contacts which name contains this substring
         """
+        # TODO: simplify?
         filter_str = filter_str.lower()
         number = self.get_active_number()
         is_friend = self._is_active_a_friend()
@@ -196,16 +195,16 @@ class ContactsManager:
                 part1 = sorted(part1, key=lambda x: x.number)
                 part2 = sorted(part2, key=lambda x: x.number)
                 self._contacts = part1 + part2
-            self._screen.friends_list.clear()
-            for contact in self._contacts:
-                contact.set_widget(self.create_friend_item())
+            # self._screen.friends_list.clear()
+            # for contact in self._contacts:
+            #     contact.set_widget(self.create_friend_item())
         for index, friend in enumerate(self._contacts):
             friend.visibility = (friend.status is not None or not (sorting & 1)) and (filter_str in friend.name.lower())
             friend.visibility = friend.visibility or friend.messages or friend.actions
-            # if friend.visibility:
-            #     self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, self._friend_item_height))
-            # else:
-            #     self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 0))
+            if friend.visibility:
+                self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, self._friend_item_height))
+            else:
+                self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 0))
         self._sorting, self._filter_string = sorting, filter_str
         self._settings['sorting'] = self._sorting
         self._settings.save()
@@ -217,13 +216,6 @@ class ContactsManager:
         """
         self.filtration_and_sorting(self._sorting, self._filter_string)
 
-    def _create_friend_item(self):
-        """
-        Method-factory
-        :return: new widget for friend instance
-        """
-        return self._factory.friend_item()
-
     # -----------------------------------------------------------------------------------------------------------------
     # Friend getters
     # -----------------------------------------------------------------------------------------------------------------
@@ -233,7 +225,7 @@ class ContactsManager:
 
     def get_last_message(self):
         if self._active_contact + 1:
-            return self.get_current_contact().get_last_message_text()
+            return self.get_curr_contact().get_last_message_text()
         else:
             return ''
 
@@ -241,12 +233,13 @@ class ContactsManager:
         return self.get_curr_contact().number if self._active_contact + 1 else -1
 
     def get_active_name(self):
-        return self.get_current_contact().name if self._active_contact + 1 else ''
+        return self.get_curr_contact().name if self._active_contact + 1 else ''
 
     def is_active_online(self):
-        return self._active_contact + 1 and self.get_current_contact().status is not None
+        return self._active_contact + 1 and self.get_curr_contact().status is not None
 
     def new_name(self, number, name):
+        # TODO: move to somewhere else?
         friend = self.get_friend_by_number(number)
         tmp = friend.name
         friend.set_name(name)
@@ -254,7 +247,7 @@ class ContactsManager:
         if friend.name == name and tmp != name:
             message = util_ui.tr('User {} is now known as {}')
             message = message.format(tmp, name)
-            friend.append_message(InfoMessage(message, time.time()))
+            friend.append_message(InfoMessage(0, message, util.get_unix_time()))
             friend.actions = True
             if number == self.get_active_number():
                 self.create_message_item(message, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
@@ -293,11 +286,15 @@ class ContactsManager:
                 except:
                     pass
             self._settings.save()
-        if num == self.get_active_number() and self.is_active_a_friend():
-            self.update()
+        # if num == self.get_active_number() and self.is_active_a_friend():
+        #     self.update()
 
     def friend_public_key(self, num):
         return self._contacts[num].tox_id
+
+    def export_history(self, num, as_text):
+        contact = self._contacts[num]
+        return self._history.export_history(contact, as_text)
 
     def delete_friend(self, num):
         """
@@ -313,17 +310,12 @@ class ContactsManager:
         if friend.tox_id in self._settings['notes']:
             del self._settings['notes'][friend.tox_id]
         self._settings.save()
-        self.clear_history(num)
-        if self._history.friend_exists_in_db(friend.tox_id):
-            self._history.delete_friend_from_db(friend.tox_id)
+        self._history.delete_history(friend)
         self._tox.friend_delete(friend.number)
         del self._contacts[num]
         self._screen.friends_list.takeItem(num)
         if num == self._active_contact:  # active friend was deleted
-            if not len(self._contacts):  # last friend was deleted
-                self.set_active(-1)
-            else:
-                self.set_active(0)
+            self.set_active(0 if len(self._contacts) else -1)
         data = self._tox.get_savedata()
         self._profile_manager.save_profile(data)
 
@@ -387,13 +379,9 @@ class ContactsManager:
                 text = util_ui.tr('Friend added without sending friend request')
                 util_ui.message_box(text, title)
             else:
-                result = self._tox.friend_add(tox_id, message.encode('utf-8'))
+                self._tox.friend_add(tox_id, message.encode('utf-8'))
                 tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
-                item = self.create_friend_item()
-                if not self._history.friend_exists_in_db(tox_id):
-                    self._history.add_friend_to_db(tox_id)
-                message_getter = self._history.messages_getter(tox_id)
-                friend = Friend(message_getter, result, tox_id, '', item, tox_id)
+                friend = self._contact_provider.get_friend_by_public_key(tox_id)
                 self._contacts.append(friend)
             self.save_profile()
             return True
@@ -420,7 +408,7 @@ class ContactsManager:
             util.log('Accept friend request failed! ' + str(ex))
 
     def can_send_typing_notification(self):
-        return self._settings['typing_notifications'] and self._active_contact != -1
+        return self._settings['typing_notifications'] and self._active_contact + 1
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods

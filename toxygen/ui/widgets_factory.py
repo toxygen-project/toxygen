@@ -5,7 +5,7 @@ from ui.menu import *
 class WidgetsFactory:
 
     def __init__(self, settings, profile, contacts_manager, file_transfer_handler, smiley_loader, plugin_loader,
-                 toxes):
+                 toxes, version):
         self._settings = settings
         self._profile = profile
         self._contacts_manager = contacts_manager
@@ -13,6 +13,7 @@ class WidgetsFactory:
         self._smiley_loader = smiley_loader
         self._plugin_loader = plugin_loader
         self._toxes = toxes
+        self._version = version
 
     def create_screenshot_window(self, *args):
         return ScreenShotWindow(self._file_transfer_handler, *args)

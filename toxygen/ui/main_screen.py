@@ -17,13 +17,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self._modal_window = None
         self.setAcceptDrops(True)
         self._saved = False
-        self.profile = None
+        self._profile = None
         self.initUI()
 
-    def set_dependencies(self, widget_factory, tray, contacts_manager, messenger):
+    def set_dependencies(self, widget_factory, tray, contacts_manager, messenger, profile):
         self._widget_factory = widget_factory
         self._tray = tray
         self._contacts_manager = contacts_manager
+        self._profile = profile
         self.messageEdit.set_messenger(messenger)
 
     def show(self):
@@ -401,17 +402,18 @@ class MainWindow(QtWidgets.QMainWindow):
         #self.profile.update()
 
     def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Escape and QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
+        key, modifiers = event.key(), event.modifiers()
+        if key == QtCore.Qt.Key_Escape and QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
             self.hide()
-        elif event.key() == QtCore.Qt.Key_C and event.modifiers() & QtCore.Qt.ControlModifier and self.messages.selectedIndexes():
+        elif key == QtCore.Qt.Key_C and modifiers & QtCore.Qt.ControlModifier and self.messages.selectedIndexes():
             rows = list(map(lambda x: self.messages.row(x), self.messages.selectedItems()))
             indexes = (rows[0] - self.messages.count(), rows[-1] - self.messages.count())
             s = self.profile.export_history(self.profile.active_friend, True, indexes)
             clipboard = QtWidgets.QApplication.clipboard()
             clipboard.setText(s)
-        elif event.key() == QtCore.Qt.Key_Z and event.modifiers() & QtCore.Qt.ControlModifier and self.messages.selectedIndexes():
+        elif key == QtCore.Qt.Key_Z and modifiers & QtCore.Qt.ControlModifier and self.messages.selectedIndexes():
             self.messages.clearSelection()
-        elif event.key() == QtCore.Qt.Key_F and event.modifiers() & QtCore.Qt.ControlModifier:
+        elif key == QtCore.Qt.Key_F and modifiers & QtCore.Qt.ControlModifier:
             self.show_search_field()
         else:
             super().keyPressEvent(event)
@@ -421,6 +423,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # -----------------------------------------------------------------------------------------------------------------
 
     def about_program(self):
+        # TODO: replace with window
         text = util_ui.tr('Toxygen is Tox client written on Python.\nVersion: ')
         text += '' + '\nGitHub: https://github.com/toxygen-project/toxygen/'
         title = util_ui.tr('About')
@@ -435,7 +438,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._modal_window.show()
 
     def add_contact(self, link=''):
-        self._modal_window = self._widget_factory.create_add_contact_window(link or '')
+        self._modal_window = self._widget_factory.create_add_contact_window(link)
         self._modal_window.show()
 
     def create_gc(self):
@@ -507,7 +510,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def send_file(self):
         self.menu.hide()
-        if self._contacts_manager.active_friend + 1 and self._contacts_manager.is_active_a_friend():
+        if self._contacts_manager.is_active_a_friend():
             caption = util_ui.tr('Choose file')
             name = util_ui.file_dialog(caption)
             if name[0]:
@@ -515,8 +518,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def send_screenshot(self, hide=False):
         self.menu.hide()
-        if self._contacts_manager.active_friend + 1 and self._contacts_manager.is_active_a_friend():
-            self.sw = ScreenShotWindow(self)
+        if self._contacts_manager.is_active_a_friend():
+            self.sw = self._widget_factory.create_screenshot_window(self)
             self.sw.show()
             if hide:
                 self.hide()
@@ -533,7 +536,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def send_sticker(self):
         self.menu.hide()
-        if self._contacts_manager.active_friend + 1 and self._contacts_manager.is_active_a_friend():
+        if self._contacts_manager.is_active_a_friend():
             self.sticker = self._widget_factory.create_sticker_window(self)
             self.sticker.setGeometry(QtCore.QRect(self.x() if self._settings['mirror_mode'] else 270 + self.x(),
                                                   self.y() + self.height() - 200,
@@ -643,7 +646,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.note.show()
 
     def export_history(self, num, as_text=True):
-        s = self._history_loader.export_history(num, as_text)
+        s = self._contacts_manager.export_history(num, as_text)
         extension = 'txt' if as_text else 'html'
         file_name, _ = util_ui.save_file_dialog(util_ui.tr('Choose file name'), extension)
 
@@ -712,11 +715,11 @@ class MainWindow(QtWidgets.QMainWindow):
         if (x < event.x() < x + 32) and (y < event.y() < y + 32):
             self.profile.change_status()
         else:
-            super(MainWindow, self).mouseReleaseEvent(event)
+            super().mouseReleaseEvent(event)
 
     def show(self):
         super().show()
-        #self._contacts_manager.update()
+        self._contacts_manager.update()
 
     def filtering(self):
         ind = self.online_contacts.currentIndex()
@@ -726,7 +729,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def show_search_field(self):
         if hasattr(self, 'search_field') and self.search_field.isVisible():
             return
-        if self._c4.get_curr_friend() is None:
+        if self._contacts_manager.get_curr_friend() is None:
             return
         self.search_field = SearchScreen(self.messages, self.messages.width(), self.messages.parent())
         x, y = self.messages.x(), self.messages.y() + self.messages.height() - 40

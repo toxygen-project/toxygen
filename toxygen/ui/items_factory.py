@@ -18,8 +18,8 @@ class ItemsFactory:
         self._friends_list.setItemWidget(elem, item)
         return item
 
-    def message_item(self, text, time, name, sent, message_type, append, pixmap):
-        item = MessageItem(text, time, name, sent, message_type, self._messages)
+    def message_item(self, message, pixmap=None):
+        item = MessageItem(message, self._messages)
         if pixmap is not None:
             item.set_avatar(pixmap)
         elem = QtWidgets.QListWidgetItem()

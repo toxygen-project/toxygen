@@ -5,19 +5,21 @@ from messenger.messages import *
 
 class Messenger(util.ToxSave):
 
-    def __init__(self, tox, plugin_loader, screen, contacts_manager, contacts_provider):
+    def __init__(self, tox, plugin_loader, screen, contacts_manager, contacts_provider, items_factory):
         super().__init__(tox)
         self._plugin_loader = plugin_loader
         self._screen = screen
         self._contacts_manager = contacts_manager
         self._contacts_provider = contacts_provider
+        self._items_factory = items_factory
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods
     # -----------------------------------------------------------------------------------------------------------------
 
-    def _create_message_item(self):
-        pass
+    def _create_message_item(self, text_message):
+        # pixmap = self._contacts_manager.get_curr_contact().get_pixmap()
+        self._items_factory.message_item(text_message)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Messaging
@@ -66,17 +68,20 @@ class Messenger(util.ToxSave):
             else:
                 message_type = TOX_MESSAGE_TYPE['NORMAL']
             friend = self.get_friend_by_number(friend_number)
-            friend.inc_receipts()
-            if friend.status is not None:
-                messages = self._split_message(text.encode('utf-8'))
-                t = util.get_unix_time()
-                for message in messages:
+            messages = self._split_message(text.encode('utf-8'))
+            t = util.get_unix_time()
+            for message in messages:
+                if friend.status is not None:
                     message_id = self._tox.friend_send_message(friend_number, message_type, message)
-                    friend.append_message(TextMessage(message_id, text, MESSAGE_AUTHOR['NOT_SENT'], t, message_type))
-                    if self._contacts_manager.is_friend_active(friend_number):
-                        self.create_message_item(text, t, MESSAGE_AUTHOR['NOT_SENT'], message_type)
-                        self._screen.messageEdit.clear()
-                        self._screen.messages.scrollToBottom()
+                    friend.inc_receipts()
+                else:
+                    message_id = 0
+                message = TextMessage(message_id, text, MESSAGE_AUTHOR['NOT_SENT'], t, message_type)
+                friend.append_message(message)
+                if self._contacts_manager.is_friend_active(friend_number):
+                    self._create_message_item(message)
+                    self._screen.messageEdit.clear()
+                    self._screen.messages.scrollToBottom()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications
@@ -121,6 +126,8 @@ class Messenger(util.ToxSave):
             index += size + 1
             messages.append(message[:index])
             message = message[index:]
+        if message:
+            messages.append(message)
 
         return messages
 

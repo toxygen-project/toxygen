@@ -38,6 +38,11 @@ class Message:
 
     author = property(get_author)
 
+    def get_time(self):
+        return self._time
+
+    time = property(get_time)
+
     def get_message_id(self):
         return self._message_id
 
@@ -69,6 +74,11 @@ class TextMessage(Message):
     def __init__(self, id, message, owner, time, message_type):
         super().__init__(id, message_type, owner, time)
         self._message = message
+
+    def get_text(self):
+        return self._message
+
+    text = property(get_text)
 
     def get_data(self):
         return self._message, self._owner, self._time, self._type
