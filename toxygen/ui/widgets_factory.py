@@ -56,3 +56,8 @@ class WidgetsFactory:
     def create_notification_settings_window(self):
         return NotificationsSettings(self._settings)
 
+    def create_smiley_window(self, parent):
+        return SmileyWindow(parent, self._smiley_loader)
+
+    def create_sticker_window(self, parent):
+        return StickerWindow(parent, self._file_transfer_handler)

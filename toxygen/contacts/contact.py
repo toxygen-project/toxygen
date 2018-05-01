@@ -1,5 +1,5 @@
 from history.database import *
-from contacts import basecontact
+from contacts import basecontact, common
 import util.util as util
 from messenger.messages import *
 from file_transfers import file_transfers as ft
@@ -285,3 +285,12 @@ class Contact(basecontact.BaseContact):
         self._number = value
 
     number = property(get_number, set_number)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Typing notifications
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def get_typing_notification_handler(self):
+        return common.BaseTypingNotificationHandler.DEFAULT_HANDLER
+
+    typing_notification_handler = property(get_typing_notification_handler)

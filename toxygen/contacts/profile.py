@@ -32,9 +32,7 @@ class Profile(basecontact.BaseContact):
         self._file_transfers = {}  # dict of file transfers. key - tuple (friend_number, file_number)
         self._load_history = True
         self._waiting_for_reconnection = False
-        #self._factory = items_factory.ItemsFactory(self._screen.friends_list, self._messages)
         self._contacts_manager = None
-        #self._show_avatars = settings['show_avatars']
 
     # -----------------------------------------------------------------------------------------------------------------
     # Edit current user's data
@@ -48,7 +46,7 @@ class Profile(basecontact.BaseContact):
             self.set_status((self._status + 1) % 3)
 
     def set_status(self, status):
-        super(Profile, self).set_status(status)
+        super().set_status(status)
         if status is not None:
             self._tox.self_set_status(status)
         elif not self._waiting_for_reconnection:
@@ -59,7 +57,7 @@ class Profile(basecontact.BaseContact):
         if self.name == value:
             return
         tmp = self.name
-        super(Profile, self).set_name(value.encode('utf-8'))
+        super().set_name(value.encode('utf-8'))
         self._tox.self_set_name(self._name.encode('utf-8'))
         message = util_ui.tr('User {} is now known as {}')
         message = message.format(tmp, value)
@@ -148,76 +146,6 @@ class Profile(basecontact.BaseContact):
                 friend.inc_receipts()
         except Exception as ex:
             log('Sending pending messages failed with ' + str(ex))
-
-    def split_message(self, message):
-        messages = []
-        while len(message) > TOX_MAX_MESSAGE_LENGTH:
-            size = TOX_MAX_MESSAGE_LENGTH * 4 / 5
-            last_part = message[size:TOX_MAX_MESSAGE_LENGTH]
-            if ' ' in last_part:
-                index = last_part.index(' ')
-            elif ',' in last_part:
-                index = last_part.index(',')
-            elif '.' in last_part:
-                index = last_part.index('.')
-            else:
-                index = TOX_MAX_MESSAGE_LENGTH - size - 1
-            index += size + 1
-            messages.append(message[:index])
-            message = message[index:]
-
-        return messages
-
-    def new_message(self, friend_num, message_type, message):
-        """
-        Current user gets new message
-        :param friend_num: friend_num of friend who sent message
-        :param message_type: message type - plain text or action message (/me)
-        :param message: text of message
-        """
-        if friend_num == self.get_active_number()and self.is_active_a_friend():  # add message to list
-            t = time.time()
-            self.create_message_item(message, t, MESSAGE_OWNER['FRIEND'], message_type)
-            self._messages.scrollToBottom()
-            self.get_curr_friend().append_message(
-                TextMessage(message, MESSAGE_OWNER['FRIEND'], t, message_type))
-        else:
-            friend = self.get_friend_by_number(friend_num)
-            friend.inc_messages()
-            friend.append_message(
-                TextMessage(message, MESSAGE_OWNER['FRIEND'], time.time(), message_type))
-            if not friend.visibility:
-                self.update_filtration()
-
-    def send_message_to_friend(self, text, friend_number=None):
-        """
-        Send message
-        :param text: message text
-        :param friend_number: number of friend
-        """
-        if friend_number is None:
-            friend_number = self.get_active_number()
-        if text.startswith('/plugin '):
-            self._plugin_loader.command(text[8:])
-            self._screen.messageEdit.clear()
-        elif text and friend_number >= 0:
-            if text.startswith('/me '):
-                message_type = TOX_MESSAGE_TYPE['ACTION']
-                text = text[4:]
-            else:
-                message_type = TOX_MESSAGE_TYPE['NORMAL']
-            friend = self.get_friend_by_number(friend_number)
-            friend.inc_receipts()
-            if friend.status is not None:
-                messages = self.split_message(text.encode('utf-8'))
-                for message in messages:
-                    self._tox.friend_send_message(friend_number, message_type, message)
-            t = time.time()
-            if friend.number == self.get_active_number() and self.is_active_a_friend():
-                self.create_message_item(text, t, MESSAGE_OWNER['NOT_SENT'], message_type)
-                self._screen.messageEdit.clear()
-                self._messages.scrollToBottom()
-            friend.append_message(TextMessage(text, MESSAGE_OWNER['NOT_SENT'], t, message_type))
 
     def delete_message(self, message_id):
         friend = self.get_curr_friend()

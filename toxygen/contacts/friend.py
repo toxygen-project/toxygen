@@ -1,4 +1,4 @@
-from contacts import contact
+from contacts import contact, common
 from messenger.messages import *
 import os
 
@@ -11,6 +11,7 @@ class Friend(contact.Contact):
     def __init__(self, profile_manager, message_getter, number, name, status_message, widget, tox_id):
         super().__init__(profile_manager, message_getter, number, name, status_message, widget, tox_id)
         self._receipts = 0
+        self._typing_notification_handler = common.FriendTypingNotificationHandler(number)
 
     # -----------------------------------------------------------------------------------------------------------------
     # File transfers support
@@ -73,3 +74,10 @@ class Friend(contact.Contact):
 
     def get_full_status(self):
         return self._status_message
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Typing notifications
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def get_typing_notification_handler(self):
+        return self._typing_notification_handler

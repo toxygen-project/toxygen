@@ -39,18 +39,18 @@ def self_connection_status(tox, profile):
 # -----------------------------------------------------------------------------------------------------------------
 
 
-def friend_status(profile, settings):
+def friend_status(contacts_manager, file_transfer_handler, profile, settings):
     def wrapped(tox, friend_number, new_status, user_data):
         """
         Check friend's status (none, busy, away)
         """
         print("Friend's #{} status changed!".format(friend_number))
-        friend = profile.get_friend_by_number(friend_number)
+        friend = contacts_manager.get_friend_by_number(friend_number)
         if friend.status is None and settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['FRIEND_CONNECTION_STATUS'])
         invoke_in_main_thread(friend.set_status, new_status)
-        invoke_in_main_thread(QtCore.QTimer.singleShot, 5000, lambda: profile.send_files(friend_number))
-        invoke_in_main_thread(profile.update_filtration)
+        invoke_in_main_thread(QtCore.QTimer.singleShot, 5000, lambda: file_transfer_handler.send_files(friend_number))
+        invoke_in_main_thread(contacts_manager.update_filtration)
 
     return wrapped
 
@@ -74,42 +74,42 @@ def friend_connection_status(profile, settings, plugin_loader):
     return wrapped
 
 
-def friend_name(profile):
+def friend_name(contacts_manager):
     def wrapped(tox, friend_number, name, size, user_data):
         """
         Friend changed his name
         """
         print('New name friend #' + str(friend_number))
-        invoke_in_main_thread(profile.new_name, friend_number, name)
+        invoke_in_main_thread(contacts_manager.new_name, friend_number, name)
 
     return wrapped
 
 
-def friend_status_message(profile):
+def friend_status_message(contacts_manager, messenger):
     def wrapped(tox, friend_number, status_message, size, user_data):
         """
         :return: function for callback friend_status_message. It updates friend's status message
         and calls window repaint
         """
-        friend = profile.get_friend_by_number(friend_number)
+        friend = contacts_manager.get_friend_by_number(friend_number)
         invoke_in_main_thread(friend.set_status_message, status_message)
         print('User #{} has new status'.format(friend_number))
-        invoke_in_main_thread(profile.send_messages, friend_number)
-        if profile.get_active_number() == friend_number:
-            invoke_in_main_thread(profile.set_active)
+        invoke_in_main_thread(messenger.send_messages, friend_number)
+        if contacts_manager.is_friend_active(friend_number):
+            invoke_in_main_thread(contacts_manager.set_active)
 
     return wrapped
 
 
-def friend_message(profile, settings, window, tray):
+def friend_message(messenger, contacts_manager, profile, settings, window, tray):
     def wrapped(tox, friend_number, message_type, message, size, user_data):
         """
         New message from friend
         """
         message = str(message, 'utf-8')
-        invoke_in_main_thread(profile.new_message, friend_number, message_type, message)
+        invoke_in_main_thread(messenger.new_message, friend_number, message_type, message)
         if not window.isActiveWindow():
-            friend = profile.get_friend_by_number(friend_number)
+            friend = contacts_manager.get_friend_by_number(friend_number)
             if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
                 invoke_in_main_thread(tray_notification, friend.name, message, tray, window)
             if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
@@ -371,7 +371,7 @@ def show_gc_notification(window, tray, message, group_number, peer_number):
 
 
 def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
-                   calls_manager, file_transfer_handler, main_window, tray):
+                   calls_manager, file_transfer_handler, main_window, tray, messenger):
     """
     Initialization of all callbacks.
     :param tox: Tox instance
@@ -382,32 +382,37 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     :param calls_manager: CallsManager instance
     :param file_transfer_handler: FileTransferHandler instance
     :param plugin_loader: PluginLoader instance
-    :param main_window: main window screen
+    :param main_window: MainWindow instance
     :param tray: tray (for notifications)
+    :param messenger: Messenger instance
     """
+    # self callbacks
     tox.callback_self_connection_status(self_connection_status(tox, profile), 0)
 
-    tox.callback_friend_status(friend_status(profile, settings), 0)
-    tox.callback_friend_message(friend_message(profile, settings, main_window, tray), 0)
+    # friend callbacks
+    tox.callback_friend_status(friend_status(contacts_manager, file_transfer_handler, profile, settings), 0)
+    tox.callback_friend_message(friend_message(messenger, contacts_manager, profile, settings, main_window, tray), 0)
     tox.callback_friend_connection_status(friend_connection_status(profile, settings, plugin_loader), 0)
-    tox.callback_friend_name(friend_name(profile), 0)
-    tox.callback_friend_status_message(friend_status_message(profile), 0)
+    tox.callback_friend_name(friend_name(contacts_manager), 0)
+    tox.callback_friend_status_message(friend_status_message(contacts_manager, messenger), 0)
     tox.callback_friend_request(friend_request(contacts_manager), 0)
     tox.callback_friend_typing(friend_typing(contacts_manager), 0)
     tox.callback_friend_read_receipt(friend_read_receipt(contacts_manager), 0)
 
+    # file transfer
     tox.callback_file_recv(tox_file_recv(main_window, tray, profile, file_transfer_handler,
                                          contacts_manager, settings), 0)
     tox.callback_file_recv_chunk(file_recv_chunk(file_transfer_handler), 0)
     tox.callback_file_chunk_request(file_chunk_request(file_transfer_handler), 0)
     tox.callback_file_recv_control(file_recv_control(file_transfer_handler), 0)
 
+    # av
     toxav = tox.AV
     toxav.callback_call_state(call_state(calls_manager), 0)
     toxav.callback_call(call(calls_manager), 0)
     toxav.callback_audio_receive_frame(callback_audio(calls_manager), 0)
     toxav.callback_video_receive_frame(video_receive_frame, 0)
 
+    # custom packets
     tox.callback_friend_lossless_packet(lossless_packet(plugin_loader), 0)
     tox.callback_friend_lossy_packet(lossy_packet(plugin_loader), 0)
-

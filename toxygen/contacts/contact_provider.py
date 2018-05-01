@@ -9,16 +9,6 @@ class ContactProvider(util.ToxSave):
         self._cache = {}  # key - contact's public key, value - contact instance
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def _get_contact_from_cache(self, public_key):
-        return self._cache[public_key] if public_key in self._cache else None
-
-    def _add_to_cache(self, public_key, contact):
-        self._cache[public_key] = contact
-
-    # -----------------------------------------------------------------------------------------------------------------
     # Friends
     # -----------------------------------------------------------------------------------------------------------------
 
@@ -72,3 +62,13 @@ class ContactProvider(util.ToxSave):
     def remove_friend_from_cache(self, friend_public_key):
         if friend_public_key in self._cache:
             del self._cache[friend_public_key]
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def _get_contact_from_cache(self, public_key):
+        return self._cache[public_key] if public_key in self._cache else None
+
+    def _add_to_cache(self, public_key, contact):
+        self._cache[public_key] = contact

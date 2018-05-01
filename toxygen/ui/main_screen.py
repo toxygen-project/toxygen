@@ -8,22 +8,23 @@ import util.ui as util_ui
 
 class MainWindow(QtWidgets.QMainWindow):
 
-    def __init__(self, settings, tox, tray):
+    def __init__(self, settings, tray):
         super().__init__()
         self._settings = settings
+        self._contacts_manager = None
         self._tray = tray
         self._widget_factory = None
         self._modal_window = None
         self.setAcceptDrops(True)
-        self.initUI(tox)
         self._saved = False
         self.profile = None
+        self.initUI()
 
-    def set_widget_factory(self, widget_factory):
+    def set_dependencies(self, widget_factory, tray, contacts_manager, messenger):
         self._widget_factory = widget_factory
-
-    def set_tray(self, tray):
         self._tray = tray
+        self._contacts_manager = contacts_manager
+        self.messageEdit.set_messenger(messenger)
 
     def show(self):
         super().show()
@@ -305,7 +306,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.messages.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.messages.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
 
-    def initUI(self, tox):
+    def initUI(self):
         self.setMinimumSize(920, 500)
         s = self._settings
         self.setGeometry(s['x'], s['y'], s['width'], s['height'])
@@ -326,7 +327,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setup_right_bottom(message_buttons)
         self.setup_left_center(main_list)
         self.setup_menu(menu)
-        if not self._settings['mirror_mode']:
+        if not s['mirror_mode']:
             grid.addWidget(search, 2, 0)
             grid.addWidget(name, 1, 0)
             grid.addWidget(messages, 2, 1, 2, 1)
@@ -367,7 +368,6 @@ class MainWindow(QtWidgets.QMainWindow):
             if self._saved:
                 return
             self._saved = True
-            self.profile.close()
             self._settings['x'] = self.geometry().x()
             self._settings['y'] = self.geometry().y()
             self._settings['width'] = self.width()
@@ -441,7 +441,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def create_gc(self):
         self.profile.create_group_chat()
 
-    def profile_settings(self, *args):
+    def profile_settings(self):
         self._modal_window = self._widget_factory.create_profile_settings_window()
         self._modal_window.show()
 
@@ -473,7 +473,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if self._plugin_loader is not None:
             self._plugin_loader.reload()
 
-    def import_plugin(self):
+    @staticmethod
+    def import_plugin():
         directory = util_ui.directory_dialog(util_ui.tr('Choose folder with plugin'))
         if directory:
             src = directory + '/'
@@ -502,20 +503,19 @@ class MainWindow(QtWidgets.QMainWindow):
     # -----------------------------------------------------------------------------------------------------------------
 
     def send_message(self):
-        text = self.messageEdit.toPlainText()
-        self.profile.send_message(text)
+        self._messenger.send_message()
 
     def send_file(self):
         self.menu.hide()
-        if self.profile.active_friend + 1and self.profile.is_active_a_friend():
+        if self._contacts_manager.active_friend + 1 and self._contacts_manager.is_active_a_friend():
             caption = util_ui.tr('Choose file')
             name = util_ui.file_dialog(caption)
             if name[0]:
-                self.profile.send_file(name[0])
+                self._contacts_manager.send_file(name[0])
 
     def send_screenshot(self, hide=False):
         self.menu.hide()
-        if self.profile.active_friend + 1 and self.profile.is_active_a_friend():
+        if self._contacts_manager.active_friend + 1 and self._contacts_manager.is_active_a_friend():
             self.sw = ScreenShotWindow(self)
             self.sw.show()
             if hide:
@@ -523,8 +523,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def send_smiley(self):
         self.menu.hide()
-        if self.profile.active_friend + 1:
-            self.smiley = SmileyWindow(self)
+        if self._contacts_manager.active_friend + 1:
+            self.smiley = self._widget_factory.create_smiley_window(self)
             self.smiley.setGeometry(QtCore.QRect(self.x() if self._settings['mirror_mode'] else 270 + self.x(),
                                                  self.y() + self.height() - 200,
                                                  self.smiley.width(),
@@ -533,8 +533,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def send_sticker(self):
         self.menu.hide()
-        if self.profile.active_friend + 1 and self.profile.is_active_a_friend():
-            self.sticker = StickerWindow(self)
+        if self._contacts_manager.active_friend + 1 and self._contacts_manager.is_active_a_friend():
+            self.sticker = self._widget_factory.create_sticker_window(self)
             self.sticker.setGeometry(QtCore.QRect(self.x() if self._settings['mirror_mode'] else 270 + self.x(),
                                                   self.y() + self.height() - 200,
                                                   self.sticker.width(),
@@ -551,7 +551,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update_call_state('call')
 
     def update_call_state(self, state):
-
         pixmap = QtGui.QPixmap(os.path.join(util.get_images_directory(), '{}.png'.format(state)))
         icon = QtGui.QIcon(pixmap)
         self.callButton.setIcon(icon)
@@ -569,10 +568,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def friend_right_click(self, pos):
         item = self.friends_list.itemAt(pos)
         num = self.friends_list.indexFromItem(item).row()
-        friend = Profile.get_instance().get_friend(num)
+        friend = self._contacts_manager.get_friend(num)
         if friend is None:
             return
-        allowed = friend.tox_id in settings['auto_accept_from_friends']
+        allowed = friend.tox_id in self._settings['auto_accept_from_friends']
         auto = util_ui.tr('Disallow auto accept') if allowed else util_ui.tr('Allow auto accept')
         if item is not None:
             self.listMenu = QtWidgets.QMenu()
@@ -597,7 +596,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 block_item = self.listMenu.addAction(util_ui.tr('Block friend'))
                 notes_item = self.listMenu.addAction(util_ui.tr('Notes'))
 
-                chats = self.profile.get_group_chats()
+                chats = self._contacts_manager.get_group_chats()
                 if len(chats) and self.profile.is_active_online():
                     invite_menu = self.listMenu.addMenu(util_ui.tr('Invite to group chat'))
                     for i in range(len(chats)):
@@ -630,7 +629,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.listMenu.show()
 
     def show_note(self, friend):
-        note = self._settings['notes'][friend.tox_id] if friend.tox_id in s['notes'] else ''
+        note = self._settings['notes'][friend.tox_id] if friend.tox_id in self._settings['notes'] else ''
         user = util_ui.tr('Notes about user')
         user = '{} {}'.format(user, friend.name)
 
@@ -644,7 +643,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.note.show()
 
     def export_history(self, num, as_text=True):
-        s = self.profile.export_history(num, as_text)
+        s = self._history_loader.export_history(num, as_text)
         extension = 'txt' if as_text else 'html'
         file_name, _ = util_ui.save_file_dialog(util_ui.tr('Choose file name'), extension)
 
@@ -655,30 +654,32 @@ class MainWindow(QtWidgets.QMainWindow):
                 fl.write(s)
 
     def set_alias(self, num):
-        self.profile.set_alias(num)
+        self._contacts_manager.set_alias(num)
 
     def remove_friend(self, num):
-        self.profile.delete_friend(num)
+        self._contacts_manager.delete_friend(num)
 
     def block_friend(self, num):
         friend = self.profile.get_friend(num)
-        self.profile.block_user(friend.tox_id)
+        self._contacts_manager.block_user(friend.tox_id)
 
     def copy_friend_key(self, num):
-        tox_id = self.profile.friend_public_key(num)
+        tox_id = self._contacts_manager.friend_public_key(num)
         clipboard = QtWidgets.QApplication.clipboard()
         clipboard.setText(tox_id)
 
-    def copy_name(self, friend):
+    @staticmethod
+    def copy_name(friend):
         clipboard = QtWidgets.QApplication.clipboard()
         clipboard.setText(friend.name)
 
-    def copy_status(self, friend):
+    @staticmethod
+    def copy_status(friend):
         clipboard = QtWidgets.QApplication.clipboard()
         clipboard.setText(friend.status_message)
 
     def clear_history(self, num):
-        self.profile.clear_history(num)
+        self._contacts_manager.clear_history(num)
 
     def leave_gc(self, num):
         self.profile.leave_gc(num)
@@ -687,7 +688,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.profile.set_title(num)
 
     def auto_accept(self, num, value):
-        tox_id = self.profile.friend_public_key(num)
+        tox_id = self._contacts_manager.friend_public_key(num)
         if value:
             self._settings['auto_accept_from_friends'].append(tox_id)
         else:
@@ -695,7 +696,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._settings.save()
 
     def invite_friend_to_gc(self, friend_number, group_number):
-        self.profile.invite_friend(friend_number, group_number)
+        self._contacts_manager.invite_friend(friend_number, group_number)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click somewhere else
@@ -703,7 +704,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def friend_click(self, index):
         num = index.row()
-        self.profile.set_active(num)
+        self._contacts_manager.set_active(num)
 
     def mouseReleaseEvent(self, event):
         pos = self.connection_status.pos()
@@ -715,17 +716,17 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def show(self):
         super().show()
-        #self.profile.update()
+        #self._contacts_manager.update()
 
     def filtering(self):
         ind = self.online_contacts.currentIndex()
         d = {0: 0, 1: 1, 2: 2, 3: 4, 4: 1 | 4, 5: 2 | 4}
-        self.profile.filtration_and_sorting(d[ind], self.contact_name.text())
+        self._contacts_manager.filtration_and_sorting(d[ind], self.contact_name.text())
 
     def show_search_field(self):
         if hasattr(self, 'search_field') and self.search_field.isVisible():
             return
-        if self.profile.get_curr_friend() is None:
+        if self._c4.get_curr_friend() is None:
             return
         self.search_field = SearchScreen(self.messages, self.messages.width(), self.messages.parent())
         x, y = self.messages.x(), self.messages.y() + self.messages.height() - 40

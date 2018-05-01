@@ -1,7 +1,6 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from ui.widgets import RubberBandWindow, create_menu, QRightClickButton, CenteredWidget, LineEdit
 from contacts.profile import Profile
-import smileys
 import urllib
 import util.util as util
 import util.ui as util_ui
@@ -13,10 +12,14 @@ class MessageArea(QtWidgets.QPlainTextEdit):
 
     def __init__(self, parent, form):
         super().__init__(parent)
+        self._messenger = None
         self.parent = form
         self.setAcceptDrops(True)
-        self.timer = QtCore.QTimer(self)
-        self.timer.timeout.connect(lambda: self.parent.profile.send_typing(False))
+        self._timer = QtCore.QTimer(self)
+        self._timer.timeout.connect(lambda: self._messenger.send_typing(False))
+
+    def set_messenger(self, messenger):
+        self._messenger = messenger
 
     def keyPressEvent(self, event):
         if event.matches(QtGui.QKeySequence.Paste):
@@ -31,22 +34,22 @@ class MessageArea(QtWidgets.QPlainTextEdit):
             if modifiers & QtCore.Qt.ControlModifier or modifiers & QtCore.Qt.ShiftModifier:
                 self.insertPlainText('\n')
             else:
-                if self.timer.isActive():
-                    self.timer.stop()
-                self.parent.profile.send_typing(False)
-                self.parent.send_message()
+                if self._timer.isActive():
+                    self._timer.stop()
+                self._messenger.send_typing(False)
+                self._messenger.send_message()
         elif event.key() == QtCore.Qt.Key_Up and not self.toPlainText():
-            self.appendPlainText(Profile.get_instance().get_last_message())
-        elif event.key() == QtCore.Qt.Key_Tab and not self.parent.profile.is_active_a_friend():
+            self.appendPlainText(self._messenger.get_last_message())
+        elif event.key() == QtCore.Qt.Key_Tab and not self._messenger.is_active_a_friend():
             text = self.toPlainText()
             pos = self.textCursor().position()
-            self.insertPlainText(Profile.get_instance().get_gc_peer_name(text[:pos]))
+            self.insertPlainText(self._messenger.get_gc_peer_name(text[:pos]))
         else:
-            self.parent.profile.send_typing(True)
-            if self.timer.isActive():
-                self.timer.stop()
-            self.timer.start(5000)
-            super(MessageArea, self).keyPressEvent(event)
+            self._messenger.send_typing(True)
+            if self._timer.isActive():
+                self._timer.stop()
+            self._timer.start(5000)
+            super().keyPressEvent(event)
 
     def contextMenuEvent(self, event):
         menu = create_menu(self.createStandardContextMenu())

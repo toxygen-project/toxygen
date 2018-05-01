@@ -1,18 +1,21 @@
 from ui.list_items import *
+from ui.messages_widgets import *
 
 
 class ItemsFactory:
 
     def __init__(self, settings, plugin_loader, smiley_loader, main_screen):
         self._settings, self._plugin_loader = settings, plugin_loader
-        self._smiley_loader, self._main_screen = smiley_loader, main_screen
+        self._smiley_loader = smiley_loader
+        self._messages = main_screen.messages
+        self._friends_list = main_screen.friends_list
 
     def friend_item(self):
         item = ContactItem(self._settings)
-        elem = QtWidgets.QListWidgetItem(self._main_screen.friends_list)
+        elem = QtWidgets.QListWidgetItem(self._friends_list)
         elem.setSizeHint(QtCore.QSize(250, item.height()))
-        self._main_screen.friends_list.addItem(elem)
-        self._main_screen.friends_list.setItemWidget(elem, item)
+        self._friends_list.addItem(elem)
+        self._friends_list.setItemWidget(elem, item)
         return item
 
     def message_item(self, text, time, name, sent, message_type, append, pixmap):

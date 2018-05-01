@@ -26,19 +26,85 @@ from history.database import Database
 from ui.widgets_factory import WidgetsFactory
 from smileys.smileys import SmileyLoader
 from ui.items_factory import ItemsFactory
+from messenger.messenger import Messenger
 
 
 class App:
 
     def __init__(self, version, path_to_profile=None, uri=None):
         self._version = version
-        self._app = self._settings = self._profile_manager = self._plugin_loader = None
+        self._app = self._settings = self._profile_manager = self._plugin_loader = self._messenger = None
         self._tox = self._ms = self._init = self._main_loop = self._av_loop = None
         self._uri = self._toxes = self._tray = self._file_transfer_handler = self._contacts_provider = None
         self._friend_factory = self._calls_manager = self._contacts_manager = self._smiley_loader = None
         if uri is not None and uri.startswith('tox:'):
             self._uri = uri[4:]
         self._path = path_to_profile
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Public methods
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def main(self):
+        """
+        Main function of app. loads login screen if needed and starts main screen
+        """
+        self._app = QtWidgets.QApplication([])
+        self._load_icon()
+
+        if get_platform() == 'Linux':
+            QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_X11InitThreads)
+
+        self._load_base_style()
+
+        encrypt_save = tox_encrypt_save.ToxEncryptSave()
+        self._toxes = user_data.toxes.ToxES(encrypt_save)
+
+        if self._path is not None:  # toxygen was started with path to profile
+            self._load_existing_profile(self._path)
+        else:
+            auto_profile = Settings.get_auto_profile()
+            if auto_profile is None:   # no default profile
+                result = self._select_profile()
+                if result is None:
+                    return
+                if result.is_new_profile():  # create new profile
+                    self._create_new_profile(result.profile_path)
+                else:  # load existing profile
+                    self._load_existing_profile(result.profile_path)
+                self._path = result.profile_path
+            else:  # default profile
+                path, name = auto_profile
+                self._path = os.path.join(path, name + '.tox')
+                self._load_existing_profile(self._path)
+
+        if Settings.is_active_profile(self._path):  # profile is in use
+            profile_name = get_profile_name_from_path(self._path)
+            title = util_ui.tr('Profile {}').format(profile_name)
+            text = util_ui.tr('Other instance of Toxygen uses this profile or profile was not properly closed. Continue?')
+            reply = util_ui.question(text, title)
+            if not reply:
+                return
+
+        self._settings.set_active_profile()
+
+        self._load_app_styles()
+        self._load_app_translations()
+
+        if self._try_to_update():
+            return
+
+        self._create_dependencies()
+        self._start_threads()
+
+        if self._uri is not None:
+            self._ms.add_contact(self._uri)
+
+        self._app.lastWindowClosed.connect(self._app.quit)
+
+        self._execute_app()
+
+        self._stop_app()
 
     # -----------------------------------------------------------------------------------------------------------------
     # App executing
@@ -220,7 +286,7 @@ class App:
 
     def _create_dependencies(self):
         self._smiley_loader = SmileyLoader(self._settings)
-        self._ms = MainWindow(self._settings, self._tox, self._tray)
+        self._ms = MainWindow(self._settings, self._tray)
         db = Database(self._path.replace('.tox', '.db'), self._toxes)
         profile = Profile(self._profile_manager, self._tox, self._ms, self._file_transfer_handler)
         self._plugin_loader = PluginLoader(self._tox, self._toxes, profile, self._settings)  # plugins support
@@ -231,19 +297,20 @@ class App:
                                          self._smiley_loader, self._plugin_loader, self._toxes)
         self._contacts_manager = ContactsManager(self._tox, self._settings, self._ms, self._profile_manager,
                                                  self._contacts_provider, db)
+        self._messenger = Messenger(self._tox, self._plugin_loader, self._ms, self._contacts_manager,
+                                    self._contacts_provider)
+        self._tray = tray.init_tray(profile, self._settings, self._ms)
+        self._ms.set_dependencies(widgets_factory, self._tray, self._contacts_manager, self._messenger)
         self._calls_manager = CallsManager(self._tox.AV, self._settings)
         self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider)
-        self._ms.profile = profile
-        self._ms.set_widget_factory(widgets_factory)
-        self._ms.show()
-
-        self._tray = tray.init_tray(profile, self._settings, self._ms)
-        self._ms.set_tray(self._tray)
         self._tray.show()
+
+        self._ms.show()
 
         # callbacks initialization
         callbacks.init_callbacks(self._tox, profile, self._settings, self._plugin_loader, self._contacts_manager,
-                                 self._calls_manager, self._file_transfer_handler, self._ms, self._tray)
+                                 self._calls_manager, self._file_transfer_handler, self._ms, self._tray,
+                                 self._messenger)
 
     def _try_to_update(self):
         updating = updater.start_update_if_needed(self._version, self._settings)
@@ -255,68 +322,3 @@ class App:
 
     def _create_tox(self, data):
         return tox_factory(data, self._settings)
-
-    # -----------------------------------------------------------------------------------------------------------------
-    # Public methods
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def main(self):
-        """
-        Main function of app. loads login screen if needed and starts main screen
-        """
-        self._app = QtWidgets.QApplication([])
-        self._load_icon()
-
-        if get_platform() == 'Linux':
-            QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_X11InitThreads)
-
-        self._load_base_style()
-
-        encrypt_save = tox_encrypt_save.ToxEncryptSave()
-        self._toxes = user_data.toxes.ToxES(encrypt_save)
-
-        if self._path is not None:  # toxygen was started with path to profile
-            self._load_existing_profile(self._path)
-        else:
-            auto_profile = Settings.get_auto_profile()
-            if auto_profile is None:   # no default profile
-                result = self._select_profile()
-                if result is None:
-                    return
-                if result.is_new_profile():  # create new profile
-                    self._create_new_profile(result.profile_path)
-                else:  # load existing profile
-                    self._load_existing_profile(result.profile_path)
-                self._path = result.profile_path
-            else:  # default profile
-                path, name = auto_profile
-                self._path = os.path.join(path, name + '.tox')
-                self._load_existing_profile(self._path)
-
-        if Settings.is_active_profile(self._path):  # profile is in use
-            profile_name = get_profile_name_from_path(self._path)
-            title = util_ui.tr('Profile {}').format(profile_name)
-            text = util_ui.tr('Other instance of Toxygen uses this profile or profile was not properly closed. Continue?')
-            reply = util_ui.question(text, title)
-            if not reply:
-                return
-
-        self._settings.set_active_profile()
-
-        self._load_app_styles()
-        self._load_app_translations()
-
-        if self._try_to_update():
-            return
-
-        self._create_dependencies()
-        self._start_threads()
-
-        if self._uri is not None:
-            self._ms.add_contact(self._uri)
-
-        self._app.lastWindowClosed.connect(self._app.quit)
-
-        self._execute_app()
-
-        self._stop_app()

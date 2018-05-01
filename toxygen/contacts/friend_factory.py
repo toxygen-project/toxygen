@@ -7,7 +7,12 @@ class FriendFactory:
         self._profile_manager = profile_manager
         self._settings, self._tox = settings, tox
         self._db = db
-        self._factory = items_factory
+        self._items_factory = items_factory
+
+    def create_friend_by_public_key(self, public_key):
+        friend_number = self._tox.friend_by_public_key(public_key)
+
+        return self.create_friend_by_number(friend_number)
 
     def create_friend_by_number(self, friend_number):
         aliases = self._settings['friends_aliases']
@@ -16,7 +21,7 @@ class FriendFactory:
             alias = list(filter(lambda x: x[0] == tox_id, aliases))[0][1]
         except:
             alias = ''
-        item = self.create_friend_item()
+        item = self._create_friend_item()
         name = alias or self._tox.friend_get_name(friend_number) or tox_id
         status_message = self._tox.friend_get_status_message(friend_number)
         message_getter = self._db.messages_getter(tox_id)
@@ -25,14 +30,13 @@ class FriendFactory:
 
         return friend
 
-    def create_friend_by_public_key(self, public_key):
-        friend_number = self._tox.friend_by_public_key(public_key)
+    # -----------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # -----------------------------------------------------------------------------------------------------------------
 
-        return self.create_friend_by_number(friend_number)
-
-    def create_friend_item(self):
+    def _create_friend_item(self):
         """
         Method-factory
         :return: new widget for friend instance
         """
-        return self._factory.friend_item()
+        return self._items_factory.friend_item()

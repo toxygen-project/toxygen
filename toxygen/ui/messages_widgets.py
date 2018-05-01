@@ -122,7 +122,7 @@ class MessageItem(QtWidgets.QWidget):
     """
     Message in messages list
     """
-    def __init__(self, settings, message_edit_factory, text_message, parent=None):
+    def __init__(self, settings, text_message, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
         self.name = widgets.DataLabel(self)
         self.name.setGeometry(QtCore.QRect(2, 2, 95, 23))

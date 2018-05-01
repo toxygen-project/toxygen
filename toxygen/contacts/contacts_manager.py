@@ -9,6 +9,9 @@ from network.tox_dns import tox_dns
 from history.history_loader import HistoryLoader
 
 
+# TODO: move messaging and typing notifications to other class
+
+
 class ContactsManager:
 
     def __init__(self, tox, settings, screen, profile_manager, contact_provider, db):
@@ -29,26 +32,6 @@ class ContactsManager:
     def __del__(self):
         del self._history
 
-    # -----------------------------------------------------------------------------------------------------------------
-    # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
-        
-    def _is_active_a_friend(self):
-        return type(self.get_curr_contact()) is Friend
-
-    def _load_contacts(self):
-        self._load_friends()
-        self._load_groups()
-        if len(self._contacts):
-            self.set_active(0)
-        self.filtration_and_sorting(self._sorting)
-
-    def _load_friends(self):
-        self._contacts.extend(self._contact_provider.get_all_friends())
-
-    def _load_groups(self):
-        self._contacts.extend(self._contact_provider.get_all_groups())
-
     def get_friend(self, num):
         if num < 0 or num >= len(self._contacts):
             return None
@@ -60,6 +43,12 @@ class ContactsManager:
     def save_profile(self):
         data = self._tox.get_savedata()
         self._profile_manager.save_profile(data)
+
+    def is_friend_active(self, friend_number):
+        if not self._is_active_a_friend():
+            return False
+
+        return self.get_curr_contact().number == friend_number
 
     # -----------------------------------------------------------------------------------------------------------------
     # Work with active friend
@@ -85,7 +74,7 @@ class ContactsManager:
             self._screen.messageEdit.clear()
             return
         try:
-            self.send_typing(False)
+            # self.send_typing(False)  # TODO: fix
             self._screen.typing.setVisible(False)
             if value is not None:
                 if self._active_contact + 1 and self._active_contact != value:
@@ -430,25 +419,25 @@ class ContactsManager:
         except Exception as ex:  # something is wrong
             util.log('Accept friend request failed! ' + str(ex))
 
+    def can_send_typing_notification(self):
+        return self._settings['typing_notifications'] and self._active_contact != -1
+
     # -----------------------------------------------------------------------------------------------------------------
-    # Typing notifications
+    # Private methods
     # -----------------------------------------------------------------------------------------------------------------
 
-    def send_typing(self, typing):
-        """
-        Send typing notification to a friend
-        """
-        if self._settings['typing_notifications'] and self._active_contact + 1:
-            try:
-                contact = self.get_curr_contact()
-                if contact.status is not None and self._is_active_a_friend():  # TODO: fix - no type check
-                    self._tox.self_set_typing(contact.number, typing)
-            except:
-                pass
+    def _is_active_a_friend(self):
+        return type(self.get_curr_contact()) is Friend
 
-    def friend_typing(self, friend_number, typing):
-        """
-        Display incoming typing notification
-        """
-        if friend_number == self.get_active_number() and self.is_active_a_friend():
-            self._screen.typing.setVisible(typing)
+    def _load_contacts(self):
+        self._load_friends()
+        self._load_groups()
+        if len(self._contacts):
+            self.set_active(0)
+        self.filtration_and_sorting(self._sorting)
+
+    def _load_friends(self):
+        self._contacts.extend(self._contact_provider.get_all_friends())
+
+    def _load_groups(self):
+        self._contacts.extend(self._contact_provider.get_all_groups())

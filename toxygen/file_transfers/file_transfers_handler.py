@@ -20,9 +20,6 @@ class FileTransfersHandler:
         self._settings['paused_file_transfers'] = self._paused_file_transfers if self._settings['resend_files'] else {}
         self._settings.save()
 
-    def _get_friend_by_number(self, friend_number):
-        return self._contact_provider.get_friend_by_number(friend_number)
-
     # -----------------------------------------------------------------------------------------------------------------
     # File transfers support
     # -----------------------------------------------------------------------------------------------------------------
@@ -319,3 +316,10 @@ class FileTransfersHandler:
             self.get_friend_by_number(friend_number).load_avatar()
             if self.get_active_number() == friend_number and self.is_active_a_friend():
                 self.set_active(None)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def _get_friend_by_number(self, friend_number):
+        return self._contact_provider.get_friend_by_number(friend_number)

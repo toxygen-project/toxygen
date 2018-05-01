@@ -94,6 +94,10 @@ def curr_time():
     return time.strftime('%H:%M')
 
 
+def get_unix_time():
+    return int(time.time())
+
+
 def join_path(a, b):
     return os.path.join(a, b)
 
