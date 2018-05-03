@@ -289,22 +289,23 @@ class App:
     def _create_dependencies(self):
         self._smiley_loader = SmileyLoader(self._settings)
         self._ms = MainWindow(self._settings, self._tray)
+        self._calls_manager = CallsManager(self._tox.AV, self._settings)
         db = Database(self._path.replace('.tox', '.db'), self._toxes)
-        profile = Profile(self._profile_manager, self._tox, self._ms, self._file_transfer_handler)
-        self._plugin_loader = PluginLoader(self._tox, self._toxes, profile, self._settings)  # plugins support
+
+        profile = Profile(self._profile_manager, self._tox, self._ms)
+        self._plugin_loader = PluginLoader(self._tox, self._toxes, profile, self._settings)
         items_factory = ItemsFactory(self._settings, self._plugin_loader, self._smiley_loader, self._ms)
         self._friend_factory = FriendFactory(self._profile_manager, self._settings, self._tox, db, items_factory)
         self._contacts_provider = ContactProvider(self._tox, self._friend_factory)
-        widgets_factory = WidgetsFactory(self._settings, profile, self._contacts_manager, self._file_transfer_handler,
-                                         self._smiley_loader, self._plugin_loader, self._toxes, self._version)
         self._contacts_manager = ContactsManager(self._tox, self._settings, self._ms, self._profile_manager,
                                                  self._contacts_provider, db)
+        self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider)
+        widgets_factory = WidgetsFactory(self._settings, profile, self._contacts_manager, self._file_transfer_handler,
+                                         self._smiley_loader, self._plugin_loader, self._toxes, self._version)
         self._messenger = Messenger(self._tox, self._plugin_loader, self._ms, self._contacts_manager,
-                                    self._contacts_provider, items_factory)
+                                    self._contacts_provider, items_factory, profile)
         self._tray = tray.init_tray(profile, self._settings, self._ms)
         self._ms.set_dependencies(widgets_factory, self._tray, self._contacts_manager, self._messenger, profile)
-        self._calls_manager = CallsManager(self._tox.AV, self._settings)
-        self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider)
 
         self._tray.show()
         self._ms.show()

@@ -1,7 +1,5 @@
 from contacts.friend import *
 from user_data.settings import *
-from wrapper.toxcore_enums_and_consts import *
-from util.util import log
 from history.database import *
 from file_transfers.file_transfers import *
 import time
@@ -14,7 +12,7 @@ class Profile(basecontact.BaseContact):
     """
     Profile of current toxygen user. Contains friends list, tox instance
     """
-    def __init__(self, profile_manager, tox, screen, file_transfer_handler):
+    def __init__(self, profile_manager, tox, screen):
         """
         :param tox: tox instance
         :param screen: ref to main screen
@@ -25,7 +23,6 @@ class Profile(basecontact.BaseContact):
                                          tox.self_get_status_message(),
                                          screen.user_info,
                                          tox.self_get_address())
-        self._file_transfer_handler = file_transfer_handler
         self._screen = screen
         self._messages = screen.messages
         self._tox = tox
@@ -83,30 +80,6 @@ class Profile(basecontact.BaseContact):
     # Friend connection status callbacks
     # -----------------------------------------------------------------------------------------------------------------
 
-    def send_files(self, friend_number):
-        friend = self.get_friend_by_number(friend_number)
-        friend.remove_invalid_unsent_files()
-        files = friend.get_unsent_files()
-        try:
-            for fl in files:
-                data = fl.get_data()
-                if data[1] is not None:
-                    self.send_inline(data[1], data[0], friend_number, True)
-                else:
-                    self.send_file(data[0], friend_number, True)
-            friend.clear_unsent_files()
-            for key in list(self._paused_file_transfers.keys()):
-                data = self._paused_file_transfers[key]
-                if not os.path.exists(data[0]):
-                    del self._paused_file_transfers[key]
-                elif data[1] == friend_number and not data[2]:
-                    self.send_file(data[0], friend_number, True, key)
-                    del self._paused_file_transfers[key]
-            if friend_number == self.get_active_number() and self.is_active_a_friend():
-                self.update()
-        except Exception as ex:
-            print('Exception in file sending: ' + str(ex))
-
     def friend_exit(self, friend_number):
         """
         Friend with specified number quit
@@ -132,20 +105,6 @@ class Profile(basecontact.BaseContact):
         i = 0
         while i < self._messages.count() and not self._messages.itemWidget(self._messages.item(i)).mark_as_sent():
             i += 1
-
-    def send_messages(self, friend_number):
-        """
-        Send 'offline' messages to friend
-        """
-        friend = self.get_friend_by_number(friend_number)
-        friend.load_corr()
-        messages = friend.get_unsent_messages()
-        try:
-            for message in messages:
-                self.split_and_send(friend_number, message.get_data()[-1], message.get_data()[0].encode('utf-8'))
-                friend.inc_receipts()
-        except Exception as ex:
-            log('Sending pending messages failed with ' + str(ex))
 
     def delete_message(self, message_id):
         friend = self.get_curr_friend()

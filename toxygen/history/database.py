@@ -163,6 +163,9 @@ class Database:
             db.close()
 
     def messages_getter(self, tox_id):
+        if not self.friend_exists_in_db(tox_id):
+            self.add_friend_to_db(tox_id)
+
         return Database.MessageGetter(self._path, tox_id)
 
     # -----------------------------------------------------------------------------------------------------------------

@@ -48,6 +48,11 @@ class Message:
 
     message_id = property(get_message_id)
 
+    def get_type(self):
+        return self._type
+
+    type = property(get_type)
+
     def get_widget(self):
         if self._widget is None:
             self._widget = self._create_widget()

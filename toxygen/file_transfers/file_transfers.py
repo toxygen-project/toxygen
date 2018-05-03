@@ -172,7 +172,7 @@ class SendAvatar(SendTransfer):
         else:
             with open(path, 'rb') as fl:
                 avatar_hash = Tox.hash(fl.read())
-        super(SendAvatar, self).__init__(path, tox, friend_number, TOX_FILE_KIND['AVATAR'], avatar_hash)
+        super().__init__(path, tox, friend_number, TOX_FILE_KIND['AVATAR'], avatar_hash)
 
 
 class SendFromBuffer(FileTransfer):

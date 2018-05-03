@@ -1,6 +1,8 @@
 from ui.list_items import *
 from ui.messages_widgets import *
 
+# rename methods
+
 
 class ItemsFactory:
 
@@ -9,6 +11,11 @@ class ItemsFactory:
         self._smiley_loader = smiley_loader
         self._messages = main_screen.messages
         self._friends_list = main_screen.friends_list
+        self._message_edit = main_screen.messageEdit
+
+    def _create_message_browser(self, text, width, message_type, parent=None):
+        return MessageBrowser(self._settings, self._message_edit, self._smiley_loader, self._plugin_loader,
+                              text, width, message_type, parent)
 
     def friend_item(self):
         item = ContactItem(self._settings)
@@ -18,8 +25,8 @@ class ItemsFactory:
         self._friends_list.setItemWidget(elem, item)
         return item
 
-    def message_item(self, message, pixmap=None):
-        item = MessageItem(message, self._messages)
+    def message_item(self, message, append=True, pixmap=None):
+        item = MessageItem(self._settings, self._create_message_browser, message, self._messages)
         if pixmap is not None:
             item.set_avatar(pixmap)
         elem = QtWidgets.QListWidgetItem()

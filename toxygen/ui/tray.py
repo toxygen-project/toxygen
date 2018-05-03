@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from util.ui import tr
-from util.util import get_images_directory
+from util.util import *
 import os.path
 
 

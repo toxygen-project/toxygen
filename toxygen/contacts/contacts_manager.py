@@ -4,7 +4,6 @@ from contacts.friend import Friend
 from PyQt5 import QtCore, QtGui
 from messenger.messages import *
 from wrapper.toxcore_enums_and_consts import *
-from network.tox_dns import tox_dns
 from history.history_loader import HistoryLoader
 
 

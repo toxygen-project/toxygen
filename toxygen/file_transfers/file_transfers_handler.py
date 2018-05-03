@@ -2,6 +2,8 @@ from file_transfers.file_transfers import *
 from messenger.messages import *
 from history.database import MESSAGE_AUTHOR
 import os
+from ui.list_items import *
+from PyQt5 import QtWidgets
 import util.util as util
 
 
@@ -99,7 +101,7 @@ class FileTransfersHandler:
         :param already_cancelled: was cancelled by friend
         """
         i = self._get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                          TOX_FILE_TRANSFER_STATE['CANCELLED'])
+                                                                           TOX_FILE_TRANSFER_STATE['CANCELLED'])
         if (friend_number, file_number) in self._file_transfers:
             tr = self._file_transfers[(friend_number, file_number)]
             if not already_cancelled:
@@ -130,7 +132,7 @@ class FileTransfersHandler:
         tr = self._file_transfers[(friend_number, file_number)]
         tr.pause(by_friend)
         t = TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND'] if by_friend else TOX_FILE_TRANSFER_STATE['PAUSED_BY_USER']
-        self.get_friend_by_number(friend_number).update_transfer_data(file_number, t)
+        self._get_friend_by_number(friend_number).update_transfer_data(file_number, t)
 
     def resume_transfer(self, friend_number, file_number, by_friend=False):
         """
@@ -175,7 +177,7 @@ class FileTransfersHandler:
         self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
         if item is not None:
             rt.set_state_changed_handler(item.update_transfer_state)
-        self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+        self._get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                       TOX_FILE_TRANSFER_STATE['RUNNING'])
 
     def send_screenshot(self, data):
@@ -192,7 +194,7 @@ class FileTransfersHandler:
 
     def send_inline(self, data, file_name, friend_number=None, is_resend=False):
         friend_number = friend_number or self.get_active_number()
-        friend = self.get_friend_by_number(friend_number)
+        friend = self._get_friend_by_number(friend_number)
         if friend.status is None and not is_resend:
             m = UnsentFile(file_name, data, time.time())
             friend.append_message(m)
@@ -224,7 +226,7 @@ class FileTransfersHandler:
         :param file_id: file id of transfer
         """
         friend_number = self.get_active_number() if number is None else number
-        friend = self.get_friend_by_number(friend_number)
+        friend = self._get_friend_by_number(friend_number)
         if friend.status is None and not is_resend:
             m = UnsentFile(path, None, time.time())
             friend.append_message(m)
@@ -265,13 +267,13 @@ class FileTransfersHandler:
         transfer = self._file_transfers[(friend_number, file_number)]
         t = type(transfer)
         if t is ReceiveAvatar:
-            self.get_friend_by_number(friend_number).load_avatar()
+            self._get_friend_by_number(friend_number).load_avatar()
             if friend_number == self.get_active_number() and self.is_active_a_friend():
                 self.set_active(None)
-        elif t is ReceiveToBuffer or (t is SendFromBuffer and self._settings.get_instance()['allow_inline']):  # inline image
+        elif t is ReceiveToBuffer or (t is SendFromBuffer and self._settings['allow_inline']):  # inline image
             print('inline')
             inline = InlineImage(transfer.get_data())
-            i = self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+            i = self._get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                               TOX_FILE_TRANSFER_STATE['FINISHED'],
                                                                               inline)
             if friend_number == self.get_active_number() and self.is_active_a_friend():
@@ -284,10 +286,34 @@ class FileTransfersHandler:
                     self._messages.setItemWidget(elem, item)
                     self._messages.scrollToBottom()
         elif t is not SendAvatar:
-            self.get_friend_by_number(friend_number).update_transfer_data(file_number,
+            self._get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                           TOX_FILE_TRANSFER_STATE['FINISHED'])
         del self._file_transfers[(friend_number, file_number)]
         del transfer
+
+    def send_files(self, friend_number):
+        friend = self._get_friend_by_number(friend_number)
+        friend.remove_invalid_unsent_files()
+        files = friend.get_unsent_files()
+        try:
+            for fl in files:
+                data = fl.get_data()
+                if data[1] is not None:
+                    self.send_inline(data[1], data[0], friend_number, True)
+                else:
+                    self.send_file(data[0], friend_number, True)
+            friend.clear_unsent_files()
+            for key in list(self._paused_file_transfers.keys()):
+                data = self._paused_file_transfers[key]
+                if not os.path.exists(data[0]):
+                    del self._paused_file_transfers[key]
+                elif data[1] == friend_number and not data[2]:
+                    self.send_file(data[0], friend_number, True, key)
+                    del self._paused_file_transfers[key]
+            if friend_number == self.get_active_number() and self.is_active_a_friend():
+                self.update()
+        except Exception as ex:
+            print('Exception in file sending: ' + str(ex))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Avatars support
@@ -313,7 +339,7 @@ class FileTransfersHandler:
             self._file_transfers[(friend_number, file_number)] = ra
             ra.set_transfer_finished_handler(self.transfer_finished)
         else:
-            self.get_friend_by_number(friend_number).load_avatar()
+            self._get_friend_by_number(friend_number).load_avatar()
             if self.get_active_number() == friend_number and self.is_active_a_friend():
                 self.set_active(None)
 

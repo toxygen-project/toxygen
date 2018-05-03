@@ -5,13 +5,14 @@ from messenger.messages import *
 
 class Messenger(util.ToxSave):
 
-    def __init__(self, tox, plugin_loader, screen, contacts_manager, contacts_provider, items_factory):
+    def __init__(self, tox, plugin_loader, screen, contacts_manager, contacts_provider, items_factory, profile):
         super().__init__(tox)
         self._plugin_loader = plugin_loader
         self._screen = screen
         self._contacts_manager = contacts_manager
         self._contacts_provider = contacts_provider
         self._items_factory = items_factory
+        self._profile = profile
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -33,17 +34,16 @@ class Messenger(util.ToxSave):
         :param message: text of message
         """
         t = util.get_unix_time()
+        friend = self._get_friend_by_number(friend_number)
+        text_message = TextMessage(0, message, MessageAuthor(friend.name, MESSAGE_AUTHOR['FRIEND']), t, message_type)
 
         if self._contacts_manager.is_friend_active(friend_number):  # add message to list
-            self.create_message_item(message, t, MESSAGE_AUTHOR['FRIEND'], message_type)
+            self._create_message_item(text_message)
             self._screen.messages.scrollToBottom()
-            self._contacts_manager.get_curr_contact().append_message(
-                TextMessage(message, MESSAGE_AUTHOR['FRIEND'], t, message_type))
+            self._contacts_manager.get_curr_contact().append_message(text_message)
         else:
-            friend = self.get_friend_by_number(friend_number)
             friend.inc_messages()
-            friend.append_message(
-                TextMessage(message, MESSAGE_AUTHOR['FRIEND'], t, message_type))
+            friend.append_message(text_message)
             if not friend.visibility:
                 self._contacts_manager.update_filtration()
 
@@ -67,7 +67,7 @@ class Messenger(util.ToxSave):
                 text = text[4:]
             else:
                 message_type = TOX_MESSAGE_TYPE['NORMAL']
-            friend = self.get_friend_by_number(friend_number)
+            friend = self._get_friend_by_number(friend_number)
             messages = self._split_message(text.encode('utf-8'))
             t = util.get_unix_time()
             for message in messages:
@@ -76,12 +76,29 @@ class Messenger(util.ToxSave):
                     friend.inc_receipts()
                 else:
                     message_id = 0
-                message = TextMessage(message_id, text, MESSAGE_AUTHOR['NOT_SENT'], t, message_type)
+                message_author = MessageAuthor(self._profile.name, MESSAGE_AUTHOR['NOT_SENT'])
+                message = TextMessage(message_id, text, message_author, t, message_type)
                 friend.append_message(message)
                 if self._contacts_manager.is_friend_active(friend_number):
                     self._create_message_item(message)
                     self._screen.messageEdit.clear()
                     self._screen.messages.scrollToBottom()
+
+    def send_messages(self, friend_number):
+        """
+        Send 'offline' messages to friend
+        """
+        friend = self._get_friend_by_number(friend_number)
+        friend.load_corr()
+        messages = friend.get_unsent_messages()
+        try:
+            for message in messages:
+                tox_messages = self._split_message(message.text)
+                for tox_message in tox_messages:
+                    self._tox.friend_send_message(friend_number, message.message_type, tox_message)
+                friend.inc_receipts()
+        except Exception as ex:
+            util.log('Sending pending messages failed with ' + str(ex))
 
     # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications
@@ -131,5 +148,5 @@ class Messenger(util.ToxSave):
 
         return messages
 
-    def get_friend_by_number(self, friend_number):
+    def _get_friend_by_number(self, friend_number):
         return self._contacts_provider.get_friend_by_number(friend_number)

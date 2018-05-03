@@ -6,9 +6,10 @@ import util.util as util
 import ui.menu as menu
 import html as h
 import re
+from messenger.messages import MESSAGE_AUTHOR
 
 
-class MessageEdit(QtWidgets.QTextBrowser):
+class MessageBrowser(QtWidgets.QTextBrowser):
 
     def __init__(self, settings, message_edit, smileys_loader, plugin_loader, text, width, message_type, parent=None):
         super().__init__(parent)
@@ -122,7 +123,7 @@ class MessageItem(QtWidgets.QWidget):
     """
     Message in messages list
     """
-    def __init__(self, settings, text_message, parent=None):
+    def __init__(self, settings, message_browser_factory_method, text_message, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
         self.name = widgets.DataLabel(self)
         self.name.setGeometry(QtCore.QRect(2, 2, 95, 23))
@@ -132,25 +133,26 @@ class MessageItem(QtWidgets.QWidget):
         font.setPointSize(11)
         font.setBold(True)
         self.name.setFont(font)
-        self.name.setText(text_message.user)
+        self.name.setText(text_message.author.name)
 
         self.time = QtWidgets.QLabel(self)
         self.time.setGeometry(QtCore.QRect(parent.width() - 60, 0, 50, 25))
         font.setPointSize(10)
         font.setBold(False)
         self.time.setFont(font)
-        self._time = time
-        if not sent:
+        self._time = text_message.time
+        if text_message.author.type == MESSAGE_AUTHOR['NOT_SENT']:
             movie = QtGui.QMovie(util.join_path(util.get_images_directory(), 'spinner.gif'))
             self.time.setMovie(movie)
             movie.start()
             self.t = True
         else:
-            self.time.setText(util.convert_time(time))
+            self.time.setText(util.convert_time(text_message.time))
             self.t = False
 
-        self.message = MessageEdit(text, parent.width() - 160, message_type, self)
-        if message_type != TOX_MESSAGE_TYPE['NORMAL']:
+        self.message = message_browser_factory_method(text_message.text, parent.width() - 160,
+                                                      text_message.type, self)
+        if text_message.type != TOX_MESSAGE_TYPE['NORMAL']:
             self.name.setStyleSheet("QLabel { color: #5CB3FF; }")
             self.message.setAlignment(QtCore.Qt.AlignCenter)
             self.time.setStyleSheet("QLabel { color: #5CB3FF; }")

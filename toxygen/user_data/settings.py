@@ -1,6 +1,6 @@
 import json
 import os
-from util.util import log, get_base_directory, get_platform, join_path
+from util.util import *
 import pyaudio
 import smileys.smileys as smileys
 
