@@ -27,6 +27,7 @@ from ui.widgets_factory import WidgetsFactory
 from smileys.smileys import SmileyLoader
 from ui.items_factory import ItemsFactory
 from messenger.messenger import Messenger
+from network.tox_dns import ToxDns
 
 
 class App:
@@ -36,7 +37,7 @@ class App:
         self._app = self._settings = self._profile_manager = self._plugin_loader = self._messenger = None
         self._tox = self._ms = self._init = self._main_loop = self._av_loop = None
         self._uri = self._toxes = self._tray = self._file_transfer_handler = self._contacts_provider = None
-        self._friend_factory = self._calls_manager = self._contacts_manager = self._smiley_loader = None
+        self._friend_factory = self._calls_manager = self._contacts_manager = self._smiley_loader = self._tox_dns = None
         if uri is not None and uri.startswith('tox:'):
             self._uri = uri[4:]
         self._path = path_to_profile
@@ -114,9 +115,6 @@ class App:
         while True:
             try:
                 self._app.exec_()
-            except KeyboardInterrupt:
-                print('Closing Toxygen...')
-                break
             except Exception as ex:
                 util.log('Unhandled exception: ' + str(ex))
             else:
@@ -288,6 +286,7 @@ class App:
 
     def _create_dependencies(self):
         self._smiley_loader = SmileyLoader(self._settings)
+        self._tox_dns = ToxDns(self._settings)
         self._ms = MainWindow(self._settings, self._tray)
         self._calls_manager = CallsManager(self._tox.AV, self._settings)
         db = Database(self._path.replace('.tox', '.db'), self._toxes)
@@ -298,10 +297,11 @@ class App:
         self._friend_factory = FriendFactory(self._profile_manager, self._settings, self._tox, db, items_factory)
         self._contacts_provider = ContactProvider(self._tox, self._friend_factory)
         self._contacts_manager = ContactsManager(self._tox, self._settings, self._ms, self._profile_manager,
-                                                 self._contacts_provider, db)
+                                                 self._contacts_provider, db, self._tox_dns)
         self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider)
-        widgets_factory = WidgetsFactory(self._settings, profile, self._contacts_manager, self._file_transfer_handler,
-                                         self._smiley_loader, self._plugin_loader, self._toxes, self._version)
+        widgets_factory = WidgetsFactory(self._settings, profile, self._profile_manager, self._contacts_manager,
+                                         self._file_transfer_handler, self._smiley_loader, self._plugin_loader,
+                                         self._toxes, self._version)
         self._messenger = Messenger(self._tox, self._plugin_loader, self._ms, self._contacts_manager,
                                     self._contacts_provider, items_factory, profile)
         self._tray = tray.init_tray(profile, self._settings, self._ms)

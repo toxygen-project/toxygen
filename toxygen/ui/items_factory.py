@@ -13,10 +13,6 @@ class ItemsFactory:
         self._friends_list = main_screen.friends_list
         self._message_edit = main_screen.messageEdit
 
-    def _create_message_browser(self, text, width, message_type, parent=None):
-        return MessageBrowser(self._settings, self._message_edit, self._smiley_loader, self._plugin_loader,
-                              text, width, message_type, parent)
-
     def friend_item(self):
         item = ContactItem(self._settings)
         elem = QtWidgets.QListWidgetItem(self._friends_list)
@@ -75,3 +71,7 @@ class ItemsFactory:
             self._messages.insertItem(0, elem)
         self._messages.setItemWidget(elem, item)
         return item
+
+    def _create_message_browser(self, text, width, message_type, parent=None):
+        return MessageBrowser(self._settings, self._message_edit, self._smiley_loader, self._plugin_loader,
+                              text, width, message_type, parent)

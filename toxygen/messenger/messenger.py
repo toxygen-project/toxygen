@@ -3,6 +3,8 @@ from wrapper.toxcore_enums_and_consts import *
 from messenger.messages import *
 
 
+# TODO: sub profile name changed event?
+
 class Messenger(util.ToxSave):
 
     def __init__(self, tox, plugin_loader, screen, contacts_manager, contacts_provider, items_factory, profile):
@@ -99,6 +101,13 @@ class Messenger(util.ToxSave):
                 friend.inc_receipts()
         except Exception as ex:
             util.log('Sending pending messages failed with ' + str(ex))
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Message receipts
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def receipt(self, friend_number, message_id):
+        pass  # TODO: process
 
     # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications

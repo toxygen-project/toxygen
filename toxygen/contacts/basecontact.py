@@ -2,6 +2,7 @@ from user_data.settings import *
 from PyQt5 import QtCore, QtGui
 from wrapper.toxcore_enums_and_consts import TOX_PUBLIC_KEY_SIZE
 import util.util as util
+import common.event as event
 
 
 class BaseContact:
@@ -24,6 +25,9 @@ class BaseContact:
         self._status, self._widget = None, widget
         self._tox_id = tox_id
         self.init_widget()
+        self._name_changed_event = event.Event()
+        self._status_message_changed_event = event.Event()
+        self._status_changed_event = event.Event()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Name - current name or alias of user
@@ -33,11 +37,19 @@ class BaseContact:
         return self._name
 
     def set_name(self, value):
-        self._name = str(value, 'utf-8')
-        self._widget.name.setText(self._name)
-        self._widget.name.repaint()
+        value = str(value, 'utf-8')
+        if self._name != value:
+            self._name = value
+            self._widget.name.setText(self._name)
+            self._widget.name.repaint()
+            self._name_changed_event(self._name)
 
     name = property(get_name, set_name)
+
+    def get_name_changed_event(self):
+        return self._name_changed_event
+
+    name_changed_event = property(get_name_changed_event)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Status message
@@ -47,11 +59,19 @@ class BaseContact:
         return self._status_message
 
     def set_status_message(self, value):
-        self._status_message = str(value, 'utf-8')
-        self._widget.status_message.setText(self._status_message)
-        self._widget.status_message.repaint()
+        value = str(value, 'utf-8')
+        if self._status_message != value:
+            self._status_message = value
+            self._widget.status_message.setText(self._status_message)
+            self._widget.status_message.repaint()
+            self._status_message_changed_event(self._status_message)
 
     status_message = property(get_status_message, set_status_message)
+
+    def get_status_message_changed_event(self):
+        return self._status_message_changed_event
+
+    status_message_changed_event = property(get_status_message_changed_event)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Status
@@ -61,10 +81,17 @@ class BaseContact:
         return self._status
 
     def set_status(self, value):
-        self._status = value
-        self._widget.connection_status.update(value)
+        if self._status != value:
+            self._status = value
+            self._widget.connection_status.update(value)
+            self._status_changed_event(self._status)
 
     status = property(get_status, set_status)
+
+    def get_status_changed_event(self):
+        return self._status_changed_event
+
+    status_changed_event = property(get_status_changed_event)
 
     # -----------------------------------------------------------------------------------------------------------------
     # TOX ID. WARNING: for friend it will return public key, for profile - full address

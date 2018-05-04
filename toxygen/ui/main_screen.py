@@ -444,7 +444,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def create_gc(self):
         self.profile.create_group_chat()
 
-    def profile_settings(self):
+    def profile_settings(self, *args):
         self._modal_window = self._widget_factory.create_profile_settings_window()
         self._modal_window.show()
 

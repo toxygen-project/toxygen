@@ -1,7 +1,6 @@
 from file_transfers.file_transfers import *
 from messenger.messages import *
 from history.database import MESSAGE_AUTHOR
-import os
 from ui.list_items import *
 from PyQt5 import QtWidgets
 import util.util as util

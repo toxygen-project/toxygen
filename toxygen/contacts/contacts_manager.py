@@ -12,12 +12,13 @@ class ContactsManager:
     Represents contacts list.
     """
 
-    def __init__(self, tox, settings, screen, profile_manager, contact_provider, db):
+    def __init__(self, tox, settings, screen, profile_manager, contact_provider, db, tox_dns):
         self._tox = tox
         self._settings = settings
         self._screen = screen
         self._profile_manager = profile_manager
         self._contact_provider = contact_provider
+        self._tox_dns = tox_dns
         self._messages = screen.messages
         self._contacts, self._active_contact = [], -1
         self._sorting = settings['sorting']
@@ -74,13 +75,17 @@ class ContactsManager:
         try:
             # self.send_typing(False)  # TODO: fix
             self._screen.typing.setVisible(False)
+            current_contact = self.get_curr_contact()
+            if current_contact is not None:
+                self._unsubscribe_from_events(current_contact)
             if value is not None:
                 if self._active_contact + 1 and self._active_contact != value:
                     try:
-                        self.get_curr_contact().curr_text = self._screen.messageEdit.toPlainText()
+                        current_contact.curr_text = self._screen.messageEdit.toPlainText()
                     except:
                         pass
                 friend = self._contacts[value]
+                self._subscribe_to_events(friend)
                 friend.remove_invalid_unsent_files()
                 if self._active_contact != value:
                     self._screen.messageEdit.setPlainText(friend.curr_text)
@@ -133,8 +138,7 @@ class ContactsManager:
             else:
                 friend = self.get_curr_contact()
             # TODO: to separate method
-            self._screen.account_name.setText(friend.name)
-            self._screen.account_status.setText(friend.status_message)
+
             self._screen.account_status.setToolTip(friend.get_full_status())
             avatar_path = friend.get_avatar_path()
             pixmap = QtGui.QPixmap(avatar_path)
@@ -244,14 +248,15 @@ class ContactsManager:
         friend.set_name(name)
         name = str(name, 'utf-8')
         if friend.name == name and tmp != name:
+            # TODO: move to friend?
             message = util_ui.tr('User {} is now known as {}')
-            message = message.format(tmp, name)
-            friend.append_message(InfoMessage(0, message, util.get_unix_time()))
-            friend.actions = True
-            if number == self.get_active_number():
-                self.create_message_item(message, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
-                self._messages.scrollToBottom()
-            self.set_active(None)
+            # message = message.format(tmp, name)
+            # friend.append_message(InfoMessage(0, message, util.get_unix_time()))
+            # friend.actions = True
+            # if number == self.get_active_number():
+            #     self.create_message_item(message, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
+            #     self._messages.scrollToBottom()
+            # self.set_active(None)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Work with friends (remove, block, set alias, get public key)
@@ -369,7 +374,7 @@ class ContactsManager:
         try:
             message = message or 'Hello! Add me to your contact list please'
             if '@' in tox_id:  # value like groupbot@toxme.io
-                tox_id = tox_dns(tox_id)
+                tox_id = self._tox_dns.lookup(tox_id)
                 if tox_id is None:
                     raise Exception('TOX DNS lookup failed')
             if len(tox_id) == TOX_PUBLIC_KEY_SIZE * 2:  # public key
@@ -428,3 +433,16 @@ class ContactsManager:
 
     def _load_groups(self):
         self._contacts.extend(self._contact_provider.get_all_groups())
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Current contact subscriptions
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def _subscribe_to_events(self, contact):
+        contact.name_changed_event.add_callback(self._current_contact_name_changed)
+
+    def _unsubscribe_from_events(self, contact):
+        contact.name_changed_event.remove_callback(self._current_contact_name_changed)
+
+    def _current_contact_name_changed(self, name):
+        self._screen.account_name.setText(name)

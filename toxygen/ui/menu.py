@@ -84,9 +84,10 @@ class AddContact(CenteredWidget):
 
 class ProfileSettings(CenteredWidget):
     """Form with profile settings such as name, status, TOX ID"""
-    def __init__(self, profile, settings, toxes):
+    def __init__(self, profile, profile_manager, settings, toxes):
         super().__init__()
         self._profile = profile
+        self._profile_manager = profile_manager
         self._settings = settings
         self._toxes = toxes
         self.initUI()
@@ -166,7 +167,7 @@ class ProfileSettings(CenteredWidget):
         self.default = QtWidgets.QPushButton(self)
         self.default.setGeometry(QtCore.QRect(40, 550, 620, 30))
         auto_profile = Settings.get_auto_profile()
-        self.auto = path + name == ProfileManager.get_path() + Settings.get_instance().name
+        # self.auto = path + name == ProfileManager.get_path() + Settings.get_instance().name
         self.default.clicked.connect(self.auto_profile)
         self.retranslateUi()
         if self._profile.status is not None:
@@ -243,7 +244,7 @@ class ProfileSettings(CenteredWidget):
         self.copy_pk.setIconSize(QtCore.QSize(10, 10))
 
     def new_no_spam(self):
-        self.tox_id.setText(Profile.get_instance().new_nospam())
+        self.tox_id.setText(self._profile.new_nospam())
 
     def reset_avatar(self):
         self._profile.reset_avatar()

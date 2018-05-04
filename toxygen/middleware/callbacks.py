@@ -12,7 +12,7 @@ from middleware.threads import invoke_in_main_thread, execute
 from notifications.tray import tray_notification
 from notifications.sound import *
 
-# TODO: gc callbacks and refactoring
+# TODO: gc callbacks and refactoring. Use contact provider instead of manager
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - current user
@@ -140,11 +140,9 @@ def friend_typing(messenger):
     return wrapped
 
 
-def friend_read_receipt(contacts_manager):
+def friend_read_receipt(messenger):
     def wrapped(tox, friend_number, message_id, user_data):
-        contacts_manager.get_friend_by_number(friend_number).dec_receipt()
-        if friend_number == contacts_manager.get_active_number():
-            invoke_in_main_thread(contacts_manager.receipt)
+        invoke_in_main_thread(messenger.receipt, friend_number, message_id)
 
     return wrapped
 
@@ -398,7 +396,7 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     tox.callback_friend_status_message(friend_status_message(contacts_manager, messenger), 0)
     tox.callback_friend_request(friend_request(contacts_manager), 0)
     tox.callback_friend_typing(friend_typing(messenger), 0)
-    tox.callback_friend_read_receipt(friend_read_receipt(contacts_manager), 0)
+    tox.callback_friend_read_receipt(friend_read_receipt(messenger), 0)
 
     # file transfer
     tox.callback_file_recv(tox_file_recv(main_window, tray, profile, file_transfer_handler,

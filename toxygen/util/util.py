@@ -158,6 +158,8 @@ def get_platform():
     return platform.system()
 
 
+# TODO: to common
+
 class ToxSave:
 
     def __init__(self, tox):

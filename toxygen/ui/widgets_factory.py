@@ -4,10 +4,11 @@ from ui.menu import *
 
 class WidgetsFactory:
 
-    def __init__(self, settings, profile, contacts_manager, file_transfer_handler, smiley_loader, plugin_loader,
-                 toxes, version):
+    def __init__(self, settings, profile, profile_manager, contacts_manager, file_transfer_handler, smiley_loader,
+                 plugin_loader, toxes, version):
         self._settings = settings
         self._profile = profile
+        self._profile_manager = profile_manager
         self._contacts_manager = contacts_manager
         self._file_transfer_handler = file_transfer_handler
         self._smiley_loader = smiley_loader
@@ -25,7 +26,7 @@ class WidgetsFactory:
         return WelcomeScreen(self._settings)
 
     def create_profile_settings_window(self):
-        return ProfileSettings(self._profile, self._settings, self._toxes)
+        return ProfileSettings(self._profile, self._profile_manager,  self._settings, self._toxes)
 
     def create_network_settings_window(self):
         return NetworkSettings(self._settings, self._profile.reset)

@@ -71,7 +71,7 @@ class StatusCircle(QtWidgets.QWidget):
             self.label.setGeometry(QtCore.QRect(0, 0, 32, 32))
         else:
             self.label.setGeometry(QtCore.QRect(2, 0, 32, 32))
-        pixmap = QtGui.QPixmap(curr_directory() + '/images/{}.png'.format(name))
+        pixmap = QtGui.QPixmap(join_path(get_images_directory(), '{}.png'.format(name)))
         self.label.setPixmap(pixmap)
 
 
@@ -121,6 +121,7 @@ class FileTransferItem(QtWidgets.QListWidget):
         self.name.setGeometry(QtCore.QRect(3, 7, 95, 25))
         self.name.setTextFormat(QtCore.Qt.PlainText)
         font = QtGui.QFont()
+        # FIXME
         font.setFamily(settings.Settings.get_instance()['font'])
         font.setPointSize(11)
         font.setBold(True)
@@ -281,7 +282,7 @@ class UnsentFileItem(FileTransferItem):
                                              TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND'], width, parent)
         self._time = time
         self.pb.setVisible(False)
-        movie = QtGui.QMovie(curr_directory() + '/images/spinner.gif')
+        movie = QtGui.QMovie(join_path(get_images_directory(), 'spinner.gif'))
         self.time.setMovie(movie)
         movie.start()
 
@@ -331,6 +332,7 @@ class InlineImageItem(QtWidgets.QScrollArea):
             self._full_size = not self._full_size
             self._elem.setSizeHint(QtCore.QSize(self.width(), self.height()))
         elif event.button() == QtCore.Qt.RightButton:  # save inline
+            # TODO: dialog
             directory = QtWidgets.QFileDialog.getExistingDirectory(self,
                                                                    QtWidgets.QApplication.translate("MainWindow",
                                                                                                     'Choose folder'),
