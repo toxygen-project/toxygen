@@ -1,5 +1,4 @@
 import json
-import os
 from utils.util import *
 import pyaudio
 import smileys.smileys as smileys
@@ -52,16 +51,21 @@ class Settings(dict):
         if os.path.isfile(p):
             with open(p) as fl:
                 data = fl.read()
-            auto = json.loads(data)
-            if 'path' in auto and 'name' in auto:
-                path = str(auto['path'])
-                name = str(auto['name'])
-                if os.path.isfile(join_path(path, name + '.tox')):
-                    return path, name
+            try:
+                auto = json.loads(data)
+            except Exception as ex:
+                log(str(ex))
+                auto = {}
+            if 'profile_path' in auto:
+                path = str(auto['profile_path'])
+                if not os.path.isabs(path):
+                    path = join_path(path, curr_directory(__file__))
+                if os.path.isfile(path):
+                    return path
         return None
 
     @staticmethod
-    def set_auto_profile(path, name):
+    def set_auto_profile(path):
         p = Settings.get_global_settings_path()
         if os.path.isfile(p):
             with open(p) as fl:
@@ -69,8 +73,7 @@ class Settings(dict):
             data = json.loads(data)
         else:
             data = {}
-        data['path'] = str(path)
-        data['name'] = str(name)
+        data['profile_path'] = str(path)
         with open(p, 'w') as fl:
             fl.write(json.dumps(data))
 

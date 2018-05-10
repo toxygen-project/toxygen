@@ -4,7 +4,6 @@ from contacts.profile import Profile
 from utils.util import *
 from ui.widgets import CenteredWidget, DataLabel, LineEdit, RubberBandWindow
 import pyaudio
-from user_data import toxes
 import updater.updater as updater
 import utils.ui as util_ui
 
@@ -90,6 +89,7 @@ class ProfileSettings(CenteredWidget):
         self._profile_manager = profile_manager
         self._settings = settings
         self._toxes = toxes
+        self._auto = False
         self.initUI()
         self.center()
 
@@ -166,8 +166,7 @@ class ProfileSettings(CenteredWidget):
         self.warning.setStyleSheet('QLabel { color: #BC1C1C; }')
         self.default = QtWidgets.QPushButton(self)
         self.default.setGeometry(QtCore.QRect(40, 550, 620, 30))
-        auto_profile = Settings.get_auto_profile()
-        # self.auto = path + name == ProfileManager.get_path() + Settings.get_instance().name
+        self._auto = Settings.get_auto_profile() == self._profile_manager.get_path()
         self.default.clicked.connect(self.auto_profile)
         self.retranslateUi()
         if self._profile.status is not None:
@@ -197,22 +196,22 @@ class ProfileSettings(CenteredWidget):
         self.status.addItem(util_ui.tr("Away"))
         self.status.addItem(util_ui.tr("Busy"))
         self.copy_pk.setText(util_ui.tr("Copy public key"))
-        if self.auto:
+
+        self.set_default_profile_button_text()
+
+    def auto_profile(self):
+        if self._auto:
+            Settings.reset_auto_profile()
+        else:
+            Settings.set_auto_profile(self._profile_manager.get_path())
+        self._auto = not self._auto
+        self.set_default_profile_button_text()
+
+    def set_default_profile_button_text(self):
+        if self._auto:
             self.default.setText(util_ui.tr("Mark as not default profile"))
         else:
             self.default.setText(util_ui.tr("Mark as default profile"))
-
-    def auto_profile(self):
-        if self.auto:
-            Settings.reset_auto_profile()
-        else:
-            Settings.set_auto_profile(ProfileManager.get_path(), Settings.get_instance().name)
-        self.auto = not self.auto
-        if self.auto:
-            self.default.setText(util_ui.tr("Mark as not default profile"))
-        else:
-            self.default.setText(
-                util_ui.tr("Mark as default profile"))
 
     def new_password(self):
         if self.password.text() == self.confirm_password.text():
@@ -230,7 +229,7 @@ class ProfileSettings(CenteredWidget):
     def copy(self):
         clipboard = QtWidgets.QApplication.clipboard()
         clipboard.setText(self._profile.tox_id)
-        pixmap = QtGui.QPixmap(curr_directory() + '/images/accept.png')
+        pixmap = QtGui.QPixmap(join_path(get_images_directory(), 'accept.png'))
         icon = QtGui.QIcon(pixmap)
         self.copyId.setIcon(icon)
         self.copyId.setIconSize(QtCore.QSize(10, 10))
@@ -238,7 +237,7 @@ class ProfileSettings(CenteredWidget):
     def copy_public_key(self):
         clipboard = QtWidgets.QApplication.clipboard()
         clipboard.setText(self._profile.tox_id[:64])
-        pixmap = QtGui.QPixmap(curr_directory() + '/images/accept.png')
+        pixmap = QtGui.QPixmap(join_path(get_images_directory(), 'accept.png'))
         icon = QtGui.QIcon(pixmap)
         self.copy_pk.setIcon(icon)
         self.copy_pk.setIconSize(QtCore.QSize(10, 10))
@@ -270,7 +269,7 @@ class ProfileSettings(CenteredWidget):
                                      util_ui.tr('Use new path'))
             self._settings.export(directory)
             self._profile.export_db(directory)
-            ProfileManager.get_instance().export_profile(directory, reply)
+            self._profile_manager.export_profile(directory, reply)
 
     def closeEvent(self, event):
         self._profile.set_name(self.nick.text())

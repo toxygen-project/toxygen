@@ -28,6 +28,9 @@ class ProfileManager:
     def get_dir(self):
         return self._directory
 
+    def get_path(self):
+        return self._path
+
     def save_profile(self, data):
         if self._toxes.has_password():
             data = self._toxes.pass_encrypt(data)

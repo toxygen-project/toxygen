@@ -2,7 +2,6 @@ from middleware import threads
 import middleware.callbacks as callbacks
 from PyQt5 import QtWidgets, QtGui, QtCore
 import ui.password_screen as password_screen
-from utils.util import *
 import updater.updater as updater
 import os
 from middleware.tox_factory import tox_factory
@@ -53,47 +52,19 @@ class App:
         self._app = QtWidgets.QApplication([])
         self._load_icon()
 
-        if get_platform() == 'Linux':
+        if util.get_platform() == 'Linux':
             QtCore.QCoreApplication.setAttribute(QtCore.Qt.AA_X11InitThreads)
 
         self._load_base_style()
 
-        encrypt_save = tox_encrypt_save.ToxEncryptSave()
-        self._toxes = user_data.toxes.ToxES(encrypt_save)
-
-        if self._path is not None:  # toxygen was started with path to profile
-            self._load_existing_profile(self._path)
-        else:
-            auto_profile = Settings.get_auto_profile()
-            if auto_profile is None:   # no default profile
-                result = self._select_profile()
-                if result is None:
-                    return
-                if result.is_new_profile():  # create new profile
-                    self._create_new_profile(result.profile_path)
-                else:  # load existing profile
-                    self._load_existing_profile(result.profile_path)
-                self._path = result.profile_path
-            else:  # default profile
-                path, name = auto_profile
-                self._path = os.path.join(path, name + '.tox')
-                self._load_existing_profile(self._path)
-
-        if Settings.is_active_profile(self._path):  # profile is in use
-            profile_name = get_profile_name_from_path(self._path)
-            title = util_ui.tr('Profile {}').format(profile_name)
-            text = util_ui.tr('Other instance of Toxygen uses this profile or profile was not properly closed. Continue?')
-            reply = util_ui.question(text, title)
-            if not reply:
-                return
-
-        self._settings.set_active_profile()
-
-        self._load_app_styles()
-        self._load_app_translations()
+        if not self._select_and_load_profile():
+            return
 
         if self._try_to_update():
             return
+
+        self._load_app_styles()
+        self._load_app_translations()
 
         self._create_dependencies()
         self._start_threads()
@@ -133,7 +104,7 @@ class App:
     # -----------------------------------------------------------------------------------------------------------------
 
     def _load_base_style(self):
-        with open(join_path(get_styles_directory(), 'dark_style.qss')) as fl:
+        with open(util.join_path(util.get_styles_directory(), 'dark_style.qss')) as fl:
             style = fl.read()
         self._app.setStyleSheet(style)
 
@@ -143,7 +114,7 @@ class App:
             return
         for theme in self._settings.built_in_themes().keys():
             if self._settings['theme'] == theme:
-                with open(curr_directory(__file__) + self._settings.built_in_themes()[theme]) as fl:
+                with open(util.curr_directory(__file__) + self._settings.built_in_themes()[theme]) as fl:
                     style = fl.read()
                 self._app.setStyleSheet(style)
 
@@ -152,12 +123,12 @@ class App:
         if current_language in supported_languages:
             lang_path = supported_languages[current_language]
             translator = QtCore.QTranslator()
-            translator.load(get_translations_directory() + lang_path)
+            translator.load(util.get_translations_directory() + lang_path)
             self._app.installTranslator(translator)
             self._app.translator = translator
 
     def _load_icon(self):
-        icon_file = os.path.join(get_images_directory(), 'icon.png')
+        icon_file = os.path.join(util.get_images_directory(), 'icon.png')
         self._app.setWindowIcon(QtGui.QIcon(icon_file))
 
     @staticmethod
@@ -171,9 +142,43 @@ class App:
     def _load_app_translations(self):
         lang = Settings.supported_languages()[self._settings['language']]
         translator = QtCore.QTranslator()
-        translator.load(os.path.join(get_translations_directory(), lang))
+        translator.load(os.path.join(util.get_translations_directory(), lang))
         self._app.installTranslator(translator)
         self._app.translator = translator
+
+    def _select_and_load_profile(self):
+        encrypt_save = tox_encrypt_save.ToxEncryptSave()
+        self._toxes = user_data.toxes.ToxES(encrypt_save)
+
+        if self._path is not None:  # toxygen was started with path to profile
+            self._load_existing_profile(self._path)
+        else:
+            auto_profile = Settings.get_auto_profile()
+            if auto_profile is None:  # no default profile
+                result = self._select_profile()
+                if result is None:
+                    return False
+                if result.is_new_profile():  # create new profile
+                    self._create_new_profile(result.profile_path)
+                else:  # load existing profile
+                    self._load_existing_profile(result.profile_path)
+                self._path = result.profile_path
+            else:  # default profile
+                self._path = auto_profile
+                self._load_existing_profile(auto_profile)
+
+        if Settings.is_active_profile(self._path):  # profile is in use
+            profile_name = util.get_profile_name_from_path(self._path)
+            title = util_ui.tr('Profile {}').format(profile_name)
+            text = util_ui.tr(
+                'Other instance of Toxygen uses this profile or profile was not properly closed. Continue?')
+            reply = util_ui.question(text, title)
+            if not reply:
+                return False
+
+        self._settings.set_active_profile()
+
+        return True
 
     # -----------------------------------------------------------------------------------------------------------------
     # Threads
@@ -223,7 +228,7 @@ class App:
         self._tox = self._create_tox(data)
 
     def _create_new_profile(self, profile_path):
-        name = get_profile_name_from_path(profile_path) or 'toxygen_user'
+        name = util.get_profile_name_from_path(profile_path) or 'toxygen_user'
         if os.path.isfile(profile_path):
             util_ui.message_box(util_ui.tr('Profile with this name already exists'),
                                 util_ui.tr('Error'))

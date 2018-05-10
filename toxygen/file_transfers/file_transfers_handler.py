@@ -309,8 +309,6 @@ class FileTransfersHandler:
                 elif data[1] == friend_number and not data[2]:
                     self.send_file(data[0], friend_number, True, key)
                     del self._paused_file_transfers[key]
-            if friend_number == self.get_active_number() and self.is_active_a_friend():
-                self.update()
         except Exception as ex:
             print('Exception in file sending: ' + str(ex))
 
@@ -333,14 +331,13 @@ class FileTransfersHandler:
         :param file_number: file number
         :param size: size of avatar or 0 (default avatar)
         """
-        ra = ReceiveAvatar(self._tox, friend_number, size, file_number)
+        friend = self._get_friend_by_number(friend_number)
+        ra = ReceiveAvatar(friend.get_contact_avatar_path(), self._tox, friend_number, size, file_number)
         if ra.state != TOX_FILE_TRANSFER_STATE['CANCELLED']:
             self._file_transfers[(friend_number, file_number)] = ra
             ra.set_transfer_finished_handler(self.transfer_finished)
         else:
-            self._get_friend_by_number(friend_number).load_avatar()
-            if self.get_active_number() == friend_number and self.is_active_a_friend():
-                self.set_active(None)
+            friend.load_avatar()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods

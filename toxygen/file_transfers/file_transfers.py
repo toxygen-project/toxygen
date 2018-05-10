@@ -3,7 +3,6 @@ from os.path import basename, getsize, exists, dirname
 from os import remove, rename, chdir
 from time import time, sleep
 from wrapper.tox import Tox
-from user_data import settings
 from PyQt5 import QtCore
 
 
@@ -48,7 +47,7 @@ class FileTransfer(QtCore.QObject):
     """
 
     def __init__(self, path, tox, friend_number, size, file_number=None):
-        super().__init__(self)
+        QtCore.QObject.__init__(self)
         self._path = path
         self._tox = tox
         self._friend_number = friend_number
@@ -305,20 +304,20 @@ class ReceiveAvatar(ReceiveTransfer):
     """
     MAX_AVATAR_SIZE = 512 * 1024
 
-    def __init__(self, tox, friend_number, size, file_number):
-        path = settings.ProfileManager.get_path() + 'avatars/{}.png'.format(tox.friend_get_public_key(friend_number))
-        super().__init__(path + '.tmp', tox, friend_number, size, file_number)
+    def __init__(self, path, tox, friend_number, size, file_number):
+        full_path = path + '.tmp'
+        super().__init__(full_path, tox, friend_number, size, file_number)
         if size > self.MAX_AVATAR_SIZE:
             self.send_control(TOX_FILE_CONTROL['CANCEL'])
             self._file.close()
-            remove(path + '.tmp')
+            remove(full_path)
         elif not size:
             self.send_control(TOX_FILE_CONTROL['CANCEL'])
             self._file.close()
             if exists(path):
                 remove(path)
             self._file.close()
-            remove(path + '.tmp')
+            remove(full_path)
         elif exists(path):
             hash = self.get_file_id()
             with open(path, 'rb') as fl:
@@ -327,7 +326,7 @@ class ReceiveAvatar(ReceiveTransfer):
             if hash == existing_hash:
                 self.send_control(TOX_FILE_CONTROL['CANCEL'])
                 self._file.close()
-                remove(path + '.tmp')
+                remove(full_path)
             else:
                 self.send_control(TOX_FILE_CONTROL['RESUME'])
         else:

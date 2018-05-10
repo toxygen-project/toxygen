@@ -135,16 +135,16 @@ class BaseContact:
         return self._widget.avatar_label.pixmap()
 
     def get_avatar_path(self):
-        directory = util.join_path(self._profile_manager.get_dir(), 'avatars')
-        avatar_path = util.join_path(directory, '{}.png'.format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2]))
+        avatar_path = self.get_contact_avatar_path()
         if not os.path.isfile(avatar_path) or not os.path.getsize(avatar_path):  # load default image
-            avatar_path = util.join_path(util.get_images_directory(), self.get_default_avatar_name())
+            avatar_path = util.join_path(util.get_images_directory(), self._get_default_avatar_name())
 
         return avatar_path
 
-    @staticmethod
-    def get_default_avatar_name():
-        return 'avatar.png'
+    def get_contact_avatar_path(self):
+        directory = util.join_path(self._profile_manager.get_dir(), 'avatars')
+
+        return util.join_path(directory, '{}.png'.format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2]))
 
     def get_avatar_changed_event(self):
         return self._avatar_changed_event
@@ -160,3 +160,11 @@ class BaseContact:
         self._widget.status_message.setText(self._status_message)
         self._widget.connection_status.update(self._status)
         self.load_avatar()
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # -----------------------------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def _get_default_avatar_name():
+        return 'avatar.png'
