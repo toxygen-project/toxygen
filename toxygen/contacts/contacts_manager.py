@@ -30,7 +30,7 @@ class ContactsManager:
     def __del__(self):
         del self._history
 
-    def get_friend(self, num):
+    def get_contact(self, num):
         if num < 0 or num >= len(self._contacts):
             return None
         return self._contacts[num]
@@ -358,6 +358,13 @@ class ContactsManager:
         if add_to_friend_list:
             self.add_friend(tox_id)
             self.save_profile()
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Groups support
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def get_group_chats(self):
+        return list(filter(lambda c: type(c) is not Friend, self._contacts))  # TODO: fix after gc implementation
 
     # -----------------------------------------------------------------------------------------------------------------
     # Friend requests

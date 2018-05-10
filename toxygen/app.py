@@ -310,7 +310,8 @@ class App:
         self._messenger = Messenger(self._tox, self._plugin_loader, self._ms, self._contacts_manager,
                                     self._contacts_provider, items_factory, profile)
         self._tray = tray.init_tray(profile, self._settings, self._ms)
-        self._ms.set_dependencies(widgets_factory, self._tray, self._contacts_manager, self._messenger, profile)
+        self._ms.set_dependencies(widgets_factory, self._tray, self._contacts_manager, self._messenger, profile,
+                                  self._plugin_loader)
 
         self._tray.show()
         self._ms.show()

@@ -15,16 +15,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self._tray = tray
         self._widget_factory = None
         self._modal_window = None
+        self._plugins_loader = None
         self.setAcceptDrops(True)
         self._saved = False
         self._profile = None
         self.initUI()
 
-    def set_dependencies(self, widget_factory, tray, contacts_manager, messenger, profile):
+    def set_dependencies(self, widget_factory, tray, contacts_manager, messenger, profile, plugins_loader):
         self._widget_factory = widget_factory
         self._tray = tray
         self._contacts_manager = contacts_manager
         self._profile = profile
+        self._plugins_loader = plugins_loader
         self.messageEdit.set_messenger(messenger)
 
     def show(self):
@@ -572,16 +574,17 @@ class MainWindow(QtWidgets.QMainWindow):
     # -----------------------------------------------------------------------------------------------------------------
 
     def friend_right_click(self, pos):
+        # TODO: move to contact?
         item = self.friends_list.itemAt(pos)
         num = self.friends_list.indexFromItem(item).row()
-        friend = self._contacts_manager.get_friend(num)
-        if friend is None:
+        contact = self._contacts_manager.get_contact(num)
+        if contact is None:
             return
-        allowed = friend.tox_id in self._settings['auto_accept_from_friends']
+        allowed = contact.tox_id in self._settings['auto_accept_from_friends']
         auto = util_ui.tr('Disallow auto accept') if allowed else util_ui.tr('Allow auto accept')
         if item is not None:
             self.listMenu = QtWidgets.QMenu()
-            is_friend = type(friend) is Friend
+            is_friend = type(contact) is Friend
             if is_friend:
                 set_alias_item = self.listMenu.addAction(util_ui.tr('Set alias'))
                 set_alias_item.triggered.connect(lambda: self.set_alias(num))
@@ -603,7 +606,7 @@ class MainWindow(QtWidgets.QMainWindow):
                 notes_item = self.listMenu.addAction(util_ui.tr('Notes'))
 
                 chats = self._contacts_manager.get_group_chats()
-                if len(chats) and self.profile.is_active_online():
+                if len(chats) and contact.status is not None:
                     invite_menu = self.listMenu.addMenu(util_ui.tr('Invite to group chat'))
                     for i in range(len(chats)):
                         name, number = chats[i]
@@ -619,15 +622,15 @@ class MainWindow(QtWidgets.QMainWindow):
                 remove_item.triggered.connect(lambda: self.remove_friend(num))
                 block_item.triggered.connect(lambda: self.block_friend(num))
                 auto_accept_item.triggered.connect(lambda: self.auto_accept(num, not allowed))
-                notes_item.triggered.connect(lambda: self.show_note(friend))
+                notes_item.triggered.connect(lambda: self.show_note(contact))
             else:
                 leave_item = self.listMenu.addAction(util_ui.tr('Leave chat'))
                 set_title_item = self.listMenu.addAction(util_ui.tr('Set title'))
                 leave_item.triggered.connect(lambda: self.leave_gc(num))
                 set_title_item.triggered.connect(lambda: self.set_title(num))
             clear_history_item.triggered.connect(lambda: self.clear_history(num))
-            copy_name_item.triggered.connect(lambda: self.copy_name(friend))
-            copy_status_item.triggered.connect(lambda: self.copy_status(friend))
+            copy_name_item.triggered.connect(lambda: self.copy_name(contact))
+            copy_status_item.triggered.connect(lambda: self.copy_status(contact))
             export_to_text_item.triggered.connect(lambda: self.export_history(num))
             export_to_html_item.triggered.connect(lambda: self.export_history(num, False))
             parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
@@ -666,7 +669,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._contacts_manager.delete_friend(num)
 
     def block_friend(self, num):
-        friend = self.profile.get_friend(num)
+        friend = self.profile.get_contact(num)
         self._contacts_manager.block_user(friend.tox_id)
 
     def copy_friend_key(self, num):
