@@ -2,8 +2,8 @@ from contacts.profile import *
 from ui.list_items import *
 from ui.widgets import MultilineEdit, ComboBox
 from ui.main_screen_widgets import *
-import util.util as util
-import util.ui as util_ui
+import utils.util as util
+import utils.ui as util_ui
 
 
 class MainWindow(QtWidgets.QMainWindow):

@@ -1,6 +1,6 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
-from util.ui import tr
-from util.util import *
+from utils.ui import tr
+from utils.util import *
 import os.path
 
 

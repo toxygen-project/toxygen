@@ -1,7 +1,6 @@
-import util.util as util
-import util.ui as util_ui
+import utils.util as util
+import utils.ui as util_ui
 import os
-from user_data import settings
 import platform
 import urllib
 from PyQt5 import QtNetwork, QtCore

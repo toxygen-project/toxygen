@@ -1,5 +1,5 @@
 from contacts import contact
-import util.util as util
+import utils.util as util
 from PyQt5 import QtGui, QtCore
 from wrapper import toxcore_enums_and_consts as constants
 

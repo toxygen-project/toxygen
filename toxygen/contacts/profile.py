@@ -5,7 +5,7 @@ from file_transfers.file_transfers import *
 import time
 from contacts import basecontact
 from contacts.group_chat import *
-import util.ui as util_ui
+import utils.ui as util_ui
 
 
 class Profile(basecontact.BaseContact):

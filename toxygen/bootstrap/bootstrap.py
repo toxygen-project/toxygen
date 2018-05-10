@@ -1,6 +1,6 @@
 import random
 import urllib.request
-from util.util import *
+from utils.util import *
 from PyQt5 import QtNetwork, QtCore
 import json
 

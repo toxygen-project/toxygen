@@ -1,7 +1,7 @@
 from user_data.settings import *
 from PyQt5 import QtCore, QtGui
 from wrapper.toxcore_enums_and_consts import TOX_PUBLIC_KEY_SIZE
-import util.util as util
+import utils.util as util
 import common.event as event
 
 
@@ -24,10 +24,11 @@ class BaseContact:
         self._name, self._status_message = name, status_message
         self._status, self._widget = None, widget
         self._tox_id = tox_id
-        self.init_widget()
         self._name_changed_event = event.Event()
         self._status_message_changed_event = event.Event()
         self._status_changed_event = event.Event()
+        self._avatar_changed_event = event.Event()
+        self.init_widget()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Name - current name or alias of user
@@ -116,6 +117,7 @@ class BaseContact:
         self._widget.avatar_label.setPixmap(pixmap.scaled(width, width, QtCore.Qt.KeepAspectRatio,
                                                           QtCore.Qt.SmoothTransformation))
         self._widget.avatar_label.repaint()
+        self._avatar_changed_event(avatar_path)
 
     def reset_avatar(self):
         avatar_path = self.get_avatar_path()
@@ -143,13 +145,18 @@ class BaseContact:
     @staticmethod
     def get_default_avatar_name():
         return 'avatar.png'
+
+    def get_avatar_changed_event(self):
+        return self._avatar_changed_event
+
+    avatar_changed_event = property(get_avatar_changed_event)
+
     # -----------------------------------------------------------------------------------------------------------------
     # Widgets
     # -----------------------------------------------------------------------------------------------------------------
 
     def init_widget(self):
-        if self._widget is not None:
-            self._widget.name.setText(self._name)
-            self._widget.status_message.setText(self._status_message)
-            self._widget.connection_status.update(self._status)
-            self.load_avatar()
+        self._widget.name.setText(self._name)
+        self._widget.status_message.setText(self._status_message)
+        self._widget.connection_status.update(self._status)
+        self.load_avatar()

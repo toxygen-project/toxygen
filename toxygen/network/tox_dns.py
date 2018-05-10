@@ -1,6 +1,6 @@
 import json
 import urllib.request
-import util.util as util
+import utils.util as util
 from PyQt5 import QtNetwork, QtCore
 
 

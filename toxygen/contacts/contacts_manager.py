@@ -1,8 +1,7 @@
-import util.util as util
-import util.ui as util_ui
+import utils.util as util
+import utils.ui as util_ui
 from contacts.friend import Friend
 from PyQt5 import QtCore, QtGui
-from messenger.messages import *
 from wrapper.toxcore_enums_and_consts import *
 from history.history_loader import HistoryLoader
 
@@ -440,9 +439,27 @@ class ContactsManager:
 
     def _subscribe_to_events(self, contact):
         contact.name_changed_event.add_callback(self._current_contact_name_changed)
+        contact.status_changed_event.add_callback(self._current_contact_status_changed)
+        contact.status_message_changed_event.add_callback(self._current_contact_status_message_changed)
+        contact.avatar_changed_event.add_callback(self._current_contact_avatar_changed)
 
     def _unsubscribe_from_events(self, contact):
         contact.name_changed_event.remove_callback(self._current_contact_name_changed)
+        contact.status_changed_event.remove_callback(self._current_contact_status_changed)
+        contact.status_message_changed_event.remove_callback(self._current_contact_status_message_changed)
+        contact.avatar_changed_event.remove_callback(self._current_contact_avatar_changed)
 
     def _current_contact_name_changed(self, name):
         self._screen.account_name.setText(name)
+
+    def _current_contact_status_changed(self, status):
+        pass
+
+    def _current_contact_status_message_changed(self, status_message):
+        self._screen.account_status.setText(status_message)
+
+    def _current_contact_avatar_changed(self, avatar_path):
+        width = self._screen.account_avatar.width()
+        pixmap = QtGui.QPixmap(avatar_path)
+        self._screen.account_avatar.avatar_label.setPixmap(pixmap.scaled(width, width, QtCore.Qt.KeepAspectRatio,
+                                                                         QtCore.Qt.SmoothTransformation))

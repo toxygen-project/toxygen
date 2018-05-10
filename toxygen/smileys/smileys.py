@@ -1,4 +1,4 @@
-from util import util
+from utils import util
 import json
 import os
 from collections import OrderedDict

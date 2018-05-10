@@ -1,6 +1,6 @@
 from sqlite3 import connect
 import os.path
-import util.util as util
+import utils.util as util
 
 
 TIMEOUT = 11

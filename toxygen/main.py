@@ -1,6 +1,6 @@
 import app
 from user_data.settings import *
-import util.util as util
+import utils.util as util
 import argparse
 
 

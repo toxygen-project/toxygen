@@ -1,7 +1,8 @@
-import util.util as util
+import utils.util as util
+import common.tox_save as tox_save
 
 
-class ContactProvider(util.ToxSave):
+class ContactProvider(tox_save.ToxSave):
 
     def __init__(self, tox, friend_factory):
         super().__init__(tox)
@@ -50,7 +51,7 @@ class ContactProvider(util.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_all(self):
-        return self.get_all_friends() + self.get_all_gc()
+        return self.get_all_friends() + self.get_all_groups()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Caching

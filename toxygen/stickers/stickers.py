@@ -1,5 +1,5 @@
 import os
-import util.util as util
+import utils.util as util
 
 
 def load_stickers():

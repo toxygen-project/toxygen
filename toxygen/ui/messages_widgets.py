@@ -1,8 +1,8 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from wrapper.toxcore_enums_and_consts import *
 import ui.widgets as widgets
-import util.ui as util_ui
-import util.util as util
+import utils.ui as util_ui
+import utils.util as util
 import ui.menu as menu
 import html as h
 import re

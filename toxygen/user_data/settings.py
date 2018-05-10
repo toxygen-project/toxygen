@@ -1,6 +1,6 @@
 import json
 import os
-from util.util import *
+from utils.util import *
 import pyaudio
 import smileys.smileys as smileys
 

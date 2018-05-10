@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets
-import util.util as util
+import utils.util as util
 
 
 def tr(s):

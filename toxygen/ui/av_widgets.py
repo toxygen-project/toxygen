@@ -1,11 +1,11 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from ui import widgets
 from contacts import profile
-import util
+import utils
 import pyaudio
 import wave
 from user_data import settings
-from util.util import *
+from utils.util import *
 
 
 class IncomingCallWidget(widgets.CenteredWidget):
@@ -34,13 +34,13 @@ class IncomingCallWidget(widgets.CenteredWidget):
         self.accept_video.setGeometry(QtCore.QRect(170, 100, 150, 150))
         self.decline = QtWidgets.QPushButton(self)
         self.decline.setGeometry(QtCore.QRect(320, 100, 150, 150))
-        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/accept_audio.png')
+        pixmap = QtGui.QPixmap(utils.curr_directory() + '/images/accept_audio.png')
         icon = QtGui.QIcon(pixmap)
         self.accept_audio.setIcon(icon)
-        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/accept_video.png')
+        pixmap = QtGui.QPixmap(utils.curr_directory() + '/images/accept_video.png')
         icon = QtGui.QIcon(pixmap)
         self.accept_video.setIcon(icon)
-        pixmap = QtGui.QPixmap(util.curr_directory() + '/images/decline_call.png')
+        pixmap = QtGui.QPixmap(utils.curr_directory() + '/images/decline_call.png')
         icon = QtGui.QIcon(pixmap)
         self.decline.setIcon(icon)
         self.accept_audio.setIconSize(QtCore.QSize(150, 150))

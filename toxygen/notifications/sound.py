@@ -1,4 +1,4 @@
-import util.util
+import utils.util
 import wave
 import pyaudio
 import os.path
@@ -51,4 +51,4 @@ def sound_notification(t):
 
 
 def get_file_path(file_name):
-    return os.path.join(util.util.get_sounds_directory(), file_name)
+    return os.path.join(utils.util.get_sounds_directory(), file_name)

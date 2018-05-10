@@ -1,6 +1,6 @@
 from history.database import *
 from contacts import basecontact, common
-import util.util as util
+import utils.util as util
 from messenger.messages import *
 from file_transfers import file_transfers as ft
 import re

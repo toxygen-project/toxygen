@@ -1,7 +1,7 @@
 from ui.widgets import *
 from PyQt5 import uic
-import util.util as util
-import util.ui as util_ui
+import utils.util as util
+import utils.ui as util_ui
 
 
 class CreateProfileScreenResult:

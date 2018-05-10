@@ -1,11 +1,12 @@
-import util.util as util
+import utils.util as util
+import common.tox_save as tox_save
 from wrapper.toxcore_enums_and_consts import *
 from messenger.messages import *
 
 
 # TODO: sub profile name changed event?
 
-class Messenger(util.ToxSave):
+class Messenger(tox_save.ToxSave):
 
     def __init__(self, tox, plugin_loader, screen, contacts_manager, contacts_provider, items_factory, profile):
         super().__init__(tox)

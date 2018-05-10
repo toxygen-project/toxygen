@@ -3,7 +3,7 @@ from messenger.messages import *
 from history.database import MESSAGE_AUTHOR
 from ui.list_items import *
 from PyQt5 import QtWidgets
-import util.util as util
+import utils.util as util
 
 
 class FileTransfersHandler:

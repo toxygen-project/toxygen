@@ -1,5 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
-import util.ui as util_ui
+import utils.ui as util_ui
 
 
 class DataLabel(QtWidgets.QLabel):

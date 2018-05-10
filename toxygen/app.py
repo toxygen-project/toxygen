@@ -2,7 +2,7 @@ from middleware import threads
 import middleware.callbacks as callbacks
 from PyQt5 import QtWidgets, QtGui, QtCore
 import ui.password_screen as password_screen
-from util.util import *
+from utils.util import *
 import updater.updater as updater
 import os
 from middleware.tox_factory import tox_factory
@@ -14,8 +14,8 @@ from user_data.profile_manager import ProfileManager
 from plugin_support.plugin_support import PluginLoader
 from ui.main_screen import MainWindow
 from ui import tray
-import util.ui as util_ui
-import util.util as util
+import utils.ui as util_ui
+import utils.util as util
 from contacts.profile import Profile
 from file_transfers.file_transfers_handler import FileTransfersHandler
 from contacts.contact_provider import ContactProvider

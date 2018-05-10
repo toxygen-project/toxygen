@@ -6,7 +6,7 @@ class Event:
         self._callbacks = set()
 
     def __iadd__(self, callback):
-        self._callbacks.add(callback)
+        self.add_callback(callback)
 
     def __isub__(self, callback):
         self.remove_callback(callback)

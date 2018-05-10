@@ -4,8 +4,8 @@ from contacts.profile import Profile
 from wrapper.toxcore_enums_and_consts import *
 from wrapper.toxav_enums import *
 from wrapper.tox import bin_to_string
-import util.ui as util_ui
-import util.util as util
+import utils.ui as util_ui
+import utils.util as util
 import cv2
 import numpy as np
 from middleware.threads import invoke_in_main_thread, execute

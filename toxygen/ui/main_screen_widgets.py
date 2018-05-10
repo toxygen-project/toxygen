@@ -2,8 +2,8 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from ui.widgets import RubberBandWindow, create_menu, QRightClickButton, CenteredWidget, LineEdit
 from contacts.profile import Profile
 import urllib
-import util.util as util
-import util.ui as util_ui
+import utils.util as util
+import utils.ui as util_ui
 from stickers.stickers import load_stickers
 
 
