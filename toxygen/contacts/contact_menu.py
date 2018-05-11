@@ -110,6 +110,7 @@ class FriendMenuGenerator(BaseContactMenuGenerator):
                         .with_action(util_ui.tr('Export as text'), lambda: main_screen.export_history(number))
                         .with_action(util_ui.tr('Export as HTML'), lambda: main_screen.export_history(number, False))
                         ).build()
+
         return history_menu
 
     def _generate_copy_menu(self, main_screen):
@@ -134,11 +135,11 @@ class FriendMenuGenerator(BaseContactMenuGenerator):
         plugins_menu = (plugins_menu_builder
                         .with_name(util_ui.tr('Plugins'))
                         .with_actions(plugins_actions)
-                        )
+                        ).build()
 
         return plugins_menu
 
-    def _generate_groups_menu(self, contacts_manager):
+    def _generate_groups_menu(self, contacts_manager):  # TODO: fix
         chats = contacts_manager.get_group_chats()
         if not len(chats) or self._contact.status is None:
             return None

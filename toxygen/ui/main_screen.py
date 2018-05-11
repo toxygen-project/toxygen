@@ -574,19 +574,16 @@ class MainWindow(QtWidgets.QMainWindow):
     # -----------------------------------------------------------------------------------------------------------------
 
     def friend_right_click(self, pos):
-        # TODO: move to contact?
         item = self.friends_list.itemAt(pos)
         number = self.friends_list.indexFromItem(item).row()
         contact = self._contacts_manager.get_contact(number)
-        if contact is None:
+        if contact is None or item is None:
             return
-        if item is not None:
-            generator = contact.get_context_menu_generator()
-            self.listMenu = generator.generate(self._plugins_loader, self._contacts_manager, self,
-                                               self._settings, number)
-            parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
-            self.listMenu.move(parent_position + pos)
-            self.listMenu.show()
+        generator = contact.get_context_menu_generator()
+        self.listMenu = generator.generate(self._plugins_loader, self._contacts_manager, self, self._settings, number)
+        parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
+        self.listMenu.move(parent_position + pos)
+        self.listMenu.show()
 
     def show_note(self, friend):
         note = self._settings['notes'][friend.tox_id] if friend.tox_id in self._settings['notes'] else ''
