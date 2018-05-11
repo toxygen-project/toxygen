@@ -138,7 +138,7 @@ class PluginLoader():
         if name in self._plugins and self._plugins[name][1]:
             self._plugins[name][0].command(text[len(name) + 1:])
 
-    def get_menu(self, menu, num):
+    def get_menu(self, num):
         """
         Return list of items for menu
         """
@@ -146,7 +146,7 @@ class PluginLoader():
         for elem in self._plugins.values():
             if elem[1]:
                 try:
-                    result.extend(elem[0].get_menu(menu, num))
+                    result.extend(elem[0].get_menu(num))
                 except:
                     continue
         return result

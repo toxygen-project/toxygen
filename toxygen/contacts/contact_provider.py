@@ -1,4 +1,3 @@
-import utils.util as util
 import common.tox_save as tox_save
 
 

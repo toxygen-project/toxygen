@@ -2,6 +2,7 @@ from history.database import *
 from contacts import basecontact, common
 import utils.util as util
 from messenger.messages import *
+from contacts.contact_menu import *
 from file_transfers import file_transfers as ft
 import re
 
@@ -89,7 +90,7 @@ class Contact(basecontact.BaseContact):
             self._unsaved_messages += 1
 
     def get_last_message_text(self):
-        messages = list(filter(lambda x: x.get_type() <= 1 and x.get_owner() != MESSAGE_OWNER['FRIEND'], self._corr))
+        messages = list(filter(lambda x: x.get_type() <= 1 and x.get_owner() != MESSAGE_AUTHOR['FRIEND'], self._corr))
         if messages:
             return messages[-1].get_data()[0]
         else:
@@ -103,19 +104,19 @@ class Contact(basecontact.BaseContact):
         """
         :return list of unsent messages
         """
-        messages = filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr)
+        messages = filter(lambda x: x.get_owner() == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
         return list(messages)
 
     def get_unsent_messages_for_saving(self):
         """
         :return list of unsent messages for saving
         """
-        messages = filter(lambda x: x.get_type() <= 1 and x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr)
+        messages = filter(lambda x: x.get_type() <= 1 and x.get_owner() == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
         return list(map(lambda x: x.get_data(), messages))
 
     def mark_as_sent(self):
         try:
-            message = list(filter(lambda x: x.get_owner() == MESSAGE_OWNER['NOT_SENT'], self._corr))[0]
+            message = list(filter(lambda x: x.get_owner() == MESSAGE_AUTHOR['NOT_SENT'], self._corr))[0]
             message.mark_as_sent()
         except Exception as ex:
             util.log('Mark as sent ex: ' + str(ex))
@@ -140,7 +141,7 @@ class Contact(basecontact.BaseContact):
         def save_message(x):
             if x.get_type() == 2 and (x.get_status() >= 2 or x.get_status() is None):
                 return True
-            return x.get_owner() == MESSAGE_OWNER['NOT_SENT']
+            return x.get_owner() == MESSAGE_AUTHOR['NOT_SENT']
 
         old = filter(save_message, self._corr[:-SAVE_MESSAGES])
         self._corr = list(old) + self._corr[-SAVE_MESSAGES:]
@@ -162,7 +163,7 @@ class Contact(basecontact.BaseContact):
             self._unsaved_messages = 0
         else:
             self._corr = list(filter(lambda x: (x.get_type() == 2 and x.get_status() in ft.ACTIVE_FILE_TRANSFERS)
-                                               or (x.get_type() <= 1 and x.get_owner() == MESSAGE_OWNER['NOT_SENT']),
+                                               or (x.get_type() <= 1 and x.get_owner() == MESSAGE_AUTHOR['NOT_SENT']),
                                      self._corr))
             self._unsaved_messages = len(self.get_unsent_messages())
 
@@ -294,3 +295,10 @@ class Contact(basecontact.BaseContact):
         return common.BaseTypingNotificationHandler.DEFAULT_HANDLER
 
     typing_notification_handler = property(get_typing_notification_handler)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Context menu support
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def get_context_menu_generator(self):
+        return BaseContactMenuGenerator(self)

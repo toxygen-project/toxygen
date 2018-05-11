@@ -1,0 +1,144 @@
+from PyQt5 import QtWidgets
+import utils.ui as util_ui
+
+
+# -----------------------------------------------------------------------------------------------------------------
+# Builder
+# -----------------------------------------------------------------------------------------------------------------
+
+def _create_menu(menu_name):
+    return QtWidgets.QMenu(menu_name or '')
+
+
+class ContactMenuBuilder:
+
+    def __init__(self):
+        self._actions = []
+        self._submenus = []
+        self._name = None
+
+    def with_name(self, name):
+        self._name = name
+
+        return self
+
+    def with_action(self, text, handler):
+        self._actions.append((text, handler))
+
+        return self
+
+    def with_actions(self, actions):
+        self._actions.extend(actions)
+
+        return self
+
+    def with_submenu(self, submenu):
+        self._add_submenu(submenu)
+
+        return self
+
+    def with_optional_submenu(self, submenu):
+        if submenu is not None:
+            self._add_submenu(submenu)
+
+        return self
+
+    def build(self):   # TODO: actions order
+        menu = _create_menu(self._name)
+
+        for text, handler in self._actions:
+            action = menu.addAction(text)
+            action.triggered.connect(handler)
+
+        for submenu in self._submenus:
+            menu.addMenu(submenu)
+
+        return menu
+
+    def _add_submenu(self, submenu):
+        self._submenus.append(submenu)
+
+# -----------------------------------------------------------------------------------------------------------------
+# Generators
+# -----------------------------------------------------------------------------------------------------------------
+
+
+class BaseContactMenuGenerator:
+
+    def __init__(self, contact):
+        self._contact = contact
+
+    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number):
+        return ContactMenuBuilder().build()
+
+
+class FriendMenuGenerator(BaseContactMenuGenerator):
+
+    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number):
+        history_menu = self._generate_history_menu(main_screen, number)
+        copy_menu = self._generate_copy_menu(main_screen)
+        plugins_menu = self._generate_plugins_menu(plugin_loader, number)
+
+        allowed = self._contact.tox_id in settings['auto_accept_from_friends']
+        auto = util_ui.tr('Disallow auto accept') if allowed else util_ui.tr('Allow auto accept')
+
+        builder = ContactMenuBuilder()
+        menu = (builder
+                .with_action(util_ui.tr('Set alias'), lambda: main_screen.set_alias(number))
+                .with_action(util_ui.tr('Chat history'), lambda: main_screen.clear_history(number))
+                .with_submenu(history_menu)
+                .with_submenu(copy_menu)
+                .with_action(auto, lambda: main_screen.auto_accept(number, not allowed))
+                .with_action(util_ui.tr('Remove friend'), lambda: main_screen.remove_friend(number))
+                .with_action(util_ui.tr('Block friend'), lambda: main_screen.block_friend(number))
+                .with_action(util_ui.tr('Notes'), lambda: main_screen.show_note(self._contact))
+                .with_optional_submenu(plugins_menu)
+                ).build()
+
+        return menu
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # -----------------------------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def _generate_history_menu(main_screen, number):
+        history_menu_builder = ContactMenuBuilder()
+        history_menu = (history_menu_builder
+                        .with_name(util_ui.tr('Chat history'))
+                        .with_action(util_ui.tr('Clear history'), lambda: main_screen.clear_history(number))
+                        .with_action(util_ui.tr('Export as text'), lambda: main_screen.export_history(number))
+                        .with_action(util_ui.tr('Export as HTML'), lambda: main_screen.export_history(number, False))
+                        ).build()
+        return history_menu
+
+    def _generate_copy_menu(self, main_screen):
+        copy_menu_builder = ContactMenuBuilder()
+        copy_menu = (copy_menu_builder
+                     .with_name(util_ui.tr('Copy'))
+                     .with_action(util_ui.tr('Name'), lambda: main_screen.copy_text(self._contact.name))
+                     .with_action(util_ui.tr('Status message'), lambda: main_screen.copy_text(self._contact.name))
+                     .with_action(util_ui.tr('Public key'), lambda: main_screen.copy_text(self._contact.tox_id))
+                     ).build()
+
+        return copy_menu
+
+    @staticmethod
+    def _generate_plugins_menu(plugin_loader, number):
+        if plugin_loader is None:
+            return None
+        plugins_actions = plugin_loader.get_menu(number)
+        if not len(plugins_actions):
+            return None
+        plugins_menu_builder = ContactMenuBuilder()
+        plugins_menu = (plugins_menu_builder
+                        .with_name(util_ui.tr('Plugins'))
+                        .with_actions(plugins_actions)
+                        )
+
+        return plugins_menu
+
+    def _generate_groups_menu(self, contacts_manager):
+        chats = contacts_manager.get_group_chats()
+        if not len(chats) or self._contact.status is None:
+            return None

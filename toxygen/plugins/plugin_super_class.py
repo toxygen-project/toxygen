@@ -76,12 +76,11 @@ class PluginSuperClass:
         """
         return self.__doc__
 
-    def get_menu(self, menu, row_number):
+    def get_menu(self, row_number):
         """
         This method creates items for menu which called on right click in list of friends
-        :param menu: menu instance
         :param row_number: number of selected row in list of contacts
-        :return list of QAction's
+        :return list of tuples (text, handler)
         """
         return []
 

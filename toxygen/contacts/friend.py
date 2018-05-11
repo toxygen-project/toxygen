@@ -1,6 +1,7 @@
 from contacts import contact, common
 from messenger.messages import *
 import os
+from contacts.contact_menu import *
 
 
 class Friend(contact.Contact):
@@ -46,6 +47,7 @@ class Friend(contact.Contact):
             if message.get_data()[1] is not None:
                 return True
             return os.path.exists(message.get_data()[0])
+
         self._corr = list(filter(is_valid, self._corr))
 
     def delete_one_unsent_file(self, time):
@@ -81,3 +83,10 @@ class Friend(contact.Contact):
 
     def get_typing_notification_handler(self):
         return self._typing_notification_handler
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Context menu support
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def get_context_menu_generator(self):
+        return FriendMenuGenerator(self)

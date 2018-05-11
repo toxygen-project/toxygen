@@ -576,63 +576,14 @@ class MainWindow(QtWidgets.QMainWindow):
     def friend_right_click(self, pos):
         # TODO: move to contact?
         item = self.friends_list.itemAt(pos)
-        num = self.friends_list.indexFromItem(item).row()
-        contact = self._contacts_manager.get_contact(num)
+        number = self.friends_list.indexFromItem(item).row()
+        contact = self._contacts_manager.get_contact(number)
         if contact is None:
             return
-        allowed = contact.tox_id in self._settings['auto_accept_from_friends']
-        auto = util_ui.tr('Disallow auto accept') if allowed else util_ui.tr('Allow auto accept')
         if item is not None:
-            self.listMenu = QtWidgets.QMenu()
-            is_friend = type(contact) is Friend
-            if is_friend:
-                set_alias_item = self.listMenu.addAction(util_ui.tr('Set alias'))
-                set_alias_item.triggered.connect(lambda: self.set_alias(num))
-
-            history_menu = self.listMenu.addMenu(util_ui.tr('Chat history'))
-            clear_history_item = history_menu.addAction(util_ui.tr('Clear history'))
-            export_to_text_item = history_menu.addAction(util_ui.tr('Export as text'))
-            export_to_html_item = history_menu.addAction(util_ui.tr('Export as HTML'))
-
-            copy_menu = self.listMenu.addMenu(util_ui.tr('Copy'))
-            copy_name_item = copy_menu.addAction(util_ui.tr('Name'))
-            copy_status_item = copy_menu.addAction(util_ui.tr('Status message'))
-            if is_friend:
-                copy_key_item = copy_menu.addAction(util_ui.tr('Public key'))
-
-                auto_accept_item = self.listMenu.addAction(auto)
-                remove_item = self.listMenu.addAction(util_ui.tr('Remove friend'))
-                block_item = self.listMenu.addAction(util_ui.tr('Block friend'))
-                notes_item = self.listMenu.addAction(util_ui.tr('Notes'))
-
-                chats = self._contacts_manager.get_group_chats()
-                if len(chats) and contact.status is not None:
-                    invite_menu = self.listMenu.addMenu(util_ui.tr('Invite to group chat'))
-                    for i in range(len(chats)):
-                        name, number = chats[i]
-                        item = invite_menu.addAction(name)
-                        item.triggered.connect(lambda: self.invite_friend_to_gc(num, number))
-
-                if self._plugins_loader is not None:
-                    submenu = self._plugins_loader.get_menu(self.listMenu, num)
-                    if len(submenu):
-                        plug = self.listMenu.addMenu(util_ui.tr('Plugins'))
-                        plug.addActions(submenu)
-                copy_key_item.triggered.connect(lambda: self.copy_friend_key(num))
-                remove_item.triggered.connect(lambda: self.remove_friend(num))
-                block_item.triggered.connect(lambda: self.block_friend(num))
-                auto_accept_item.triggered.connect(lambda: self.auto_accept(num, not allowed))
-                notes_item.triggered.connect(lambda: self.show_note(contact))
-            else:
-                leave_item = self.listMenu.addAction(util_ui.tr('Leave chat'))
-                set_title_item = self.listMenu.addAction(util_ui.tr('Set title'))
-                leave_item.triggered.connect(lambda: self.leave_gc(num))
-                set_title_item.triggered.connect(lambda: self.set_title(num))
-            clear_history_item.triggered.connect(lambda: self.clear_history(num))
-            copy_name_item.triggered.connect(lambda: self.copy_name(contact))
-            copy_status_item.triggered.connect(lambda: self.copy_status(contact))
-            export_to_text_item.triggered.connect(lambda: self.export_history(num))
-            export_to_html_item.triggered.connect(lambda: self.export_history(num, False))
+            generator = contact.get_context_menu_generator()
+            self.listMenu = generator.generate(self._plugins_loader, self._contacts_manager, self,
+                                               self._settings, number)
             parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
             self.listMenu.move(parent_position + pos)
             self.listMenu.show()
@@ -672,20 +623,10 @@ class MainWindow(QtWidgets.QMainWindow):
         friend = self.profile.get_contact(num)
         self._contacts_manager.block_user(friend.tox_id)
 
-    def copy_friend_key(self, num):
-        tox_id = self._contacts_manager.friend_public_key(num)
-        clipboard = QtWidgets.QApplication.clipboard()
-        clipboard.setText(tox_id)
-
     @staticmethod
-    def copy_name(friend):
+    def copy_text(text):
         clipboard = QtWidgets.QApplication.clipboard()
-        clipboard.setText(friend.name)
-
-    @staticmethod
-    def copy_status(friend):
-        clipboard = QtWidgets.QApplication.clipboard()
-        clipboard.setText(friend.status_message)
+        clipboard.setText(text)
 
     def clear_history(self, num):
         self._contacts_manager.clear_history(num)
