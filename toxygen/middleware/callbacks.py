@@ -95,8 +95,6 @@ def friend_status_message(contacts_manager, messenger):
         invoke_in_main_thread(friend.set_status_message, status_message)
         print('User #{} has new status'.format(friend_number))
         invoke_in_main_thread(messenger.send_messages, friend_number)
-        if contacts_manager.is_friend_active(friend_number):
-            invoke_in_main_thread(contacts_manager.set_active)
 
     return wrapped
 

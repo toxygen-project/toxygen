@@ -73,7 +73,7 @@ class Database:
         db = self._connect()
         try:
             cursor = db.cursor()
-            cursor.execute('INSERT INTO contacts VALUES (?);', (tox_id, ))
+            # cursor.execute('INSERT INTO contacts VALUES (?);', (tox_id, ))
             cursor.execute('CREATE TABLE id' + tox_id + '('
                            '    id INTEGER PRIMARY KEY,'
                            '    message_id INTEGER,'

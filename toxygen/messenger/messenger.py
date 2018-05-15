@@ -23,7 +23,7 @@ class Messenger(tox_save.ToxSave):
 
     def _create_message_item(self, text_message):
         # pixmap = self._contacts_manager.get_curr_contact().get_pixmap()
-        self._items_factory.message_item(text_message)
+        self._items_factory.create_message_item(text_message)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Messaging
@@ -38,7 +38,7 @@ class Messenger(tox_save.ToxSave):
         """
         t = util.get_unix_time()
         friend = self._get_friend_by_number(friend_number)
-        text_message = TextMessage(0, message, MessageAuthor(friend.name, MESSAGE_AUTHOR['FRIEND']), t, message_type)
+        text_message = TextMessage(message, MessageAuthor(friend.name, MESSAGE_AUTHOR['FRIEND']), t, message_type)
 
         if self._contacts_manager.is_friend_active(friend_number):  # add message to list
             self._create_message_item(text_message)
@@ -80,7 +80,7 @@ class Messenger(tox_save.ToxSave):
                 else:
                     message_id = 0
                 message_author = MessageAuthor(self._profile.name, MESSAGE_AUTHOR['NOT_SENT'])
-                message = TextMessage(message_id, text, message_author, t, message_type)
+                message = OutgoingTextMessage(text, message_author, t, message_type, message_id)
                 friend.append_message(message)
                 if self._contacts_manager.is_friend_active(friend_number):
                     self._create_message_item(message)

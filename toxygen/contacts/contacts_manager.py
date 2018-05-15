@@ -3,7 +3,7 @@ import utils.ui as util_ui
 from contacts.friend import Friend
 from PyQt5 import QtCore, QtGui
 from wrapper.toxcore_enums_and_consts import *
-from history.history_loader import HistoryLoader
+from messenger.messages import *
 
 
 class ContactsManager:
@@ -11,24 +11,23 @@ class ContactsManager:
     Represents contacts list.
     """
 
-    def __init__(self, tox, settings, screen, profile_manager, contact_provider, db, tox_dns):
+    def __init__(self, tox, settings, screen, profile_manager, contact_provider, history, tox_dns,
+                 messages_items_factory):
         self._tox = tox
         self._settings = settings
         self._screen = screen
         self._profile_manager = profile_manager
         self._contact_provider = contact_provider
         self._tox_dns = tox_dns
+        self._messages_items_factory = messages_items_factory
         self._messages = screen.messages
         self._contacts, self._active_contact = [], -1
         self._sorting = settings['sorting']
         self._filter_string = ''
         self._friend_item_height = 40 if settings['compact_mode'] else 70
         screen.online_contacts.setCurrentIndex(int(self._sorting))
-        self._history = HistoryLoader(contact_provider, db, settings)
+        self._history = history
         self._load_contacts()
-
-    def __del__(self):
-        del self._history
 
     def get_contact(self, num):
         if num < 0 or num >= len(self._contacts):
@@ -55,10 +54,10 @@ class ContactsManager:
     def get_active(self):
         return self._active_contact
 
-    def set_active(self, value=None):
+    def set_active(self, value):
         """
         Change current active friend or update info
-        :param value: number of new active friend in friend's list or None to update active user's data
+        :param value: number of new active friend in friend's list
         """
         if value is None and self._active_contact == -1:  # nothing to update
             return
@@ -76,67 +75,34 @@ class ContactsManager:
             self._screen.typing.setVisible(False)
             current_contact = self.get_curr_contact()
             if current_contact is not None:
+                current_contact.remove_messages_widgets()  # TODO: if required
                 self._unsubscribe_from_events(current_contact)
-            if value is not None:
-                if self._active_contact + 1 and self._active_contact != value:
-                    try:
-                        current_contact.curr_text = self._screen.messageEdit.toPlainText()
-                    except:
-                        pass
-                friend = self._contacts[value]
-                self._subscribe_to_events(friend)
-                friend.remove_invalid_unsent_files()
-                if self._active_contact != value:
-                    self._screen.messageEdit.setPlainText(friend.curr_text)
-                self._active_contact = value
-                friend.reset_messages()
-                if not self._settings['save_history']:
-                    friend.delete_old_messages()
-                self._messages.clear()
-                # friend.load_corr()
-                # messages = friend.get_corr()[-PAGE_SIZE:]
-                # self._load_history = False
-                # for message in messages:
-                #     if message.get_type() <= 1:
-                #         data = message.get_data()
-                #         self.create_message_item(data[0],
-                #                                  data[2],
-                #                                  data[1],
-                #                                  data[3])
-                #     elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:
-                #         if message.get_status() is None:
-                #             self.create_unsent_file_item(message)
-                #             continue
-                #         item = self.create_file_transfer_item(message)
-                #         if message.get_status() in ACTIVE_FILE_TRANSFERS:  # active file transfer
-                #             try:
-                #                 ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
-                #                 ft.set_state_changed_handler(item.update_transfer_state)
-                #                 ft.signal()
-                #             except:
-                #                 print('Incoming not started transfer - no info found')
-                #     elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline
-                #         self.create_inline_item(message.get_data())
-                #     elif message.get_type() < 5:  # info message
-                #         data = message.get_data()
-                #         self.create_message_item(data[0],
-                #                                  data[2],
-                #                                  '',
-                #                                  data[3])
-                #     else:
-                #         data = message.get_data()
-                #         self.create_gc_message_item(data[0], data[2], data[1], data[4], data[3])
-                # self._messages.scrollToBottom()
-                # self._load_history = True
-                # if value in self._call:
-                #     self._screen.active_call()
-                # elif value in self._incoming_calls:
-                #     self._screen.incoming_call()
-                # else:
-                #     self._screen.call_finished()
-            else:
-                friend = self.get_curr_contact()
-            # TODO: to separate method
+
+            if self._active_contact + 1 and self._active_contact != value:
+                try:
+                    current_contact.curr_text = self._screen.messageEdit.toPlainText()
+                except:
+                    pass
+            friend = self._contacts[value]
+            self._subscribe_to_events(friend)
+            friend.remove_invalid_unsent_files()
+            if self._active_contact != value:
+                self._screen.messageEdit.setPlainText(friend.curr_text)
+            self._active_contact = value
+            friend.reset_messages()
+            if not self._settings['save_history']:
+                friend.delete_old_messages()
+            self._messages.clear()
+            friend.load_corr()
+            corr = friend.get_corr()[-PAGE_SIZE:]
+            for message in corr:
+                self._messages_items_factory.create_message_item(message)
+            # if value in self._call:
+            #     self._screen.active_call()
+            # elif value in self._incoming_calls:
+            #     self._screen.incoming_call()
+            # else:
+            #     self._screen.call_finished()
 
             self._screen.account_status.setToolTip(friend.get_full_status())
             avatar_path = friend.get_avatar_path()
@@ -150,7 +116,7 @@ class ContactsManager:
 
     active_friend = property(get_active, set_active)
 
-    def set_active_by_number_and_type(self, number, is_friend):
+    def set_active_by_number_and_type(self, number, is_friend):  # TODO: by id
         for i in range(len(self._contacts)):
             c = self._contacts[i]
             if c.number == number and (type(c) is Friend == is_friend):
@@ -468,5 +434,6 @@ class ContactsManager:
     def _current_contact_avatar_changed(self, avatar_path):
         width = self._screen.account_avatar.width()
         pixmap = QtGui.QPixmap(avatar_path)
-        self._screen.account_avatar.avatar_label.setPixmap(pixmap.scaled(width, width, QtCore.Qt.KeepAspectRatio,
-                                                                         QtCore.Qt.SmoothTransformation))
+        self._screen.avatar_label.setPixmap(pixmap.scaled(width, width,
+                                                          QtCore.Qt.KeepAspectRatio,
+                                                          QtCore.Qt.SmoothTransformation))

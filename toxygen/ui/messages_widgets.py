@@ -115,7 +115,7 @@ class MessageBrowser(QtWidgets.QTextBrowser):
             if arr[i].startswith('&gt;'):
                 arr[i] = '<font color="green"><b>' + arr[i][4:] + '</b></font>'
         text = '<br>'.join(arr)
-        text = self._smileys_loader.add_smileys_to_text(text, self)  # smileys
+        text = self._smileys_loader.add_smileys_to_text(text, self)
         return text
 
 
@@ -123,8 +123,10 @@ class MessageItem(QtWidgets.QWidget):
     """
     Message in messages list
     """
-    def __init__(self, settings, message_browser_factory_method, text_message, parent=None):
+    def __init__(self, text_message, settings, message_browser_factory_method, delete_action, parent=None):
         QtWidgets.QWidget.__init__(self, parent)
+        self._message = text_message
+        self._delete_action = delete_action
         self.name = widgets.DataLabel(self)
         self.name.setGeometry(QtCore.QRect(2, 2, 95, 23))
         self.name.setTextFormat(QtCore.Qt.PlainText)
@@ -169,12 +171,11 @@ class MessageItem(QtWidgets.QWidget):
             self.listMenu.show()
 
     def delete(self):
-        pr = profile.Profile.get_instance()
-        pr.delete_message(self._time)
+        self._delete_action(self._message)
 
     def mark_as_sent(self):
         if self.t:
-            self.time.setText(convert_time(self._time))
+            self.time.setText(util.convert_time(self._time))
             self.t = False
             return True
         return False

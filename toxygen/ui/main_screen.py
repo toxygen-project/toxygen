@@ -604,11 +604,13 @@ class MainWindow(QtWidgets.QMainWindow):
         extension = 'txt' if as_text else 'html'
         file_name, _ = util_ui.save_file_dialog(util_ui.tr('Choose file name'), extension)
 
-        if file_name:
-            if not file_name.endswith('.' + extension):
-                file_name += '.' + extension
-            with open(file_name, 'wt') as fl:
-                fl.write(s)
+        if not file_name:
+            return
+
+        if not file_name.endswith('.' + extension):
+            file_name += '.' + extension
+        with open(file_name, 'wt') as fl:
+            fl.write(s)
 
     def set_alias(self, num):
         self._contacts_manager.set_alias(num)

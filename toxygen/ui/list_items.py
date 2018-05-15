@@ -4,10 +4,7 @@ from contacts import profile
 from file_transfers.file_transfers import TOX_FILE_TRANSFER_STATE, PAUSED_FILE_TRANSFERS, DO_NOT_SHOW_ACCEPT_BUTTON, ACTIVE_FILE_TRANSFERS, SHOW_PROGRESS_BAR
 from utils.util import *
 from ui.widgets import DataLabel, create_menu
-import html as h
-import smileys
 from user_data import settings
-import re
 
 
 class ContactItem(QtWidgets.QWidget):

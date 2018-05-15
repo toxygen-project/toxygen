@@ -96,6 +96,10 @@ class Contact(basecontact.BaseContact):
         else:
             return ''
 
+    def remove_messages_widgets(self):
+        for message in self._corr:
+            message.remove_widget()
+
     # -----------------------------------------------------------------------------------------------------------------
     # Unsent messages
     # -----------------------------------------------------------------------------------------------------------------

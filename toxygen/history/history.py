@@ -3,7 +3,7 @@ from history.history_logs_generators import *
 # TODO: fix history loading and saving
 
 
-class HistoryLoader:
+class History:
 
     def __init__(self, contact_provider, db, settings):
         self._contact_provider = contact_provider
@@ -44,6 +44,9 @@ class HistoryLoader:
         if self._db.friend_exists_in_db(friend.tox_id):
             self._db.delete_messages(friend.tox_id)
             self._db.delete_friend_from_db(friend.tox_id)
+
+    def delete_message(self, message):
+        pass
 
     def load_history(self):
         """

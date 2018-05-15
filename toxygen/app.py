@@ -24,9 +24,10 @@ from av.calls_manager import CallsManager
 from history.database import Database
 from ui.widgets_factory import WidgetsFactory
 from smileys.smileys import SmileyLoader
-from ui.items_factory import ItemsFactory
+from ui.items_factories import MessagesItemsFactory, FriendItemsFactory
 from messenger.messenger import Messenger
 from network.tox_dns import ToxDns
+from history.history import History
 
 
 class App:
@@ -298,13 +299,17 @@ class App:
 
         profile = Profile(self._profile_manager, self._tox, self._ms)
         self._plugin_loader = PluginLoader(self._tox, self._toxes, profile, self._settings)
-        items_factory = ItemsFactory(self._settings, self._plugin_loader, self._smiley_loader, self._ms)
-        self._friend_factory = FriendFactory(self._profile_manager, self._settings, self._tox, db, items_factory)
+        friend_items_factory = FriendItemsFactory(self._settings, self._ms)
+        self._friend_factory = FriendFactory(self._profile_manager, self._settings, self._tox, db, friend_items_factory)
         self._contacts_provider = ContactProvider(self._tox, self._friend_factory)
+        history = History(self._contacts_provider, db, self._settings)
+        messages_items_factory = MessagesItemsFactory(self._settings, self._plugin_loader, self._smiley_loader,
+                                                      self._ms, history)
         self._contacts_manager = ContactsManager(self._tox, self._settings, self._ms, self._profile_manager,
-                                                 self._contacts_provider, db, self._tox_dns)
+                                                 self._contacts_provider, history, self._tox_dns,
+                                                 messages_items_factory)
         self._messenger = Messenger(self._tox, self._plugin_loader, self._ms, self._contacts_manager,
-                                    self._contacts_provider, items_factory, profile)
+                                    self._contacts_provider, messages_items_factory, profile)
         self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider)
         widgets_factory = WidgetsFactory(self._settings, profile, self._profile_manager, self._contacts_manager,
                                          self._file_transfer_handler, self._smiley_loader, self._plugin_loader,

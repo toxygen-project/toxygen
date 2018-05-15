@@ -1,6 +1,5 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from user_data.settings import *
-from contacts.profile import Profile
 from utils.util import *
 from ui.widgets import CenteredWidget, DataLabel, LineEdit, RubberBandWindow
 import pyaudio
@@ -717,7 +716,6 @@ class InterfaceSettings(CenteredWidget):
             app.translator.load(curr_directory() + '/translations/' + path)
             app.installTranslator(app.translator)
         self._settings['message_font_size'] = self.messages_font_size.currentIndex() + 10
-        Profile.get_instance().update()
         self._settings.save()
         if restart:
             util_ui.message_box(util_ui.tr('Restart app to apply settings'), util_ui.tr('Restart required'))

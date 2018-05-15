@@ -129,8 +129,8 @@ class Profile(basecontact.BaseContact):
                 pixmap = self.get_curr_friend().get_pixmap()
             else:
                 pixmap = self.get_pixmap()
-        return self._factory.message_item(text, time, name, owner != MESSAGE_OWNER['NOT_SENT'],
-                                          message_type, append, pixmap)
+        return self._factory.create_message_item(text, time, name, owner != MESSAGE_OWNER['NOT_SENT'],
+                                                 message_type, append, pixmap)
 
     def create_gc_message_item(self, text, time, owner, name, message_type, append=True):
         pixmap = None
@@ -139,24 +139,24 @@ class Profile(basecontact.BaseContact):
                 pixmap = self.get_curr_friend().get_pixmap()
             else:
                 pixmap = self.get_pixmap()
-        return self._factory.message_item(text, time, name, True,
-                                          message_type - 5, append, pixmap)
+        return self._factory.create_message_item(text, time, name, True,
+                                                 message_type - 5, append, pixmap)
 
     def create_file_transfer_item(self, tm, append=True):
         data = list(tm.get_data())
         data[3] = self.get_friend_by_number(data[4]).name if data[3] else self._name
-        return self._factory.file_transfer_item(data, append)
+        return self._factory.create_file_transfer_item(data, append)
 
     def create_unsent_file_item(self, message, append=True):
         data = message.get_data()
-        return self._factory.unsent_file_item(os.path.basename(data[0]),
-                                              os.path.getsize(data[0]) if data[1] is None else len(data[1]),
-                                              self.name,
-                                              data[2],
-                                              append)
+        return self._factory.create_unsent_file_item(os.path.basename(data[0]),
+                                                     os.path.getsize(data[0]) if data[1] is None else len(data[1]),
+                                                     self.name,
+                                                     data[2],
+                                                     append)
 
     def create_inline_item(self, data, append=True):
-        return self._factory.inline_item(data, append)
+        return self._factory.create_inline_item(data, append)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Reset

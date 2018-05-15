@@ -1,4 +1,5 @@
 from history.database import MESSAGE_AUTHOR
+from ui.messages_widgets import *
 
 
 MESSAGE_TYPE = {
@@ -21,11 +22,10 @@ class MessageAuthor:
 
 class Message:
 
-    def __init__(self, message_id, message_type, author, time):
+    def __init__(self, message_type, author, time):
         self._time = time
         self._type = message_type
         self._author = author
-        self._message_id = message_id
         self._widget = None
 
     def get_type(self):
@@ -43,19 +43,9 @@ class Message:
 
     time = property(get_time)
 
-    def get_message_id(self):
-        return self._message_id
-
-    message_id = property(get_message_id)
-
-    def get_type(self):
-        return self._type
-
-    type = property(get_type)
-
-    def get_widget(self):
+    def get_widget(self, *args):
         if self._widget is None:
-            self._widget = self._create_widget()
+            self._widget = self._create_widget(*args)
 
         return self._widget
 
@@ -67,7 +57,7 @@ class Message:
     def mark_as_sent(self):
         self._author.author_type = MESSAGE_AUTHOR['ME']
 
-    def _create_widget(self):
+    def _create_widget(self, *args):
         pass
 
 
@@ -76,8 +66,8 @@ class TextMessage(Message):
     Plain text or action message
     """
 
-    def __init__(self, id, message, owner, time, message_type):
-        super().__init__(id, message_type, owner, time)
+    def __init__(self, message, owner, time, message_type):
+        super().__init__(message_type, owner, time)
         self._message = message
 
     def get_text(self):
@@ -88,8 +78,20 @@ class TextMessage(Message):
     def get_data(self):
         return self._message, self._owner, self._time, self._type
 
-    def _create_widget(self):
-        return
+    def _create_widget(self, *args):
+        return MessageItem(self, *args)
+
+
+class OutgoingTextMessage(TextMessage):
+
+    def __init__(self, message, owner, time, message_type, tox_message_id):
+        super().__init__(message, owner, time, message_type)
+        self._tox_message_id = tox_message_id
+
+    def get_tox_message_id(self):
+        return self._tox_message_id
+
+    tox_message_id = property(get_tox_message_id)
 
 
 class GroupChatMessage(TextMessage):
@@ -107,7 +109,7 @@ class TransferMessage(Message):
     Message with info about file transfer
     """
 
-    def __init__(self, id, owner, time, status, size, name, friend_number, file_number):
+    def __init__(self, owner, time, status, size, name, friend_number, file_number):
         super().__init__(MESSAGE_TYPE['FILE_TRANSFER'], owner, time)
         self._status = status
         self._size = size
