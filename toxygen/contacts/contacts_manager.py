@@ -43,7 +43,7 @@ class ContactsManager:
         self._profile_manager.save_profile(data)
 
     def is_friend_active(self, friend_number):
-        if not self._is_active_a_friend():
+        if not self.is_active_a_friend():
             return False
 
         return self.get_curr_contact().number == friend_number
@@ -148,6 +148,8 @@ class ContactsManager:
             util.log('Error in set active: ' + str(ex))
             raise
 
+    active_friend = property(get_active, set_active)
+
     def set_active_by_number_and_type(self, number, is_friend):
         for i in range(len(self._contacts)):
             c = self._contacts[i]
@@ -155,11 +157,12 @@ class ContactsManager:
                 self._active_contact = i
                 break
 
-    active_friend = property(get_active, set_active)
-
     def update(self):
         if self._active_contact + 1:
             self.set_active(self._active_contact)
+
+    def is_active_a_friend(self):
+        return type(self.get_curr_contact()) is Friend
 
     # -----------------------------------------------------------------------------------------------------------------
     # Filtration
@@ -174,7 +177,7 @@ class ContactsManager:
         # TODO: simplify?
         filter_str = filter_str.lower()
         number = self.get_active_number()
-        is_friend = self._is_active_a_friend()
+        is_friend = self.is_active_a_friend()
         if sorting > 1:
             if sorting & 2:
                 self._contacts = sorted(self._contacts, key=lambda x: int(x.status is not None), reverse=True)
@@ -423,9 +426,6 @@ class ContactsManager:
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods
     # -----------------------------------------------------------------------------------------------------------------
-
-    def _is_active_a_friend(self):
-        return type(self.get_curr_contact()) is Friend
 
     def _load_contacts(self):
         self._load_friends()

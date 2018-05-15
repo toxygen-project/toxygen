@@ -17,7 +17,7 @@ class WidgetsFactory:
         self._version = version
 
     def create_screenshot_window(self, *args):
-        return ScreenShotWindow(self._file_transfer_handler, *args)
+        return ScreenShotWindow(self._file_transfer_handler, self._contacts_manager, *args)
 
     def create_smiley_window(self, parent):
         return SmileyWindow(parent, self._smiley_loader)
@@ -61,5 +61,5 @@ class WidgetsFactory:
     def create_smiley_window(self, parent):
         return SmileyWindow(parent, self._smiley_loader)
 
-    def create_sticker_window(self, parent):
-        return StickerWindow(parent, self._file_transfer_handler)
+    def create_sticker_window(self):
+        return StickerWindow(self._file_transfer_handler, self._contacts_manager)

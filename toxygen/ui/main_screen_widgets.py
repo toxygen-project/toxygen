@@ -81,7 +81,8 @@ class MessageArea(QtWidgets.QPlainTextEdit):
         else:
             self.insertPlainText(text)
 
-    def parse_file_name(self, file_name):
+    @staticmethod
+    def parse_file_name(file_name):
         if file_name.endswith('\r\n'):
             file_name = file_name[:-2]
         file_name = urllib.parse.unquote(file_name)
@@ -90,9 +91,10 @@ class MessageArea(QtWidgets.QPlainTextEdit):
 
 class ScreenShotWindow(RubberBandWindow):
 
-    def __init__(self, file_transfer_handler, *args):
+    def __init__(self, file_transfer_handler, contacts_manager, *args):
         super().__init__(*args)
         self._file_transfer_handler = file_transfer_handler
+        self._contacts_manager = contacts_manager
 
     def closeEvent(self, *args):
         if self.parent.isHidden():
@@ -113,7 +115,8 @@ class ScreenShotWindow(RubberBandWindow):
                 buffer = QtCore.QBuffer(byte_array)
                 buffer.open(QtCore.QIODevice.WriteOnly)
                 p.save(buffer, 'PNG')
-                self._file_transfer_handler.send_screenshot(bytes(byte_array.data()))
+                friend = self._contacts_manager.get_curr_contact()
+                self._file_transfer_handler.send_screenshot(bytes(byte_array.data(), friend.number))
             self.close()
 
 
@@ -267,9 +270,10 @@ class StickerItem(QtWidgets.QWidget):
 class StickerWindow(QtWidgets.QWidget):
     """Sticker selection window"""
 
-    def __init__(self, parent, file_transfer_handler):
+    def __init__(self, file_transfer_handler, contacts_manager):
         super().__init__()
         self._file_transfer_handler = file_transfer_handler
+        self._contacts_manager = contacts_manager
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
         self.setMaximumSize(250, 200)
         self.setMinimumSize(250, 200)
@@ -285,11 +289,11 @@ class StickerWindow(QtWidgets.QWidget):
         self.list.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.list.setSpacing(3)
         self.list.clicked.connect(self.click)
-        self.parent = parent
 
     def click(self, index):
         num = index.row()
-        self._file_transfer_handler.send_sticker(self._stickers[num])
+        friend = self._contacts_manager.get_curr_contact()
+        self._file_transfer_handler.send_sticker(self._stickers[num], friend.number)
         self.close()
 
     def leaveEvent(self, event):
@@ -465,7 +469,6 @@ class SearchScreen(QtWidgets.QWidget):
             self.not_found(text)
 
     def closeEvent(self, *args):
-        Profile.get_instance().update()
         self._messages.setGeometry(0, 0, self._messages.width(), self._messages.height() + 40)
         super().closeEvent(*args)
 

@@ -542,7 +542,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def send_sticker(self):
         self.menu.hide()
         if self._contacts_manager.is_active_a_friend():
-            self.sticker = self._widget_factory.create_sticker_window(self)
+            self.sticker = self._widget_factory.create_sticker_window()
             self.sticker.setGeometry(QtCore.QRect(self.x() if self._settings['mirror_mode'] else 270 + self.x(),
                                                   self.y() + self.height() - 200,
                                                   self.sticker.width(),

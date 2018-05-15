@@ -179,25 +179,23 @@ class FileTransfersHandler:
         self._get_friend_by_number(friend_number).update_transfer_data(file_number,
                                                                       TOX_FILE_TRANSFER_STATE['RUNNING'])
 
-    def send_screenshot(self, data):
+    def send_screenshot(self, data, friend_number):
         """
         Send screenshot to current active friend
         :param data: raw data - png
         """
-        self.send_inline(data, 'toxygen_inline.png')
+        self.send_inline(data, 'toxygen_inline.png', friend_number)
 
-    def send_sticker(self, path):
+    def send_sticker(self, path, friend_number):
         with open(path, 'rb') as fl:
             data = fl.read()
-        self.send_inline(data, 'sticker.png')
+        self.send_inline(data, 'sticker.png', friend_number)
 
-    def send_inline(self, data, file_name, friend_number=None, is_resend=False):
-        friend_number = friend_number or self.get_active_number()
+    def send_inline(self, data, file_name, friend_number, is_resend=False):
         friend = self._get_friend_by_number(friend_number)
         if friend.status is None and not is_resend:
             m = UnsentFile(file_name, data, time.time())
             friend.append_message(m)
-            self.update()
             return
         elif friend.status is None and is_resend:
             raise RuntimeError()
