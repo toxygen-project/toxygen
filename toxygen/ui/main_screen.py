@@ -1,5 +1,5 @@
 from contacts.profile import *
-from ui.list_items import *
+from ui.contact_items import *
 from ui.widgets import MultilineEdit, ComboBox
 from ui.main_screen_widgets import *
 import utils.util as util

@@ -1,11 +1,10 @@
 from contacts.friend import *
-from user_data.settings import *
-from history.database import *
 from file_transfers.file_transfers import *
 import time
 from contacts import basecontact
 from contacts.group_chat import *
 import utils.ui as util_ui
+import random
 
 
 class Profile(basecontact.BaseContact):
@@ -70,7 +69,6 @@ class Profile(basecontact.BaseContact):
 
     def new_nospam(self):
         """Sets new nospam part of tox id"""
-        import random
         self._tox.self_set_nospam(random.randint(0, 4294967295))  # no spam - uint32
         self._tox_id = self._tox.self_get_address()
 
@@ -105,58 +103,6 @@ class Profile(basecontact.BaseContact):
         i = 0
         while i < self._messages.count() and not self._messages.itemWidget(self._messages.item(i)).mark_as_sent():
             i += 1
-
-    def delete_message(self, message_id):
-        friend = self.get_curr_friend()
-        friend.delete_message(time)
-        self._history.delete_message(friend.tox_id, message_id)
-        self.update()
-
-    # -----------------------------------------------------------------------------------------------------------------
-    # Friend, message and file transfer items creation
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def create_message_item(self, text, time, owner, message_type, append=True):
-        if message_type == MESSAGE_TYPE['INFO_MESSAGE']:
-            name = ''
-        elif owner == MESSAGE_OWNER['FRIEND']:
-            name = self.get_active_name()
-        else:
-            name = self._name
-        pixmap = None
-        if self._show_avatars:
-            if owner == MESSAGE_OWNER['FRIEND']:
-                pixmap = self.get_curr_friend().get_pixmap()
-            else:
-                pixmap = self.get_pixmap()
-        return self._factory.create_message_item(text, time, name, owner != MESSAGE_OWNER['NOT_SENT'],
-                                                 message_type, append, pixmap)
-
-    def create_gc_message_item(self, text, time, owner, name, message_type, append=True):
-        pixmap = None
-        if self._show_avatars:
-            if owner == MESSAGE_OWNER['FRIEND']:
-                pixmap = self.get_curr_friend().get_pixmap()
-            else:
-                pixmap = self.get_pixmap()
-        return self._factory.create_message_item(text, time, name, True,
-                                                 message_type - 5, append, pixmap)
-
-    def create_file_transfer_item(self, tm, append=True):
-        data = list(tm.get_data())
-        data[3] = self.get_friend_by_number(data[4]).name if data[3] else self._name
-        return self._factory.create_file_transfer_item(data, append)
-
-    def create_unsent_file_item(self, message, append=True):
-        data = message.get_data()
-        return self._factory.create_unsent_file_item(os.path.basename(data[0]),
-                                                     os.path.getsize(data[0]) if data[1] is None else len(data[1]),
-                                                     self.name,
-                                                     data[2],
-                                                     append)
-
-    def create_inline_item(self, data, append=True):
-        return self._factory.create_inline_item(data, append)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Reset

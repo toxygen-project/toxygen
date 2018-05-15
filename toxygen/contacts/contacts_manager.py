@@ -296,6 +296,7 @@ class ContactsManager:
         Adds friend to list
         """
         self._tox.friend_add_norequest(tox_id)
+        self._history.add_friend_to_db(tox_id)
         friend = self._contact_provider.get_friend_by_public_key(tox_id)
         self._contacts.append(friend)
 

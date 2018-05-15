@@ -1,4 +1,4 @@
-from ui.list_items import *
+from ui.contact_items import *
 from ui.messages_widgets import *
 
 
@@ -18,17 +18,19 @@ class FriendItemsFactory:
         return item
 
 
+# TODO: accept messages everywhere instead of params
+
 class MessagesItemsFactory:
 
-    def __init__(self, settings, plugin_loader, smiley_loader, main_screen, history):
+    def __init__(self, settings, plugin_loader, smiley_loader, main_screen, delete_action):
         self._settings, self._plugin_loader = settings, plugin_loader
-        self._smiley_loader, self._history = smiley_loader, history
+        self._smiley_loader, self._delete_action = smiley_loader, delete_action
         self._messages = main_screen.messages
         self._message_edit = main_screen.messageEdit
 
     def create_message_item(self, message, append=True, pixmap=None):
         item = message.get_widget(self._settings, self._create_message_browser,
-                                  self._history.delete_message, self._messages)
+                                  self._delete_action, self._messages)
         if pixmap is not None:
             item.set_avatar(pixmap)
         elem = QtWidgets.QListWidgetItem()
@@ -69,7 +71,7 @@ class MessagesItemsFactory:
 
         return item
 
-    def create_file_transfer_item(self, data, append):
+    def create_file_transfer_item(self, data, append=True):
         data.append(self._messages.width())
         item = FileTransferItem(*data)
         elem = QtWidgets.QListWidgetItem()

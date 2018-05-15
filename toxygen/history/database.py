@@ -37,16 +37,6 @@ class Database:
             except Exception as ex:
                 util.log('Db reading error: ' + str(ex))
                 os.remove(path)
-        db = self._connect()
-        cursor = db.cursor()
-        cursor.execute('CREATE TABLE IF NOT EXISTS contacts ('
-                       '    tox_id TEXT PRIMARY KEY,'
-                       '    contact_type INTEGER'
-                       ')')
-        db.close()
-
-    def _connect(self):
-        return connect(self._path, timeout=TIMEOUT)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Public methods
@@ -73,10 +63,8 @@ class Database:
         db = self._connect()
         try:
             cursor = db.cursor()
-            # cursor.execute('INSERT INTO contacts VALUES (?);', (tox_id, ))
-            cursor.execute('CREATE TABLE id' + tox_id + '('
+            cursor.execute('CREATE TABLE IF NOT EXISTS id' + tox_id + '('
                            '    id INTEGER PRIMARY KEY,'
-                           '    message_id INTEGER,'
                            '    author_name TEXT,'
                            '    message TEXT,'
                            '    author INTEGER,'
@@ -94,7 +82,6 @@ class Database:
         db = self._connect()
         try:
             cursor = db.cursor()
-            cursor.execute('DELETE FROM contacts WHERE tox_id=?;', (tox_id, ))
             cursor.execute('DROP TABLE id' + tox_id + ';')
             db.commit()
         except:
@@ -103,20 +90,12 @@ class Database:
         finally:
             db.close()
 
-    def friend_exists_in_db(self, tox_id):
-        db = self._connect()
-        cursor = db.cursor()
-        cursor.execute('SELECT 1 FROM contacts WHERE tox_id=?', (tox_id, ))
-        result = cursor.fetchone()
-        db.close()
-        return result is not None
-
     def save_messages_to_db(self, tox_id, messages_iter):
         db = self._connect()
         try:
             cursor = db.cursor()
             cursor.executemany('INSERT INTO id' + tox_id +
-                               '(message, message_id, author_name, author, unix_time, message_type) ' +
+                               '(message, author_name, author, unix_time, message_type) ' +
                                'VALUES (?, ?, ?, ?, ?, ?);', messages_iter)
             db.commit()
         except:
@@ -130,7 +109,7 @@ class Database:
         try:
             cursor = db.cursor()
             cursor.execute('UPDATE id' + tox_id + ' SET author = 0 '
-                           'WHERE message_id = ' + str(message_id) + ' AND author = 2;')
+                           'WHERE id = ' + str(message_id) + ' AND author = 2;')
             db.commit()
         except:
             print('Database is locked!')
@@ -163,8 +142,7 @@ class Database:
             db.close()
 
     def messages_getter(self, tox_id):
-        if not self.friend_exists_in_db(tox_id):
-            self.add_friend_to_db(tox_id)
+        self.add_friend_to_db(tox_id)
 
         return Database.MessageGetter(self._path, tox_id)
 
@@ -179,15 +157,6 @@ class Database:
             self._path = path
             self._tox_id = tox_id
             self._db = self._cursor = None
-
-        def _connect(self):
-            self._db = connect(self._path, timeout=TIMEOUT)
-            self._cursor = self._db.cursor()
-            self._cursor.execute('SELECT id, message_id, message, author, unix_time, message_type FROM id' +
-                                 self._tox_id + ' ORDER BY unix_time DESC;')
-
-        def _disconnect(self):
-            self._db.close()
 
         def get_one(self):
             return self.get(1)
@@ -214,3 +183,19 @@ class Database:
         def delete_one(self):
             if self._count:
                 self._count -= 1
+
+        def _connect(self):
+            self._db = connect(self._path, timeout=TIMEOUT)
+            self._cursor = self._db.cursor()
+            self._cursor.execute('SELECT id, message, author, unix_time, message_type FROM id' +
+                                 self._tox_id + ' ORDER BY unix_time DESC;')
+
+        def _disconnect(self):
+            self._db.close()
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def _connect(self):
+        return connect(self._path, timeout=TIMEOUT)

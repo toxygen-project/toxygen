@@ -302,9 +302,10 @@ class App:
         friend_items_factory = FriendItemsFactory(self._settings, self._ms)
         self._friend_factory = FriendFactory(self._profile_manager, self._settings, self._tox, db, friend_items_factory)
         self._contacts_provider = ContactProvider(self._tox, self._friend_factory)
-        history = History(self._contacts_provider, db, self._settings)
+        history = None
         messages_items_factory = MessagesItemsFactory(self._settings, self._plugin_loader, self._smiley_loader,
-                                                      self._ms, history)
+                                                      self._ms, lambda m: history.delete_message(m))
+        history = History(self._contacts_provider, db, self._settings, self._ms, messages_items_factory)
         self._contacts_manager = ContactsManager(self._tox, self._settings, self._ms, self._profile_manager,
                                                  self._contacts_provider, history, self._tox_dns,
                                                  messages_items_factory)

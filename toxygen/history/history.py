@@ -1,14 +1,15 @@
 from history.history_logs_generators import *
 
-# TODO: fix history loading and saving
-
 
 class History:
 
-    def __init__(self, contact_provider, db, settings):
+    def __init__(self, contact_provider, db, settings, main_screen, messages_items_factory):
         self._contact_provider = contact_provider
         self._db = db
         self._settings = settings
+        self._messages = main_screen.messages
+        self._messages_items_factory = messages_items_factory
+        self._is_loading = False
            
     def __del__(self):
         del self._db
@@ -23,8 +24,7 @@ class History:
         """
         if self._settings['save_db']:
             for friend in self._contact_provider.get_all_friends():
-                if not self._db.friend_exists_in_db(friend.tox_id):
-                    self._db.add_friend_to_db(friend.tox_id)
+                self._db.add_friend_to_db(friend.tox_id)
                 if not self._settings['save_unsent_only']:
                     messages = friend.get_corr_for_saving()
                 else:
@@ -41,68 +41,50 @@ class History:
         Clear chat history
         """
         friend.clear_corr(save_unsent)
-        if self._db.friend_exists_in_db(friend.tox_id):
-            self._db.delete_messages(friend.tox_id)
-            self._db.delete_friend_from_db(friend.tox_id)
+        self._db.delete_friend_from_db(friend.tox_id)
 
     def delete_message(self, message):
         pass
 
-    def load_history(self):
+    def load_history(self, friend):
         """
         Tries to load next part of messages
         """
-        if not self._load_db:
+        if self._is_loading:
             return
-        self._load_db = False
-        friend = self.get_curr_friend()
+        self._is_loading = True
         friend.load_corr(False)
-        data = friend.get_corr()
-        if not data:
+        messages = friend.get_corr()
+        if not messages:
+            self._is_loading = False
             return
-        data.reverse()
-        data = data[self._messages.count():self._messages.count() + PAGE_SIZE]
-        for message in data:
+        messages.reverse()
+        messages = messages[self._messages.count():self._messages.count() + PAGE_SIZE]
+        for message in messages:
             if message.get_type() <= 1:  # text message
-                data = message.get_data()
-                self.create_message_item(data[0],
-                                         data[2],
-                                         data[1],
-                                         data[3],
-                                         False)
+                self._create_message_item(message)
             elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:  # file transfer
                 if message.get_status() is None:
-                    self.create_unsent_file_item(message)
+                    self._create_unsent_file_item(message)
                     continue
-                item = self.create_file_transfer_item(message, False)
-                if message.get_status() in ACTIVE_FILE_TRANSFERS:  # active file transfer
-                    try:
-                        ft = self._file_transfers[(message.get_friend_number(), message.get_file_number())]
-                        ft.set_state_changed_handler(item.update_transfer_state)
-                        ft.signal()
-                    except:
-                        print('Incoming not started transfer - no info found')
+                self._create_file_transfer_item(message)
             elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline image
-                self.create_inline_item(message.get_data(), False)
+                self._create_inline_item(message)
             else:  # info message
-                data = message.get_data()
-                self.create_message_item(data[0],
-                                         data[2],
-                                         '',
-                                         data[3],
-                                         False)
-        self._load_db = True
+                self._create_message_item(message)
+        self._is_loading = False
 
     def get_message_getter(self, friend_public_key):
-        if not self._db.friend_exists_in_db(friend_public_key):
-            self._db.add_friend_to_db(friend_public_key)
+        self._db.add_friend_to_db(friend_public_key)
 
         return self._db.messages_getter(friend_public_key)
 
     def delete_history(self, friend):
         self.clear_history(friend)
-        if self._db.friend_exists_in_db(friend.tox_id):
-            self._db.delete_friend_from_db(friend.tox_id)
+        self._db.delete_friend_from_db(friend.tox_id)
+
+    def add_friend_to_db(self, tox_id):
+        self._db.add_friend_to_db(tox_id)
 
     @staticmethod
     def export_history(contact, as_text=True, _range=None):
@@ -117,3 +99,19 @@ class History:
         generator = TextHistoryGenerator(corr, contact.name) if as_text else HtmlHistoryGenerator(corr, contact.name)
 
         return generator.generate()
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Items creation
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def _create_message_item(self, message):
+        return self._messages_items_factory.create_message_item(message, False)
+
+    def _create_unsent_file_item(self, message):
+        return self._messages_items_factory.create_unsent_file_item(message, False)
+
+    def _create_file_transfer_item(self, message):
+        return self._messages_items_factory.create_file_transfer_item(message, False)
+
+    def _create_inline_item(self, message):
+        return self._messages_items_factory.create_inline_item(message, False)
