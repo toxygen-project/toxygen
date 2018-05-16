@@ -19,14 +19,17 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setAcceptDrops(True)
         self._saved = False
         self._profile = None
+        self._file_transfer_handler = None
         self.initUI()
 
-    def set_dependencies(self, widget_factory, tray, contacts_manager, messenger, profile, plugins_loader):
+    def set_dependencies(self, widget_factory, tray, contacts_manager, messenger, profile, plugins_loader,
+                         file_transfer_handler):
         self._widget_factory = widget_factory
         self._tray = tray
         self._contacts_manager = contacts_manager
         self._profile = profile
         self._plugins_loader = plugins_loader
+        self._file_transfer_handler = file_transfer_handler
         self.messageEdit.set_messenger(messenger)
 
     def show(self):
@@ -519,7 +522,7 @@ class MainWindow(QtWidgets.QMainWindow):
             caption = util_ui.tr('Choose file')
             name = util_ui.file_dialog(caption)
             if name[0]:
-                self._contacts_manager.send_file(name[0], self._contacts_manager.get_contact().number)
+                self._file_transfer_handler.send_file(name[0], self._contacts_manager.get_active_number())
 
     def send_screenshot(self, hide=False):
         self.menu.hide()

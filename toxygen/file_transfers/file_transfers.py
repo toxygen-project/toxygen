@@ -1,7 +1,7 @@
 from wrapper.toxcore_enums_and_consts import TOX_FILE_KIND, TOX_FILE_CONTROL
 from os.path import basename, getsize, exists, dirname
 from os import remove, rename, chdir
-from time import time, sleep
+from time import time
 from wrapper.tox import Tox
 from common.event import Event
 
@@ -47,7 +47,7 @@ class FileTransfer:
         self._done = 0
         self._state_changed_event = Event()
         self._finished_event = Event()
-        self._file_id = None
+        self._file_id = self._file = None
 
     def set_tox(self, tox):
         self._tox = tox
@@ -85,13 +85,12 @@ class FileTransfer:
 
     def cancel(self):
         self.send_control(TOX_FILE_CONTROL['CANCEL'])
-        if hasattr(self, '_file'):
+        if self._file is not None:
             self._file.close()
         self.signal()
 
     def cancelled(self):
-        if hasattr(self, '_file'):
-            sleep(0.1)
+        if self._file is not None:
             self._file.close()
         self.state = FILE_TRANSFER_STATE['CANCELLED']
         self.signal()

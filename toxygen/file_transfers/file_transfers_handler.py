@@ -1,8 +1,5 @@
-from file_transfers.file_transfers import *
 from messenger.messages import *
-from history.database import MESSAGE_AUTHOR
 from ui.contact_items import *
-from PyQt5 import QtWidgets
 import utils.util as util
 
 
@@ -46,18 +43,18 @@ class FileTransfersHandler:
                 self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
                 return
             self._tox.file_seek(friend_number, file_number, pos)
-            self.accept_transfer(None, data[0], friend_number, file_number, size, False, pos)
+            self.accept_transfer(data[0], friend_number, file_number, size, False, pos)
         elif inline and size < 1024 * 1024:
-            self.accept_transfer(None, '', friend_number, file_number, size, True)
+            self.accept_transfer('', friend_number, file_number, size, True)
 
         elif auto:
             path = self._settings['auto_accept_path'] or util.curr_directory()
-            self.accept_transfer(None, path + '/' + file_name, friend_number, file_number, size)
+            self.accept_transfer(path + '/' + file_name, friend_number, file_number, size)
         else:
             accepted = False
 
         self._file_transfers_message_service.add_incoming_transfer_message(
-            friend, accepted, size, file_name,file_number)
+            friend, accepted, size, file_name, file_number)
 
     def cancel_transfer(self, friend_number, file_number, already_cancelled=False):
         """
@@ -66,8 +63,6 @@ class FileTransfersHandler:
         :param file_number: file number
         :param already_cancelled: was cancelled by friend
         """
-        i = self._get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                           FILE_TRANSFER_STATE['CANCELLED'])
         if (friend_number, file_number) in self._file_transfers:
             tr = self._file_transfers[(friend_number, file_number)]
             if not already_cancelled:
@@ -77,15 +72,8 @@ class FileTransfersHandler:
             if (friend_number, file_number) in self._file_transfers:
                 del tr
                 del self._file_transfers[(friend_number, file_number)]
-        else:
-            if not already_cancelled:
-                self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
-            if friend_number == self.get_active_number() and self.is_active_a_friend():
-                tmp = self._messages.count() + i
-                if tmp >= 0:
-                    self._messages.itemWidget(
-                        self._messages.item(tmp)).update_transfer_state(FILE_TRANSFER_STATE['CANCELLED'],
-                                                                        0, -1)
+        elif not already_cancelled:
+            self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
 
     def cancel_not_started_transfer(self, cancel_time):
         self.get_curr_friend().delete_one_unsent_file(cancel_time)
@@ -96,15 +84,11 @@ class FileTransfersHandler:
         """
         tr = self._file_transfers[(friend_number, file_number)]
         tr.pause(by_friend)
-        t = FILE_TRANSFER_STATE['PAUSED_BY_FRIEND'] if by_friend else FILE_TRANSFER_STATE['PAUSED_BY_USER']
-        self._get_friend_by_number(friend_number).update_transfer_data(file_number, t)
 
     def resume_transfer(self, friend_number, file_number, by_friend=False):
         """
         Resume transfer with specified data
         """
-        # self.get_friend_by_number(friend_number).update_transfer_data(file_number,
-        #                                                               TOX_FILE_TRANSFER_STATE['RUNNING'])
         tr = self._file_transfers[(friend_number, file_number)]
         if by_friend:
             tr.state = FILE_TRANSFER_STATE['RUNNING']
@@ -112,9 +96,8 @@ class FileTransfersHandler:
         else:
             tr.send_control(TOX_FILE_CONTROL['RESUME'])
 
-    def accept_transfer(self, item, path, friend_number, file_number, size, inline=False, from_position=0):
+    def accept_transfer(self, path, friend_number, file_number, size, inline=False, from_position=0):
         """
-        :param item: transfer item.
         :param path: path for saving
         :param friend_number: friend number
         :param file_number: file number
@@ -122,32 +105,23 @@ class FileTransfersHandler:
         :param inline: is inline image
         :param from_position: position for start
         """
-        path, file_name = os.path.split(path)
-        new_file_name, i = file_name, 1
-        if not from_position:
-            while os.path.isfile(path + '/' + new_file_name):  # file with same name already exists
-                if '.' in file_name:  # has extension
-                    d = file_name.rindex('.')
-                else:  # no extension
-                    d = len(file_name)
-                new_file_name = file_name[:d] + ' ({})'.format(i) + file_name[d:]
-                i += 1
-        path = os.path.join(path, new_file_name)
+        path = self._generate_valid_path(path, from_position)
+        friend = self._get_friend_by_number(friend_number)
         if not inline:
             rt = ReceiveTransfer(path, self._tox, friend_number, size, file_number, from_position)
         else:
             rt = ReceiveToBuffer(self._tox, friend_number, size, file_number)
         rt.set_transfer_finished_handler(self.transfer_finished)
+        message = friend.get_message(lambda m: m.type == MESSAGE_TYPE['FILE_TRANSFER']
+                                               and m.state == FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']
+                                               and m.file_number == file_number)
+        rt.set_state_changed_handler(message.transfer_updated)
         self._file_transfers[(friend_number, file_number)] = rt
         self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
-        if item is not None:
-            rt.set_state_changed_handler(item.update_transfer_state)
-        self._get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                       FILE_TRANSFER_STATE['RUNNING'])
 
     def send_screenshot(self, data, friend_number):
         """
-        Send screenshot to current active friend
+        Send screenshot
         :param data: raw data - png
         """
         self.send_inline(data, 'toxygen_inline.png', friend_number)
@@ -169,7 +143,8 @@ class FileTransfersHandler:
         st.set_transfer_finished_handler(self.transfer_finished)
         file_number = st.get_file_number()
         self._file_transfers[(friend.number, file_number)] = st
-        self._file_transfers_message_service.add_outgoing_transfer_message(friend, st.size, file_name, file_number)
+        tm = self._file_transfers_message_service.add_outgoing_transfer_message(friend, st.size, file_name, file_number)
+        st.set_state_changed_handler(tm.transfer_updated)
 
     def send_file(self, path, friend_number, is_resend=False, file_id=None):
         """
@@ -192,7 +167,8 @@ class FileTransfersHandler:
         file_number = st.get_file_number()
         self._file_transfers[(friend_number, file_number)] = st
         file_name = os.path.basename(path)
-        self._file_transfers_message_service.add_outgoing_transfer_message(friend, st.size, file_name, file_number)
+        tm = self._file_transfers_message_service.add_outgoing_transfer_message(friend, st.size, file_name, file_number)
+        st.set_state_changed_handler(tm.transfer_updated)
 
     def incoming_chunk(self, friend_number, file_number, position, data):
         """
@@ -214,13 +190,8 @@ class FileTransfersHandler:
         elif t is ReceiveToBuffer or (t is SendFromBuffer and self._settings['allow_inline']):  # inline image
             print('inline')
             inline = InlineImage(transfer.get_data())
-            index = self._get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                               FILE_TRANSFER_STATE['FINISHED'],
-                                                                               inline)
+            index = self._get_friend_by_number(friend_number).update_transfer_data(file_number, inline)
             self._file_transfers_message_service.add_inline_message(transfer, index)
-        elif t is not SendAvatar:
-            self._get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                           FILE_TRANSFER_STATE['FINISHED'])
         del self._file_transfers[(friend_number, file_number)]
         del transfer
 
@@ -279,3 +250,19 @@ class FileTransfersHandler:
 
     def _get_friend_by_number(self, friend_number):
         return self._contact_provider.get_friend_by_number(friend_number)
+
+    @staticmethod
+    def _generate_valid_path(path, from_position):
+        path, file_name = os.path.split(path)
+        new_file_name, i = file_name, 1
+        if not from_position:
+            while os.path.isfile(path + '/' + new_file_name):  # file with same name already exists
+                if '.' in file_name:  # has extension
+                    d = file_name.rindex('.')
+                else:  # no extension
+                    d = len(file_name)
+                new_file_name = file_name[:d] + ' ({})'.format(i) + file_name[d:]
+                i += 1
+        path = os.path.join(path, new_file_name)
+
+        return path

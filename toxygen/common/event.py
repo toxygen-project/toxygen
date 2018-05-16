@@ -8,8 +8,12 @@ class Event:
     def __iadd__(self, callback):
         self.add_callback(callback)
 
+        return self
+
     def __isub__(self, callback):
         self.remove_callback(callback)
+
+        return self
 
     def __call__(self, *args, **kwargs):
         for callback in self._callbacks:

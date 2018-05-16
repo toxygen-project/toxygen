@@ -1,8 +1,4 @@
-import utils.util as util
-import utils.ui as util_ui
 from contacts.friend import Friend
-from PyQt5 import QtCore, QtGui
-from wrapper.toxcore_enums_and_consts import *
 from messenger.messages import *
 
 
@@ -71,10 +67,10 @@ class ContactsManager:
             self._screen.messageEdit.clear()
             return
         try:
-            # self.send_typing(False)  # TODO: fix
             self._screen.typing.setVisible(False)
             current_contact = self.get_curr_contact()
             if current_contact is not None:
+                current_contact.typing_notification_handler.send(self._tox, False)
                 current_contact.remove_messages_widgets()  # TODO: if required
                 self._unsubscribe_from_events(current_contact)
 
@@ -96,7 +92,12 @@ class ContactsManager:
             contact.load_corr()
             corr = contact.get_corr()[-PAGE_SIZE:]
             for message in corr:
-                self._messages_items_factory.create_message_item(message)
+                if message.type == MESSAGE_TYPE['FILE_TRANSFER']:
+                    self._messages_items_factory.create_file_transfer_item(message)
+                elif message.type == MESSAGE_TYPE['INLINE']:
+                    self._messages_items_factory.create_inline_item(message.data)
+                else:
+                    self._messages_items_factory.create_message_item(message)
             # if value in self._call:
             #     self._screen.active_call()
             # elif value in self._incoming_calls:

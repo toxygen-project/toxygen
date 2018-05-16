@@ -164,6 +164,11 @@ class TransferMessage(Message):
 
     file_name = property(get_file_name)
 
+    def transfer_updated(self, state, percentage, time):
+        self._state = state
+        if self._widget is not None:
+            self._widget.update_transfer_state(state, percentage, time)
+
     def _create_widget(self, *args):
         return FileTransferItem(self, *args)
 

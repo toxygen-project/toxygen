@@ -101,6 +101,9 @@ class Contact(basecontact.BaseContact):
         for message in self._corr:
             message.remove_widget()
 
+    def get_message(self, _filter):
+        return list(filter(lambda m: _filter(m), self._corr))[0]
+
     @staticmethod
     def _get_text_message(params):
         (message, author_type, author_name, unix_time, message_type, unique_id) = params

@@ -45,7 +45,7 @@ class MessagesItemsFactory:
 
         return item
 
-    def create_inline_item(self, data, append, position=0):
+    def create_inline_item(self, data, append=True, position=0):
         elem = QtWidgets.QListWidgetItem()
         item = InlineImageItem(data, self._messages.width(), elem)
         elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
@@ -57,7 +57,7 @@ class MessagesItemsFactory:
 
         return item
 
-    def create_unsent_file_item(self, tm, append):
+    def create_unsent_file_item(self, tm, append=True):
         item = UnsentFileItem(self._file_transfers_handler, self._settings, tm, self._messages.width())
         elem = QtWidgets.QListWidgetItem()
         elem.setSizeHint(QtCore.QSize(self._messages.width() - 30, 34))
@@ -70,7 +70,7 @@ class MessagesItemsFactory:
         return item
 
     def create_file_transfer_item(self, tm, append=True):
-        item = tm.get_widget(self._file_transfers_handler, self._settings, tm, self._messages.width())
+        item = tm.get_widget(self._file_transfers_handler, self._settings, self._messages.width())
         elem = QtWidgets.QListWidgetItem()
         elem.setSizeHint(QtCore.QSize(self._messages.width() - 30, 34))
         if append:

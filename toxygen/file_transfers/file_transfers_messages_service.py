@@ -24,6 +24,8 @@ class FileTransfersMessagesService:
 
         friend.append_message(tm)
 
+        return tm
+
     def add_outgoing_transfer_message(self, friend, size, file_name, file_number):
         author = MessageAuthor(self._profile.name, MESSAGE_AUTHOR['ME'])
         status = FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
@@ -34,6 +36,8 @@ class FileTransfersMessagesService:
             self._messages.scrollToBottom()
 
         friend.append_message(tm)
+
+        return tm
 
     def add_inline_message(self, transfer, index):
         if self._is_active(transfer.friend_number):

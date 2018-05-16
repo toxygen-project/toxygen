@@ -218,10 +218,10 @@ class MessageItem(QtWidgets.QWidget):
 
 class FileTransferItem(QtWidgets.QListWidget):
 
-    def __init__(self, file_transfers_handler, settings, transfer_message, width, parent=None):
+    def __init__(self, transfer_message, file_transfer_handler, settings, width, parent=None):
 
         QtWidgets.QListWidget.__init__(self, parent)
-        self._file_transfers_handler = file_transfers_handler
+        self._file_transfer_handler = file_transfer_handler
         self.resize(QtCore.QSize(width, 34))
         if transfer_message.state == FILE_TRANSFER_STATE['CANCELLED']:
             self.setStyleSheet('QListWidget { border: 1px solid #B40404; }')
@@ -308,7 +308,7 @@ class FileTransferItem(QtWidgets.QListWidget):
         self.paused = False
 
     def cancel_transfer(self, friend_number, file_number):
-        self._file_transfers_handler.cancel_transfer(friend_number, file_number)
+        self._file_transfer_handler.cancel_transfer(friend_number, file_number)
         self.setStyleSheet('QListWidget { border: 1px solid #B40404; }')
         self.cancel.setVisible(False)
         self.accept_or_pause.setVisible(False)
@@ -319,7 +319,7 @@ class FileTransferItem(QtWidgets.QListWidget):
             directory = util_ui.directory_dialog(util_ui.tr('Choose folder'))
             self.pb.setVisible(True)
             if directory:
-                self._file_transfer_handler.accept_transfer(self, directory + '/' + self.saved_name,
+                self._file_transfer_handler.accept_transfer(directory + '/' + self.saved_name,
                                                             friend_number, file_number, size)
                 self.button_update('pause')
         elif self.state == FILE_TRANSFER_STATE['PAUSED_BY_USER']:  # resume
@@ -390,8 +390,8 @@ class FileTransferItem(QtWidgets.QListWidget):
 
 class UnsentFileItem(FileTransferItem):
 
-    def __init__(self, file_transfers_handler, settings, transfer_message, width, parent=None):
-        super().__init__(file_transfers_handler, settings, transfer_message, width, parent)
+    def __init__(self, file_transfer_handler, settings, transfer_message, width, parent=None):
+        super().__init__(file_transfer_handler, settings, transfer_message, width, parent)
         self._time = time
         self.pb.setVisible(False)
         movie = QtGui.QMovie(util.join_path(util.get_images_directory(), 'spinner.gif'))
@@ -399,7 +399,7 @@ class UnsentFileItem(FileTransferItem):
         movie.start()
 
     def cancel_transfer(self, *args):
-        self._file_transfers_handler.cancel_not_started_transfer(self._time)
+        self._file_transfer_handler.cancel_not_started_transfer(self._time)
 
 
 class InlineImageItem(QtWidgets.QScrollArea):
