@@ -214,20 +214,18 @@ class FileTransfersHandler:
         st.set_state_changed_handler(item.update_transfer_state)
         self._messages.scrollToBottom()
 
-    def send_file(self, path, number=None, is_resend=False, file_id=None):
+    def send_file(self, path, friend_number, is_resend=False, file_id=None):
         """
         Send file to current active friend
         :param path: file path
-        :param number: friend_number
+        :param friend_number: friend_number
         :param is_resend: is 'offline' message
         :param file_id: file id of transfer
         """
-        friend_number = self.get_active_number() if number is None else number
         friend = self._get_friend_by_number(friend_number)
         if friend.status is None and not is_resend:
             m = UnsentFile(path, None, time.time())
             friend.append_message(m)
-            self.update()
             return
         elif friend.status is None and is_resend:
             print('Error in sending')
@@ -235,18 +233,18 @@ class FileTransfersHandler:
         st = SendTransfer(path, self._tox, friend_number, TOX_FILE_KIND['DATA'], file_id)
         st.set_transfer_finished_handler(self.transfer_finished)
         self._file_transfers[(friend_number, st.get_file_number())] = st
-        tm = TransferMessage(MESSAGE_AUTHOR['ME'],
-                             time.time(),
-                             TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED'],
-                             os.path.getsize(path),
-                             os.path.basename(path),
-                             friend_number,
-                             st.get_file_number())
-        if friend_number == self.get_active_number():
-            item = self.create_file_transfer_item(tm)
-            st.set_state_changed_handler(item.update_transfer_state)
-            self._messages.scrollToBottom()
-        self._contacts[friend_number].append_message(tm)
+        # tm = TransferMessage(MESSAGE_AUTHOR['ME'],
+        #                      time.time(),
+        #                      TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED'],
+        #                      os.path.getsize(path),
+        #                      os.path.basename(path),
+        #                      friend_number,
+        #                      st.get_file_number())
+        # if friend_number == self.get_active_number():
+        #     item = self.create_file_transfer_item(tm)
+        #     st.set_state_changed_handler(item.update_transfer_state)
+        #     self._messages.scrollToBottom()
+        # self._contacts[friend_number].append_message(tm)
 
     def incoming_chunk(self, friend_number, file_number, position, data):
         """
@@ -265,8 +263,6 @@ class FileTransfersHandler:
         t = type(transfer)
         if t is ReceiveAvatar:
             self._get_friend_by_number(friend_number).load_avatar()
-            if friend_number == self.get_active_number() and self.is_active_a_friend():
-                self.set_active(None)
         elif t is ReceiveToBuffer or (t is SendFromBuffer and self._settings['allow_inline']):  # inline image
             print('inline')
             inline = InlineImage(transfer.get_data())
@@ -284,7 +280,7 @@ class FileTransfersHandler:
                     self._messages.scrollToBottom()
         elif t is not SendAvatar:
             self._get_friend_by_number(friend_number).update_transfer_data(file_number,
-                                                                          TOX_FILE_TRANSFER_STATE['FINISHED'])
+                                                                           TOX_FILE_TRANSFER_STATE['FINISHED'])
         del self._file_transfers[(friend_number, file_number)]
         del transfer
 

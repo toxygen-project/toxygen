@@ -24,12 +24,14 @@ DO_NOT_SHOW_ACCEPT_BUTTON = (2, 3, 4, 6)
 
 SHOW_PROGRESS_BAR = (0, 1, 4)
 
-ALLOWED_FILES = ('toxygen_inline.png', 'utox-inline.png', 'sticker.png')
-
 
 def is_inline(file_name):
-    return file_name in ALLOWED_FILES or file_name.startswith('qTox_Screenshot_')
+    allowed_inlines = ('toxygen_inline.png', 'utox-inline.png', 'sticker.png')
 
+    return file_name in allowed_inlines or file_name.startswith('qTox_Screenshot_')
+
+
+# TODO: use events from common.event.py
 
 class StateSignal(QtCore.QObject):
 

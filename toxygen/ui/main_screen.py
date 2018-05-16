@@ -519,7 +519,7 @@ class MainWindow(QtWidgets.QMainWindow):
             caption = util_ui.tr('Choose file')
             name = util_ui.file_dialog(caption)
             if name[0]:
-                self._contacts_manager.send_file(name[0])
+                self._contacts_manager.send_file(name[0], self._contacts_manager.get_contact().number)
 
     def send_screenshot(self, hide=False):
         self.menu.hide()

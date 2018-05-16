@@ -116,7 +116,7 @@ class ScreenShotWindow(RubberBandWindow):
                 buffer.open(QtCore.QIODevice.WriteOnly)
                 p.save(buffer, 'PNG')
                 friend = self._contacts_manager.get_curr_contact()
-                self._file_transfer_handler.send_screenshot(bytes(byte_array.data(), friend.number))
+                self._file_transfer_handler.send_screenshot(bytes(byte_array.data()), friend.number)
             self.close()
 
 

@@ -151,8 +151,8 @@ class TransferMessage(Message):
 
 class UnsentFile(Message):
 
-    def __init__(self, id, path, data, time):
-        super().__init__(id, MESSAGE_TYPE['FILE_TRANSFER'], 0, time)
+    def __init__(self, path, data, time):
+        super().__init__(MESSAGE_TYPE['FILE_TRANSFER'], 0, time)
         self._data, self._path = data, path
 
     def get_status(self):
@@ -164,8 +164,8 @@ class InlineImage(Message):
     Inline image
     """
 
-    def __init__(self, id, data):
-        super().__init__(id, MESSAGE_TYPE['INLINE'], None, None)
+    def __init__(self, data):
+        super().__init__(MESSAGE_TYPE['INLINE'], None, None)
         self._data = data
 
     def get_data(self):
