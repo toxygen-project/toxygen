@@ -126,27 +126,43 @@ class TransferMessage(Message):
     Message with info about file transfer
     """
 
-    def __init__(self, owner, time, status, size, name, friend_number, file_number):
-        super().__init__(MESSAGE_TYPE['FILE_TRANSFER'], owner, time)
-        self._status = status
+    def __init__(self, author, time, state, size, file_name, friend_number, file_number):
+        super().__init__(MESSAGE_TYPE['FILE_TRANSFER'], author, time)
+        self._state = state
         self._size = size
-        self._file_name = name
+        self._file_name = file_name
         self._friend_number, self._file_number = friend_number, file_number
 
     def is_active(self, file_number):
-        return self._file_number == file_number and self._status not in (2, 3)
+        return self._file_number == file_number and self._state not in (2, 3)
 
     def get_friend_number(self):
         return self._friend_number
 
+    friend_number = property(get_friend_number)
+
     def get_file_number(self):
         return self._file_number
 
-    def get_status(self):
-        return self._status
+    file_number = property(get_file_number)
 
-    def set_status(self, value):
-        self._status = value
+    def get_state(self):
+        return self._state
+
+    def set_state(self, value):
+        self._state = value
+
+    state = property(get_state, set_state)
+
+    def get_size(self):
+        return self._size
+
+    size = property(get_size)
+
+    def get_file_name(self):
+        return self._file_name
+
+    file_name = property(get_file_name)
 
 
 class UnsentFile(Message):

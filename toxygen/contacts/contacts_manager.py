@@ -83,18 +83,18 @@ class ContactsManager:
                     current_contact.curr_text = self._screen.messageEdit.toPlainText()
                 except:
                     pass
-            friend = self._contacts[value]
-            self._subscribe_to_events(friend)
-            friend.remove_invalid_unsent_files()
+            contact = self._contacts[value]
+            self._subscribe_to_events(contact)
+            contact.remove_invalid_unsent_files()
             if self._active_contact != value:
-                self._screen.messageEdit.setPlainText(friend.curr_text)
+                self._screen.messageEdit.setPlainText(contact.curr_text)
             self._active_contact = value
-            friend.reset_messages()
+            contact.reset_messages()
             if not self._settings['save_history']:
-                friend.delete_old_messages()
+                contact.delete_old_messages()
             self._messages.clear()
-            friend.load_corr()
-            corr = friend.get_corr()[-PAGE_SIZE:]
+            contact.load_corr()
+            corr = contact.get_corr()[-PAGE_SIZE:]
             for message in corr:
                 self._messages_items_factory.create_message_item(message)
             # if value in self._call:
@@ -103,12 +103,8 @@ class ContactsManager:
             #     self._screen.incoming_call()
             # else:
             #     self._screen.call_finished()
+            self._set_current_contact_data(contact)
 
-            self._screen.account_status.setToolTip(friend.get_full_status())
-            avatar_path = friend.get_avatar_path()
-            pixmap = QtGui.QPixmap(avatar_path)
-            self._screen.account_avatar.setPixmap(pixmap.scaled(64, 64, QtCore.Qt.KeepAspectRatio,
-                                                                QtCore.Qt.SmoothTransformation))
         except Exception as ex:  # no friend found. ignore
             util.log('Friend value: ' + str(value))
             util.log('Error in set active: ' + str(ex))
@@ -433,8 +429,15 @@ class ContactsManager:
         self._screen.account_status.setText(status_message)
 
     def _current_contact_avatar_changed(self, avatar_path):
+        self._set_current_contact_avatar(avatar_path)
+
+    def _set_current_contact_data(self, contact):
+        self._screen.account_name.setText(contact.name)
+        self._screen.account_status.setText(contact.status_message)
+        self._set_current_contact_avatar(contact.get_avatar_path())
+
+    def _set_current_contact_avatar(self, avatar_path):
         width = self._screen.account_avatar.width()
         pixmap = QtGui.QPixmap(avatar_path)
-        self._screen.avatar_label.setPixmap(pixmap.scaled(width, width,
-                                                          QtCore.Qt.KeepAspectRatio,
-                                                          QtCore.Qt.SmoothTransformation))
+        self._screen.account_avatar.setPixmap(pixmap.scaled(width, width,
+                                                            QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))

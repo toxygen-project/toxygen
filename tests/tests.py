@@ -126,7 +126,7 @@ class TestFriend:
         assert arr[0][0] == 'Not sent'
         tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
                              time.time(),
-                             TOX_FILE_TRANSFER_STATE['RUNNING'],
+                             FILE_TRANSFER_STATE['RUNNING'],
                              100, 'file_name', friend.number, 0)
         friend.append_message(tm)
         friend.clear_corr()

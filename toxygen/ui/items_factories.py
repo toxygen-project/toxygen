@@ -18,15 +18,17 @@ class FriendItemsFactory:
         return item
 
 
-# TODO: accept messages everywhere instead of params
-
 class MessagesItemsFactory:
 
     def __init__(self, settings, plugin_loader, smiley_loader, main_screen, delete_action):
+        self._file_transfers_handler = None
         self._settings, self._plugin_loader = settings, plugin_loader
         self._smiley_loader, self._delete_action = smiley_loader, delete_action
         self._messages = main_screen.messages
         self._message_edit = main_screen.messageEdit
+
+    def set_file_transfers_handler(self, file_transfers_handler):
+        self._file_transfers_handler = file_transfers_handler
 
     def create_message_item(self, message, append=True, pixmap=None):
         item = message.get_widget(self._settings, self._create_message_browser,
@@ -43,24 +45,20 @@ class MessagesItemsFactory:
 
         return item
 
-    def create_inline_item(self, data, append):
+    def create_inline_item(self, data, append, position=0):
         elem = QtWidgets.QListWidgetItem()
         item = InlineImageItem(data, self._messages.width(), elem)
         elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
         if append:
             self._messages.addItem(elem)
         else:
-            self._messages.insertItem(0, elem)
+            self._messages.insertItem(position, elem)
         self._messages.setItemWidget(elem, item)
 
         return item
 
-    def create_unsent_file_item(self, file_name, size, name, time, append):
-        item = UnsentFileItem(file_name,
-                              size,
-                              name,
-                              time,
-                              self._messages.width())
+    def create_unsent_file_item(self, tm, append):
+        item = UnsentFileItem(self._file_transfers_handler, self._settings, tm, self._messages.width())
         elem = QtWidgets.QListWidgetItem()
         elem.setSizeHint(QtCore.QSize(self._messages.width() - 30, 34))
         if append:
@@ -71,9 +69,8 @@ class MessagesItemsFactory:
 
         return item
 
-    def create_file_transfer_item(self, data, append=True):
-        data.append(self._messages.width())
-        item = FileTransferItem(*data)
+    def create_file_transfer_item(self, tm, append=True):
+        item = FileTransferItem(self._file_transfers_handler, self._settings, tm, self._messages.width())
         elem = QtWidgets.QListWidgetItem()
         elem.setSizeHint(QtCore.QSize(self._messages.width() - 30, 34))
         if append:

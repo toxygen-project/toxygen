@@ -6,7 +6,9 @@ import utils.util as util
 import ui.menu as menu
 import html as h
 import re
+from ui.widgets import *
 from messenger.messages import MESSAGE_AUTHOR
+from file_transfers.file_transfers import *
 
 
 class MessageBrowser(QtWidgets.QTextBrowser):
@@ -216,60 +218,63 @@ class MessageItem(QtWidgets.QWidget):
 
 class FileTransferItem(QtWidgets.QListWidget):
 
-    def __init__(self, file_name, size, time, user, friend_number, file_number, state, width, parent=None):
+    def __init__(self, file_transfers_handler, settings, transfer_message, width, parent=None):
 
         QtWidgets.QListWidget.__init__(self, parent)
+        self._file_transfers_handler = file_transfers_handler
         self.resize(QtCore.QSize(width, 34))
-        if state == TOX_FILE_TRANSFER_STATE['CANCELLED']:
+        if transfer_message.state == FILE_TRANSFER_STATE['CANCELLED']:
             self.setStyleSheet('QListWidget { border: 1px solid #B40404; }')
-        elif state in PAUSED_FILE_TRANSFERS:
+        elif transfer_message.state in PAUSED_FILE_TRANSFERS:
             self.setStyleSheet('QListWidget { border: 1px solid #FF8000; }')
         else:
             self.setStyleSheet('QListWidget { border: 1px solid green; }')
-        self.state = state
+        self.state = transfer_message.state
 
         self.name = DataLabel(self)
         self.name.setGeometry(QtCore.QRect(3, 7, 95, 25))
         self.name.setTextFormat(QtCore.Qt.PlainText)
         font = QtGui.QFont()
-        # FIXME
-        font.setFamily(settings.Settings.get_instance()['font'])
+        font.setFamily(settings['font'])
         font.setPointSize(11)
         font.setBold(True)
         self.name.setFont(font)
-        self.name.setText(user)
+        self.name.setText(transfer_message.author.name)
 
         self.time = QtWidgets.QLabel(self)
         self.time.setGeometry(QtCore.QRect(width - 60, 7, 50, 25))
         font.setPointSize(10)
         font.setBold(False)
         self.time.setFont(font)
-        self.time.setText(convert_time(time))
+        self.time.setText(util.convert_time(time))
 
         self.cancel = QtWidgets.QPushButton(self)
         self.cancel.setGeometry(QtCore.QRect(width - 125, 2, 30, 30))
-        pixmap = QtGui.QPixmap(curr_directory() + '/images/decline.png')
+        pixmap = QtGui.QPixmap(util.join_path(util.get_images_directory(), 'decline.png'))
         icon = QtGui.QIcon(pixmap)
         self.cancel.setIcon(icon)
         self.cancel.setIconSize(QtCore.QSize(30, 30))
-        self.cancel.setVisible(state in ACTIVE_FILE_TRANSFERS)
-        self.cancel.clicked.connect(lambda: self.cancel_transfer(friend_number, file_number))
+        self.cancel.setVisible(transfer_message.state in ACTIVE_FILE_TRANSFERS)
+        self.cancel.clicked.connect(
+            lambda: self.cancel_transfer(transfer_message.friend_number, transfer_message.file_number))
         self.cancel.setStyleSheet('QPushButton:hover { border: 1px solid #3A3939; background-color: none;}')
 
         self.accept_or_pause = QtWidgets.QPushButton(self)
         self.accept_or_pause.setGeometry(QtCore.QRect(width - 170, 2, 30, 30))
-        if state == TOX_FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']:
+        if transfer_message.state == FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']:
             self.accept_or_pause.setVisible(True)
             self.button_update('accept')
-        elif state in DO_NOT_SHOW_ACCEPT_BUTTON:
+        elif transfer_message.state in DO_NOT_SHOW_ACCEPT_BUTTON:
             self.accept_or_pause.setVisible(False)
-        elif state == TOX_FILE_TRANSFER_STATE['PAUSED_BY_USER']:  # setup for continue
+        elif transfer_message.state == FILE_TRANSFER_STATE['PAUSED_BY_USER']:  # setup for continue
             self.accept_or_pause.setVisible(True)
             self.button_update('resume')
         else:  # pause
             self.accept_or_pause.setVisible(True)
             self.button_update('pause')
-        self.accept_or_pause.clicked.connect(lambda: self.accept_or_pause_transfer(friend_number, file_number, size))
+        self.accept_or_pause.clicked.connect(
+            lambda: self.accept_or_pause_transfer(transfer_message.friend_number, transfer_message.file_number,
+                                                  transfer_message.size))
 
         self.accept_or_pause.setStyleSheet('QPushButton:hover { border: 1px solid #3A3939; background-color: none}')
 
@@ -277,64 +282,60 @@ class FileTransferItem(QtWidgets.QListWidget):
         self.pb.setGeometry(QtCore.QRect(100, 7, 100, 20))
         self.pb.setValue(0)
         self.pb.setStyleSheet('QProgressBar { background-color: #302F2F; }')
-        self.pb.setVisible(state in SHOW_PROGRESS_BAR)
+        self.pb.setVisible(transfer_message.state in SHOW_PROGRESS_BAR)
 
         self.file_name = DataLabel(self)
         self.file_name.setGeometry(QtCore.QRect(210, 7, width - 420, 20))
         font.setPointSize(12)
         self.file_name.setFont(font)
-        file_size = size // 1024
+        file_size = transfer_message.size // 1024
         if not file_size:
-            file_size = '{}B'.format(size)
+            file_size = '{}B'.format(transfer_message.size)
         elif file_size >= 1024:
             file_size = '{}MB'.format(file_size // 1024)
         else:
             file_size = '{}KB'.format(file_size)
-        file_data = '{} {}'.format(file_size, file_name)
+        file_data = '{} {}'.format(file_size, transfer_message.file_name)
         self.file_name.setText(file_data)
-        self.file_name.setToolTip(file_name)
-        self.saved_name = file_name
+        self.file_name.setToolTip(transfer_message.file_name)
+        self.saved_name = transfer_message.file_name
         self.time_left = QtWidgets.QLabel(self)
         self.time_left.setGeometry(QtCore.QRect(width - 92, 7, 30, 20))
         font.setPointSize(10)
         self.time_left.setFont(font)
-        self.time_left.setVisible(state == TOX_FILE_TRANSFER_STATE['RUNNING'])
+        self.time_left.setVisible(transfer_message.state == FILE_TRANSFER_STATE['RUNNING'])
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         self.paused = False
 
     def cancel_transfer(self, friend_number, file_number):
-        pr = profile.Profile.get_instance()
-        pr.cancel_transfer(friend_number, file_number)
+        self._file_transfers_handler.cancel_transfer(friend_number, file_number)
         self.setStyleSheet('QListWidget { border: 1px solid #B40404; }')
         self.cancel.setVisible(False)
         self.accept_or_pause.setVisible(False)
         self.pb.setVisible(False)
 
     def accept_or_pause_transfer(self, friend_number, file_number, size):
-        if self.state == TOX_FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']:
-            directory = QtWidgets.QFileDialog.getExistingDirectory(self,
-                                                               QtWidgets.QApplication.translate("MainWindow", 'Choose folder'),
-                                                               curr_directory(),
-                                                               QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
+        if self.state == FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']:
+            directory = util_ui.directory_dialog(util_ui.tr('Choose folder'))
             self.pb.setVisible(True)
             if directory:
-                pr = profile.Profile.get_instance()
-                pr.accept_transfer(self, directory + '/' + self.saved_name, friend_number, file_number, size)
+                self._file_transfer_handler.accept_transfer(self, directory + '/' + self.saved_name,
+                                                            friend_number, file_number, size)
                 self.button_update('pause')
-        elif self.state == TOX_FILE_TRANSFER_STATE['PAUSED_BY_USER']:  # resume
+        elif self.state == FILE_TRANSFER_STATE['PAUSED_BY_USER']:  # resume
             self.paused = False
-            profile.Profile.get_instance().resume_transfer(friend_number, file_number)
+            self._file_transfer_handler.resume_transfer(friend_number, file_number)
             self.button_update('pause')
-            self.state = TOX_FILE_TRANSFER_STATE['RUNNING']
+            self.state = FILE_TRANSFER_STATE['RUNNING']
         else:  # pause
             self.paused = True
-            self.state = TOX_FILE_TRANSFER_STATE['PAUSED_BY_USER']
-            profile.Profile.get_instance().pause_transfer(friend_number, file_number)
+            self.state = FILE_TRANSFER_STATE['PAUSED_BY_USER']
+            self._file_transfer_handler.pause_transfer(friend_number, file_number)
             self.button_update('resume')
         self.accept_or_pause.clearFocus()
 
     def button_update(self, path):
-        pixmap = QtGui.QPixmap(curr_directory() + '/images/{}.png'.format(path))
+        pixmap = QtGui.QPixmap(util.join_path(util.get_images_directory(), '{}.png'.format(path)))
         icon = QtGui.QIcon(pixmap)
         self.accept_or_pause.setIcon(icon)
         self.accept_or_pause.setIconSize(QtCore.QSize(30, 30))
@@ -345,31 +346,31 @@ class FileTransferItem(QtWidgets.QListWidget):
             m, s = divmod(time, 60)
             self.time_left.setText('{0:02d}:{1:02d}'.format(m, s))
         if self.state != state and self.state in ACTIVE_FILE_TRANSFERS:
-            if state == TOX_FILE_TRANSFER_STATE['CANCELLED']:
+            if state == FILE_TRANSFER_STATE['CANCELLED']:
                 self.setStyleSheet('QListWidget { border: 1px solid #B40404; }')
                 self.cancel.setVisible(False)
                 self.accept_or_pause.setVisible(False)
                 self.pb.setVisible(False)
                 self.state = state
                 self.time_left.setVisible(False)
-            elif state == TOX_FILE_TRANSFER_STATE['FINISHED']:
+            elif state == FILE_TRANSFER_STATE['FINISHED']:
                 self.accept_or_pause.setVisible(False)
                 self.pb.setVisible(False)
                 self.cancel.setVisible(False)
                 self.setStyleSheet('QListWidget { border: 1px solid green; }')
                 self.state = state
                 self.time_left.setVisible(False)
-            elif state == TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND']:
+            elif state == FILE_TRANSFER_STATE['PAUSED_BY_FRIEND']:
                 self.accept_or_pause.setVisible(False)
                 self.setStyleSheet('QListWidget { border: 1px solid #FF8000; }')
                 self.state = state
                 self.time_left.setVisible(False)
-            elif state == TOX_FILE_TRANSFER_STATE['PAUSED_BY_USER']:
+            elif state == FILE_TRANSFER_STATE['PAUSED_BY_USER']:
                 self.button_update('resume')  # setup button continue
                 self.setStyleSheet('QListWidget { border: 1px solid green; }')
                 self.state = state
                 self.time_left.setVisible(False)
-            elif state == TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']:
+            elif state == FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']:
                 self.setStyleSheet('QListWidget { border: 1px solid #FF8000; }')
                 self.accept_or_pause.setVisible(False)
                 self.time_left.setVisible(False)
@@ -382,24 +383,23 @@ class FileTransferItem(QtWidgets.QListWidget):
                 self.state = state
                 self.time_left.setVisible(True)
 
-    def mark_as_sent(self):
+    @staticmethod
+    def mark_as_sent():
         return False
 
 
 class UnsentFileItem(FileTransferItem):
 
-    def __init__(self, file_name, size, user, time, width, parent=None):
-        super(UnsentFileItem, self).__init__(file_name, size, time, user, -1, -1,
-                                             TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND'], width, parent)
+    def __init__(self, file_transfers_handler, settings, transfer_message, width, parent=None):
+        super().__init__(file_transfers_handler, settings, transfer_message, width, parent)
         self._time = time
         self.pb.setVisible(False)
-        movie = QtGui.QMovie(join_path(get_images_directory(), 'spinner.gif'))
+        movie = QtGui.QMovie(util.join_path(util.get_images_directory(), 'spinner.gif'))
         self.time.setMovie(movie)
         movie.start()
 
     def cancel_transfer(self, *args):
-        pr = profile.Profile.get_instance()
-        pr.cancel_not_started_transfer(self._time)
+        self._file_transfers_handler.cancel_not_started_transfer(self._time)
 
 
 class InlineImageItem(QtWidgets.QScrollArea):
@@ -443,15 +443,11 @@ class InlineImageItem(QtWidgets.QScrollArea):
             self._full_size = not self._full_size
             self._elem.setSizeHint(QtCore.QSize(self.width(), self.height()))
         elif event.button() == QtCore.Qt.RightButton:  # save inline
-            # TODO: dialog
-            directory = QtWidgets.QFileDialog.getExistingDirectory(self,
-                                                                   QtWidgets.QApplication.translate("MainWindow",
-                                                                                                    'Choose folder'),
-                                                                   curr_directory(),
-                                                                   QtWidgets.QFileDialog.ShowDirsOnly | QtWidgets.QFileDialog.DontUseNativeDialog)
+            directory = util_ui.directory_dialog(util_ui.tr('Choose folder'))
             if directory:
-                fl = QtCore.QFile(directory + '/toxygen_inline_' + curr_time().replace(':', '_') + '.png')
+                fl = QtCore.QFile(directory + '/toxygen_inline_' + util.curr_time().replace(':', '_') + '.png')
                 self._pixmap.save(fl, 'PNG')
 
-    def mark_as_sent(self):
+    @staticmethod
+    def mark_as_sent():
         return False

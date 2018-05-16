@@ -28,6 +28,7 @@ from ui.items_factories import MessagesItemsFactory, FriendItemsFactory
 from messenger.messenger import Messenger
 from network.tox_dns import ToxDns
 from history.history import History
+from file_transfers.file_transfers_messages_service import FileTransfersMessagesService
 
 
 class App:
@@ -312,7 +313,11 @@ class App:
         history.set_contacts_manager(self._contacts_manager)
         self._messenger = Messenger(self._tox, self._plugin_loader, self._ms, self._contacts_manager,
                                     self._contacts_provider, messages_items_factory, profile)
-        self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider)
+        file_transfers_message_service = FileTransfersMessagesService(self._contacts_manager, messages_items_factory,
+                                                                      profile, self._ms)
+        self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider,
+                                                           file_transfers_message_service)
+        messages_items_factory.set_file_transfers_handler(self._file_transfer_handler)
         widgets_factory = WidgetsFactory(self._settings, profile, self._profile_manager, self._contacts_manager,
                                          self._file_transfer_handler, self._smiley_loader, self._plugin_loader,
                                          self._toxes, self._version)

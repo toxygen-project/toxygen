@@ -3,10 +3,10 @@ from os.path import basename, getsize, exists, dirname
 from os import remove, rename, chdir
 from time import time, sleep
 from wrapper.tox import Tox
-from PyQt5 import QtCore
+from common.event import Event
 
 
-TOX_FILE_TRANSFER_STATE = {
+FILE_TRANSFER_STATE = {
     'RUNNING': 0,
     'PAUSED_BY_USER': 1,
     'CANCELLED': 2,
@@ -31,68 +31,57 @@ def is_inline(file_name):
     return file_name in allowed_inlines or file_name.startswith('qTox_Screenshot_')
 
 
-# TODO: use events from common.event.py
-
-class StateSignal(QtCore.QObject):
-
-    signal = QtCore.pyqtSignal(int, float, int)  # state, progress, time in sec
-
-
-class TransferFinishedSignal(QtCore.QObject):
-
-    signal = QtCore.pyqtSignal(int, int)  # friend number, file number
-
-
-class FileTransfer(QtCore.QObject):
+class FileTransfer:
     """
     Superclass for file transfers
     """
 
     def __init__(self, path, tox, friend_number, size, file_number=None):
-        QtCore.QObject.__init__(self)
         self._path = path
         self._tox = tox
         self._friend_number = friend_number
-        self.state = TOX_FILE_TRANSFER_STATE['RUNNING']
+        self.state = FILE_TRANSFER_STATE['RUNNING']
         self._file_number = file_number
         self._creation_time = None
         self._size = float(size)
         self._done = 0
-        self._state_changed = StateSignal()
-        self._finished = TransferFinishedSignal()
+        self._state_changed_event = Event()
+        self._finished_event = Event()
         self._file_id = None
 
     def set_tox(self, tox):
         self._tox = tox
 
     def set_state_changed_handler(self, handler):
-        self._state_changed.signal.connect(handler)
+        self._state_changed_event += handler
 
     def set_transfer_finished_handler(self, handler):
-        self._finished.signal.connect(handler)
-
-    def signal(self):
-        percentage = self._done / self._size if self._size else 0
-        if self._creation_time is None or not percentage:
-            t = -1
-        else:
-            t = ((time() - self._creation_time) / percentage) * (1 - percentage)
-        self._state_changed.signal.emit(self.state, percentage, int(t))
-
-    def finished(self):
-        self._finished.signal.emit(self._friend_number, self._file_number)
+        self._finished_event += handler
 
     def get_file_number(self):
         return self._file_number
 
+    file_number = property(get_file_number)
+
     def get_friend_number(self):
         return self._friend_number
 
-    def get_id(self):
+    friend_number = property(get_friend_number)
+
+    def get_file_id(self):
         return self._file_id
+
+    file_id = property(get_file_id)
 
     def get_path(self):
         return self._path
+
+    path = property(get_path)
+
+    def get_size(self):
+        return self._size
+
+    size = property(get_size)
 
     def cancel(self):
         self.send_control(TOX_FILE_CONTROL['CANCEL'])
@@ -104,14 +93,14 @@ class FileTransfer(QtCore.QObject):
         if hasattr(self, '_file'):
             sleep(0.1)
             self._file.close()
-        self.state = TOX_FILE_TRANSFER_STATE['CANCELLED']
+        self.state = FILE_TRANSFER_STATE['CANCELLED']
         self.signal()
 
     def pause(self, by_friend):
         if not by_friend:
             self.send_control(TOX_FILE_CONTROL['PAUSE'])
         else:
-            self.state = TOX_FILE_TRANSFER_STATE['PAUSED_BY_FRIEND']
+            self.state = FILE_TRANSFER_STATE['PAUSED_BY_FRIEND']
         self.signal()
 
     def send_control(self, control):
@@ -121,6 +110,17 @@ class FileTransfer(QtCore.QObject):
 
     def get_file_id(self):
         return self._tox.file_get_file_id(self._friend_number, self._file_number)
+
+    def signal(self):
+        percentage = self._done / self._size if self._size else 0
+        if self._creation_time is None or not percentage:
+            t = -1
+        else:
+            t = ((time() - self._creation_time) / percentage) * (1 - percentage)
+        self._state_changed_event(self.state, percentage, int(t))
+
+    def _finished(self):
+        self._finished_event(self._friend_number, self._file_number)
 
 # -----------------------------------------------------------------------------------------------------------------
 # Send file
@@ -136,7 +136,7 @@ class SendTransfer(FileTransfer):
         else:
             size = 0
         super().__init__(path, tox, friend_number, size)
-        self.state = TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
+        self.state = FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
         self._file_number = tox.file_send(friend_number, kind, size, file_id,
                                           bytes(basename(path), 'utf-8') if path else b'')
         self._file_id = self.get_file_id()
@@ -157,8 +157,8 @@ class SendTransfer(FileTransfer):
         else:
             if hasattr(self, '_file'):
                 self._file.close()
-            self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self.finished()
+            self.state = FILE_TRANSFER_STATE['FINISHED']
+            self._finished()
         self.signal()
 
 
@@ -183,7 +183,7 @@ class SendFromBuffer(FileTransfer):
 
     def __init__(self, tox, friend_number, data, file_name):
         super().__init__(None, tox, friend_number, len(data))
-        self.state = TOX_FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
+        self.state = FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
         self._data = data
         self._file_number = tox.file_send(friend_number, TOX_FILE_KIND['DATA'],
                                           len(data), None, bytes(file_name, 'utf-8'))
@@ -199,8 +199,8 @@ class SendFromBuffer(FileTransfer):
             self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
             self._done += size
         else:
-            self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self.finished()
+            self.state = FILE_TRANSFER_STATE['FINISHED']
+            self._finished()
         self.signal()
 
 
@@ -250,8 +250,8 @@ class ReceiveTransfer(FileTransfer):
             self._creation_time = time()
         if data is None:
             self._file.close()
-            self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self.finished()
+            self.state = FILE_TRANSFER_STATE['FINISHED']
+            self._finished()
         else:
             data = bytearray(data)
             if self._file_size < position:
@@ -286,8 +286,8 @@ class ReceiveToBuffer(FileTransfer):
         if self._creation_time is None:
             self._creation_time = time()
         if data is None:
-            self.state = TOX_FILE_TRANSFER_STATE['FINISHED']
-            self.finished()
+            self.state = FILE_TRANSFER_STATE['FINISHED']
+            self._finished()
         else:
             data = bytes(data)
             l = len(data)
@@ -342,8 +342,8 @@ class ReceiveAvatar(ReceiveTransfer):
                 chdir(dirname(avatar_path))
                 remove(avatar_path)
             rename(self._path, avatar_path)
-            self.finished(True)
+            self._finished(True)
 
-    def finished(self, emit=False):
+    def _finished(self, emit=False):
         if emit:
-            super().finished()
+            super()._finished()
