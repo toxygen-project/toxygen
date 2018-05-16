@@ -271,7 +271,7 @@ class FileTransfersHandler:
             self._file_transfers[(friend_number, file_number)] = ra
             ra.set_transfer_finished_handler(self.transfer_finished)
         else:
-            friend.load_avatar()
+            friend.reset_avatar(self._settings['identicons'])
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods

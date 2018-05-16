@@ -245,7 +245,7 @@ class ProfileSettings(CenteredWidget):
         self.tox_id.setText(self._profile.new_nospam())
 
     def reset_avatar(self):
-        self._profile.reset_avatar()
+        self._profile.reset_avatar(self._settings['identicons'])
 
     def set_avatar(self):
         choose = util_ui.tr("Choose avatar")

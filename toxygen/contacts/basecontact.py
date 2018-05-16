@@ -3,6 +3,7 @@ from PyQt5 import QtCore, QtGui
 from wrapper.toxcore_enums_and_consts import TOX_PUBLIC_KEY_SIZE
 import utils.util as util
 import common.event as event
+import contacts.common as common
 
 
 class BaseContact:
@@ -119,14 +120,17 @@ class BaseContact:
         self._widget.avatar_label.repaint()
         self._avatar_changed_event(avatar_path)
 
-    def reset_avatar(self):
+    def reset_avatar(self, generate_new):
         avatar_path = self.get_avatar_path()
-        if os.path.isfile(avatar_path):
+        if os.path.isfile(avatar_path) and not avatar_path == self._get_default_avatar_path():
             os.remove(avatar_path)
+        if generate_new:
+            self.set_avatar(common.generate_avatar(self.tox_id))
+        else:
             self.load_avatar()
 
     def set_avatar(self, avatar):
-        avatar_path = self.get_avatar_path()
+        avatar_path = self.get_contact_avatar_path()
         with open(avatar_path, 'wb') as f:
             f.write(avatar)
         self.load_avatar()
@@ -137,7 +141,7 @@ class BaseContact:
     def get_avatar_path(self):
         avatar_path = self.get_contact_avatar_path()
         if not os.path.isfile(avatar_path) or not os.path.getsize(avatar_path):  # load default image
-            avatar_path = util.join_path(util.get_images_directory(), self._get_default_avatar_name())
+            avatar_path = self._get_default_avatar_path()
 
         return avatar_path
 
@@ -166,5 +170,5 @@ class BaseContact:
     # -----------------------------------------------------------------------------------------------------------------
 
     @staticmethod
-    def _get_default_avatar_name():
-        return 'avatar.png'
+    def _get_default_avatar_path():
+        return util.join_path(util.get_images_directory(), 'avatar.png')

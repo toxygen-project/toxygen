@@ -295,6 +295,7 @@ class ContactsManager:
         self._history.add_friend_to_db(tox_id)
         friend = self._contact_provider.get_friend_by_public_key(tox_id)
         self._contacts.append(friend)
+        friend.reset_avatar()
 
     def block_user(self, tox_id):
         """

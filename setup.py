@@ -10,7 +10,7 @@ version = main.__version__ + '.0'
 
 
 if system() == 'Windows':
-    MODULES = ['PyQt5', 'PyAudio', 'numpy', 'opencv-python']
+    MODULES = ['PyQt5', 'PyAudio', 'numpy', 'opencv-python', 'pydenticon']
 else:
     MODULES = []
     try:
@@ -29,6 +29,10 @@ else:
         import cv2
     except ImportError:
         MODULES.append('opencv-python')
+    try:
+        import pydenticon
+    except ImportError:
+        MODULES.append('pydenticon')
 
 
 class InstallScript(install):

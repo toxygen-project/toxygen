@@ -316,9 +316,6 @@ class ReceiveAvatar(ReceiveTransfer):
         elif not size:
             self.send_control(TOX_FILE_CONTROL['CANCEL'])
             self._file.close()
-            if exists(path):
-                remove(path)
-            self._file.close()
             remove(full_path)
         elif exists(path):
             hash = self.get_file_id()

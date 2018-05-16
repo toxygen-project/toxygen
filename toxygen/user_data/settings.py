@@ -140,6 +140,7 @@ class Settings(dict):
             'unread_color': 'red',
             'save_unsent_only': False,
             'compact_mode': False,
+            'identicons': True,
             'show_welcome_screen': True,
             'close_to_tray': False,
             'font': 'Times New Roman',

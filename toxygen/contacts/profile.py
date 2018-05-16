@@ -136,8 +136,8 @@ class Profile(basecontact.BaseContact):
             self._call.stop()
             del self._call
 
-    def reset_avatar(self):
-        super().reset_avatar()
+    def reset_avatar(self, generate_new):
+        super().reset_avatar(generate_new)
         for friend in filter(lambda x: x.status is not None, self._contacts):
             self.send_avatar(friend.number)
 
