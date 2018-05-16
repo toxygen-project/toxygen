@@ -10,9 +10,14 @@ class History:
         self._messages = main_screen.messages
         self._messages_items_factory = messages_items_factory
         self._is_loading = False
+        self._contacts_manager = None
            
     def __del__(self):
         del self._db
+
+
+    def set_contacts_manager(self, contacts_manager):
+        self._contacts_manager = contacts_manager
 
     # -----------------------------------------------------------------------------------------------------------------
     # History support
@@ -30,10 +35,9 @@ class History:
                 else:
                     messages = friend.get_unsent_messages_for_saving()
                     self._db.delete_messages(friend.tox_id)
+                messages = map(lambda m: (m.text, m.author.name, m.author.type, m.time, m.type), messages)
                 self._db.save_messages_to_db(friend.tox_id, messages)
-                unsent_messages = friend.get_unsent_messages()
-                # unsent_time = unsent_messages[0].get_data()[2] if len(unsent_messages) else time.time() + 1
-                # self._db.update_messages(friend.tox_id, unsent_time)
+
         self._db.save()
 
     def clear_history(self, friend, save_unsent=False):
@@ -44,7 +48,11 @@ class History:
         self._db.delete_friend_from_db(friend.tox_id)
 
     def delete_message(self, message):
-        pass
+        contact = self._contacts_manager.get_curr_contact()
+        if message.type in (MESSAGE_TYPE['NORMAL'], MESSAGE_TYPE['ACTION']):
+            if message.is_saved():
+                self._db.delete_message(contact.tox_id, message.id)
+        contact.delete_message(message.message_id)
 
     def load_history(self, friend):
         """
@@ -80,7 +88,6 @@ class History:
         return self._db.messages_getter(friend_public_key)
 
     def delete_history(self, friend):
-        self.clear_history(friend)
         self._db.delete_friend_from_db(friend.tox_id)
 
     def add_friend_to_db(self, tox_id):

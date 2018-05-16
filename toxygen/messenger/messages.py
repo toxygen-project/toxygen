@@ -22,11 +22,14 @@ class MessageAuthor:
 
 class Message:
 
+    MESSAGE_ID = 0
+
     def __init__(self, message_type, author, time):
         self._time = time
         self._type = message_type
         self._author = author
         self._widget = None
+        self._message_id = self._get_id()
 
     def get_type(self):
         return self._type
@@ -42,6 +45,11 @@ class Message:
         return self._time
 
     time = property(get_time)
+
+    def get_message_id(self):
+        return self._message_id
+
+    message_id = property(get_message_id)
 
     def get_widget(self, *args):
         if self._widget is None:
@@ -60,23 +68,35 @@ class Message:
     def _create_widget(self, *args):
         pass
 
+    @staticmethod
+    def _get_id():
+        Message.MESSAGE_ID += 1
+
+        return Message.MESSAGE_ID
+
 
 class TextMessage(Message):
     """
     Plain text or action message
     """
 
-    def __init__(self, message, owner, time, message_type):
+    def __init__(self, message, owner, time, message_type, message_id=0):
         super().__init__(message_type, owner, time)
         self._message = message
+        self._id = message_id
 
     def get_text(self):
         return self._message
 
     text = property(get_text)
 
-    def get_data(self):
-        return self._message, self._owner, self._time, self._type
+    def get_id(self):
+        return self._id
+
+    id = property(get_id)
+
+    def is_saved(self):
+        return self._id > 0
 
     def _create_widget(self, *args):
         return MessageItem(self, *args)
@@ -99,9 +119,6 @@ class GroupChatMessage(TextMessage):
     def __init__(self, id, message, owner, time, message_type, name):
         super().__init__(id, message, owner, time, message_type)
         self._user_name = name
-
-    def get_data(self):
-        return self._message, self._owner, self._time, self._type, self._user_name
 
 
 class TransferMessage(Message):
@@ -131,17 +148,12 @@ class TransferMessage(Message):
     def set_status(self, value):
         self._status = value
 
-    def get_data(self):
-        return self._file_name, self._size, self._time, self._owner, self._friend_number, self._file_number, self._status
-
 
 class UnsentFile(Message):
+
     def __init__(self, id, path, data, time):
         super().__init__(id, MESSAGE_TYPE['FILE_TRANSFER'], 0, time)
         self._data, self._path = data, path
-
-    def get_data(self):
-        return self._path, self._data, self._time
 
     def get_status(self):
         return None
@@ -158,6 +170,8 @@ class InlineImage(Message):
 
     def get_data(self):
         return self._data
+
+    data = property(get_data)
 
 
 class InfoMessage(TextMessage):

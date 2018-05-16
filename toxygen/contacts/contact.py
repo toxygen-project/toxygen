@@ -53,7 +53,7 @@ class Contact(basecontact.BaseContact):
             data.reverse()
         else:
             return
-        data = list(map(lambda tupl: TextMessage(*tupl), data))
+        data = list(map(lambda p: self._get_text_message(p), data))
         self._corr = data + self._corr
         self._history_loaded = True
 
@@ -66,7 +66,7 @@ class Contact(basecontact.BaseContact):
         data = list(self._message_getter.get_all())
         if data is not None and len(data):
             data.reverse()
-            data = list(map(lambda tupl: TextMessage(*tupl), data))
+            data = list(map(lambda p: self._get_text_message(p), data))
             self._corr = data + self._corr
             self._history_loaded = True
 
@@ -76,7 +76,7 @@ class Contact(basecontact.BaseContact):
         :return: list of unsaved messages or []
         """
         messages = list(filter(lambda x: x.get_type() <= 1, self._corr))
-        return list(map(lambda x: x.get_data(), messages[-self._unsaved_messages:])) if self._unsaved_messages else []
+        return messages[-self._unsaved_messages:] if self._unsaved_messages else []
 
     def get_corr(self):
         return self._corr[:]
@@ -92,13 +92,20 @@ class Contact(basecontact.BaseContact):
     def get_last_message_text(self):
         messages = list(filter(lambda x: x.get_type() <= 1 and x.get_owner() != MESSAGE_AUTHOR['FRIEND'], self._corr))
         if messages:
-            return messages[-1].get_data()[0]
+            return messages[-1].text
         else:
             return ''
 
     def remove_messages_widgets(self):
         for message in self._corr:
             message.remove_widget()
+
+    @staticmethod
+    def _get_text_message(params):
+        (message, author_type, author_name, unix_time, message_type, unique_id) = params
+        author = MessageAuthor(author_name, author_type)
+
+        return TextMessage(message, author, unix_time, message_type, unique_id)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Unsent messages
@@ -130,8 +137,9 @@ class Contact(basecontact.BaseContact):
     # -----------------------------------------------------------------------------------------------------------------
 
     def delete_message(self, message_id):
-        elem = list(filter(lambda x: type(x) in (TextMessage, GroupChatMessage) and x.message_id == message_id, self._corr))[0]
-        tmp = list(filter(lambda x: x.get_type() <= 1, self._corr))
+        elem = list(filter(lambda x: type(x) in (TextMessage, GroupChatMessage) and x.message_id == message_id,
+                           self._corr))[0]
+        tmp = list(filter(lambda x: x.get_type() in (MESSAGE_TYPE['NORMAL'], MESSAGE_TYPE['ACTION']), self._corr))
         if elem in tmp[-self._unsaved_messages:] and self._unsaved_messages:
             self._unsaved_messages -= 1
         self._corr.remove(elem)
@@ -143,7 +151,7 @@ class Contact(basecontact.BaseContact):
         Delete old messages (reduces RAM usage if messages saving is not enabled)
         """
         def save_message(x):
-            if x.get_type() == 2 and (x.get_status() >= 2 or x.get_status() is None):
+            if x.get_type() == 2 and (x.get_status() >= 2 or x.get_status() is None):  # FIXME MAGIC NUMBERS
                 return True
             return x.get_owner() == MESSAGE_AUTHOR['NOT_SENT']
 

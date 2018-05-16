@@ -309,6 +309,7 @@ class App:
         self._contacts_manager = ContactsManager(self._tox, self._settings, self._ms, self._profile_manager,
                                                  self._contacts_provider, history, self._tox_dns,
                                                  messages_items_factory)
+        history.set_contacts_manager(self._contacts_manager)
         self._messenger = Messenger(self._tox, self._plugin_loader, self._ms, self._contacts_manager,
                                     self._contacts_provider, messages_items_factory, profile)
         self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider)

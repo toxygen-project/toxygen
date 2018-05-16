@@ -67,7 +67,7 @@ class Database:
                            '    id INTEGER PRIMARY KEY,'
                            '    author_name TEXT,'
                            '    message TEXT,'
-                           '    author INTEGER,'
+                           '    author_type INTEGER,'
                            '    unix_time REAL,'
                            '    message_type INTEGER'
                            ')')
@@ -95,7 +95,7 @@ class Database:
         try:
             cursor = db.cursor()
             cursor.executemany('INSERT INTO id' + tox_id +
-                               '(message, author_name, author, unix_time, message_type) ' +
+                               '(message, author_name, author_type, unix_time, message_type) ' +
                                'VALUES (?, ?, ?, ?, ?, ?);', messages_iter)
             db.commit()
         except:
@@ -187,7 +187,7 @@ class Database:
         def _connect(self):
             self._db = connect(self._path, timeout=TIMEOUT)
             self._cursor = self._db.cursor()
-            self._cursor.execute('SELECT id, message, author, unix_time, message_type FROM id' +
+            self._cursor.execute('SELECT message, author_type, author_name, unix_time, message_type, id FROM id' +
                                  self._tox_id + ' ORDER BY unix_time DESC;')
 
         def _disconnect(self):
