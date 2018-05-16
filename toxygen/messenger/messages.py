@@ -164,6 +164,9 @@ class TransferMessage(Message):
 
     file_name = property(get_file_name)
 
+    def _create_widget(self, *args):
+        return FileTransferItem(self, *args)
+
 
 class UnsentFile(Message):
 
@@ -188,6 +191,9 @@ class InlineImage(Message):
         return self._data
 
     data = property(get_data)
+
+    def _create_widget(self, *args):
+        return InlineImageItem(self, *args)
 
 
 class InfoMessage(TextMessage):

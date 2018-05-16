@@ -75,7 +75,7 @@ class Contact(basecontact.BaseContact):
         Get data to save in db
         :return: list of unsaved messages or []
         """
-        messages = list(filter(lambda x: x.get_type() in (MESSAGE_TYPE['NORMAL'], MESSAGE_TYPE['ACTION']), self._corr))
+        messages = list(filter(lambda x: x.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']), self._corr))
         return messages[-self._unsaved_messages:] if self._unsaved_messages else []
 
     def get_corr(self):
@@ -86,11 +86,11 @@ class Contact(basecontact.BaseContact):
         :param message: text or file transfer message
         """
         self._corr.append(message)
-        if message.get_type() in (MESSAGE_TYPE['NORMAL'], MESSAGE_TYPE['ACTION']):
+        if message.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']):
             self._unsaved_messages += 1
 
     def get_last_message_text(self):
-        messages = list(filter(lambda x: x.get_type() in (MESSAGE_TYPE['NORMAL'], MESSAGE_TYPE['ACTION'])
+        messages = list(filter(lambda x: x.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION'])
                                          and x.get_owner() != MESSAGE_AUTHOR['FRIEND'], self._corr))
         if messages:
             return messages[-1].text
@@ -123,7 +123,7 @@ class Contact(basecontact.BaseContact):
         """
         :return list of unsent messages for saving
         """
-        messages = filter(lambda x: x.get_type() in (MESSAGE_TYPE['NORMAL'], MESSAGE_TYPE['ACTION'])
+        messages = filter(lambda x: x.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION'])
                                     and x.get_owner() == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
         return list(map(lambda x: x.get_data(), messages))
 
@@ -141,7 +141,7 @@ class Contact(basecontact.BaseContact):
     def delete_message(self, message_id):
         elem = list(filter(lambda x: type(x) in (TextMessage, GroupChatMessage) and x.message_id == message_id,
                            self._corr))[0]
-        tmp = list(filter(lambda x: x.get_type() in (MESSAGE_TYPE['NORMAL'], MESSAGE_TYPE['ACTION']), self._corr))
+        tmp = list(filter(lambda x: x.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']), self._corr))
         if elem in tmp[-self._unsaved_messages:] and self._unsaved_messages:
             self._unsaved_messages -= 1
         self._corr.remove(elem)
@@ -159,7 +159,7 @@ class Contact(basecontact.BaseContact):
 
         old = filter(save_message, self._corr[:-SAVE_MESSAGES])
         self._corr = list(old) + self._corr[-SAVE_MESSAGES:]
-        text_messages = filter(lambda x: x.get_type() in (MESSAGE_TYPE['NORMAL'], MESSAGE_TYPE['ACTION']), self._corr)
+        text_messages = filter(lambda x: x.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']), self._corr)
         self._unsaved_messages = min(self._unsaved_messages, len(list(text_messages)))
         self._search_index = 0
 
@@ -177,7 +177,7 @@ class Contact(basecontact.BaseContact):
             self._unsaved_messages = 0
         else:
             self._corr = list(filter(lambda x: (x.get_type() == 2 and x.get_status() in ft.ACTIVE_FILE_TRANSFERS)
-                                               or (x.get_type() in (MESSAGE_TYPE['NORMAL'], MESSAGE_TYPE['ACTION'])
+                                               or (x.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION'])
                                                    and x.get_owner() == MESSAGE_AUTHOR['NOT_SENT']),
                                      self._corr))
             self._unsaved_messages = len(self.get_unsent_messages())

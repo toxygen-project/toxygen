@@ -246,7 +246,7 @@ class FileTransferItem(QtWidgets.QListWidget):
         font.setPointSize(10)
         font.setBold(False)
         self.time.setFont(font)
-        self.time.setText(util.convert_time(time))
+        self.time.setText(util.convert_time(transfer_message.time))
 
         self.cancel = QtWidgets.QPushButton(self)
         self.cancel.setGeometry(QtCore.QRect(width - 125, 2, 30, 30))
