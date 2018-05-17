@@ -49,8 +49,8 @@ class Friend(contact.Contact):
 
         self._corr = list(filter(is_valid, self._corr))
 
-    def delete_one_unsent_file(self, time):
-        self._corr = list(filter(lambda x: not (type(x) is UnsentFile and x.get_data()[2] == time), self._corr))
+    def delete_one_unsent_file(self, message_id):
+        self._corr = list(filter(lambda m: not (type(m) is UnsentFile and m.message_id == message_id), self._corr))
 
     # -----------------------------------------------------------------------------------------------------------------
     # History support

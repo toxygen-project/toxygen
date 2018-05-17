@@ -81,8 +81,8 @@ class FileTransfersHandler:
         elif not already_cancelled:
             self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
 
-    def cancel_not_started_transfer(self, cancel_time):
-        self.get_curr_friend().delete_one_unsent_file(cancel_time)
+    def cancel_not_started_transfer(self, friend_number, message_id):
+        self._get_friend_by_number(friend_number).delete_one_unsent_file(message_id)
 
     def pause_transfer(self, friend_number, file_number, by_friend=False):
         """
@@ -128,7 +128,8 @@ class FileTransfersHandler:
     def send_screenshot(self, data, friend_number):
         """
         Send screenshot
-        :param data: raw data - png
+        :param data: raw data - png format
+        :param friend_number: friend number
         """
         self.send_inline(data, 'toxygen_inline.png', friend_number)
 
@@ -158,7 +159,7 @@ class FileTransfersHandler:
         """
         friend = self._get_friend_by_number(friend_number)
         if friend.status is None and not is_resend:
-            m = UnsentFile(path, None, time.time())
+            m = UnsentFile(path, None, util.get_unix_time())
             friend.append_message(m)
             return
         elif friend.status is None and is_resend:
@@ -220,9 +221,9 @@ class FileTransfersHandler:
             if friend_num == friend_number:
                 ft = self._file_transfers[(friend_num, file_num)]
                 if type(ft) is SendTransfer:
-                    self._paused_file_transfers[ft.get_id()] = [ft.get_path(), friend_num, False, -1]
+                    self._paused_file_transfers[ft.file_id] = [ft.path, friend_num, False, -1]
                 elif type(ft) is ReceiveTransfer and ft.state != FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']:
-                    self._paused_file_transfers[ft.get_id()] = [ft.get_path(), friend_num, True, ft.total_size()]
+                    self._paused_file_transfers[ft.file_id] = [ft.path, friend_num, True, ft.total_size()]
                 self.cancel_transfer(friend_num, file_num, True)
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -235,7 +236,7 @@ class FileTransfersHandler:
         :param avatar_path: path to avatar or None if reset
         """
         sa = SendAvatar(avatar_path, self._tox, friend_number)
-        self._file_transfers[(friend_number, sa.get_file_number())] = sa
+        self._file_transfers[(friend_number, sa.file_number)] = sa
 
     def incoming_avatar(self, friend_number, file_number, size):
         """

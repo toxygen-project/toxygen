@@ -397,9 +397,11 @@ class UnsentFileItem(FileTransferItem):
         movie = QtGui.QMovie(util.join_path(util.get_images_directory(), 'spinner.gif'))
         self.time.setMovie(movie)
         movie.start()
+        self._message_id = transfer_message.message_id
+        self._friend_number = transfer_message.friend_number
 
     def cancel_transfer(self, *args):
-        self._file_transfer_handler.cancel_not_started_transfer(self._time)
+        self._file_transfer_handler.cancel_not_started_transfer(self._friend_number, self._message_id)
 
 
 class InlineImageItem(QtWidgets.QScrollArea):
