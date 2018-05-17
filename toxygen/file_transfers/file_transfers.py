@@ -136,11 +136,13 @@ class SendTransfer(FileTransfer):
 
     def __init__(self, path, tox, friend_number, kind=TOX_FILE_KIND['DATA'], file_id=None):
         if path is not None:
-            self._file = open(path, 'rb')
+            fl = open(path, 'rb')
             size = getsize(path)
         else:
+            fl = None
             size = 0
         super().__init__(path, tox, friend_number, size)
+        self._file = fl
         self.state = FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
         self._file_number = tox.file_send(friend_number, kind, size, file_id,
                                           bytes(basename(path), 'utf-8') if path else b'')

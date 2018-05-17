@@ -70,7 +70,7 @@ class MessagesItemsFactory:
         return item
 
     def create_file_transfer_item(self, tm, append=True):
-        item = tm.get_widget(self._file_transfers_handler, self._settings, self._messages.width())
+        item = tm.get_widget(self._file_transfers_handler, self._settings, self._messages.width(), self._messages)
         elem = QtWidgets.QListWidgetItem()
         elem.setSizeHint(QtCore.QSize(self._messages.width() - 30, 34))
         if append:

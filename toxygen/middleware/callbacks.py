@@ -26,11 +26,8 @@ def self_connection_status(tox, profile):
     """
     def wrapped(tox_link, connection, user_data):
         print('Connection status: ', str(connection))
-        if profile.status is None:
-            status = tox.self_get_status()
-            invoke_in_main_thread(profile.set_status, status)
-        elif connection == TOX_CONNECTION['NONE']:
-            invoke_in_main_thread(profile.set_status, None)
+        status = None if connection == TOX_CONNECTION['NONE'] else tox.self_get_status()
+        invoke_in_main_thread(profile.set_status, None)
 
     return wrapped
 
