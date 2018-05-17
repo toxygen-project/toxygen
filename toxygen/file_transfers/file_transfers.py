@@ -161,12 +161,12 @@ class SendTransfer(FileTransfer):
             data = self._file.read(size)
             self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
             self._done += size
+            self._signal()
         else:
             if self._file is not None:
                 self._file.close()
             self.state = FILE_TRANSFER_STATE['FINISHED']
             self._finished()
-        self._signal()
 
 
 class SendAvatar(SendTransfer):

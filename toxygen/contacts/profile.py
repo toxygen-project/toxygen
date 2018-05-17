@@ -11,7 +11,7 @@ class Profile(basecontact.BaseContact):
     """
     Profile of current toxygen user. Contains friends list, tox instance
     """
-    def __init__(self, profile_manager, tox, screen):
+    def __init__(self, profile_manager, tox, screen, contacts_provider, reset_action):
         """
         :param tox: tox instance
         :param screen: ref to main screen
@@ -25,11 +25,10 @@ class Profile(basecontact.BaseContact):
         self._screen = screen
         self._messages = screen.messages
         self._tox = tox
-        self._file_transfers = {}  # dict of file transfers. key - tuple (friend_number, file_number)
-        self._load_history = True
+        self._contacts_provider = contacts_provider
+        self._reset_action = reset_action
         self._waiting_for_reconnection = False
-        self._contacts_manager = None
-        self._timer = threading.Timer(50, self.reconnect)
+        self._timer = threading.Timer(50, self._reconnect)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Edit current user's data
@@ -68,7 +67,7 @@ class Profile(basecontact.BaseContact):
         super().set_status_message(value)
         self._tox.self_set_status_message(self._status_message.encode('utf-8'))
 
-    def new_nospam(self):
+    def set_new_nospam(self):
         """Sets new nospam part of tox id"""
         self._tox.self_set_nospam(random.randint(0, 4294967295))  # no spam - uint32
         self._tox_id = self._tox.self_get_address()
@@ -88,23 +87,20 @@ class Profile(basecontact.BaseContact):
     # Reset
     # -----------------------------------------------------------------------------------------------------------------
 
-    def reset(self, restart):
+    def _restart(self):
         """
         Recreate tox instance
-        :param restart: method which calls restart and returns new tox instance
         """
-        for friend in self._contacts:
-            self.friend_exit(friend.number)
         del self._tox
-        self._tox = restart()
+        self._tox = self._reset_action()
         self.status = None
-        self._contacts_manager.update_filtration()
 
-    def reconnect(self):
+    def _reconnect(self):
         self._waiting_for_reconnection = False
-        if self.status is None or all(list(map(lambda x: x.status is None, self._contacts))) and len(self._contacts):
+        contacts = self._contacts_provider.get_all()
+        if self.status is None or all(list(map(lambda x: x.status is None, contacts))) and len(contacts):
             self._waiting_for_reconnection = True
-            self.reset(self._screen.reset)
+            self._restart()
             self._timer.start()
 
     def close(self):
@@ -112,6 +108,3 @@ class Profile(basecontact.BaseContact):
             self.friend_exit(friend.number)
         for i in range(len(self._contacts)):
             del self._contacts[0]
-        if hasattr(self, '_call'):
-            self._call.stop()
-            del self._call

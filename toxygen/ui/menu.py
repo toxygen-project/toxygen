@@ -242,7 +242,7 @@ class ProfileSettings(CenteredWidget):
         self.copy_pk.setIconSize(QtCore.QSize(10, 10))
 
     def new_no_spam(self):
-        self.tox_id.setText(self._profile.new_nospam())
+        self.tox_id.setText(self._profile.set_new_nospam())
 
     def reset_avatar(self):
         self._profile.reset_avatar(self._settings['identicons'])

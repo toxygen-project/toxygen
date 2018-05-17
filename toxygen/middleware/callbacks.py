@@ -1,4 +1,4 @@
-from PyQt5 import QtGui, QtCore
+from PyQt5 import QtGui
 from user_data.settings import Settings
 from contacts.profile import Profile
 from wrapper.toxcore_enums_and_consts import *
@@ -26,8 +26,8 @@ def self_connection_status(tox, profile):
     """
     def wrapped(tox_link, connection, user_data):
         print('Connection status: ', str(connection))
-        status = None if connection == TOX_CONNECTION['NONE'] else tox.self_get_status()
-        invoke_in_main_thread(profile.set_status, None)
+        status = tox.self_get_status() if connection != TOX_CONNECTION['NONE'] else None
+        invoke_in_main_thread(profile.set_status, status)
 
     return wrapped
 

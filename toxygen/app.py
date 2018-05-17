@@ -298,11 +298,11 @@ class App:
         self._calls_manager = CallsManager(self._tox.AV, self._settings)
         db = Database(self._path.replace('.tox', '.db'), self._toxes)
 
-        profile = Profile(self._profile_manager, self._tox, self._ms)
-        self._plugin_loader = PluginLoader(self._tox, self._toxes, profile, self._settings)
         friend_items_factory = FriendItemsFactory(self._settings, self._ms)
         self._friend_factory = FriendFactory(self._profile_manager, self._settings, self._tox, db, friend_items_factory)
         self._contacts_provider = ContactProvider(self._tox, self._friend_factory)
+        profile = Profile(self._profile_manager, self._tox, self._ms, self._contacts_provider, self._reset)
+        self._plugin_loader = PluginLoader(self._tox, self._toxes, profile, self._settings)
         history = None
         messages_items_factory = MessagesItemsFactory(self._settings, self._plugin_loader, self._smiley_loader,
                                                       self._ms, lambda m: history.delete_message(m))
