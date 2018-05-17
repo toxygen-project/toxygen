@@ -2,9 +2,9 @@ from contacts.friend import *
 from file_transfers.file_transfers import *
 import time
 from contacts import basecontact
-from contacts.group_chat import *
 import utils.ui as util_ui
 import random
+import threading
 
 
 class Profile(basecontact.BaseContact):
@@ -29,6 +29,7 @@ class Profile(basecontact.BaseContact):
         self._load_history = True
         self._waiting_for_reconnection = False
         self._contacts_manager = None
+        self._timer = threading.Timer(50, self.reconnect)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Edit current user's data
@@ -47,7 +48,7 @@ class Profile(basecontact.BaseContact):
             self._tox.self_set_status(status)
         elif not self._waiting_for_reconnection:
             self._waiting_for_reconnection = True
-            QtCore.QTimer.singleShot(50000, self.reconnect)
+            self._timer.start()
 
     def set_name(self, value):
         if self.name == value:
@@ -125,7 +126,7 @@ class Profile(basecontact.BaseContact):
         if self.status is None or all(list(map(lambda x: x.status is None, self._contacts))) and len(self._contacts):
             self._waiting_for_reconnection = True
             self.reset(self._screen.reset)
-            QtCore.QTimer.singleShot(50000, self.reconnect)
+            self._timer.start()
 
     def close(self):
         for friend in filter(lambda x: type(x) is Friend, self._contacts):
@@ -135,13 +136,3 @@ class Profile(basecontact.BaseContact):
         if hasattr(self, '_call'):
             self._call.stop()
             del self._call
-
-    def reset_avatar(self, generate_new):
-        super().reset_avatar(generate_new)
-        for friend in filter(lambda x: x.status is not None, self._contacts):
-            self.send_avatar(friend.number)
-
-    def set_avatar(self, data):
-        super().set_avatar(data)
-        for friend in filter(lambda x: x.status is not None, self._contacts):
-            self.send_avatar(friend.number)

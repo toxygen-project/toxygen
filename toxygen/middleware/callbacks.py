@@ -11,6 +11,7 @@ import numpy as np
 from middleware.threads import invoke_in_main_thread, execute
 from notifications.tray import tray_notification
 from notifications.sound import *
+import threading
 
 # TODO: gc callbacks and refactoring. Use contact provider instead of manager
 
@@ -49,7 +50,11 @@ def friend_status(contacts_manager, file_transfer_handler, profile, settings):
         if friend.status is None and settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['FRIEND_CONNECTION_STATUS'])
         invoke_in_main_thread(friend.set_status, new_status)
-        invoke_in_main_thread(QtCore.QTimer.singleShot, 5000, lambda: file_transfer_handler.send_files(friend_number))
+
+        def set_timer():
+            t = threading.Timer(5, lambda: file_transfer_handler.send_files(friend_number))
+            t.start()
+        invoke_in_main_thread(set_timer)
         invoke_in_main_thread(contacts_manager.update_filtration)
 
     return wrapped

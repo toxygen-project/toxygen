@@ -1,6 +1,5 @@
 from history.database import *
 from contacts import basecontact, common
-import utils.util as util
 from messenger.messages import *
 from contacts.contact_menu import *
 from file_transfers import file_transfers as ft
@@ -119,7 +118,7 @@ class Contact(basecontact.BaseContact):
         """
         :return list of unsent messages
         """
-        messages = filter(lambda x: x.get_owner() == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
+        messages = filter(lambda x: x.author.type == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
         return list(messages)
 
     def get_unsent_messages_for_saving(self):
@@ -127,12 +126,12 @@ class Contact(basecontact.BaseContact):
         :return list of unsent messages for saving
         """
         messages = filter(lambda x: x.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION'])
-                                    and x.get_owner() == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
+                                    and x.author.type == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
         return list(map(lambda x: x.get_data(), messages))
 
     def mark_as_sent(self):
         try:
-            message = list(filter(lambda x: x.get_owner() == MESSAGE_AUTHOR['NOT_SENT'], self._corr))[0]
+            message = list(filter(lambda x: x.author.type == MESSAGE_AUTHOR['NOT_SENT'], self._corr))[0]
             message.mark_as_sent()
         except Exception as ex:
             util.log('Mark as sent ex: ' + str(ex))

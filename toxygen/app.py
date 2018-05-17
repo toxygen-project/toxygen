@@ -245,7 +245,7 @@ class App:
             self._save_profile()
         except Exception as ex:
             print(ex)
-            log('Profile creation exception: ' + str(ex))
+            util.log('Profile creation exception: ' + str(ex))
             text = util_ui.tr('Profile saving error! Does Toxygen have permission to write to this directory?')
             util_ui.message_box(text, util_ui.tr('Error'))
             return
@@ -316,7 +316,7 @@ class App:
         file_transfers_message_service = FileTransfersMessagesService(self._contacts_manager, messages_items_factory,
                                                                       profile, self._ms)
         self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider,
-                                                           file_transfers_message_service)
+                                                           file_transfers_message_service, profile)
         messages_items_factory.set_file_transfers_handler(self._file_transfer_handler)
         widgets_factory = WidgetsFactory(self._settings, profile, self._profile_manager, self._contacts_manager,
                                          self._file_transfer_handler, self._smiley_loader, self._plugin_loader,

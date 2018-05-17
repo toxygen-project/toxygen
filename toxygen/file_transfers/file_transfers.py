@@ -40,7 +40,7 @@ class FileTransfer:
         self._path = path
         self._tox = tox
         self._friend_number = friend_number
-        self.state = FILE_TRANSFER_STATE['RUNNING']
+        self._state = FILE_TRANSFER_STATE['RUNNING']
         self._file_number = file_number
         self._creation_time = None
         self._size = float(size)
@@ -62,6 +62,15 @@ class FileTransfer:
         return self._file_number
 
     file_number = property(get_file_number)
+
+    def get_state(self):
+        return self._state
+
+    def set_state(self, value):
+        self._state = value
+        self._signal()
+
+    state = property(get_state, set_state)
 
     def get_friend_number(self):
         return self._friend_number
@@ -87,30 +96,27 @@ class FileTransfer:
         self.send_control(TOX_FILE_CONTROL['CANCEL'])
         if self._file is not None:
             self._file.close()
-        self.signal()
+        self._signal()
 
     def cancelled(self):
         if self._file is not None:
             self._file.close()
         self.state = FILE_TRANSFER_STATE['CANCELLED']
-        self.signal()
 
     def pause(self, by_friend):
         if not by_friend:
             self.send_control(TOX_FILE_CONTROL['PAUSE'])
         else:
             self.state = FILE_TRANSFER_STATE['PAUSED_BY_FRIEND']
-        self.signal()
 
     def send_control(self, control):
         if self._tox.file_control(self._friend_number, self._file_number, control):
             self.state = control
-            self.signal()
 
     def get_file_id(self):
         return self._tox.file_get_file_id(self._friend_number, self._file_number)
 
-    def signal(self):
+    def _signal(self):
         percentage = self._done / self._size if self._size else 0
         if self._creation_time is None or not percentage:
             t = -1
@@ -154,11 +160,11 @@ class SendTransfer(FileTransfer):
             self._tox.file_send_chunk(self._friend_number, self._file_number, position, data)
             self._done += size
         else:
-            if hasattr(self, '_file'):
+            if self._file is not None:
                 self._file.close()
             self.state = FILE_TRANSFER_STATE['FINISHED']
             self._finished()
-        self.signal()
+        self._signal()
 
 
 class SendAvatar(SendTransfer):
@@ -200,7 +206,7 @@ class SendFromBuffer(FileTransfer):
         else:
             self.state = FILE_TRANSFER_STATE['FINISHED']
             self._finished()
-        self.signal()
+        self._signal()
 
 
 class SendFromFileBuffer(SendTransfer):
@@ -265,7 +271,7 @@ class ReceiveTransfer(FileTransfer):
             if position + l > self._file_size:
                 self._file_size = position + l
             self._done += l
-        self.signal()
+        self._signal()
 
 
 class ReceiveToBuffer(FileTransfer):
@@ -296,7 +302,7 @@ class ReceiveToBuffer(FileTransfer):
             if position + l > self._data_size:
                 self._data_size = position + l
             self._done += l
-        self.signal()
+        self._signal()
 
 
 class ReceiveAvatar(ReceiveTransfer):
@@ -338,8 +344,4 @@ class ReceiveAvatar(ReceiveTransfer):
                 chdir(dirname(avatar_path))
                 remove(avatar_path)
             rename(self._path, avatar_path)
-            self._finished(True)
-
-    def _finished(self, emit=False):
-        if emit:
-            super()._finished()
+            self._finished()

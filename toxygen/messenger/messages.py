@@ -72,7 +72,7 @@ class Message:
     def _get_id():
         Message.MESSAGE_ID += 1
 
-        return Message.MESSAGE_ID
+        return int(Message.MESSAGE_ID)
 
 
 class TextMessage(Message):

@@ -5,7 +5,7 @@ import utils.util as util
 
 class FileTransfersHandler:
 
-    def __init__(self, tox, settings, contact_provider, file_transfers_message_service):
+    def __init__(self, tox, settings, contact_provider, file_transfers_message_service, profile):
         self._tox = tox
         self._settings = settings
         self._contact_provider = contact_provider
@@ -14,6 +14,8 @@ class FileTransfersHandler:
         # key = (friend number, file number), value - transfer instance
         self._paused_file_transfers = dict(settings['paused_file_transfers'])
         # key - file id, value: [path, friend number, is incoming, start position]
+
+        profile.avatar_changed_event.add_callback(self._send_avatar_to_contacts)
         
     def __del__(self):
         self._settings['paused_file_transfers'] = self._paused_file_transfers if self._settings['resend_files'] else {}
@@ -43,18 +45,22 @@ class FileTransfersHandler:
                 self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
                 return
             self._tox.file_seek(friend_number, file_number, pos)
+            self._file_transfers_message_service.add_incoming_transfer_message(
+                friend, accepted, size, file_name, file_number)
             self.accept_transfer(data[0], friend_number, file_number, size, False, pos)
         elif inline and size < 1024 * 1024:
+            self._file_transfers_message_service.add_incoming_transfer_message(
+                friend, accepted, size, file_name, file_number)
             self.accept_transfer('', friend_number, file_number, size, True)
-
         elif auto:
             path = self._settings['auto_accept_path'] or util.curr_directory()
+            self._file_transfers_message_service.add_incoming_transfer_message(
+                friend, accepted, size, file_name, file_number)
             self.accept_transfer(path + '/' + file_name, friend_number, file_number, size)
         else:
             accepted = False
-
-        self._file_transfers_message_service.add_incoming_transfer_message(
-            friend, accepted, size, file_name, file_number)
+            self._file_transfers_message_service.add_incoming_transfer_message(
+                friend, accepted, size, file_name, file_number)
 
     def cancel_transfer(self, friend_number, file_number, already_cancelled=False):
         """
@@ -92,7 +98,6 @@ class FileTransfersHandler:
         tr = self._file_transfers[(friend_number, file_number)]
         if by_friend:
             tr.state = FILE_TRANSFER_STATE['RUNNING']
-            tr.signal()
         else:
             tr.send_control(TOX_FILE_CONTROL['RESUME'])
 
@@ -117,7 +122,7 @@ class FileTransfersHandler:
                                                and m.file_number == file_number)
         rt.set_state_changed_handler(message.transfer_updated)
         self._file_transfers[(friend_number, file_number)] = rt
-        self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['RESUME'])
+        rt.send_control(TOX_FILE_CONTROL['RESUME'])
 
     def send_screenshot(self, data, friend_number):
         """
@@ -140,11 +145,7 @@ class FileTransfersHandler:
         elif friend.status is None and is_resend:
             raise RuntimeError()
         st = SendFromBuffer(self._tox, friend.number, data, file_name)
-        st.set_transfer_finished_handler(self.transfer_finished)
-        file_number = st.get_file_number()
-        self._file_transfers[(friend.number, file_number)] = st
-        tm = self._file_transfers_message_service.add_outgoing_transfer_message(friend, st.size, file_name, file_number)
-        st.set_state_changed_handler(tm.transfer_updated)
+        self._send_file_add_handlers(st, friend, file_name)
 
     def send_file(self, path, friend_number, is_resend=False, file_id=None):
         """
@@ -163,12 +164,8 @@ class FileTransfersHandler:
             print('Error in sending')
             raise RuntimeError()
         st = SendTransfer(path, self._tox, friend_number, TOX_FILE_KIND['DATA'], file_id)
-        st.set_transfer_finished_handler(self.transfer_finished)
-        file_number = st.get_file_number()
-        self._file_transfers[(friend_number, file_number)] = st
         file_name = os.path.basename(path)
-        tm = self._file_transfers_message_service.add_outgoing_transfer_message(friend, st.size, file_name, file_number)
-        st.set_state_changed_handler(tm.transfer_updated)
+        self._send_file_add_handlers(st, friend, file_name)
 
     def incoming_chunk(self, friend_number, file_number, position, data):
         """
@@ -244,12 +241,27 @@ class FileTransfersHandler:
         else:
             friend.reset_avatar(self._settings['identicons'])
 
+    def _send_avatar_to_contacts(self):
+        friends = self._get_all_friends()
+        for friend in friends:
+            self.send_avatar(friend.number)
+
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods
     # -----------------------------------------------------------------------------------------------------------------
 
     def _get_friend_by_number(self, friend_number):
         return self._contact_provider.get_friend_by_number(friend_number)
+
+    def _get_all_friends(self):
+        return self._contact_provider.get_all_friends()
+
+    def _send_file_add_handlers(self, st, friend, file_name):
+        st.set_transfer_finished_handler(self.transfer_finished)
+        file_number = st.get_file_number()
+        self._file_transfers[(friend.number, file_number)] = st
+        tm = self._file_transfers_message_service.add_outgoing_transfer_message(friend, st.size, file_name, file_number)
+        st.set_state_changed_handler(tm.transfer_updated)
 
     @staticmethod
     def _generate_valid_path(path, from_position):
