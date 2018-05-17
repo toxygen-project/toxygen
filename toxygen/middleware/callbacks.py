@@ -60,7 +60,8 @@ def friend_status(contacts_manager, file_transfer_handler, profile, settings):
     return wrapped
 
 
-def friend_connection_status(contacts_manager, profile, settings, plugin_loader, file_transfer_handler):
+def friend_connection_status(contacts_manager, profile, settings, plugin_loader, file_transfer_handler,
+                             messenger, calls_manager):
     def wrapped(tox, friend_number, new_status, user_data):
         """
         Check friend's connection status (offline, udp, tcp)
@@ -68,8 +69,11 @@ def friend_connection_status(contacts_manager, profile, settings, plugin_loader,
         print("Friend #{} connection status: {}".format(friend_number, new_status))
         friend = contacts_manager.get_friend_by_number(friend_number)
         if new_status == TOX_CONNECTION['NONE']:
-            invoke_in_main_thread(profile.friend_exit, friend_number)
+            invoke_in_main_thread(friend.set_status, None)
+            invoke_in_main_thread(file_transfer_handler.friend_exit, friend_number)
             invoke_in_main_thread(contacts_manager.update_filtration)
+            invoke_in_main_thread(messenger.friend_typing, friend_number, False)
+            invoke_in_main_thread(calls_manager.friend_exit, friend_number)
             if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                 sound_notification(SOUND_NOTIFICATION['FRIEND_CONNECTION_STATUS'])
         elif friend.status is None:
@@ -394,7 +398,7 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     tox.callback_friend_status(friend_status(contacts_manager, file_transfer_handler, profile, settings), 0)
     tox.callback_friend_message(friend_message(messenger, contacts_manager, profile, settings, main_window, tray), 0)
     tox.callback_friend_connection_status(friend_connection_status(contacts_manager, profile, settings, plugin_loader,
-                                                                   file_transfer_handler), 0)
+                                                                   file_transfer_handler, messenger, calls_manager), 0)
     tox.callback_friend_name(friend_name(contacts_manager), 0)
     tox.callback_friend_status_message(friend_status_message(contacts_manager, messenger), 0)
     tox.callback_friend_request(friend_request(contacts_manager), 0)

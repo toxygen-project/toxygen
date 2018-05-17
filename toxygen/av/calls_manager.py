@@ -1,7 +1,7 @@
 import threading
 import cv2
 import av.calls
-from PyQt5 import QtWidgets
+import utils.ui as util_ui
 from messenger.messages import *
 import time
 from ui import av_widgets
@@ -35,9 +35,9 @@ class CallsManager:
             self._call(num, audio, video)
             self._screen.active_call()
             if video:
-                text = QtWidgets.QApplication.translate("incoming_call", "Outgoing video call")
+                text = util_ui.tr("Outgoing video call")
             else:
-                text = QtWidgets.QApplication.translate("incoming_call", "Outgoing audio call")
+                text = util_ui.tr("Outgoing audio call")
             self.get_curr_friend().append_message(InfoMessage(text, time.time()))
             self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
             self._messages.scrollToBottom()
@@ -52,9 +52,9 @@ class CallsManager:
             return
         friend = self.get_friend_by_number(friend_number)
         if video:
-            text = QtWidgets.QApplication.translate("incoming_call", "Incoming video call")
+            text = util_ui.tr("Incoming video call")
         else:
-            text = QtWidgets.QApplication.translate("incoming_call", "Incoming audio call")
+            text = util_ui.tr("Incoming audio call")
         friend.append_message(InfoMessage(text, time.time()))
         self._incoming_calls.add(friend_number)
         if friend_number == self.get_active_number():
@@ -83,9 +83,9 @@ class CallsManager:
         """
         if friend_number in self._incoming_calls:
             self._incoming_calls.remove(friend_number)
-            text = QtWidgets.QApplication.translate("incoming_call", "Call declined")
+            text = util_ui.tr("Call declined")
         else:
-            text = QtWidgets.QApplication.translate("incoming_call", "Call finished")
+            text = util_ui.tr("Call finished")
         self._screen.call_finished()
         is_video = self._call.is_video_call(friend_number)
         self._call.finish_call(friend_number, by_friend)  # finish or decline call
@@ -103,3 +103,7 @@ class CallsManager:
         if friend_number == self.get_active_number():
             self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
             self._messages.scrollToBottom()
+
+    def friend_exit(self, friend_number):
+        if friend_number in self._call:
+            self._call.finish_call(friend_number, True)

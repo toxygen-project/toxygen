@@ -32,7 +32,8 @@ class ContactMenuBuilder:
 
     def with_actions(self, actions):
         for action in actions:
-            self._add_action(*action)
+            (text, handler) = action
+            self._add_action(text, handler)
 
         return self
 

@@ -118,7 +118,8 @@ class FileTransfersHandler:
             rt = ReceiveToBuffer(self._tox, friend_number, size, file_number)
         rt.set_transfer_finished_handler(self.transfer_finished)
         message = friend.get_message(lambda m: m.type == MESSAGE_TYPE['FILE_TRANSFER']
-                                               and m.state == FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']
+                                               and m.state in (FILE_TRANSFER_STATE['INCOMING_NOT_STARTED'],
+                                                               FILE_TRANSFER_STATE['RUNNING'])
                                                and m.file_number == file_number)
         rt.set_state_changed_handler(message.transfer_updated)
         self._file_transfers[(friend_number, file_number)] = rt
@@ -213,6 +214,16 @@ class FileTransfersHandler:
                     del self._paused_file_transfers[key]
         except Exception as ex:
             print('Exception in file sending: ' + str(ex))
+
+    def friend_exit(self, friend_number):
+        for friend_num, file_num in list(self._file_transfers.keys()):
+            if friend_num == friend_number:
+                ft = self._file_transfers[(friend_num, file_num)]
+                if type(ft) is SendTransfer:
+                    self._paused_file_transfers[ft.get_id()] = [ft.get_path(), friend_num, False, -1]
+                elif type(ft) is ReceiveTransfer and ft.state != FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']:
+                    self._paused_file_transfers[ft.get_id()] = [ft.get_path(), friend_num, True, ft.total_size()]
+                self.cancel_transfer(friend_num, file_num, True)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Avatars support
