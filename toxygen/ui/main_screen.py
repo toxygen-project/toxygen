@@ -19,17 +19,19 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setAcceptDrops(True)
         self._saved = False
         self._profile = None
-        self._file_transfer_handler = None
+        self._file_transfer_handler = self._history_loader = self._calls_manager = None
         self.initUI()
 
     def set_dependencies(self, widget_factory, tray, contacts_manager, messenger, profile, plugins_loader,
-                         file_transfer_handler):
+                         file_transfer_handler, history_loader, calls_manager):
         self._widget_factory = widget_factory
         self._tray = tray
         self._contacts_manager = contacts_manager
         self._profile = profile
         self._plugins_loader = plugins_loader
         self._file_transfer_handler = file_transfer_handler
+        self._history_loader = history_loader
+        self._calls_manager = calls_manager
         self.messageEdit.set_messenger(messenger)
 
     def show(self):
@@ -267,11 +269,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.callButton = QtWidgets.QPushButton(Form)
         self.callButton.setGeometry(QtCore.QRect(550, 5, 50, 50))
         self.callButton.setObjectName("callButton")
-        self.callButton.clicked.connect(lambda: self.profile.call_click(True))
+        self.callButton.clicked.connect(lambda: self._calls_manager.call_click(True))
         self.videocallButton = QtWidgets.QPushButton(Form)
         self.videocallButton.setGeometry(QtCore.QRect(550, 5, 50, 50))
         self.videocallButton.setObjectName("videocallButton")
-        self.videocallButton.clicked.connect(lambda: self.profile.call_click(True, True))
+        self.videocallButton.clicked.connect(lambda: self._calls_manager.call_click(True, True))
         self.update_call_state('call')
         self.typing = QtWidgets.QLabel(Form)
         self.typing.setGeometry(QtCore.QRect(500, 25, 50, 30))
@@ -306,7 +308,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         def load(pos):
             if not pos:
-                self.profile.load_history()
+                self._history_loader.load_history()
                 self.messages.verticalScrollBar().setValue(1)
         self.messages.verticalScrollBar().valueChanged.connect(load)
         self.messages.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
@@ -413,7 +415,7 @@ class MainWindow(QtWidgets.QMainWindow):
         elif key == QtCore.Qt.Key_C and modifiers & QtCore.Qt.ControlModifier and self.messages.selectedIndexes():
             rows = list(map(lambda x: self.messages.row(x), self.messages.selectedItems()))
             indexes = (rows[0] - self.messages.count(), rows[-1] - self.messages.count())
-            s = self.profile.export_history(self.profile.active_friend, True, indexes)
+            s = self._history_loader.export_history(self._contacts_manager.get_curr_friend(), True, indexes)
             clipboard = QtWidgets.QApplication.clipboard()
             clipboard.setText(s)
         elif key == QtCore.Qt.Key_Z and modifiers & QtCore.Qt.ControlModifier and self.messages.selectedIndexes():
@@ -622,7 +624,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._contacts_manager.delete_friend(num)
 
     def block_friend(self, num):
-        friend = self.profile.get_contact(num)
+        friend = self._contacts_managere.get_contact(num)
         self._contacts_manager.block_user(friend.tox_id)
 
     @staticmethod
@@ -662,7 +664,7 @@ class MainWindow(QtWidgets.QMainWindow):
         pos = self.connection_status.pos()
         x, y = pos.x() + self.user_info.pos().x(), pos.y() + self.user_info.pos().y()
         if (x < event.x() < x + 32) and (y < event.y() < y + 32):
-            self.profile.change_status()
+            self._profile.change_status()
         else:
             super().mouseReleaseEvent(event)
 
