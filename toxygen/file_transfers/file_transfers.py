@@ -198,6 +198,8 @@ class SendFromBuffer(FileTransfer):
     def get_data(self):
         return self._data
 
+    data = property(get_data)
+
     def send_chunk(self, position, size):
         if self._creation_time is None:
             self._creation_time = time()
@@ -288,6 +290,8 @@ class ReceiveToBuffer(FileTransfer):
 
     def get_data(self):
         return self._data
+
+    data = property(get_data)
 
     def write_chunk(self, position, data):
         if self._creation_time is None:

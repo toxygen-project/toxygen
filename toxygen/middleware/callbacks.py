@@ -195,8 +195,11 @@ def file_recv_chunk(file_transfer_handler):
     Incoming chunk
     """
     def wrapped(tox, friend_number, file_number, position, chunk, length, user_data):
-        execute(file_transfer_handler.incoming_chunk, friend_number, file_number, position,
-                chunk[:length] if length else None)
+        chunk = chunk[:length] if length else None
+        if length:
+            execute(file_transfer_handler.incoming_chunk, friend_number, file_number, position, chunk)
+        else:
+            invoke_in_main_thread(file_transfer_handler.incoming_chunk, friend_number, file_number, position, chunk)
 
     return wrapped
 
@@ -206,7 +209,10 @@ def file_chunk_request(file_transfer_handler):
     Outgoing chunk
     """
     def wrapped(tox, friend_number, file_number, position, size, user_data):
-        execute(file_transfer_handler.outgoing_chunk, friend_number, file_number, position, size)
+        if size:
+            execute(file_transfer_handler.outgoing_chunk, friend_number, file_number, position, size)
+        else:
+            invoke_in_main_thread(file_transfer_handler.outgoing_chunk, friend_number, file_number, position, size)
 
     return wrapped
 

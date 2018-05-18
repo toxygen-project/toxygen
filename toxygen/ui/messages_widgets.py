@@ -406,9 +406,9 @@ class UnsentFileItem(FileTransferItem):
 
 class InlineImageItem(QtWidgets.QScrollArea):
 
-    def __init__(self, data, width, elem):
+    def __init__(self, data, width, elem, parent=None):
 
-        QtWidgets.QScrollArea.__init__(self)
+        QtWidgets.QScrollArea.__init__(self, parent)
         self.setFocusPolicy(QtCore.Qt.NoFocus)
         self._elem = elem
         self._image_label = QtWidgets.QLabel(self)

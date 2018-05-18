@@ -29,6 +29,7 @@ from messenger.messenger import Messenger
 from network.tox_dns import ToxDns
 from history.history import History
 from file_transfers.file_transfers_messages_service import FileTransfersMessagesService
+import styles.style  # TODO: dynamic loading
 
 
 class App:

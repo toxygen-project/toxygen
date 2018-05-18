@@ -18,13 +18,12 @@ class Friend(contact.Contact):
     # File transfers support
     # -----------------------------------------------------------------------------------------------------------------
 
-    def update_transfer_data(self, file_number, inline):  # TODO: rewrite
+    def insert_inline(self, before_message_id, inline):
         """
         Update status of active transfer and load inline if needed
         """
         try:
-            tr = list(filter(lambda x: x.get_type() == MESSAGE_TYPE['FILE_TRANSFER'] and x.is_active(file_number),
-                             self._corr))[0]
+            tr = list(filter(lambda x: x.message_id == before_message_id, self._corr))[0]
             i = self._corr.index(tr)
             if inline:  # inline was loaded
                 self._corr.insert(i, inline)

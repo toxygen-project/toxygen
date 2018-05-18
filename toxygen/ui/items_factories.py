@@ -47,7 +47,7 @@ class MessagesItemsFactory:
 
     def create_inline_item(self, data, append=True, position=0):
         elem = QtWidgets.QListWidgetItem()
-        item = InlineImageItem(data, self._messages.width(), elem)
+        item = InlineImageItem(data, self._messages.width(), elem, self._messages)
         elem.setSizeHint(QtCore.QSize(self._messages.width(), item.height()))
         if append:
             self._messages.addItem(elem)

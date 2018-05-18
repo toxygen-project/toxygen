@@ -14,6 +14,8 @@ class FileTransfersHandler:
         # key = (friend number, file number), value - transfer instance
         self._paused_file_transfers = dict(settings['paused_file_transfers'])
         # key - file id, value: [path, friend number, is incoming, start position]
+        self._insert_inline_before = {}
+        # key = (friend number, file number), value - message id
 
         profile.avatar_changed_event.add_callback(self._send_avatar_to_contacts)
         
@@ -124,6 +126,8 @@ class FileTransfersHandler:
         rt.set_state_changed_handler(message.transfer_updated)
         self._file_transfers[(friend_number, file_number)] = rt
         rt.send_control(TOX_FILE_CONTROL['RESUME'])
+        if inline:
+            self._insert_inline_before[(friend_number, file_number)] = message.message_id
 
     def send_screenshot(self, data, friend_number):
         """
@@ -147,7 +151,7 @@ class FileTransfersHandler:
         elif friend.status is None and is_resend:
             raise RuntimeError()
         st = SendFromBuffer(self._tox, friend.number, data, file_name)
-        self._send_file_add_handlers(st, friend, file_name)
+        self._send_file_add_set_handlers(st, friend, file_name, True)
 
     def send_file(self, path, friend_number, is_resend=False, file_id=None):
         """
@@ -167,7 +171,7 @@ class FileTransfersHandler:
             raise RuntimeError()
         st = SendTransfer(path, self._tox, friend_number, TOX_FILE_KIND['DATA'], file_id)
         file_name = os.path.basename(path)
-        self._send_file_add_handlers(st, friend, file_name)
+        self._send_file_add_set_handlers(st, friend, file_name)
 
     def incoming_chunk(self, friend_number, file_number, position, data):
         """
@@ -188,11 +192,12 @@ class FileTransfersHandler:
             self._get_friend_by_number(friend_number).load_avatar()
         elif t is ReceiveToBuffer or (t is SendFromBuffer and self._settings['allow_inline']):  # inline image
             print('inline')
-            inline = InlineImage(transfer.get_data())
-            index = self._get_friend_by_number(friend_number).update_transfer_data(file_number, inline)
+            inline = InlineImage(transfer.data)
+            message_id = self._insert_inline_before[(friend_number, file_number)]
+            del self._insert_inline_before[(friend_number, file_number)]
+            index = self._get_friend_by_number(friend_number).insert_inline(message_id, inline)
             self._file_transfers_message_service.add_inline_message(transfer, index)
         del self._file_transfers[(friend_number, file_number)]
-        del transfer
 
     def send_files(self, friend_number):
         friend = self._get_friend_by_number(friend_number)
@@ -268,12 +273,14 @@ class FileTransfersHandler:
     def _get_all_friends(self):
         return self._contact_provider.get_all_friends()
 
-    def _send_file_add_handlers(self, st, friend, file_name):
+    def _send_file_add_set_handlers(self, st, friend, file_name, inline=False):
         st.set_transfer_finished_handler(self.transfer_finished)
         file_number = st.get_file_number()
         self._file_transfers[(friend.number, file_number)] = st
         tm = self._file_transfers_message_service.add_outgoing_transfer_message(friend, st.size, file_name, file_number)
         st.set_state_changed_handler(tm.transfer_updated)
+        if inline:
+            self._insert_inline_before[(friend.number, file_number)] = tm.message_id
 
     @staticmethod
     def _generate_valid_path(path, from_position):
