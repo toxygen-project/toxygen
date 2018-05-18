@@ -4,6 +4,8 @@ from platform import system
 from subprocess import call
 import main
 import sys
+import os
+from utils.util import curr_directory, join_path
 
 
 version = main.__version__ + '.0'
@@ -33,6 +35,15 @@ else:
         import pydenticon
     except ImportError:
         MODULES.append('pydenticon')
+
+
+def get_packages():
+    directory = join_path(curr_directory(__file__), 'toxygen')
+    for root, dirs, files in os.walk(directory):
+        packages = map(lambda d: 'toxygen.' + d, dirs)
+        packages = ['toxygen'] + list(packages)
+
+        return packages
 
 
 class InstallScript(install):
@@ -66,7 +77,7 @@ setup(name='Toxygen',
       author='Ingvar',
       maintainer='Ingvar',
       license='GPL3',
-      packages=['toxygen', 'toxygen.plugins', 'toxygen.styles'],
+      packages=get_packages(),
       install_requires=MODULES,
       include_package_data=True,
       classifiers=[
@@ -75,8 +86,8 @@ setup(name='Toxygen',
           'Programming Language :: Python :: 3.6',
       ],
       entry_points={
-          'console_scripts': ['toxygen=toxygen.main:main'],
+          'console_scripts': ['toxygen=toxygen.main:main']
       },
       cmdclass={
-          'install': InstallScript,
+          'install': InstallScript
       })

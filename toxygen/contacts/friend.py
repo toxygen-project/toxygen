@@ -38,13 +38,13 @@ class Friend(contact.Contact):
     def clear_unsent_files(self):
         self._corr = list(filter(lambda x: type(x) is not UnsentFileMessage, self._corr))
 
-    def remove_invalid_unsent_files(self):  # TODO: fix
+    def remove_invalid_unsent_files(self):
         def is_valid(message):
             if type(message) is not UnsentFileMessage:
                 return True
-            if message.get_data()[1] is not None:
+            if message.data is not None:
                 return True
-            return os.path.exists(message.get_data()[0])
+            return os.path.exists(message.path)
 
         self._corr = list(filter(is_valid, self._corr))
 
