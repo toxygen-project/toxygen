@@ -1207,12 +1207,12 @@ MessageItem
     border: none;
 }
 
-MessageEdit
+MessageBrowser
 {
     border: none;
 }
 
-MessageEdit::focus
+MessageBrowser::focus
 {
     border: none;
 }
@@ -1222,7 +1222,7 @@ MessageItem::focus
     border: none;
 }
 
-MessageEdit:hover
+MessageBrowser:hover
 {
     border: none;
 }
@@ -1243,7 +1243,7 @@ QPushButton:hover
     background-color: #1E90FF;
 }
 
-MessageEdit 
+MessageBrowser
 {
     background-color: transparent;
 }

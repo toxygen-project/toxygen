@@ -118,7 +118,7 @@ class Contact(basecontact.BaseContact):
         """
         :return list of unsent messages
         """
-        messages = filter(lambda x: x.author.type == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
+        messages = filter(lambda m: m.author.type == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
         return list(messages)
 
     def get_unsent_messages_for_saving(self):
@@ -129,9 +129,10 @@ class Contact(basecontact.BaseContact):
                                     and x.author.type == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
         return list(map(lambda x: x.get_data(), messages))
 
-    def mark_as_sent(self):
+    def mark_as_sent(self, tox_message_id):
         try:
-            message = list(filter(lambda x: x.author.type == MESSAGE_AUTHOR['NOT_SENT'], self._corr))[0]
+            message = list(filter(lambda m: m.author.type == MESSAGE_AUTHOR['NOT_SENT']
+                                            and m.tox_message_id == tox_message_id, self._corr))[0]
             message.mark_as_sent()
         except Exception as ex:
             util.log('Mark as sent ex: ' + str(ex))

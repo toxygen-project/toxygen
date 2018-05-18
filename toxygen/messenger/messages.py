@@ -64,6 +64,8 @@ class Message:
 
     def mark_as_sent(self):
         self._author.author_type = MESSAGE_AUTHOR['ME']
+        if self._widget is not None:
+            self._widget.mark_as_sent()
 
     def _create_widget(self, *args):
         pass
@@ -111,7 +113,10 @@ class OutgoingTextMessage(TextMessage):
     def get_tox_message_id(self):
         return self._tox_message_id
 
-    tox_message_id = property(get_tox_message_id)
+    def set_tox_message_id(self, tox_message_id):
+        self._tox_message_id = tox_message_id
+
+    tox_message_id = property(get_tox_message_id, set_tox_message_id)
 
 
 class GroupChatMessage(TextMessage):

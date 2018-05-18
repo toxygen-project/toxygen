@@ -98,10 +98,8 @@ class Messenger(tox_save.ToxSave):
         messages = friend.get_unsent_messages()
         try:
             for message in messages:
-                tox_messages = self._split_message(message.text)
-                for tox_message in tox_messages:
-                    self._tox.friend_send_message(friend_number, message.message_type, tox_message)
-                friend.inc_receipts()
+                message_id = self._tox.friend_send_message(friend_number, message.type, message.text.encode('utf-8'))
+                message.tox_message_id = message_id
         except Exception as ex:
             util.log('Sending pending messages failed with ' + str(ex))
 
@@ -110,7 +108,8 @@ class Messenger(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def receipt(self, friend_number, message_id):
-        pass  # TODO: process
+        friend = self._get_friend_by_number(friend_number)
+        friend.mark_as_sent(message_id)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Typing notifications
@@ -171,8 +170,7 @@ class Messenger(tox_save.ToxSave):
         for friend in self._contacts_provider.get_all_friends():
             friend.append_message(InfoMessage(message, util.get_unix_time()))
         if self._contacts_manager.is_active_a_friend():
-            self._items_factory.create_message_item(message)
-            self._screen.messages.scrollToBottom()
+            self._create_info_message_item(message)
         self._profile_name = new_name
 
     def _on_call_started(self, friend_number, audio, video, is_outgoing):
@@ -180,18 +178,19 @@ class Messenger(tox_save.ToxSave):
             text = util_ui.tr("Outgoing video call") if video else util_ui.tr("Outgoing audio call")
         else:
             text = util_ui.tr("Incoming video call") if video else util_ui.tr("Incoming audio call")
-        friend = self._get_friend_by_number(friend_number)
-        message = InfoMessage(text, util.get_unix_time())
-        friend.append_message(message)
-        if self._contacts_manager.is_friend_active(friend_number):
-            self._items_factory.create_message_item(message)
-            self._screen.messages.scrollToBottom()
+        self._add_info_message(friend_number, text)
 
     def _on_call_finished(self, friend_number, is_declined):
         text = util_ui.tr("Call declined") if is_declined else util_ui.tr("Call finished")
+        self._add_info_message(friend_number, text)
+
+    def _add_info_message(self, friend_number, text):
         friend = self._get_friend_by_number(friend_number)
         message = InfoMessage(text, util.get_unix_time())
         friend.append_message(message)
         if self._contacts_manager.is_friend_active(friend_number):
-            self._items_factory.create_message_item(message)
-            self._screen.messages.scrollToBottom()
+            self._create_info_message_item(message)
+
+    def _create_info_message_item(self, message):
+        self._items_factory.create_message_item(message)
+        self._screen.messages.scrollToBottom()
