@@ -173,17 +173,30 @@ class TransferMessage(Message):
         return FileTransferItem(self, *args)
 
 
-class UnsentFile(Message):
+class UnsentFileMessage(Message):
 
     def __init__(self, path, data, time):
         super().__init__(MESSAGE_TYPE['FILE_TRANSFER'], 0, time)
         self._data, self._path = data, path
 
+    def get_data(self):
+        return self._data
+
+    data = property(get_data)
+
+    def get_path(self):
+        return self._path
+
+    path = property(get_path)
+
     def get_status(self):
         return None
 
+    def _create_widget(self, *args):
+        return UnsentFileItem(self, *args)
 
-class InlineImage(Message):
+
+class InlineImageMessage(Message):
     """
     Inline image
     """

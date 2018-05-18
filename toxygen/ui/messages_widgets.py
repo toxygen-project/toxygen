@@ -390,8 +390,8 @@ class FileTransferItem(QtWidgets.QListWidget):
 
 class UnsentFileItem(FileTransferItem):
 
-    def __init__(self, file_transfer_handler, settings, transfer_message, width, parent=None):
-        super().__init__(file_transfer_handler, settings, transfer_message, width, parent)
+    def __init__(self, transfer_message, file_transfer_handler, settings, width, parent=None):
+        super().__init__(transfer_message, file_transfer_handler, settings, width, parent)
         self._time = time
         self.pb.setVisible(False)
         movie = QtGui.QMovie(util.join_path(util.get_images_directory(), 'spinner.gif'))

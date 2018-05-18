@@ -32,15 +32,15 @@ class Friend(contact.Contact):
             pass
 
     def get_unsent_files(self):
-        messages = filter(lambda x: type(x) is UnsentFile, self._corr)
-        return messages
+        messages = filter(lambda x: type(x) is UnsentFileMessage, self._corr)
+        return list(messages)
 
     def clear_unsent_files(self):
-        self._corr = list(filter(lambda x: type(x) is not UnsentFile, self._corr))
+        self._corr = list(filter(lambda x: type(x) is not UnsentFileMessage, self._corr))
 
-    def remove_invalid_unsent_files(self):
+    def remove_invalid_unsent_files(self):  # TODO: fix
         def is_valid(message):
-            if type(message) is not UnsentFile:
+            if type(message) is not UnsentFileMessage:
                 return True
             if message.get_data()[1] is not None:
                 return True
@@ -49,7 +49,8 @@ class Friend(contact.Contact):
         self._corr = list(filter(is_valid, self._corr))
 
     def delete_one_unsent_file(self, message_id):
-        self._corr = list(filter(lambda m: not (type(m) is UnsentFile and m.message_id == message_id), self._corr))
+        self._corr = list(filter(lambda m: not (type(m) is UnsentFileMessage and m.message_id == message_id),
+                                 self._corr))
 
     # -----------------------------------------------------------------------------------------------------------------
     # History support

@@ -45,6 +45,16 @@ class FileTransfersMessagesService:
             if count + index + 1 >= 0:
                 self._create_inline_item(transfer.data, count + index + 1)
 
+    def add_unsent_file_message(self, friend, file_path, data):
+        tm = UnsentFileMessage(file_path, data, util.get_unix_time())
+        friend.append_message(tm)
+
+        if self._is_active(friend.number):
+            self._create_unsent_file_item(tm)
+            self._messages.scrollToBottom()
+
+        return tm
+
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods
     # -----------------------------------------------------------------------------------------------------------------
@@ -60,3 +70,6 @@ class FileTransfersMessagesService:
 
     def _create_inline_item(self, data, position):
         return self._messages_items_factory.create_inline_item(data, False, position)
+
+    def _create_unsent_file_item(self, tm):
+        return self._messages_items_factory.create_unsent_file_item(tm)

@@ -308,7 +308,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
         def load(pos):
             if not pos:
-                self._history_loader.load_history()
+                friend = self._contacts_manager.get_curr_friend()
+                self._history_loader.load_history(friend)
                 self.messages.verticalScrollBar().setValue(1)
         self.messages.verticalScrollBar().valueChanged.connect(load)
         self.messages.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)

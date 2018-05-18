@@ -145,8 +145,7 @@ class FileTransfersHandler:
     def send_inline(self, data, file_name, friend_number, is_resend=False):
         friend = self._get_friend_by_number(friend_number)
         if friend.status is None and not is_resend:
-            m = UnsentFile(file_name, data, time.time())
-            friend.append_message(m)
+            self._file_transfers_message_service.add_unsent_file_message(friend, file_name, data)
             return
         elif friend.status is None and is_resend:
             raise RuntimeError()
@@ -163,8 +162,7 @@ class FileTransfersHandler:
         """
         friend = self._get_friend_by_number(friend_number)
         if friend.status is None and not is_resend:
-            m = UnsentFile(path, None, util.get_unix_time())
-            friend.append_message(m)
+            self._file_transfers_message_service.add_unsent_file_message(friend, path, None)
             return
         elif friend.status is None and is_resend:
             print('Error in sending')
@@ -192,7 +190,7 @@ class FileTransfersHandler:
             self._get_friend_by_number(friend_number).load_avatar()
         elif t is ReceiveToBuffer or (t is SendFromBuffer and self._settings['allow_inline']):  # inline image
             print('inline')
-            inline = InlineImage(transfer.data)
+            inline = InlineImageMessage(transfer.data)
             message_id = self._insert_inline_before[(friend_number, file_number)]
             del self._insert_inline_before[(friend_number, file_number)]
             index = self._get_friend_by_number(friend_number).insert_inline(message_id, inline)
@@ -203,20 +201,20 @@ class FileTransfersHandler:
         friend = self._get_friend_by_number(friend_number)
         friend.remove_invalid_unsent_files()
         files = friend.get_unsent_files()
-        try:  # TODO: fix
+        try:
             for fl in files:
-                data = fl.get_data()
-                if data[1] is not None:
-                    self.send_inline(data[1], data[0], friend_number, True)
+                data, path = fl.data, fl.path
+                if data is not None:
+                    self.send_inline(data, path, friend_number, True)
                 else:
-                    self.send_file(data[0], friend_number, True)
+                    self.send_file(path, friend_number, True)
             friend.clear_unsent_files()
             for key in list(self._paused_file_transfers.keys()):
-                data = self._paused_file_transfers[key]
-                if not os.path.exists(data[0]):
+                (path, ft_friend_number, is_incoming, start_position) = self._paused_file_transfers[key]
+                if not os.path.exists(path):
                     del self._paused_file_transfers[key]
-                elif data[1] == friend_number and not data[2]:
-                    self.send_file(data[0], friend_number, True, key)
+                elif ft_friend_number == friend_number and not is_incoming:
+                    self.send_file(path, friend_number, True, key)
                     del self._paused_file_transfers[key]
         except Exception as ex:
             print('Exception in file sending: ' + str(ex))
