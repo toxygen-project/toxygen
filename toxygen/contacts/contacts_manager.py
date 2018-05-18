@@ -298,6 +298,11 @@ class ContactsManager:
         self._contacts.append(friend)
         friend.reset_avatar()
 
+    def add_group(self, group_number):
+        group = self._contact_provider.get_group_by_numner(group_number)
+        self._contacts.append(group)
+        group.reset_avatar()
+
     def block_user(self, tox_id):
         """
         Block user with specified tox id (or public key) - delete from friends list and ignore friend requests

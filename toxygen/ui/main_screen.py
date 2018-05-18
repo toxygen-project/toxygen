@@ -1,4 +1,3 @@
-from contacts.profile import *
 from ui.contact_items import *
 from ui.widgets import MultilineEdit, ComboBox
 from ui.main_screen_widgets import *
@@ -50,6 +49,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.menuProfile = QtWidgets.QMenu(self.menubar)
         self.menuProfile.setObjectName("menuProfile")
+        self.menuGC = QtWidgets.QMenu(self.menubar)
         self.menuSettings = QtWidgets.QMenu(self.menubar)
         self.menuSettings.setObjectName("menuSettings")
         self.menuPlugins = QtWidgets.QMenu(self.menubar)
@@ -58,7 +58,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menuAbout.setObjectName("menuAbout")
 
         self.actionAdd_friend = QtWidgets.QAction(window)
-        self.actionAdd_gc = QtWidgets.QAction(window)
         self.actionAdd_friend.setObjectName("actionAdd_friend")
         self.actionprofilesettings = QtWidgets.QAction(window)
         self.actionprofilesettings.setObjectName("actionprofilesettings")
@@ -81,10 +80,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.importPlugin = QtWidgets.QAction(window)
         self.reloadPlugins = QtWidgets.QAction(window)
         self.lockApp = QtWidgets.QAction(window)
+        self.createGC = QtWidgets.QAction(window)
+        self.joinGC = QtWidgets.QAction(window)
+
         self.menuProfile.addAction(self.actionAdd_friend)
-        self.menuProfile.addAction(self.actionAdd_gc)
         self.menuProfile.addAction(self.actionSettings)
         self.menuProfile.addAction(self.lockApp)
+        self.menuGC.addAction(self.createGC)
+        self.menuGC.addAction(self.joinGC)
         self.menuSettings.addAction(self.actionPrivacy_settings)
         self.menuSettings.addAction(self.actionInterface_settings)
         self.menuSettings.addAction(self.actionNotifications)
@@ -98,6 +101,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menuAbout.addAction(self.actionAbout_program)
 
         self.menubar.addAction(self.menuProfile.menuAction())
+        self.menubar.addAction(self.menuGC.menuAction())
         self.menubar.addAction(self.menuSettings.menuAction())
         self.menubar.addAction(self.menuPlugins.menuAction())
         self.menubar.addAction(self.menuAbout.menuAction())
@@ -105,7 +109,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionAbout_program.triggered.connect(self.about_program)
         self.actionNetwork.triggered.connect(self.network_settings)
         self.actionAdd_friend.triggered.connect(self.add_contact_triggered)
-        self.actionAdd_gc.triggered.connect(self.create_gc)
+        self.createGC.triggered.connect(self.create_gc)
         self.actionSettings.triggered.connect(self.profile_settings)
         self.actionPrivacy_settings.triggered.connect(self.privacy_settings)
         self.actionInterface_settings.triggered.connect(self.interface_settings)
@@ -130,12 +134,14 @@ class MainWindow(QtWidgets.QMainWindow):
     def retranslateUi(self):
         self.lockApp.setText(util_ui.tr("Lock"))
         self.menuPlugins.setTitle(util_ui.tr("Plugins"))
+        self.menuGC.setTitle(util_ui.tr("Group chats"))
         self.pluginData.setText(util_ui.tr("List of plugins"))
         self.menuProfile.setTitle(util_ui.tr("Profile"))
         self.menuSettings.setTitle(util_ui.tr("Settings"))
         self.menuAbout.setTitle(util_ui.tr("About"))
         self.actionAdd_friend.setText(util_ui.tr("Add contact"))
-        self.actionAdd_gc.setText(util_ui.tr("Create group chat"))
+        self.createGC.setText(util_ui.tr("Create group chat"))
+        self.joinGC.setText(util_ui.tr("Join group chat"))
         self.actionprofilesettings.setText(util_ui.tr("Profile"))
         self.actionPrivacy_settings.setText(util_ui.tr("Privacy"))
         self.actionInterface_settings.setText(util_ui.tr("Interface"))

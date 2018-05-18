@@ -24,8 +24,8 @@ class GroupChat(contact.Contact):
         super().set_name(title)
 
     @staticmethod
-    def get_default_avatar_name():
-        return 'group.png'
+    def _get_default_avatar_path():
+        return util.join_path(util.get_images_directory(), 'group.png')
 
     def remove_invalid_unsent_files(self):
         pass

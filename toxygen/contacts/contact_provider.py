@@ -3,9 +3,10 @@ import common.tox_save as tox_save
 
 class ContactProvider(tox_save.ToxSave):
 
-    def __init__(self, tox, friend_factory):
+    def __init__(self, tox, friend_factory, group_factory):
         super().__init__(tox)
         self._friend_factory = friend_factory
+        self._group_factory = group_factory
         self._cache = {}  # key - contact's public key, value - contact instance
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -37,13 +38,24 @@ class ContactProvider(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_all_groups(self):
-        return []
+        group_numbers = range(self._tox.group_get_number_groups)
+        groups = map(lambda n: self.get_group_by_number(n), group_numbers)
 
-    def get_group_by_number(self):
-        pass
+        return list(groups)
 
-    def get_group_by_public_key(self):
-        pass
+    def get_group_by_number(self, group_number):
+        public_key = self._tox.group_get_chat_id(group_number)
+
+        return self.get_group_by_public_key(public_key)
+
+    def get_group_by_public_key(self, public_key):
+        group = self._get_contact_from_cache(public_key)
+        if group is not None:
+            return group
+        group = self._group_factory.create_group_by_public_key(public_key)
+        self._add_to_cache(public_key, group)
+
+        return group
 
     # -----------------------------------------------------------------------------------------------------------------
     # All contacts
@@ -59,9 +71,9 @@ class ContactProvider(tox_save.ToxSave):
     def clear_cache(self):
         self._cache.clear()
 
-    def remove_friend_from_cache(self, friend_public_key):
-        if friend_public_key in self._cache:
-            del self._cache[friend_public_key]
+    def remove_contact_from_cache(self, contact_public_key):
+        if contact_public_key in self._cache:
+            del self._cache[contact_public_key]
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods

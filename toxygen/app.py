@@ -19,6 +19,7 @@ from contacts.profile import Profile
 from file_transfers.file_transfers_handler import FileTransfersHandler
 from contacts.contact_provider import ContactProvider
 from contacts.friend_factory import FriendFactory
+from contacts.group_factory import GroupFactory
 from contacts.contacts_manager import ContactsManager
 from av.calls_manager import CallsManager
 from history.database import Database
@@ -40,6 +41,7 @@ class App:
         self._tox = self._ms = self._init = self._main_loop = self._av_loop = None
         self._uri = self._toxes = self._tray = self._file_transfer_handler = self._contacts_provider = None
         self._friend_factory = self._calls_manager = self._contacts_manager = self._smiley_loader = self._tox_dns = None
+        self._group_factory = None
         if uri is not None and uri.startswith('tox:'):
             self._uri = uri[4:]
         self._path = path_to_profile
@@ -300,7 +302,8 @@ class App:
 
         friend_items_factory = FriendItemsFactory(self._settings, self._ms)
         self._friend_factory = FriendFactory(self._profile_manager, self._settings, self._tox, db, friend_items_factory)
-        self._contacts_provider = ContactProvider(self._tox, self._friend_factory)
+        self._group_factory = GroupFactory()
+        self._contacts_provider = ContactProvider(self._tox, self._friend_factory, self._group_factory)
         profile = Profile(self._profile_manager, self._tox, self._ms, self._contacts_provider, self._reset)
         self._plugin_loader = PluginLoader(self._tox, self._toxes, profile, self._settings)
         history = None
