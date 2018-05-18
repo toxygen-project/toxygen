@@ -1,8 +1,4 @@
-from contacts.friend import *
-from file_transfers.file_transfers import *
-import time
 from contacts import basecontact
-import utils.ui as util_ui
 import random
 import threading
 
@@ -28,7 +24,7 @@ class Profile(basecontact.BaseContact):
         self._contacts_provider = contacts_provider
         self._reset_action = reset_action
         self._waiting_for_reconnection = False
-        self._timer = threading.Timer(50, self._reconnect)
+        self._timer = None
 
     # -----------------------------------------------------------------------------------------------------------------
     # Edit current user's data
@@ -47,21 +43,14 @@ class Profile(basecontact.BaseContact):
             self._tox.self_set_status(status)
         elif not self._waiting_for_reconnection:
             self._waiting_for_reconnection = True
+            self._timer = threading.Timer(50, self._reconnect)
             self._timer.start()
 
     def set_name(self, value):
         if self.name == value:
             return
-        tmp = self.name
         super().set_name(value.encode('utf-8'))
         self._tox.self_set_name(self._name.encode('utf-8'))
-        message = util_ui.tr('User {} is now known as {}')
-        message = message.format(tmp, value)
-        for friend in self._contacts:
-            friend.append_message(InfoMessage(message, time.time()))
-        if self._active_friend + 1:
-            self.create_message_item(message, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
-            self._messages.scrollToBottom()
 
     def set_status_message(self, value):
         super().set_status_message(value)
@@ -73,15 +62,6 @@ class Profile(basecontact.BaseContact):
         self._tox_id = self._tox.self_get_address()
 
         return self._tox_id
-
-    # -----------------------------------------------------------------------------------------------------------------
-    # Private messages
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def receipt(self):
-        i = 0
-        while i < self._messages.count() and not self._messages.itemWidget(self._messages.item(i)).mark_as_sent():
-            i += 1
 
     # -----------------------------------------------------------------------------------------------------------------
     # Reset
@@ -101,10 +81,5 @@ class Profile(basecontact.BaseContact):
         if self.status is None or all(list(map(lambda x: x.status is None, contacts))) and len(contacts):
             self._waiting_for_reconnection = True
             self._restart()
+            self._timer = threading.Timer(50, self._reconnect)
             self._timer.start()
-
-    def close(self):
-        for friend in filter(lambda x: type(x) is Friend, self._contacts):
-            self.friend_exit(friend.number)
-        for i in range(len(self._contacts)):
-            del self._contacts[0]

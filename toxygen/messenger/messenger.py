@@ -1,14 +1,11 @@
-import utils.util as util
 import common.tox_save as tox_save
-from wrapper.toxcore_enums_and_consts import *
 from messenger.messages import *
 
 
-# TODO: sub profile name changed event?
-
 class Messenger(tox_save.ToxSave):
 
-    def __init__(self, tox, plugin_loader, screen, contacts_manager, contacts_provider, items_factory, profile):
+    def __init__(self, tox, plugin_loader, screen, contacts_manager, contacts_provider, items_factory, profile,
+                 calls_manager):
         super().__init__(tox)
         self._plugin_loader = plugin_loader
         self._screen = screen
@@ -16,6 +13,11 @@ class Messenger(tox_save.ToxSave):
         self._contacts_provider = contacts_provider
         self._items_factory = items_factory
         self._profile = profile
+        self._profile_name = profile.name
+
+        profile.name_changed_event.add_callback(self._on_profile_name_changed)
+        calls_manager.call_started_event.add_callback(self._on_call_started)
+        calls_manager.call_finished_event.add_callback(self._on_call_finished)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -160,3 +162,36 @@ class Messenger(tox_save.ToxSave):
 
     def _get_friend_by_number(self, friend_number):
         return self._contacts_provider.get_friend_by_number(friend_number)
+
+    def _on_profile_name_changed(self, new_name):
+        if self._profile_name == new_name:
+            return
+        message = util_ui.tr('User {} is now known as {}')
+        message = message.format(self._profile_name, new_name)
+        for friend in self._contacts_provider.get_all_friends():
+            friend.append_message(InfoMessage(message, util.get_unix_time()))
+        if self._contacts_manager.is_active_a_friend():
+            self._items_factory.create_message_item(message)
+            self._screen.messages.scrollToBottom()
+        self._profile_name = new_name
+
+    def _on_call_started(self, friend_number, audio, video, is_outgoing):
+        if is_outgoing:
+            text = util_ui.tr("Outgoing video call") if video else util_ui.tr("Outgoing audio call")
+        else:
+            text = util_ui.tr("Incoming video call") if video else util_ui.tr("Incoming audio call")
+        friend = self._get_friend_by_number(friend_number)
+        message = InfoMessage(text, util.get_unix_time())
+        friend.append_message(message)
+        if self._contacts_manager.is_friend_active(friend_number):
+            self._items_factory.create_message_item(message)
+            self._screen.messages.scrollToBottom()
+
+    def _on_call_finished(self, friend_number, is_declined):
+        text = util_ui.tr("Call declined") if is_declined else util_ui.tr("Call finished")
+        friend = self._get_friend_by_number(friend_number)
+        message = InfoMessage(text, util.get_unix_time())
+        friend.append_message(message)
+        if self._contacts_manager.is_friend_active(friend_number):
+            self._items_factory.create_message_item(message)
+            self._screen.messages.scrollToBottom()

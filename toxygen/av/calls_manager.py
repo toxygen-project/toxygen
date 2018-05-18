@@ -1,19 +1,37 @@
 import threading
 import cv2
 import av.calls
-import utils.ui as util_ui
 from messenger.messages import *
 import time
 from ui import av_widgets
+import common.event as event
 
 
 class CallsManager:
 
-    def __init__(self, toxAV, settings):
+    def __init__(self, toxAV, settings, screen, contacts_manager):
         self._call = av.calls.AV(toxAV, settings)  # object with data about calls
         self._call_widgets = {}  # dict of incoming call widgets
         self._incoming_calls = set()
         self._settings = settings
+        self._screen = screen
+        self._contacts_manager = contacts_manager
+        self._call_started_event = event.Event()  # friend_number, audio, video, is_outgoing
+        self._call_finished_event = event.Event()  # friend_number, is_declined
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Events
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def get_call_started_event(self):
+        return self._call_started_event
+
+    call_started_event = property(get_call_started_event)
+
+    def get_call_finished_event(self):
+        return self._call_finished_event
+
+    call_finished_event = property(get_call_finished_event)
 
     # -----------------------------------------------------------------------------------------------------------------
     # AV support
@@ -26,21 +44,17 @@ class CallsManager:
 
     def call_click(self, audio=True, video=False):
         """User clicked audio button in main window"""
-        num = self.get_active_number()
-        if not self.is_active_a_friend():
+        num = self._contacts_manager.get_active_number()
+        if not self._contacts_manager.is_active_a_friend():
             return
-        if num not in self._call and self.is_active_online():  # start call
+        if num not in self._call and self._contacts_manager.is_active_online():  # start call
             if not self._settings.audio['enabled']:
                 return
             self._call(num, audio, video)
             self._screen.active_call()
-            if video:
-                text = util_ui.tr("Outgoing video call")
-            else:
-                text = util_ui.tr("Outgoing audio call")
-            self.get_curr_friend().append_message(InfoMessage(text, time.time()))
-            self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
-            self._messages.scrollToBottom()
+            self._call_started_event(num, audio, video, True)
+            self._contacts_manager.get_curr_friend().append_message(InfoMessage(text, time.time()))
+            self._screen.messages.scrollToBottom()
         elif num in self._call:  # finish or cancel call if you call with active friend
             self.stop_call(num, False)
 
@@ -50,17 +64,12 @@ class CallsManager:
         """
         if not self._settings.audio['enabled']:
             return
-        friend = self.get_friend_by_number(friend_number)
-        if video:
-            text = util_ui.tr("Incoming video call")
-        else:
-            text = util_ui.tr("Incoming audio call")
+        friend = self._contacts_manager.get_friend_by_number(friend_number)
+        self._call_started_event(friend_number, audio, video, False)
         friend.append_message(InfoMessage(text, time.time()))
         self._incoming_calls.add(friend_number)
-        if friend_number == self.get_active_number():
+        if friend_number == self._contacts_manager.get_active_number():
             self._screen.incoming_call()
-            self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
-            self._messages.scrollToBottom()
         else:
             friend.actions = True
         self._call_widgets[friend_number] = av_widgets.IncomingCallWidget(friend_number, text, friend.name)
@@ -83,8 +92,10 @@ class CallsManager:
         """
         if friend_number in self._incoming_calls:
             self._incoming_calls.remove(friend_number)
+            is_declined = True
             text = util_ui.tr("Call declined")
         else:
+            is_declined = False
             text = util_ui.tr("Call finished")
         self._screen.call_finished()
         is_video = self._call.is_video_call(friend_number)
@@ -98,11 +109,7 @@ class CallsManager:
                 cv2.destroyWindow(str(friend_number))
 
         threading.Timer(2.0, destroy_window).start()
-        friend = self.get_friend_by_number(friend_number)
-        friend.append_message(InfoMessage(text, time.time()))
-        if friend_number == self.get_active_number():
-            self.create_message_item(text, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
-            self._messages.scrollToBottom()
+        self._call_finished_event(friend_number, is_declined)
 
     def friend_exit(self, friend_number):
         if friend_number in self._call:

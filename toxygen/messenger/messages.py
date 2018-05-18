@@ -216,5 +216,5 @@ class InlineImageMessage(Message):
 
 class InfoMessage(TextMessage):
 
-    def __init__(self, id, message, time):
-        super().__init__(id, message, None, time, MESSAGE_TYPE['INFO_MESSAGE'])
+    def __init__(self, message, time):
+        super().__init__(message, None, time, MESSAGE_TYPE['INFO_MESSAGE'])
