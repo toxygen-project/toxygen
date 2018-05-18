@@ -1,17 +1,16 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from ui import widgets
-from contacts import profile
-import utils
+import utils.util as util
 import pyaudio
 import wave
-from user_data import settings
-from utils.util import *
 
 
 class IncomingCallWidget(widgets.CenteredWidget):
 
-    def __init__(self, friend_number, text, name):
+    def __init__(self, settings, calls_manager, friend_number, text, name):
         super().__init__()
+        self._settings = settings
+        self._calls_manager = calls_manager
         self.setWindowFlags(QtCore.Qt.CustomizeWindowHint | QtCore.Qt.WindowTitleHint | QtCore.Qt.WindowStaysOnTopHint)
         self.resize(QtCore.QSize(500, 270))
         self.avatar_label = QtWidgets.QLabel(self)
@@ -21,7 +20,7 @@ class IncomingCallWidget(widgets.CenteredWidget):
         self.name.setGeometry(QtCore.QRect(90, 20, 300, 25))
         self._friend_number = friend_number
         font = QtGui.QFont()
-        font.setFamily(settings.Settings.get_instance()['font'])
+        font.setFamily(settings['font'])
         font.setPointSize(16)
         font.setBold(True)
         self.name.setFont(font)
@@ -34,13 +33,13 @@ class IncomingCallWidget(widgets.CenteredWidget):
         self.accept_video.setGeometry(QtCore.QRect(170, 100, 150, 150))
         self.decline = QtWidgets.QPushButton(self)
         self.decline.setGeometry(QtCore.QRect(320, 100, 150, 150))
-        pixmap = QtGui.QPixmap(utils.curr_directory() + '/images/accept_audio.png')
+        pixmap = QtGui.QPixmap(util.join_path(util.get_images_directory(), 'accept_audio.png'))
         icon = QtGui.QIcon(pixmap)
         self.accept_audio.setIcon(icon)
-        pixmap = QtGui.QPixmap(utils.curr_directory() + '/images/accept_video.png')
+        pixmap = QtGui.QPixmap(util.join_path(util.get_images_directory(), 'accept_video.png'))
         icon = QtGui.QIcon(pixmap)
         self.accept_video.setIcon(icon)
-        pixmap = QtGui.QPixmap(utils.curr_directory() + '/images/decline_call.png')
+        pixmap = QtGui.QPixmap(util.join_path(util.get_images_directory(), 'decline_call.png'))
         icon = QtGui.QIcon(pixmap)
         self.decline.setIcon(icon)
         self.accept_audio.setIconSize(QtCore.QSize(150, 150))
@@ -90,11 +89,11 @@ class IncomingCallWidget(widgets.CenteredWidget):
                         self.stream.close()
                         self.p.terminate()
 
-                self.a = AudioFile(curr_directory() + '/sounds/call.wav')
+                self.a = AudioFile(util.join_path(util.get_sounds_directory(), 'call.wav'))
                 self.a.play()
                 self.a.close()
 
-        if settings.Settings.get_instance()['calls_sound']:
+        if self._settings['calls_sound']:
             self.thread = SoundPlay()
             self.thread.start()
         else:
@@ -110,24 +109,21 @@ class IncomingCallWidget(widgets.CenteredWidget):
         if self._processing:
             return
         self._processing = True
-        pr = profile.Profile.get_instance()
-        pr.accept_call(self._friend_number, True, False)
+        self._calls_manager.accept_call(self._friend_number, True, False)
         self.stop()
 
     def accept_call_with_video(self):
         if self._processing:
             return
         self._processing = True
-        pr = profile.Profile.get_instance()
-        pr.accept_call(self._friend_number, True, True)
+        self._calls_manager.accept_call(self._friend_number, True, True)
         self.stop()
 
     def decline_call(self):
         if self._processing:
             return
         self._processing = True
-        pr = profile.Profile.get_instance()
-        pr.stop_call(self._friend_number, False)
+        self._calls_manager.stop_call(self._friend_number, False)
         self.stop()
 
     def set_pixmap(self, pixmap):

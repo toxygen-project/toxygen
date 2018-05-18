@@ -74,7 +74,7 @@ class Contact(basecontact.BaseContact):
         Get data to save in db
         :return: list of unsaved messages or []
         """
-        messages = list(filter(lambda x: x.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']), self._corr))
+        messages = list(filter(lambda x: x.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']), self._corr))
         return messages[-self._unsaved_messages:] if self._unsaved_messages else []
 
     def get_corr(self):
@@ -85,12 +85,12 @@ class Contact(basecontact.BaseContact):
         :param message: text or file transfer message
         """
         self._corr.append(message)
-        if message.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']):
+        if message.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']):
             self._unsaved_messages += 1
 
     def get_last_message_text(self):
-        messages = list(filter(lambda x: x.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION'])
-                                         and x.get_owner() != MESSAGE_AUTHOR['FRIEND'], self._corr))
+        messages = list(filter(lambda m: m.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION'])
+                                         and m.author.type != MESSAGE_AUTHOR['FRIEND'], self._corr))
         if messages:
             return messages[-1].text
         else:
@@ -125,9 +125,9 @@ class Contact(basecontact.BaseContact):
         """
         :return list of unsent messages for saving
         """
-        messages = filter(lambda x: x.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION'])
+        messages = filter(lambda x: x.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION'])
                                     and x.author.type == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
-        return list(map(lambda x: x.get_data(), messages))
+        return list(messages)
 
     def mark_as_sent(self, tox_message_id):
         try:
@@ -144,7 +144,7 @@ class Contact(basecontact.BaseContact):
     def delete_message(self, message_id):
         elem = list(filter(lambda x: type(x) in (TextMessage, GroupChatMessage) and x.message_id == message_id,
                            self._corr))[0]
-        tmp = list(filter(lambda x: x.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']), self._corr))
+        tmp = list(filter(lambda x: x.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']), self._corr))
         if elem in tmp[-self._unsaved_messages:] and self._unsaved_messages:
             self._unsaved_messages -= 1
         self._corr.remove(elem)
@@ -156,13 +156,13 @@ class Contact(basecontact.BaseContact):
         Delete old messages (reduces RAM usage if messages saving is not enabled)
         """
         def save_message(x):
-            if x.get_type() == 2 and (x.get_status() >= 2 or x.get_status() is None):  # FIXME MAGIC NUMBERS
+            if x.type == MESSAGE_TYPE['FILE_TRANSFER'] and (x.state not in ACTIVE_FILE_TRANSFERS):
                 return True
-            return x.get_owner() == MESSAGE_AUTHOR['NOT_SENT']
+            return x.author.type == MESSAGE_AUTHOR['NOT_SENT']
 
         old = filter(save_message, self._corr[:-SAVE_MESSAGES])
         self._corr = list(old) + self._corr[-SAVE_MESSAGES:]
-        text_messages = filter(lambda x: x.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']), self._corr)
+        text_messages = filter(lambda m: m.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']), self._corr)
         self._unsaved_messages = min(self._unsaved_messages, len(list(text_messages)))
         self._search_index = 0
 
@@ -175,13 +175,14 @@ class Contact(basecontact.BaseContact):
         self._search_index = 0
         # don't delete data about active file transfer
         if not save_unsent:
-            self._corr = list(filter(lambda x: x.get_type() == 2 and
-                                               x.get_status() in ft.ACTIVE_FILE_TRANSFERS, self._corr))
+            self._corr = list(filter(lambda m: m.type == MESSAGE_TYPE['FILE_TRANSFER'] and
+                                               m.state in ft.ACTIVE_FILE_TRANSFERS, self._corr))
             self._unsaved_messages = 0
         else:
-            self._corr = list(filter(lambda x: (x.get_type() == 2 and x.get_status() in ft.ACTIVE_FILE_TRANSFERS)
-                                               or (x.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION'])
-                                                   and x.get_owner() == MESSAGE_AUTHOR['NOT_SENT']),
+            self._corr = list(filter(lambda m: (m.type == MESSAGE_TYPE['FILE_TRANSFER']
+                                                and m.state in ft.ACTIVE_FILE_TRANSFERS)
+                                               or (m.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION'])
+                                                   and m.author.type == MESSAGE_AUTHOR['NOT_SENT']),
                                      self._corr))
             self._unsaved_messages = len(self.get_unsent_messages())
 
@@ -197,7 +198,7 @@ class Contact(basecontact.BaseContact):
         while True:
             l = len(self._corr)
             for i in range(self._search_index - 1, -l - 1, -1):
-                if self._corr[i].get_type() > 1:
+                if self._corr[i].type not in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']):
                     continue
                 message = self._corr[i].text
                 if re.search(self._search_string, message, re.IGNORECASE) is not None:
@@ -212,7 +213,7 @@ class Contact(basecontact.BaseContact):
         if not self._search_index:
             return None
         for i in range(self._search_index + 1, 0):
-            if self._corr[i].get_type() > 1:
+            if self._corr[i].get_type() > (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']):
                 continue
             message = self._corr[i].text
             if re.search(self._search_string, message, re.IGNORECASE) is not None:
@@ -258,10 +259,6 @@ class Contact(basecontact.BaseContact):
         self._visible = value
 
     visibility = property(get_visibility, set_visibility)
-
-    def set_widget(self, widget):
-        self._widget = widget
-        self.init_widget()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Unread messages and other actions from friend

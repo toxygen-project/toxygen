@@ -134,8 +134,9 @@ class MessageItem(QtWidgets.QWidget):
         font.setFamily(settings['font'])
         font.setPointSize(11)
         font.setBold(True)
-        self.name.setFont(font)
-        self.name.setText(text_message.author.name)
+        if text_message.author is not None:
+            self.name.setFont(font)
+            self.name.setText(text_message.author.name)
 
         self.time = QtWidgets.QLabel(self)
         self.time.setGeometry(QtCore.QRect(parent.width() - 60, 0, 50, 25))
@@ -143,7 +144,7 @@ class MessageItem(QtWidgets.QWidget):
         font.setBold(False)
         self.time.setFont(font)
         self._time = text_message.time
-        if text_message.author.type == MESSAGE_AUTHOR['NOT_SENT']:
+        if text_message.author and text_message.author.type == MESSAGE_AUTHOR['NOT_SENT']:
             movie = QtGui.QMovie(util.join_path(util.get_images_directory(), 'spinner.gif'))
             self.time.setMovie(movie)
             movie.start()

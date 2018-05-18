@@ -189,13 +189,15 @@ class UnsentFileMessage(Message):
 
     data = property(get_data)
 
+    def get_state(self):
+        return FILE_TRANSFER_STATE['UNSENT']
+
+    state = property(get_state)
+
     def get_path(self):
         return self._path
 
     path = property(get_path)
-
-    def get_status(self):
-        return None
 
     def _create_widget(self, *args):
         return UnsentFileItem(self, *args)

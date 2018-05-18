@@ -41,15 +41,15 @@ class FileTransfersHandler:
         file_id = self._tox.file_get_file_id(friend_number, file_number)
         accepted = True
         if file_id in self._paused_file_transfers:
-            data = self._paused_file_transfers[file_id]
-            pos = data[-1] if os.path.exists(data[0]) else 0
+            (path, ft_friend_number, is_incoming, start_position) = self._paused_file_transfers[file_id]
+            pos = start_position if os.path.exists(path) else 0
             if pos >= size:
                 self._tox.file_control(friend_number, file_number, TOX_FILE_CONTROL['CANCEL'])
                 return
             self._tox.file_seek(friend_number, file_number, pos)
             self._file_transfers_message_service.add_incoming_transfer_message(
                 friend, accepted, size, file_name, file_number)
-            self.accept_transfer(data[0], friend_number, file_number, size, False, pos)
+            self.accept_transfer(path, friend_number, file_number, size, False, pos)
         elif inline and size < 1024 * 1024:
             self._file_transfers_message_service.add_incoming_transfer_message(
                 friend, accepted, size, file_name, file_number)
