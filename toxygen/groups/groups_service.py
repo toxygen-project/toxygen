@@ -53,8 +53,8 @@ class GroupsService(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def update_group_info(self, group):
-        group.name = self._tox.group_get_name(group.number).encode('utf-8')
-        group.status_message = self._tox.group_get_topic(group.number).encode('utf-8')
+        group.name = self._tox.group_get_name(group.number)
+        group.status_message = self._tox.group_get_topic(group.number)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods

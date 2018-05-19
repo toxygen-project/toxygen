@@ -39,7 +39,6 @@ class BaseContact:
         return self._name
 
     def set_name(self, value):
-        value = str(value, 'utf-8')
         if self._name != value:
             self._name = value
             self._widget.name.setText(self._name)
@@ -61,7 +60,6 @@ class BaseContact:
         return self._status_message
 
     def set_status_message(self, value):
-        value = str(value, 'utf-8')
         if self._status_message != value:
             self._status_message = value
             self._widget.status_message.setText(self._status_message)

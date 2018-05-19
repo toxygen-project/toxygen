@@ -49,7 +49,7 @@ class Profile(basecontact.BaseContact):
     def set_name(self, value):
         if self.name == value:
             return
-        super().set_name(value.encode('utf-8'))
+        super().set_name(value)
         self._tox.self_set_name(self._name.encode('utf-8'))
 
     def set_status_message(self, value):

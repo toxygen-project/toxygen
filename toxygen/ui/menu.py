@@ -272,7 +272,7 @@ class ProfileSettings(CenteredWidget):
 
     def closeEvent(self, event):
         self._profile.set_name(self.nick.text())
-        self._profile.set_status_message(self.status_message.text().encode('utf-8'))
+        self._profile.set_status_message(self.status_message.text())
         self._profile.set_status(self.status.currentIndex())
 
 

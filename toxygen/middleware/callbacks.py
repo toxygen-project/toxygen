@@ -86,7 +86,7 @@ def friend_name(contacts_manager):
         Friend changed his name
         """
         print('New name friend #' + str(friend_number))
-        invoke_in_main_thread(contacts_manager.new_name, friend_number, name)
+        invoke_in_main_thread(contacts_manager.new_name, friend_number, str(name, 'utf-8'))
 
     return wrapped
 
@@ -98,7 +98,7 @@ def friend_status_message(contacts_manager, messenger):
         and calls window repaint
         """
         friend = contacts_manager.get_friend_by_number(friend_number)
-        invoke_in_main_thread(friend.set_status_message, status_message)
+        invoke_in_main_thread(friend.set_status_message, str(status_message, 'utf-8'))
         print('User #{} has new status'.format(friend_number))
         invoke_in_main_thread(messenger.send_messages, friend_number)
 

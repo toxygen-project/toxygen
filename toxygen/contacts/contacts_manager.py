@@ -224,7 +224,6 @@ class ContactsManager:
         friend = self.get_friend_by_number(number)
         tmp = friend.name
         friend.set_name(name)
-        name = str(name, 'utf-8')
         if friend.name == name and tmp != name:
             # TODO: move to friend?
             message = util_ui.tr('User {} is now known as {}')
