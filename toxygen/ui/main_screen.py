@@ -18,7 +18,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setAcceptDrops(True)
         self._saved = False
         self._profile = None
-        self._file_transfer_handler = self._history_loader =  self._groups_service = self._calls_manager = None
+        self._file_transfer_handler = self._history_loader = self._groups_service = self._calls_manager = None
+        self._should_show_group_peers_list = False
         self.initUI()
 
     def set_dependencies(self, widget_factory, tray, contacts_manager, messenger, profile, plugins_loader,
@@ -36,6 +37,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def show(self):
         super().show()
+        self._contacts_manager.update()
         if self._settings['show_welcome_screen']:
             self._modal_window = self._widget_factory.create_welcome_window()
 
@@ -174,7 +176,6 @@ class MainWindow(QtWidgets.QMainWindow):
         Form.resize(650, 60)
         self.messageEdit = MessageArea(Form, self)
         self.messageEdit.setGeometry(QtCore.QRect(0, 3, 450, 55))
-        self.messageEdit.setObjectName("messageEdit")
         font = QtGui.QFont()
         font.setPointSize(11)
         font.setFamily(self._settings['font'])
@@ -182,7 +183,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.sendMessageButton = QtWidgets.QPushButton(Form)
         self.sendMessageButton.setGeometry(QtCore.QRect(565, 3, 60, 55))
-        self.sendMessageButton.setObjectName("sendMessageButton")
 
         self.menuButton = MenuButton(Form, self.show_menu)
         self.menuButton.setGeometry(QtCore.QRect(QtCore.QRect(455, 3, 55, 55)))
@@ -212,7 +212,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.contact_name = LineEdit(Form)
         self.contact_name.setGeometry(QtCore.QRect(0, 0, 150, 25))
-        self.contact_name.setObjectName("contact_name")
         self.contact_name.textChanged.connect(self.filtering)
 
         self.online_contacts = ComboBox(Form)
@@ -238,20 +237,17 @@ class MainWindow(QtWidgets.QMainWindow):
         font.setPointSize(14)
         font.setBold(True)
         Form.name.setFont(font)
-        Form.name.setObjectName("name")
         self.status_message = Form.status_message = DataLabel(Form)
         Form.status_message.setGeometry(QtCore.QRect(75, 35, 170, 25))
         font.setPointSize(12)
         font.setBold(False)
         Form.status_message.setFont(font)
-        Form.status_message.setObjectName("status_message")
         self.connection_status = Form.connection_status = StatusCircle(Form)
         Form.connection_status.setGeometry(QtCore.QRect(230, 10, 32, 32))
         self.avatar_label.mouseReleaseEvent = self.profile_settings
         self.status_message.mouseReleaseEvent = self.profile_settings
         self.name.mouseReleaseEvent = self.profile_settings
         self.connection_status.raise_()
-        Form.connection_status.setObjectName("connection_status")
 
     def setup_right_top(self, Form):
         Form.resize(650, 75)
@@ -266,7 +262,6 @@ class MainWindow(QtWidgets.QMainWindow):
         font.setPointSize(14)
         font.setBold(True)
         self.account_name.setFont(font)
-        self.account_name.setObjectName("account_name")
         self.account_status = DataLabel(Form)
         self.account_status.setGeometry(QtCore.QRect(100, 20, 400, 25))
         self.account_status.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse)
@@ -282,6 +277,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.videocallButton.setGeometry(QtCore.QRect(550, 5, 50, 50))
         self.videocallButton.setObjectName("videocallButton")
         self.videocallButton.clicked.connect(lambda: self._calls_manager.call_click(True, True))
+        self.groupMenuButton = QtWidgets.QPushButton(Form)
+        self.groupMenuButton.setGeometry(QtCore.QRect(470, 10, 50, 50))
+        self.groupMenuButton.clicked.connect(self._show_gc_peers_list)
+        self.groupMenuButton.setVisible(False)
+        pixmap = QtGui.QPixmap(util.join_path(util.get_images_directory(), 'menu.png'))
+        icon = QtGui.QIcon(pixmap)
+        self.groupMenuButton.setIcon(icon)
         self.update_call_state('call')
         self.typing = QtWidgets.QLabel(Form)
         self.typing.setGeometry(QtCore.QRect(500, 25, 50, 30))
@@ -401,7 +403,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.close()
 
     def resizeEvent(self, *args, **kwargs):
-        self.messages.setGeometry(0, 0, self.width() - 270, self.height() - 155)
+        if not self._should_show_group_peers_list:
+            self.messages.setGeometry(0, 0, self.width() - 270, self.height() - 155)
+        else:
+            self.messages.setGeometry(0, 0, self.width() - 450, self.height() - 155)
         self.friends_list.setGeometry(0, 0, 270, self.height() - 125)
 
         self.videocallButton.setGeometry(QtCore.QRect(self.width() - 330, 10, 50, 50))
@@ -424,8 +429,7 @@ class MainWindow(QtWidgets.QMainWindow):
             rows = list(map(lambda x: self.messages.row(x), self.messages.selectedItems()))
             indexes = (rows[0] - self.messages.count(), rows[-1] - self.messages.count())
             s = self._history_loader.export_history(self._contacts_manager.get_curr_friend(), True, indexes)
-            clipboard = QtWidgets.QApplication.clipboard()
-            clipboard.setText(s)
+            self.copy_text(s)
         elif key == QtCore.Qt.Key_Z and modifiers & QtCore.Qt.ControlModifier and self.messages.selectedIndexes():
             self.messages.clearSelection()
         elif key == QtCore.Qt.Key_F and modifiers & QtCore.Qt.ControlModifier:
@@ -673,6 +677,8 @@ class MainWindow(QtWidgets.QMainWindow):
     def friend_click(self, index):
         num = index.row()
         self._contacts_manager.set_active(num)
+        self.groupMenuButton.setVisible(not self._contacts_manager.is_active_a_friend())
+        self.resizeEvent()
 
     def mouseReleaseEvent(self, event):
         pos = self.connection_status.pos()
@@ -681,10 +687,6 @@ class MainWindow(QtWidgets.QMainWindow):
             self._profile.change_status()
         else:
             super().mouseReleaseEvent(event)
-
-    def show(self):
-        super().show()
-        self._contacts_manager.update()
 
     def filtering(self):
         ind = self.online_contacts.currentIndex()
@@ -701,3 +703,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.search_field.setGeometry(x, y, self.messages.width(), 40)
         self.messages.setGeometry(x, self.messages.y(), self.messages.width(), self.messages.height() - 40)
         self.search_field.show()
+
+    def _show_gc_peers_list(self):
+        self._should_show_group_peers_list = not self._should_show_group_peers_list
+        self.resizeEvent()
