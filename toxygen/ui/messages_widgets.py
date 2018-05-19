@@ -253,7 +253,8 @@ class FileTransferItem(QtWidgets.QListWidget):
         icon = QtGui.QIcon(pixmap)
         self.cancel.setIcon(icon)
         self.cancel.setIconSize(QtCore.QSize(30, 30))
-        self.cancel.setVisible(transfer_message.state in ACTIVE_FILE_TRANSFERS)
+        self.cancel.setVisible(transfer_message.state in ACTIVE_FILE_TRANSFERS or
+                               transfer_message.state == FILE_TRANSFER_STATE['UNSENT'])
         self.cancel.clicked.connect(
             lambda: self.cancel_transfer(transfer_message.friend_number, transfer_message.file_number))
         self.cancel.setStyleSheet('QPushButton:hover { border: 1px solid #3A3939; background-color: none;}')
@@ -268,6 +269,9 @@ class FileTransferItem(QtWidgets.QListWidget):
         elif transfer_message.state == FILE_TRANSFER_STATE['PAUSED_BY_USER']:  # setup for continue
             self.accept_or_pause.setVisible(True)
             self.button_update('resume')
+        elif transfer_message.state == FILE_TRANSFER_STATE['UNSENT']:
+            self.accept_or_pause.setVisible(False)
+            self.setStyleSheet('QListWidget { border: 1px solid #FF8000; }')
         else:  # pause
             self.accept_or_pause.setVisible(True)
             self.button_update('pause')
@@ -382,17 +386,12 @@ class FileTransferItem(QtWidgets.QListWidget):
                 self.state = state
                 self.time_left.setVisible(True)
 
-    @staticmethod
-    def mark_as_sent():
-        return False
-
 
 class UnsentFileItem(FileTransferItem):
 
     def __init__(self, transfer_message, file_transfer_handler, settings, width, parent=None):
         super().__init__(transfer_message, file_transfer_handler, settings, width, parent)
         self._time = time
-        self.pb.setVisible(False)
         movie = QtGui.QMovie(util.join_path(util.get_images_directory(), 'spinner.gif'))
         self.time.setMovie(movie)
         movie.start()
@@ -448,7 +447,3 @@ class InlineImageItem(QtWidgets.QScrollArea):
             if directory:
                 fl = QtCore.QFile(directory + '/toxygen_inline_' + util.curr_time().replace(':', '_') + '.png')
                 self._pixmap.save(fl, 'PNG')
-
-    @staticmethod
-    def mark_as_sent():
-        return False

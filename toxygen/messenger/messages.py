@@ -1,4 +1,5 @@
 from history.database import MESSAGE_AUTHOR
+import os.path
 from ui.messages_widgets import *
 
 
@@ -16,8 +17,18 @@ PAGE_SIZE = 42
 class MessageAuthor:
 
     def __init__(self, author_name, author_type):
-        self.name = author_name
-        self.type = author_type
+        self._name = author_name
+        self._type = author_type
+
+    def get_name(self):
+        return self._name
+
+    name = property(get_name)
+
+    def get_type(self):
+        return self._type
+
+    type = property(get_type)
 
 
 class Message:
@@ -139,7 +150,10 @@ class TransferMessage(Message):
         self._friend_number, self._file_number = friend_number, file_number
 
     def is_active(self, file_number):
-        return self._file_number == file_number and self._state not in (2, 3)
+        if self._file_number != file_number:
+            return False
+
+        return self._state not in (FILE_TRANSFER_STATE['FINISHED'], FILE_TRANSFER_STATE['CANCELLED'])
 
     def get_friend_number(self):
         return self._friend_number
@@ -178,21 +192,17 @@ class TransferMessage(Message):
         return FileTransferItem(self, *args)
 
 
-class UnsentFileMessage(Message):
+class UnsentFileMessage(TransferMessage):
 
-    def __init__(self, path, data, time):
-        super().__init__(MESSAGE_TYPE['FILE_TRANSFER'], 0, time)
+    def __init__(self, path, data, time, author, size, friend_number):
+        file_name = os.path.basename(path)
+        super().__init__(author, time, FILE_TRANSFER_STATE['UNSENT'], size, file_name, friend_number, -1)
         self._data, self._path = data, path
 
     def get_data(self):
         return self._data
 
     data = property(get_data)
-
-    def get_state(self):
-        return FILE_TRANSFER_STATE['UNSENT']
-
-    state = property(get_state)
 
     def get_path(self):
         return self._path

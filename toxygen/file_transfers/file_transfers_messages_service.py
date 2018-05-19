@@ -16,7 +16,7 @@ class FileTransfersMessagesService:
         status = FILE_TRANSFER_STATE['RUNNING'] if accepted else FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']
         tm = TransferMessage(author, util.get_unix_time(), status, size, file_name, friend.number, file_number)
 
-        if self._is_active(friend.number):
+        if self._is_friend_active(friend.number):
             self._create_file_transfer_item(tm)
             self._messages.scrollToBottom()
         else:
@@ -31,7 +31,7 @@ class FileTransfersMessagesService:
         status = FILE_TRANSFER_STATE['OUTGOING_NOT_STARTED']
         tm = TransferMessage(author, util.get_unix_time(), status, size, file_name, friend.number, file_number)
 
-        if self._is_active(friend.number):
+        if self._is_friend_active(friend.number):
             self._create_file_transfer_item(tm)
             self._messages.scrollToBottom()
 
@@ -40,16 +40,18 @@ class FileTransfersMessagesService:
         return tm
 
     def add_inline_message(self, transfer, index):
-        if self._is_active(transfer.friend_number):
+        if self._is_friend_active(transfer.friend_number):
             count = self._messages.count()
             if count + index + 1 >= 0:
                 self._create_inline_item(transfer.data, count + index + 1)
 
     def add_unsent_file_message(self, friend, file_path, data):
-        tm = UnsentFileMessage(file_path, data, util.get_unix_time())
+        author = MessageAuthor(self._profile.name, MESSAGE_AUTHOR['ME'])
+        size = os.path.getsize(file_path) if data is None else len(data)
+        tm = UnsentFileMessage(file_path, data, util.get_unix_time(), author, size, friend.number)
         friend.append_message(tm)
 
-        if self._is_active(friend.number):
+        if self._is_friend_active(friend.number):
             self._create_unsent_file_item(tm)
             self._messages.scrollToBottom()
 
@@ -59,7 +61,7 @@ class FileTransfersMessagesService:
     # Private methods
     # -----------------------------------------------------------------------------------------------------------------
 
-    def _is_active(self, friend_number):
+    def _is_friend_active(self, friend_number):
         if not self._contacts_manager.is_active_a_friend():
             return False
 
