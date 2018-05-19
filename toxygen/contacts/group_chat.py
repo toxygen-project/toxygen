@@ -39,7 +39,7 @@ class GroupChat(contact.Contact):
                              self._tox.group_peer_get_public_key(self._number, peer_id))
         self._peers.append(peer)
 
-    def get_peer(self, peer_id):
+    def get_peer_by_id(self, peer_id):
         peers = list(filter(lambda p: p.id == peer_id, self._peers))
 
         return peers[0]

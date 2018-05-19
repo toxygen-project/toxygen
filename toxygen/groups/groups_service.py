@@ -14,7 +14,7 @@ class GroupsService(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def create_new_gc(self, name, privacy_state):
-        group_number = self._tox.group_new(privacy_state, name)
+        group_number = self._tox.group_new(privacy_state, name.encode('utf-8'))
         self._add_new_group_by_number(group_number)
 
     def join_gc_by_id(self, chat_id, password):
@@ -47,6 +47,14 @@ class GroupsService(tox_save.ToxSave):
         text = util_ui.tr('Friend {} invites you to group. Accept?')
         if util_ui.question(text.format(friend.name), util_ui.tr('Group invite')):
             self.join_gc_via_invite(invite_data, friend_number, None)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Group info methods
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def update_group_info(self, group):
+        group.name = self._tox.group_get_name(group.number).encode('utf-8')
+        group.status_message = self._tox.group_get_topic(group.number).encode('utf-8')
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods

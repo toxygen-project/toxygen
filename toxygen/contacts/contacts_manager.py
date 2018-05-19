@@ -50,6 +50,9 @@ class ContactsManager:
 
         return self.get_curr_contact().number == group_number
 
+    def is_contact_active(self, contact):
+        return self._contacts[self._active_contact].tox_id == contact.tox_id
+
     # -----------------------------------------------------------------------------------------------------------------
     # Work with active friend
     # -----------------------------------------------------------------------------------------------------------------

@@ -41,16 +41,7 @@ class Messenger(tox_save.ToxSave):
         t = util.get_unix_time()
         friend = self._get_friend_by_number(friend_number)
         text_message = TextMessage(message, MessageAuthor(friend.name, MESSAGE_AUTHOR['FRIEND']), t, message_type)
-
-        if self._contacts_manager.is_friend_active(friend_number):  # add message to list
-            self._create_message_item(text_message)
-            self._screen.messages.scrollToBottom()
-            self._contacts_manager.get_curr_contact().append_message(text_message)
-        else:
-            friend.inc_messages()
-            friend.append_message(text_message)
-            if not friend.visibility:
-                self._contacts_manager.update_filtration()
+        self._add_message(text_message, friend)
 
     def send_message(self):
         text = self._screen.messageEdit.toPlainText()
@@ -134,6 +125,18 @@ class Messenger(tox_save.ToxSave):
                     self._create_message_item(message)
                     self._screen.messageEdit.clear()
                     self._screen.messages.scrollToBottom()
+
+    def new_group_message(self, group_number, message_type, message, peer_id):
+        """
+        Current user gets new message
+        :param message_type: message type - plain text or action message (/me)
+        :param message: text of message
+        """
+        t = util.get_unix_time()
+        group = self._get_group_by_number(group_number)
+        peer = group.get_peer_by_id(peer_id)
+        text_message = TextMessage(message, MessageAuthor(peer.name, MESSAGE_AUTHOR['GC_PEER']), t, message_type)
+        self._add_message(text_message, group)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Message receipts
@@ -229,3 +232,14 @@ class Messenger(tox_save.ToxSave):
     def _create_info_message_item(self, message):
         self._items_factory.create_message_item(message)
         self._screen.messages.scrollToBottom()
+
+    def _add_message(self, text_message, contact):
+        if self._contacts_manager.is_contact_active(contact):  # add message to list
+            self._create_message_item(text_message)
+            self._screen.messages.scrollToBottom()
+            self._contacts_manager.get_curr_contact().append_message(text_message)
+        else:
+            contact.inc_messages()
+            contact.append_message(text_message)
+            if not contact.visibility:
+                self._contacts_manager.update_filtration()
