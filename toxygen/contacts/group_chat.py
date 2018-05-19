@@ -1,10 +1,8 @@
 from contacts import contact
 import utils.util as util
-from PyQt5 import QtGui, QtCore
+from wrapper.toxcore_enums_and_consts import *
 from wrapper import toxcore_enums_and_consts as constants
 
-
-# TODO: ngc
 
 class GroupChat(contact.Contact):
 
@@ -12,20 +10,12 @@ class GroupChat(contact.Contact):
         super().__init__(None, group_number, profile_manager, name, status_message, widget, None)
         self._tox = tox
         self.set_status(constants.TOX_USER_STATUS['NONE'])
+        self._peers = []
+        self._add_self_to_gc()
 
-    def set_name(self, name):
-        self._tox.group_set_title(self._number, name)
-        super().set_name(name)
-
-    def send_message(self, message):
-        self._tox.group_message_send(self._number, message.encode('utf-8'))
-
-    def new_title(self, title):
-        super().set_name(title)
-
-    @staticmethod
-    def _get_default_avatar_path():
-        return util.join_path(util.get_images_directory(), 'group.png')
+    def set_topic(self, topic):
+        self._tox.group_set_topic(self._number, topic.encode('utf-8'))
+        super().set_status_message(topic)
 
     def remove_invalid_unsent_files(self):
         pass
@@ -45,3 +35,17 @@ class GroupChat(contact.Contact):
 
     def get_peer_name(self, peer_number):
         return self._tox.group_peername(self._number, peer_number)
+
+    def get_self_name(self):
+        return self._peers[0].name
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # -----------------------------------------------------------------------------------------------------------------
+
+    @staticmethod
+    def _get_default_avatar_path():
+        return util.join_path(util.get_images_directory(), 'group.png')
+
+    def _add_self_to_gc(self):
+        pass

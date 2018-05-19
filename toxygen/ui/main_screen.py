@@ -110,6 +110,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionNetwork.triggered.connect(self.network_settings)
         self.actionAdd_friend.triggered.connect(self.add_contact_triggered)
         self.createGC.triggered.connect(self.create_gc)
+        self.joinGC.triggered.connect(self.join_gc)
         self.actionSettings.triggered.connect(self.profile_settings)
         self.actionPrivacy_settings.triggered.connect(self.privacy_settings)
         self.actionInterface_settings.triggered.connect(self.interface_settings)
@@ -459,7 +460,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self._modal_window.show()
 
     def create_gc(self):
-        self.profile.create_group_chat()
+        self._modal_window = self._widget_factory.create_group_screen_window()
+        self._modal_window.show()
+
+    def join_gc(self):
+        self._modal_window = self._widget_factory.create_join_group_screen_window()
+        self._modal_window.show()
 
     def profile_settings(self, _):
         self._modal_window = self._widget_factory.create_profile_settings_window()

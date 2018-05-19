@@ -28,7 +28,7 @@ class Messenger(tox_save.ToxSave):
         self._items_factory.create_message_item(text_message)
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Messaging
+    # Messaging - friends
     # -----------------------------------------------------------------------------------------------------------------
 
     def new_message(self, friend_number, message_type, message):
@@ -53,7 +53,11 @@ class Messenger(tox_save.ToxSave):
                 self._contacts_manager.update_filtration()
 
     def send_message(self):
-        self.send_message_to_friend(self._screen.messageEdit.toPlainText())
+        text = self._screen.messageEdit.toPlainText()
+        if self._contacts_manager.is_active_a_friend():
+            self.send_message_to_friend(text)
+        else:
+            self.send_message_to_group(text)
 
     def send_message_to_friend(self, text, friend_number=None):
         """
@@ -78,7 +82,6 @@ class Messenger(tox_save.ToxSave):
             for message in messages:
                 if friend.status is not None:
                     message_id = self._tox.friend_send_message(friend_number, message_type, message)
-                    friend.inc_receipts()
                 else:
                     message_id = 0
                 message_author = MessageAuthor(self._profile.name, MESSAGE_AUTHOR['NOT_SENT'])
@@ -102,6 +105,35 @@ class Messenger(tox_save.ToxSave):
                 message.tox_message_id = message_id
         except Exception as ex:
             util.log('Sending pending messages failed with ' + str(ex))
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Messaging - groups
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def send_message_to_group(self, text, group_number=None):
+        if group_number is None:
+            group_number = self._contacts_manager.get_active_number()
+        if text.startswith('/plugin '):
+            self._plugin_loader.command(text[8:])
+            self._screen.messageEdit.clear()
+        elif text and group_number >= 0:
+            if text.startswith('/me '):
+                message_type = TOX_MESSAGE_TYPE['ACTION']
+                text = text[4:]
+            else:
+                message_type = TOX_MESSAGE_TYPE['NORMAL']
+            group = self._get_group_by_number(group_number)
+            messages = self._split_message(text.encode('utf-8'))
+            t = util.get_unix_time()
+            for message in messages:
+                self._tox.group_send_message(group_number, message_type, message)
+                message_author = MessageAuthor(group.get_self_name(), MESSAGE_AUTHOR['GC_PEER'])
+                message = OutgoingTextMessage(text, message_author, t, message_type)
+                group.append_message(message)
+                if self._contacts_manager.is_group_active(group_number):
+                    self._create_message_item(message)
+                    self._screen.messageEdit.clear()
+                    self._screen.messages.scrollToBottom()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Message receipts
@@ -161,6 +193,9 @@ class Messenger(tox_save.ToxSave):
 
     def _get_friend_by_number(self, friend_number):
         return self._contacts_provider.get_friend_by_number(friend_number)
+
+    def _get_group_by_number(self, group_number):
+        return self._contacts_provider.get_group_by_number(group_number)
 
     def _on_profile_name_changed(self, new_name):
         if self._profile_name == new_name:

@@ -26,9 +26,9 @@ class CreateProfileScreen(CenteredWidget, DialogWithResult):
     def __init__(self):
         CenteredWidget.__init__(self)
         DialogWithResult.__init__(self)
-        uic.loadUi(util.get_views_path('create_profile_screen'))
+        uic.loadUi(util.get_views_path('create_profile_screen'), self)
         self.center()
-        self.createProfile.clicked.connect(self.create_profile)
+        self.createProfile.clicked.connect(self._create_profile)
 
     def retranslateUi(self):
         self.defaultFolder.setPlaceholderText(util_ui.tr('Save in default folder'))
@@ -36,7 +36,7 @@ class CreateProfileScreen(CenteredWidget, DialogWithResult):
         self.createProfile.setText(util_ui.tr('Create profile'))
         self.passwordLabel.setText(util_ui.tr('Password:'))
 
-    def create_profile(self):
+    def _create_profile(self):
         if self.password.text() != self.confirmPassword.text():
             return  # TODO : error
         result = CreateProfileScreenResult(self.defaultFolder.isChecked(), self.password.text())

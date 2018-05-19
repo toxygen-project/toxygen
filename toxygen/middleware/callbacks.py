@@ -13,7 +13,7 @@ from notifications.tray import tray_notification
 from notifications.sound import *
 import threading
 
-# TODO: gc callbacks and refactoring. Use contact provider instead of manager
+# TODO: refactoring. Use contact provider instead of manager
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - current user
@@ -360,18 +360,49 @@ def video_receive_frame(toxav, friend_number, width, height, y, u, v, ystride, u
 # -----------------------------------------------------------------------------------------------------------------
 
 
-def show_gc_notification(window, tray, message, group_number, peer_number):
-    profile = Profile.get_instance()
-    settings = Settings.get_instance()
-    chat = profile.get_group_by_number(group_number)
-    peer_name = chat.get_peer_name(peer_number)
-    if not window.isActiveWindow() and (profile.name in message or settings['group_notifications']):
-        if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
-            invoke_in_main_thread(tray_notification, chat.name + ' ' + peer_name, message, tray, window)
-        if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
-            sound_notification(SOUND_NOTIFICATION['MESSAGE'])
-        icon = os.path.join(util.get_images_directory(), 'icon_new_messages.png')
-        invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
+def group_message(window, tray, tox, messenger, settings, profile):
+    """
+    New message in group chat
+    """
+    def wrapped(tox_link, group_number, peer_id, message_type, message, length, user_data):
+        message = str(message[:length], 'utf-8')
+        invoke_in_main_thread(messenger.new_group_message, group_number, message_type, message, peer_id)
+        if not window.isActiveWindow():
+            bl = settings['notify_all_gc'] or profile.name in message
+            name = tox.group_peer_get_name(group_number, peer_id)
+            if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and (not settings.locked) and bl:
+                invoke_in_main_thread(tray_notification, name, message, tray, window)
+            if settings['sound_notifications'] and bl and profile.status != TOX_USER_STATUS['BUSY']:
+                sound_notification(SOUND_NOTIFICATION['MESSAGE'])
+            icon = os.path.join(util.get_images_directory(), 'icon_new_messages.png')
+            invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
+    return wrapped
+
+
+def group_invite(groups_service):
+    def wrapped(tox, friend_number, invite_data, length, user_data):
+        invoke_in_main_thread(groups_service.process_group_invite,
+                              friend_number,
+                              bytes(invite_data[:length]))
+
+    return wrapped
+
+
+def group_self_join(contacts_provider):
+    def wrapped(tox, group_number, user_data):
+        group = contacts_provider.get_group_by_number(group_number)
+        invoke_in_main_thread(group.set_status, TOX_USER_STATUS['NONE'])
+
+    return wrapped
+
+
+def group_peer_join(contacts_provider):
+    def wrapped(tox, group_number, peer_id, user_data):
+        gc = contacts_provider.get_group_by_number(group_number)
+        gc.add_peer(peer_id)
+
+    return wrapped
+
 
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
@@ -379,7 +410,8 @@ def show_gc_notification(window, tray, message, group_number, peer_number):
 
 
 def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
-                   calls_manager, file_transfer_handler, main_window, tray, messenger):
+                   calls_manager, file_transfer_handler, main_window, tray, messenger, groups_service,
+                   contacts_provider):
     """
     Initialization of all callbacks.
     :param tox: Tox instance
@@ -425,3 +457,9 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     # custom packets
     tox.callback_friend_lossless_packet(lossless_packet(plugin_loader), 0)
     tox.callback_friend_lossy_packet(lossy_packet(plugin_loader), 0)
+
+    # gc callbacks
+    tox.callback_group_message(group_message(main_window, tray, tox, messenger, settings, profile), 0)
+    tox.callback_group_invite(group_invite(groups_service), 0)
+    tox.callback_group_self_join(group_self_join(contacts_provider), 0)
+    tox.callback_group_peer_join(group_peer_join(contacts_provider), 0)

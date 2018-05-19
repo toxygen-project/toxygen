@@ -38,7 +38,7 @@ class ContactProvider(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_all_groups(self):
-        group_numbers = range(self._tox.group_get_number_groups)
+        group_numbers = range(self._tox.group_get_number_groups())
         groups = map(lambda n: self.get_group_by_number(n), group_numbers)
 
         return list(groups)

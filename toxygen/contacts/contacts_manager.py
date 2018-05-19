@@ -43,6 +43,12 @@ class ContactsManager:
 
         return self.get_curr_contact().number == friend_number
 
+    def is_group_active(self, group_number):
+        if self.is_active_a_friend():
+            return False
+
+        return self.get_curr_contact().number == friend_number
+
     # -----------------------------------------------------------------------------------------------------------------
     # Work with active friend
     # -----------------------------------------------------------------------------------------------------------------
@@ -299,7 +305,7 @@ class ContactsManager:
         friend.reset_avatar()
 
     def add_group(self, group_number):
-        group = self._contact_provider.get_group_by_numner(group_number)
+        group = self._contact_provider.get_group_by_number(group_number)
         self._contacts.append(group)
         group.reset_avatar()
 

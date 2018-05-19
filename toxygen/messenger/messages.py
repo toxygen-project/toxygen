@@ -106,7 +106,7 @@ class TextMessage(Message):
 
 class OutgoingTextMessage(TextMessage):
 
-    def __init__(self, message, owner, time, message_type, tox_message_id):
+    def __init__(self, message, owner, time, message_type, tox_message_id=0):
         super().__init__(message, owner, time, message_type)
         self._tox_message_id = tox_message_id
 

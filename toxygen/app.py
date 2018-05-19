@@ -30,6 +30,7 @@ from messenger.messenger import Messenger
 from network.tox_dns import ToxDns
 from history.history import History
 from file_transfers.file_transfers_messages_service import FileTransfersMessagesService
+from groups.groups_service import GroupsService
 import styles.style  # TODO: dynamic loading
 
 
@@ -41,7 +42,7 @@ class App:
         self._tox = self._ms = self._init = self._main_loop = self._av_loop = None
         self._uri = self._toxes = self._tray = self._file_transfer_handler = self._contacts_provider = None
         self._friend_factory = self._calls_manager = self._contacts_manager = self._smiley_loader = self._tox_dns = None
-        self._group_factory = None
+        self._group_factory = self._groups_service = None
         if uri is not None and uri.startswith('tox:'):
             self._uri = uri[4:]
         self._path = path_to_profile
@@ -322,9 +323,10 @@ class App:
         self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider,
                                                            file_transfers_message_service, profile)
         messages_items_factory.set_file_transfers_handler(self._file_transfer_handler)
+        self._groups_service = GroupsService(self._tox, self._contacts_manager, self._contacts_provider)
         widgets_factory = WidgetsFactory(self._settings, profile, self._profile_manager, self._contacts_manager,
                                          self._file_transfer_handler, self._smiley_loader, self._plugin_loader,
-                                         self._toxes, self._version)
+                                         self._toxes, self._version, self._groups_service)
         self._tray = tray.init_tray(profile, self._settings, self._ms)
         self._ms.set_dependencies(widgets_factory, self._tray, self._contacts_manager, self._messenger, profile,
                                   self._plugin_loader, self._file_transfer_handler, history, self._calls_manager)
@@ -335,7 +337,7 @@ class App:
         # callbacks initialization
         callbacks.init_callbacks(self._tox, profile, self._settings, self._plugin_loader, self._contacts_manager,
                                  self._calls_manager, self._file_transfer_handler, self._ms, self._tray,
-                                 self._messenger)
+                                 self._messenger, self._groups_service, self._contacts_provider)
 
     def _try_to_update(self):
         updating = updater.start_update_if_needed(self._version, self._settings)
