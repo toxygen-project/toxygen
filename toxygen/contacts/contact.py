@@ -74,7 +74,7 @@ class Contact(basecontact.BaseContact):
         Get data to save in db
         :return: list of unsaved messages or []
         """
-        messages = list(filter(lambda x: x.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']), self._corr))
+        messages = list(filter(lambda m: m.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']), self._corr))
         return messages[-self._unsaved_messages:] if self._unsaved_messages else []
 
     def get_corr(self):
@@ -125,8 +125,8 @@ class Contact(basecontact.BaseContact):
         """
         :return list of unsent messages for saving
         """
-        messages = filter(lambda x: x.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION'])
-                                    and x.author.type == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
+        messages = filter(lambda m: m.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION'])
+                                    and m.author.type == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
         return list(messages)
 
     def mark_as_sent(self, tox_message_id):
@@ -142,9 +142,9 @@ class Contact(basecontact.BaseContact):
     # -----------------------------------------------------------------------------------------------------------------
 
     def delete_message(self, message_id):
-        elem = list(filter(lambda x: type(x) in (TextMessage, GroupChatMessage) and x.message_id == message_id,
+        elem = list(filter(lambda m: type(m) in (TextMessage, GroupChatMessage) and m.message_id == message_id,
                            self._corr))[0]
-        tmp = list(filter(lambda x: x.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']), self._corr))
+        tmp = list(filter(lambda m: m.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']), self._corr))
         if elem in tmp[-self._unsaved_messages:] and self._unsaved_messages:
             self._unsaved_messages -= 1
         self._corr.remove(elem)
@@ -155,10 +155,10 @@ class Contact(basecontact.BaseContact):
         """
         Delete old messages (reduces RAM usage if messages saving is not enabled)
         """
-        def save_message(x):
-            if x.type == MESSAGE_TYPE['FILE_TRANSFER'] and (x.state not in ACTIVE_FILE_TRANSFERS):
+        def save_message(m):
+            if m.type == MESSAGE_TYPE['FILE_TRANSFER'] and (m.state not in ACTIVE_FILE_TRANSFERS):
                 return True
-            return x.author.type == MESSAGE_AUTHOR['NOT_SENT']
+            return m.author is not None and m.author.type == MESSAGE_AUTHOR['NOT_SENT']
 
         old = filter(save_message, self._corr[:-SAVE_MESSAGES])
         self._corr = list(old) + self._corr[-SAVE_MESSAGES:]
@@ -213,7 +213,7 @@ class Contact(basecontact.BaseContact):
         if not self._search_index:
             return None
         for i in range(self._search_index + 1, 0):
-            if self._corr[i].get_type() > (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']):
+            if self._corr[i].type not in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']):
                 continue
             message = self._corr[i].text
             if re.search(self._search_string, message, re.IGNORECASE) is not None:
@@ -294,7 +294,7 @@ class Contact(basecontact.BaseContact):
     messages = property(get_messages)
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Friend's number (can be used in toxcore)
+    # Friend's or group's number (can be used in toxcore)
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_number(self):

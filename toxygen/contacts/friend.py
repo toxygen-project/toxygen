@@ -23,7 +23,7 @@ class Friend(contact.Contact):
         Update status of active transfer and load inline if needed
         """
         try:
-            tr = list(filter(lambda x: x.message_id == before_message_id, self._corr))[0]
+            tr = list(filter(lambda m: m.message_id == before_message_id, self._corr))[0]
             i = self._corr.index(tr)
             if inline:  # inline was loaded
                 self._corr.insert(i, inline)
@@ -32,11 +32,11 @@ class Friend(contact.Contact):
             pass
 
     def get_unsent_files(self):
-        messages = filter(lambda x: type(x) is UnsentFileMessage, self._corr)
+        messages = filter(lambda m: type(m) is UnsentFileMessage, self._corr)
         return list(messages)
 
     def clear_unsent_files(self):
-        self._corr = list(filter(lambda x: type(x) is not UnsentFileMessage, self._corr))
+        self._corr = list(filter(lambda m: type(m) is not UnsentFileMessage, self._corr))
 
     def remove_invalid_unsent_files(self):
         def is_valid(message):
