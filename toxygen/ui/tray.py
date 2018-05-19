@@ -1,6 +1,7 @@
 from PyQt5 import QtWidgets, QtGui, QtCore
 from utils.ui import tr
 from utils.util import *
+from ui.password_screen import UnlockAppScreen
 import os.path
 
 
@@ -24,16 +25,16 @@ class Menu(QtWidgets.QMenu):
         self._settings = settings
         self._profile = profile
 
-    def newStatus(self, status):
+    def new_status(self, status):
         if not self._settings.locked:
-            self._profile.Profile.get_instance().set_status(status)
-            self.aboutToShowHandler()
+            self._profile.set_status(status)
+            self.about_to_show_handler()
             self.hide()
 
-    def aboutToShowHandler(self):
+    def about_to_show_handler(self):
         status = self._profile.status
         act = self.act
-        if status is None or self._ettings.get_instance().locked:
+        if status is None or self._settings.locked:
             self.actions()[1].setVisible(False)
         else:
             self.actions()[1].setVisible(True)
@@ -52,10 +53,9 @@ class Menu(QtWidgets.QMenu):
         self.act.actions()[2].setText(tr('Busy'))
 
 
-def init_tray(profile, settings, main_screen):
+def init_tray(profile, settings, main_screen, toxes):
     icon = os.path.join(get_images_directory(), 'icon.png')
     tray = SystemTrayIcon(QtGui.QIcon(icon))
-    tray.setObjectName('tray')
 
     menu = Menu(settings, profile)
     show = menu.addAction(tr('Open Toxygen'))
@@ -72,7 +72,8 @@ def init_tray(profile, settings, main_screen):
     def show_window():
         def show():
             if not main_screen.isActiveWindow():
-                main_screen.setWindowState(main_screen.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
+                main_screen.setWindowState(
+                    main_screen.windowState() & ~QtCore.Qt.WindowMinimized | QtCore.Qt.WindowActive)
                 main_screen.activateWindow()
                 main_screen.show()
         if not settings.locked:
@@ -84,8 +85,8 @@ def init_tray(profile, settings, main_screen):
                 settings.unlockScreen = False
             if not settings.unlockScreen:
                 settings.unlockScreen = True
-                self.p = UnlockAppScreen(toxes.ToxES.get_instance(), correct_pass)
-                self.p.show()
+                show_window.screen = UnlockAppScreen(toxes, correct_pass)
+                show_window.screen.show()
 
     def tray_activated(reason):
         if reason == QtWidgets.QSystemTrayIcon.DoubleClick:
@@ -98,10 +99,10 @@ def init_tray(profile, settings, main_screen):
 
     show.triggered.connect(show_window)
     exit.triggered.connect(close_app)
-    menu.aboutToShow.connect(lambda: menu.aboutToShowHandler())
-    online.triggered.connect(lambda: menu.newStatus(0))
-    away.triggered.connect(lambda: menu.newStatus(1))
-    busy.triggered.connect(lambda: menu.newStatus(2))
+    menu.aboutToShow.connect(menu.about_to_show_handler)
+    online.triggered.connect(lambda: menu.new_status(0))
+    away.triggered.connect(lambda: menu.new_status(1))
+    busy.triggered.connect(lambda: menu.new_status(2))
 
     tray.setContextMenu(menu)
     tray.show()
