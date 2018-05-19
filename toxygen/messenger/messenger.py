@@ -20,14 +20,6 @@ class Messenger(tox_save.ToxSave):
         calls_manager.call_finished_event.add_callback(self._on_call_finished)
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Private methods
-    # -----------------------------------------------------------------------------------------------------------------
-
-    def _create_message_item(self, text_message):
-        # pixmap = self._contacts_manager.get_curr_contact().get_pixmap()
-        self._items_factory.create_message_item(text_message)
-
-    # -----------------------------------------------------------------------------------------------------------------
     # Messaging - friends
     # -----------------------------------------------------------------------------------------------------------------
 
@@ -169,6 +161,18 @@ class Messenger(tox_save.ToxSave):
             self._screen.typing.setVisible(typing)
 
     # -----------------------------------------------------------------------------------------------------------------
+    # Contact info updated
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def new_friend_name(self, friend, old_name, new_name):
+        if old_name == new_name or friend.has_alias():
+            return
+        message = util_ui.tr('User {} is now known as {}')
+        message = message.format(old_name, new_name)
+        friend.actions = True
+        self._add_info_message(friend.number, message)
+
+    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
     # -----------------------------------------------------------------------------------------------------------------
 
@@ -206,9 +210,7 @@ class Messenger(tox_save.ToxSave):
         message = util_ui.tr('User {} is now known as {}')
         message = message.format(self._profile_name, new_name)
         for friend in self._contacts_provider.get_all_friends():
-            friend.append_message(InfoMessage(message, util.get_unix_time()))
-        if self._contacts_manager.is_active_a_friend():
-            self._create_info_message_item(message)
+            self._add_info_message(friend.number, message)
         self._profile_name = new_name
 
     def _on_call_started(self, friend_number, audio, video, is_outgoing):
@@ -243,3 +245,7 @@ class Messenger(tox_save.ToxSave):
             contact.append_message(text_message)
             if not contact.visibility:
                 self._contacts_manager.update_filtration()
+
+    def _create_message_item(self, text_message):
+        # pixmap = self._contacts_manager.get_curr_contact().get_pixmap()
+        self._items_factory.create_message_item(text_message)

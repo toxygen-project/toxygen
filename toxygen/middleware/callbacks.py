@@ -80,13 +80,17 @@ def friend_connection_status(contacts_manager, profile, settings, plugin_loader,
     return wrapped
 
 
-def friend_name(contacts_manager):
+def friend_name(contacts_provider, messenger):
     def wrapped(tox, friend_number, name, size, user_data):
         """
         Friend changed his name
         """
         print('New name friend #' + str(friend_number))
-        invoke_in_main_thread(contacts_manager.new_name, friend_number, str(name, 'utf-8'))
+        friend = contacts_provider.get_friend_by_number(friend_number)
+        old_name = friend.name
+        new_name = str(name, 'utf-8')
+        invoke_in_main_thread(friend.set_name, new_name)
+        invoke_in_main_thread(messenger.new_friend_name, friend, old_name, new_name)
 
     return wrapped
 
@@ -423,6 +427,14 @@ def group_peer_status(contacts_provider):
     return wrapped
 
 
+def group_topic(contacts_provider):
+    def wrapped(tox, group_number, peer_id, topic, length, user_data):
+        group = contacts_provider.get_group_by_number(group_number)
+        topic = str(topic[:length], 'utf-8')
+        invoke_in_main_thread(group.set_status_message, topic)
+
+    return wrapped
+
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
 # -----------------------------------------------------------------------------------------------------------------
@@ -453,7 +465,7 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     tox.callback_friend_message(friend_message(messenger, contacts_manager, profile, settings, main_window, tray), 0)
     tox.callback_friend_connection_status(friend_connection_status(contacts_manager, profile, settings, plugin_loader,
                                                                    file_transfer_handler, messenger, calls_manager), 0)
-    tox.callback_friend_name(friend_name(contacts_manager), 0)
+    tox.callback_friend_name(friend_name(contacts_provider, messenger), 0)
     tox.callback_friend_status_message(friend_status_message(contacts_manager, messenger), 0)
     tox.callback_friend_request(friend_request(contacts_manager), 0)
     tox.callback_friend_typing(friend_typing(messenger), 0)
@@ -484,3 +496,4 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     tox.callback_group_peer_join(group_peer_join(contacts_provider), 0)
     tox.callback_group_peer_name(group_peer_name(contacts_provider), 0)
     tox.callback_group_peer_status(group_peer_status(contacts_provider), 0)
+    tox.callback_group_topic(group_topic(contacts_provider), 0)

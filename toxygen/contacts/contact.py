@@ -118,7 +118,7 @@ class Contact(basecontact.BaseContact):
         """
         :return list of unsent messages
         """
-        messages = filter(lambda m: m.author.type == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
+        messages = filter(lambda m: m.author is not None and m.author.type == MESSAGE_AUTHOR['NOT_SENT'], self._corr)
         return list(messages)
 
     def get_unsent_messages_for_saving(self):
@@ -247,6 +247,9 @@ class Contact(basecontact.BaseContact):
 
     def set_alias(self, alias):
         self._alias = bool(alias)
+
+    def has_alias(self):
+        return self._alias
 
     # -----------------------------------------------------------------------------------------------------------------
     # Visibility in friends' list

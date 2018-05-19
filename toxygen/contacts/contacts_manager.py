@@ -219,22 +219,6 @@ class ContactsManager:
     def is_active_online(self):
         return self._active_contact + 1 and self.get_curr_contact().status is not None
 
-    def new_name(self, number, name):
-        # TODO: move to somewhere else?
-        friend = self.get_friend_by_number(number)
-        tmp = friend.name
-        friend.set_name(name)
-        if friend.name == name and tmp != name:
-            # TODO: move to friend?
-            message = util_ui.tr('User {} is now known as {}')
-            # message = message.format(tmp, name)
-            # friend.append_message(InfoMessage(0, message, util.get_unix_time()))
-            # friend.actions = True
-            # if number == self.get_active_number():
-            #     self.create_message_item(message, time.time(), '', MESSAGE_TYPE['INFO_MESSAGE'])
-            #     self._messages.scrollToBottom()
-            # self.set_active(None)
-
     # -----------------------------------------------------------------------------------------------------------------
     # Work with friends (remove, block, set alias, get public key)
     # -----------------------------------------------------------------------------------------------------------------
@@ -251,7 +235,7 @@ class ContactsManager:
         if ok:
             aliases = self._settings['friends_aliases']
             if text:
-                friend.name = bytes(text, 'utf-8')
+                friend.name = text
                 try:
                     index = list(map(lambda x: x[0], aliases)).index(friend.tox_id)
                     aliases[index] = (friend.tox_id, text)
@@ -259,7 +243,7 @@ class ContactsManager:
                     aliases.append((friend.tox_id, text))
                 friend.set_alias(text)
             else:  # use default name
-                friend.name = bytes(self._tox.friend_get_name(friend.number), 'utf-8')
+                friend.name = self._tox.friend_get_name(friend.number)
                 friend.set_alias('')
                 try:
                     index = list(map(lambda x: x[0], aliases)).index(friend.tox_id)
