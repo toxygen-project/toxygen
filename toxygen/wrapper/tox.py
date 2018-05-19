@@ -1599,7 +1599,7 @@ class Tox:
         result = Tox.libtoxcore.tox_group_reconnect(self._tox_pointer, groupnumber, byref(error))
         return result
 
-    def group_leave(self, groupnumber, message):
+    def group_leave(self, groupnumber, message=''):
         """
         Leaves a group.
 
@@ -1887,7 +1887,7 @@ class Tox:
         """
         error = c_int()
         result = Tox.libtoxcore.tox_group_get_name_size(self._tox_pointer, groupnumber, byref(error))
-        return result
+        return int(result)
 
     def group_get_name(self, groupnumber):
         """

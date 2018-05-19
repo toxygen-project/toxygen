@@ -1,4 +1,5 @@
 from contacts.friend import Friend
+from contacts.group_chat import GroupChat
 from messenger.messages import *
 
 
@@ -47,7 +48,7 @@ class ContactsManager:
         if self.is_active_a_friend():
             return False
 
-        return self.get_curr_contact().number == friend_number
+        return self.get_curr_contact().number == group_number
 
     # -----------------------------------------------------------------------------------------------------------------
     # Work with active friend
@@ -194,8 +195,11 @@ class ContactsManager:
     # Friend getters
     # -----------------------------------------------------------------------------------------------------------------
 
-    def get_friend_by_number(self, num):
-        return list(filter(lambda x: x.number == num and type(x) is Friend, self._contacts))[0]
+    def get_friend_by_number(self, number):
+        return list(filter(lambda x: x.number == number and type(x) is Friend, self._contacts))[0]
+
+    def get_group_by_number(self, number):
+        return list(filter(lambda x: x.number == number and type(x) is GroupChat, self._contacts))[0]
 
     def get_last_message(self):
         if self._active_contact + 1:
@@ -261,8 +265,6 @@ class ContactsManager:
                 except:
                     pass
             self._settings.save()
-        # if num == self.get_active_number() and self.is_active_a_friend():
-        #     self.update()
 
     def friend_public_key(self, num):
         return self._contacts[num].tox_id
@@ -277,22 +279,9 @@ class ContactsManager:
         :param num: number of friend in list
         """
         friend = self._contacts[num]
-        try:
-            index = list(map(lambda x: x[0], self._settings['friends_aliases'])).index(friend.tox_id)
-            del self._settings['friends_aliases'][index]
-        except:
-            pass
-        if friend.tox_id in self._settings['notes']:
-            del self._settings['notes'][friend.tox_id]
-        self._settings.save()
-        self._history.delete_history(friend)
+        self._cleanup_contact_data(friend)
         self._tox.friend_delete(friend.number)
-        del self._contacts[num]
-        self._screen.friends_list.takeItem(num)
-        if num == self._active_contact:  # active friend was deleted
-            self.set_active(0 if len(self._contacts) else -1)
-        data = self._tox.get_savedata()
-        self._profile_manager.save_profile(data)
+        self._delete_contact(num)
 
     def add_friend(self, tox_id):
         """
@@ -302,12 +291,8 @@ class ContactsManager:
         self._history.add_friend_to_db(tox_id)
         friend = self._contact_provider.get_friend_by_public_key(tox_id)
         self._contacts.append(friend)
-        friend.reset_avatar()
-
-    def add_group(self, group_number):
-        group = self._contact_provider.get_group_by_number(group_number)
-        self._contacts.append(group)
-        group.reset_avatar()
+        friend.reset_avatar(self._settings['identicons'])
+        self._save_profile()
 
     def block_user(self, tox_id):
         """
@@ -343,7 +328,19 @@ class ContactsManager:
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_group_chats(self):
-        return list(filter(lambda c: type(c) is not Friend, self._contacts))  # TODO: fix after gc implementation
+        return list(filter(lambda c: type(c) is GroupChat, self._contacts))
+
+    def add_group(self, group_number):
+        group = self._contact_provider.get_group_by_number(group_number)
+        self._contacts.append(group)
+        group.reset_avatar(self._settings['identicons'])
+        self._save_profile()
+
+    def delete_group(self, group_number):
+        group = self.get_group_by_number(group_number)
+        self._cleanup_contact_data(group)
+        num = self._contacts.index(group)
+        self._delete_contact(num)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Friend requests
@@ -454,3 +451,25 @@ class ContactsManager:
         pixmap = QtGui.QPixmap(avatar_path)
         self._screen.account_avatar.setPixmap(pixmap.scaled(width, width,
                                                             QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
+
+    def _save_profile(self):
+        data = self._tox.get_savedata()
+        self._profile_manager.save_profile(data)
+
+    def _cleanup_contact_data(self, contact):
+        try:
+            index = list(map(lambda x: x[0], self._settings['friends_aliases'])).index(contact.tox_id)
+            del self._settings['friends_aliases'][index]
+        except:
+            pass
+        if contact.tox_id in self._settings['notes']:
+            del self._settings['notes'][contact.tox_id]
+        self._settings.save()
+        self._history.delete_history(contact)
+
+    def _delete_contact(self, num):
+        del self._contacts[num]
+        self._screen.friends_list.takeItem(num)
+        if num == self._active_contact:  # active friend was deleted
+            self.set_active(0 if len(self._contacts) else -1)
+        self._save_profile()

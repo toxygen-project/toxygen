@@ -39,4 +39,4 @@ class FriendFactory:
         Method-factory
         :return: new widget for friend instance
         """
-        return self._items_factory.create_friend_item()
+        return self._items_factory.create_contact_item()

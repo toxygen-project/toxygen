@@ -18,11 +18,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setAcceptDrops(True)
         self._saved = False
         self._profile = None
-        self._file_transfer_handler = self._history_loader = self._calls_manager = None
+        self._file_transfer_handler = self._history_loader =  self._groups_service = self._calls_manager = None
         self.initUI()
 
     def set_dependencies(self, widget_factory, tray, contacts_manager, messenger, profile, plugins_loader,
-                         file_transfer_handler, history_loader, calls_manager):
+                         file_transfer_handler, history_loader, calls_manager, groups_service):
         self._widget_factory = widget_factory
         self._tray = tray
         self._contacts_manager = contacts_manager
@@ -31,6 +31,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._file_transfer_handler = file_transfer_handler
         self._history_loader = history_loader
         self._calls_manager = calls_manager
+        self._groups_service = groups_service
         self.messageEdit.set_messenger(messenger)
 
     def show(self):
@@ -414,7 +415,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.account_name.setGeometry(QtCore.QRect(100, 15, self.width() - 560, 25))
         self.account_status.setGeometry(QtCore.QRect(100, 35, self.width() - 560, 25))
         self.messageEdit.setFocus()
-        #self.profile.update()
 
     def keyPressEvent(self, event):
         key, modifiers = event.key(), event.modifiers()
@@ -598,7 +598,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if contact is None or item is None:
             return
         generator = contact.get_context_menu_generator()
-        self.listMenu = generator.generate(self._plugins_loader, self._contacts_manager, self, self._settings, number)
+        self.listMenu = generator.generate(self._plugins_loader, self._contacts_manager, self, self._settings, number,
+                                           self._groups_service)
         parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
         self.listMenu.move(parent_position + pos)
         self.listMenu.show()

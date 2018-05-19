@@ -81,16 +81,28 @@ class BaseContactMenuGenerator:
     def __init__(self, contact):
         self._contact = contact
 
-    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number):
+    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number, groups_service):
         return ContactMenuBuilder().build()
+
+    def _generate_copy_menu_builder(self, main_screen):
+        copy_menu_builder = ContactMenuBuilder()
+        (copy_menu_builder
+         .with_name(util_ui.tr('Copy'))
+         .with_action(util_ui.tr('Name'), lambda: main_screen.copy_text(self._contact.name))
+         .with_action(util_ui.tr('Status message'), lambda: main_screen.copy_text(self._contact.status_message))
+         .with_action(util_ui.tr('Public key'), lambda: main_screen.copy_text(self._contact.tox_id))
+         )
+
+        return copy_menu_builder
 
 
 class FriendMenuGenerator(BaseContactMenuGenerator):
 
-    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number):
+    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number, groups_service):
         history_menu_builder = self._generate_history_menu_builder(main_screen, number)
         copy_menu_builder = self._generate_copy_menu_builder(main_screen)
         plugins_menu_builder = self._generate_plugins_menu_builder(plugin_loader, number)
+        groups_menu_builder = self._generate_groups_menu(contacts_manager, groups_service)
 
         allowed = self._contact.tox_id in settings['auto_accept_from_friends']
         auto = util_ui.tr('Disallow auto accept') if allowed else util_ui.tr('Allow auto accept')
@@ -105,6 +117,7 @@ class FriendMenuGenerator(BaseContactMenuGenerator):
                 .with_action(util_ui.tr('Block friend'), lambda: main_screen.block_friend(number))
                 .with_action(util_ui.tr('Notes'), lambda: main_screen.show_note(self._contact))
                 .with_optional_submenu(plugins_menu_builder)
+                .with_optional_submenu(groups_menu_builder)
                 ).build()
 
         return menu
@@ -125,17 +138,6 @@ class FriendMenuGenerator(BaseContactMenuGenerator):
 
         return history_menu_builder
 
-    def _generate_copy_menu_builder(self, main_screen):
-        copy_menu_builder = ContactMenuBuilder()
-        (copy_menu_builder
-         .with_name(util_ui.tr('Copy'))
-         .with_action(util_ui.tr('Name'), lambda: main_screen.copy_text(self._contact.name))
-         .with_action(util_ui.tr('Status message'), lambda: main_screen.copy_text(self._contact.status_message))
-         .with_action(util_ui.tr('Public key'), lambda: main_screen.copy_text(self._contact.tox_id))
-         )
-
-        return copy_menu_builder
-
     @staticmethod
     def _generate_plugins_menu_builder(plugin_loader, number):
         if plugin_loader is None:
@@ -151,7 +153,30 @@ class FriendMenuGenerator(BaseContactMenuGenerator):
 
         return plugins_menu_builder
 
-    def _generate_groups_menu(self, contacts_manager):  # TODO: fix
+    def _generate_groups_menu(self, contacts_manager, groups_service):
         chats = contacts_manager.get_group_chats()
         if not len(chats) or self._contact.status is None:
             return None
+        groups_menu_builder = ContactMenuBuilder()
+        (groups_menu_builder
+         .with_name(util_ui.tr('Invite to group'))
+         .with_actions([(g.name, lambda: groups_service.invite_friend(self._contact.number, g.number)) for g in chats])
+         )
+
+        return groups_menu_builder
+
+
+class GroupMenuGenerator(BaseContactMenuGenerator):
+
+    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number, groups_service):
+        copy_menu_builder = self._generate_copy_menu_builder(main_screen)
+
+        builder = ContactMenuBuilder()
+        menu = (builder
+                .with_action(util_ui.tr('Set alias'), lambda: main_screen.set_alias(number))
+                .with_submenu(copy_menu_builder)
+                .with_action(util_ui.tr('Leave group'), lambda: groups_service.leave_group(self._contact.number))
+                .with_action(util_ui.tr('Notes'), lambda: main_screen.show_note(self._contact))
+                ).build()
+
+        return menu

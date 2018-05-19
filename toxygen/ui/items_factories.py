@@ -2,13 +2,13 @@ from ui.contact_items import *
 from ui.messages_widgets import *
 
 
-class FriendItemsFactory:
+class ContactItemsFactory:
 
     def __init__(self, settings, main_screen):
         self._settings = settings
         self._friends_list = main_screen.friends_list
 
-    def create_friend_item(self):
+    def create_contact_item(self):
         item = ContactItem(self._settings)
         elem = QtWidgets.QListWidgetItem(self._friends_list)
         elem.setSizeHint(QtCore.QSize(250, item.height()))

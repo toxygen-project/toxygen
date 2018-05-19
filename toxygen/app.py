@@ -25,7 +25,7 @@ from av.calls_manager import CallsManager
 from history.database import Database
 from ui.widgets_factory import WidgetsFactory
 from smileys.smileys import SmileyLoader
-from ui.items_factories import MessagesItemsFactory, FriendItemsFactory
+from ui.items_factories import MessagesItemsFactory, ContactItemsFactory
 from messenger.messenger import Messenger
 from network.tox_dns import ToxDns
 from history.history import History
@@ -301,9 +301,10 @@ class App:
         self._ms = MainWindow(self._settings, self._tray)
         db = Database(self._path.replace('.tox', '.db'), self._toxes)
 
-        friend_items_factory = FriendItemsFactory(self._settings, self._ms)
-        self._friend_factory = FriendFactory(self._profile_manager, self._settings, self._tox, db, friend_items_factory)
-        self._group_factory = GroupFactory()
+        contact_items_factory = ContactItemsFactory(self._settings, self._ms)
+        self._friend_factory = FriendFactory(self._profile_manager, self._settings,
+                                             self._tox, db, contact_items_factory)
+        self._group_factory = GroupFactory(self._profile_manager, self._settings, self._tox, db, contact_items_factory)
         self._contacts_provider = ContactProvider(self._tox, self._friend_factory, self._group_factory)
         profile = Profile(self._profile_manager, self._tox, self._ms, self._contacts_provider, self._reset)
         self._plugin_loader = PluginLoader(self._tox, self._toxes, profile, self._settings)
@@ -329,7 +330,8 @@ class App:
                                          self._toxes, self._version, self._groups_service)
         self._tray = tray.init_tray(profile, self._settings, self._ms)
         self._ms.set_dependencies(widgets_factory, self._tray, self._contacts_manager, self._messenger, profile,
-                                  self._plugin_loader, self._file_transfer_handler, history, self._calls_manager)
+                                  self._plugin_loader, self._file_transfer_handler, history, self._calls_manager,
+                                  self._groups_service)
 
         self._tray.show()
         self._ms.show()

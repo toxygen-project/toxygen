@@ -398,8 +398,26 @@ def group_self_join(contacts_provider):
 
 def group_peer_join(contacts_provider):
     def wrapped(tox, group_number, peer_id, user_data):
-        gc = contacts_provider.get_group_by_number(group_number)
-        gc.add_peer(peer_id)
+        group = contacts_provider.get_group_by_number(group_number)
+        group.add_peer(peer_id)
+
+    return wrapped
+
+
+def group_peer_name(contacts_provider):
+    def wrapped(tox, group_number, peer_id, name, length, user_data):
+        group = contacts_provider.get_group_by_number(group_number)
+        peer = group.get_peer(peer_id)
+        peer.name = str(name[:length])
+
+    return wrapped
+
+
+def group_peer_status(contacts_provider):
+    def wrapped(tox, group_number, peer_id, peer_status, user_data):
+        group = contacts_provider.get_group_by_number(group_number)
+        peer = group.get_peer(peer_id)
+        peer.status = peer_status
 
     return wrapped
 
@@ -463,3 +481,5 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     tox.callback_group_invite(group_invite(groups_service), 0)
     tox.callback_group_self_join(group_self_join(contacts_provider), 0)
     tox.callback_group_peer_join(group_peer_join(contacts_provider), 0)
+    tox.callback_group_peer_name(group_peer_name(contacts_provider), 0)
+    tox.callback_group_peer_status(group_peer_status(contacts_provider), 0)
