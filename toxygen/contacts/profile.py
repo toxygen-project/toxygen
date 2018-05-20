@@ -67,7 +67,7 @@ class Profile(basecontact.BaseContact):
     # Reset
     # -----------------------------------------------------------------------------------------------------------------
 
-    def _restart(self):
+    def restart(self):
         """
         Recreate tox instance
         """
@@ -80,6 +80,6 @@ class Profile(basecontact.BaseContact):
         contacts = self._contacts_provider.get_all()
         if self.status is None or all(list(map(lambda x: x.status is None, contacts))) and len(contacts):
             self._waiting_for_reconnection = True
-            self._restart()
+            self.restart()
             self._timer = threading.Timer(50, self._reconnect)
             self._timer.start()

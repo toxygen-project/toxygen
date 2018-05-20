@@ -374,8 +374,10 @@ class ClickableLabel(QtWidgets.QLabel):
 
 class SearchScreen(QtWidgets.QWidget):
 
-    def __init__(self, messages, width, *args):
+    def __init__(self, contacts_manager, history_loader, messages, width, *args):
         super().__init__(*args)
+        self._contacts_manager = contacts_manager
+        self._history_loader = history_loader
         self.setMaximumSize(width, 40)
         self.setMinimumSize(width, 40)
         self._messages = messages
@@ -426,24 +428,24 @@ class SearchScreen(QtWidgets.QWidget):
         self.search_text.setFocus()
 
     def search(self):
-        Profile.get_instance().update()
+        self._contacts_manager.update()
         text = self.search_text.text()
-        friend = Profile.get_instance().get_curr_friend()
-        if text and friend and util.is_re_valid(text):
-            index = friend.search_string(text)
+        contact = self._contacts_manager.get_curr_contact()
+        if text and contact and util.is_re_valid(text):
+            index = contact.search_string(text)
             self.load_messages(index)
 
     def prev(self):
-        friend = Profile.get_instance().get_curr_friend()
-        if friend is not None:
-            index = friend.search_prev()
+        contact = self._contacts_manager.get_curr_contact()
+        if contact is not None:
+            index = contact.search_prev()
             self.load_messages(index)
 
     def next(self):
-        friend = Profile.get_instance().get_curr_friend()
+        contact = self._contacts_manager.get_curr_contact()
         text = self.search_text.text()
-        if friend is not None:
-            index = friend.search_next()
+        if contact is not None:
+            index = contact.search_next()
             if index is not None:
                 count = self._messages.count()
                 index += count
@@ -456,10 +458,9 @@ class SearchScreen(QtWidgets.QWidget):
     def load_messages(self, index):
         text = self.search_text.text()
         if index is not None:
-            profile = Profile.get_instance()
             count = self._messages.count()
             while count + index < 0:
-                profile.load_history()
+                self._history_loader.load_history()
                 count = self._messages.count()
             index += count
             item = self._messages.item(index)

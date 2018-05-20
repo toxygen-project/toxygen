@@ -1,28 +1,26 @@
 import utils.util as util
-from contacts import profile
 import os
 import importlib
 import inspect
 import plugins.plugin_super_class as pl
-from user_data import toxes
 import sys
+from common.tox_save import ToxSave
 
 
-class PluginLoader():
+class PluginLoader(ToxSave):
 
     def __init__(self, tox, toxes, profile, settings):
-        super().__init__()
+        super().__init__(tox)
         self._profile = profile
         self._settings = settings
         self._plugins = {}  # dict. key - plugin unique short name, value - tuple (plugin instance, is active)
-        self._tox = tox
         self._toxes = toxes
 
     def set_tox(self, tox):
         """
         New tox instance
         """
-        self._tox = tox
+        super().set_tox(tox)
         for value in self._plugins.values():
             value[0].set_tox(tox)
 

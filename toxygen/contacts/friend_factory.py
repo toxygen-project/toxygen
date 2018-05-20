@@ -1,11 +1,13 @@
 from contacts.friend import Friend
+from common.tox_save import ToxSave
 
 
-class FriendFactory:
+class FriendFactory(ToxSave):
 
     def __init__(self, profile_manager, settings, tox, db, items_factory):
+        super().__init__(tox)
         self._profile_manager = profile_manager
-        self._settings, self._tox = settings, tox
+        self._settings = settings
         self._db = db
         self._items_factory = items_factory
 

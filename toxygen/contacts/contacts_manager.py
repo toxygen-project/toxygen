@@ -1,16 +1,17 @@
 from contacts.friend import Friend
 from contacts.group_chat import GroupChat
 from messenger.messages import *
+from common.tox_save import ToxSave
 
 
-class ContactsManager:
+class ContactsManager(ToxSave):
     """
     Represents contacts list.
     """
 
     def __init__(self, tox, settings, screen, profile_manager, contact_provider, history, tox_dns,
                  messages_items_factory):
-        self._tox = tox
+        super().__init__(tox)
         self._settings = settings
         self._screen = screen
         self._profile_manager = profile_manager
@@ -19,6 +20,7 @@ class ContactsManager:
         self._messages_items_factory = messages_items_factory
         self._messages = screen.messages
         self._contacts, self._active_contact = [], -1
+        self._active_contact_changed = Event()
         self._sorting = settings['sorting']
         self._filter_string = ''
         self._friend_item_height = 40 if settings['compact_mode'] else 70
@@ -115,13 +117,18 @@ class ContactsManager:
             # else:
             #     self._screen.call_finished()
             self._set_current_contact_data(contact)
-
+            self._active_contact_changed(contact)
         except Exception as ex:  # no friend found. ignore
             util.log('Friend value: ' + str(value))
             util.log('Error in set active: ' + str(ex))
             raise
 
-    active_friend = property(get_active, set_active)
+    active_contact = property(get_active, set_active)
+
+    def get_active_contact_changed(self):
+        return self._active_contact_changed
+
+    active_contact_changed = property(get_active_contact_changed)
 
     def set_active_by_number_and_type(self, number, is_friend):  # TODO: by id
         for i in range(len(self._contacts)):

@@ -18,6 +18,9 @@ class CallsManager:
         self._call_started_event = event.Event()  # friend_number, audio, video, is_outgoing
         self._call_finished_event = event.Event()  # friend_number, is_declined
 
+    def set_toxav(self, toxav):
+        self._call.set_toxav(toxav)
+
     # -----------------------------------------------------------------------------------------------------------------
     # Events
     # -----------------------------------------------------------------------------------------------------------------

@@ -33,6 +33,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._history_loader = history_loader
         self._calls_manager = calls_manager
         self._groups_service = groups_service
+        self._contacts_manager.active_contact_changed.add_callback(self._new_contact_selected)
         self.messageEdit.set_messenger(messenger)
 
     def show(self):
@@ -284,6 +285,7 @@ class MainWindow(QtWidgets.QMainWindow):
         pixmap = QtGui.QPixmap(util.join_path(util.get_images_directory(), 'menu.png'))
         icon = QtGui.QIcon(pixmap)
         self.groupMenuButton.setIcon(icon)
+        self.groupMenuButton.setIconSize(QtCore.QSize(45, 60))
         self.update_call_state('call')
         self.typing = QtWidgets.QLabel(Form)
         self.typing.setGeometry(QtCore.QRect(500, 25, 50, 30))
@@ -331,6 +333,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.peers_list.setSpacing(1)
         self.peers_list.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
         self.peers_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.peers_list.verticalScrollBar().setContextMenuPolicy(QtCore.Qt.NoContextMenu)
+        self.peers_list.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
 
     def initUI(self):
         self.setMinimumSize(920, 500)
@@ -431,6 +435,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.account_name.setGeometry(QtCore.QRect(100, 15, self.width() - 560, 25))
         self.account_status.setGeometry(QtCore.QRect(100, 35, self.width() - 560, 25))
         self.messageEdit.setFocus()
+        self._contacts_manager.update()
 
     def keyPressEvent(self, event):
         key, modifiers = event.key(), event.modifiers()
@@ -564,7 +569,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def send_smiley(self):
         self.menu.hide()
-        if self._contacts_manager.active_friend + 1:
+        if self._contacts_manager.get_curr_contact() is not None:
             self.smiley = self._widget_factory.create_smiley_window(self)
             self.smiley.setGeometry(QtCore.QRect(self.x() if self._settings['mirror_mode'] else 270 + self.x(),
                                                  self.y() + self.height() - 200,
@@ -687,11 +692,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def friend_click(self, index):
         num = index.row()
-        self._contacts_manager.set_active(num)
+        self._contacts_manager.active_contact = num
         self.groupMenuButton.setVisible(not self._contacts_manager.is_active_a_friend())
-        if self._should_show_group_peers_list:
-            self._toggle_gc_peers_list()
-        self.resizeEvent()
 
     def mouseReleaseEvent(self, event):
         pos = self.connection_status.pos()
@@ -711,14 +713,21 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         if self._contacts_manager.get_curr_friend() is None:
             return
-        self.search_field = SearchScreen(self.messages, self.messages.width(), self.messages.parent())
+        self.search_field = self._widget_factory.create_search_screen(self.messages)
         x, y = self.messages.x(), self.messages.y() + self.messages.height() - 40
         self.search_field.setGeometry(x, y, self.messages.width(), 40)
         self.messages.setGeometry(x, self.messages.y(), self.messages.width(), self.messages.height() - 40)
+        if self._should_show_group_peers_list:
+            self.peers_list.setFixedHeight(self.peers_list.height() - 40)
         self.search_field.show()
 
     def _toggle_gc_peers_list(self):
         self._should_show_group_peers_list = not self._should_show_group_peers_list
+        self.resizeEvent()
         if self._should_show_group_peers_list:
             self._groups_service.generate_peers_list()
+
+    def _new_contact_selected(self, contact):
+        if self._should_show_group_peers_list:
+            self._toggle_gc_peers_list()
         self.resizeEvent()

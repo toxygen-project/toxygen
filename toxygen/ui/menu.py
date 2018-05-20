@@ -281,7 +281,7 @@ class NetworkSettings(CenteredWidget):
     def __init__(self, settings, reset):
         super().__init__()
         self._settings = settings
-        self.reset = reset
+        self._reset = reset
         self.initUI()
         self.center()
 
@@ -360,7 +360,7 @@ class NetworkSettings(CenteredWidget):
             self._settings['download_nodes_list'] = self.nodes.isChecked()
             self._settings.save()
             # recreate tox instance
-            self._profile.reset()
+            self._reset()
             self.close()
         except Exception as ex:
             log('Exception in restart: ' + str(ex))

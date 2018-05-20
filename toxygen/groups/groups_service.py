@@ -11,6 +11,11 @@ class GroupsService(tox_save.ToxSave):
         self._contacts_provider = contacts_provider
         self._peers_list_widget = main_screen.peers_list
 
+    def set_tox(self, tox):
+        super().set_tox(tox)
+        for group in self._get_all_groups():
+            group.set_tox(tox)
+
     # -----------------------------------------------------------------------------------------------------------------
     # Groups creation
     # -----------------------------------------------------------------------------------------------------------------
@@ -81,3 +86,6 @@ class GroupsService(tox_save.ToxSave):
 
     def _get_friend(self, friend_number):
         return self._contacts_provider.get_friend_by_number(friend_number)
+
+    def _get_all_groups(self):
+        return self._contacts_provider.get_all_groups()

@@ -1,12 +1,13 @@
 from messenger.messages import *
 from ui.contact_items import *
 import utils.util as util
+from common.tox_save import ToxSave
 
 
-class FileTransfersHandler:
+class FileTransfersHandler(ToxSave):
 
     def __init__(self, tox, settings, contact_provider, file_transfers_message_service, profile):
-        self._tox = tox
+        super().__init__(tox)
         self._settings = settings
         self._contact_provider = contact_provider
         self._file_transfers_message_service = file_transfers_message_service

@@ -6,7 +6,7 @@ from ui.groups_widgets import *
 class WidgetsFactory:
 
     def __init__(self, settings, profile, profile_manager, contacts_manager, file_transfer_handler, smiley_loader,
-                 plugin_loader, toxes, version, groups_service):
+                 plugin_loader, toxes, version, groups_service, history):
         self._settings = settings
         self._profile = profile
         self._profile_manager = profile_manager
@@ -17,6 +17,7 @@ class WidgetsFactory:
         self._toxes = toxes
         self._version = version
         self._groups_service = groups_service
+        self._history = history
 
     def create_screenshot_window(self, *args):
         return ScreenShotWindow(self._file_transfer_handler, self._contacts_manager, *args)
@@ -31,7 +32,7 @@ class WidgetsFactory:
         return ProfileSettings(self._profile, self._profile_manager,  self._settings, self._toxes)
 
     def create_network_settings_window(self):
-        return NetworkSettings(self._settings, self._profile.reset)
+        return NetworkSettings(self._settings, self._profile.restart)
 
     def create_audio_settings_window(self):
         return AudioSettings(self._settings)
@@ -71,3 +72,6 @@ class WidgetsFactory:
 
     def create_join_group_screen_window(self):
         return JoinGroupScreen(self._groups_service)
+
+    def create_search_screen(self, messages):
+        return SearchScreen(self._contacts_manager, self._history, messages, messages.parent())

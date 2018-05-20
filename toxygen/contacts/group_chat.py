@@ -3,13 +3,14 @@ from contacts.contact_menu import GroupMenuGenerator
 import utils.util as util
 from groups.group_peer import GroupChatPeer
 from wrapper import toxcore_enums_and_consts as constants
+from common.tox_save import ToxSave
 
 
-class GroupChat(contact.Contact):
+class GroupChat(contact.Contact, ToxSave):
 
     def __init__(self, tox, profile_manager, message_getter, number, name, status_message, widget, tox_id):
         super().__init__(profile_manager, message_getter, number, name, status_message, widget, tox_id)
-        self._tox = tox
+        ToxSave.__init__(self, tox)
         self.set_status(constants.TOX_USER_STATUS['NONE'])
         self._peers = []
         self._add_self_to_gc()

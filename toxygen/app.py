@@ -291,7 +291,11 @@ class App:
         self._tox = self._create_tox(data)
         self._start_threads()
 
-        # TODO: foreach in list of tox savers set_tox
+        tox_savers = [self._friend_factory, self._group_factory, self._plugin_loader, self._contacts_manager,
+                      self._contacts_provider, self._messenger, self._file_transfer_handler, self._groups_service]
+        for tox_saver in tox_savers:
+            tox_saver.set_tox(self._tox)
+        self._calls_manager.set_toxav(self._tox.AV)
 
         return self._tox
 
@@ -327,7 +331,7 @@ class App:
         self._groups_service = GroupsService(self._tox, self._contacts_manager, self._contacts_provider, self._ms)
         widgets_factory = WidgetsFactory(self._settings, profile, self._profile_manager, self._contacts_manager,
                                          self._file_transfer_handler, self._smiley_loader, self._plugin_loader,
-                                         self._toxes, self._version, self._groups_service)
+                                         self._toxes, self._version, self._groups_service, history)
         self._tray = tray.init_tray(profile, self._settings, self._ms, self._toxes)
         self._ms.set_dependencies(widgets_factory, self._tray, self._contacts_manager, self._messenger, profile,
                                   self._plugin_loader, self._file_transfer_handler, history, self._calls_manager,

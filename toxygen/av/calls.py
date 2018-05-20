@@ -36,6 +36,9 @@ class AV:
         self._video_width = 640
         self._video_height = 480
 
+    def set_toxav(self, toxav):
+        self._toxav = toxav
+
     def stop(self):
         self._running = False
         self.stop_audio_thread()

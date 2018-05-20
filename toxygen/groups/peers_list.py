@@ -2,6 +2,8 @@ from PyQt5 import QtWidgets, QtCore
 from ui.group_peers_list import PeerItem, PeerTypeItem
 import utils.ui as util_ui
 from wrapper.toxcore_enums_and_consts import *
+from ui.widgets import *
+
 
 # -----------------------------------------------------------------------------------------------------------------
 # Builder
@@ -47,16 +49,16 @@ class PeerListBuilder:
         return parent
 
     def _add_peer_item(self, peer, parent):
-        item = PeerItem(peer, self._handler, parent.width())
+        item = PeerItem(peer, self._handler, parent.width(), parent)
         self._add_item(parent, item)
 
     def _add_peer_type_item(self, text, parent):
-        item = PeerTypeItem(text, parent.width())
+        item = PeerTypeItem(text, parent.width(), parent)
         self._add_item(parent, item)
 
     @staticmethod
     def _add_item(parent, item):
-        elem = QtWidgets.QListWidgetItem()
+        elem = QtWidgets.QListWidgetItem(parent)
         elem.setSizeHint(QtCore.QSize(parent.width(), item.height()))
         parent.addItem(elem)
         parent.setItemWidget(elem, item)

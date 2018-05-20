@@ -8,7 +8,7 @@ class PeerItem(QtWidgets.QWidget):
         super().__init__(parent)
         self.resize(QtCore.QSize(width, 34))
         self.nameLabel = DataLabel(self)
-        self.nameLabel.setGeometry(0, 0, width, 34)
+        self.nameLabel.setGeometry(5, 0, width - 5, 34)
         name = peer.name
         if peer.is_current_user:
             name += util_ui.tr(' (You)')
@@ -29,5 +29,5 @@ class PeerTypeItem(QtWidgets.QWidget):
         super().__init__(parent)
         self.resize(QtCore.QSize(width, 34))
         self.nameLabel = DataLabel(self)
-        self.nameLabel.setGeometry(0, 0, width, 34)
+        self.nameLabel.setGeometry(5, 0, width - 5, 34)
         self.nameLabel.setText(text)

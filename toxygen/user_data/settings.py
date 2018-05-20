@@ -146,7 +146,8 @@ class Settings(dict):
             'font': 'Times New Roman',
             'update': 1,
             'group_notifications': True,
-            'download_nodes_list': False
+            'download_nodes_list': False,
+            'notify_all_gc': False
         }
 
     @staticmethod
