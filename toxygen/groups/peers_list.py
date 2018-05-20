@@ -1,6 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
 from ui.group_peers_list import PeerItem, PeerTypeItem
-import utils.ui as util_ui
 from wrapper.toxcore_enums_and_consts import *
 from ui.widgets import *
 
@@ -35,18 +33,16 @@ class PeerListBuilder:
 
         return self
 
-    def build(self, parent):
-        parent.clear()
+    def build(self, list_widget):
+        list_widget.clear()
 
         for i in range(self._index):
             if i in self._peers:
                 peer = self._peers[i]
-                self._add_peer_item(peer, parent)
+                self._add_peer_item(peer, list_widget)
             else:
                 title = self._titles[i]
-                self._add_peer_type_item(title, parent)
-
-        return parent
+                self._add_peer_type_item(title, list_widget)
 
     def _add_peer_item(self, peer, parent):
         item = PeerItem(peer, self._handler, parent.width(), parent)
@@ -75,7 +71,7 @@ class PeerListBuilder:
 class PeersListGenerator:
 
     @staticmethod
-    def generate(peers_list, groups_service, parent, chat_id):
+    def generate(peers_list, groups_service, list_widget, chat_id):
         admin_title = util_ui.tr('Administrator')
         moderators_title = util_ui.tr('Moderators')
         users_title = util_ui.tr('Users')
@@ -87,15 +83,22 @@ class PeersListGenerator:
         observers = list(filter(lambda p: p.role == TOX_GROUP_ROLE['OBSERVER'], peers_list))
 
         builder = (PeerListBuilder()
-                   .with_click_handler(lambda peer_id: groups_service.peer_selected(chat_id, peer_id))
-                   .with_title(admin_title)
-                   .with_peers(admins)
-                   .with_title(moderators_title)
-                   .with_peers(moderators)
-                   .with_title(users_title)
-                   .with_peers(users)
-                   .with_title(observers_title)
-                   .with_peers(observers)
-                   )
+                   .with_click_handler(lambda peer_id: groups_service.peer_selected(chat_id, peer_id)))
+        if len(admins):
+            (builder
+             .with_title(admin_title)
+             .with_peers(admins))
+        if len(moderators):
+            (builder
+             .with_title(moderators_title)
+             .with_peers(moderators))
+        if len(users):
+            (builder
+             .with_title(users_title)
+             .with_peers(users))
+        if len(observers):
+            (builder
+             .with_title(observers_title)
+             .with_peers(observers))
 
-        return builder.build(parent)
+        builder.build(list_widget)

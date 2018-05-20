@@ -68,6 +68,8 @@ class GroupsService(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def generate_peers_list(self):
+        if not self._contacts_manager.is_active_a_group():
+            return
         group = self._contacts_manager.get_curr_contact()
         PeersListGenerator().generate(group.peers, self, self._peers_list_widget, group.tox_id)
 

@@ -144,6 +144,9 @@ class ContactsManager(ToxSave):
     def is_active_a_friend(self):
         return type(self.get_curr_contact()) is Friend
 
+    def is_active_a_group(self):
+        return type(self.get_curr_contact()) is GroupChat
+
     # -----------------------------------------------------------------------------------------------------------------
     # Filtration
     # -----------------------------------------------------------------------------------------------------------------

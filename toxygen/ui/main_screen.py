@@ -435,7 +435,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.account_name.setGeometry(QtCore.QRect(100, 15, self.width() - 560, 25))
         self.account_status.setGeometry(QtCore.QRect(100, 35, self.width() - 560, 25))
         self.messageEdit.setFocus()
-        self._contacts_manager.update()
 
     def keyPressEvent(self, event):
         key, modifiers = event.key(), event.modifiers()

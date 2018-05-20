@@ -401,28 +401,40 @@ def group_self_join(contacts_provider, groups_service):
     return wrapped
 
 
-def group_peer_join(contacts_provider):
+def group_peer_join(contacts_provider, groups_service):
     def wrapped(tox, group_number, peer_id, user_data):
         group = contacts_provider.get_group_by_number(group_number)
         group.add_peer(peer_id)
+        invoke_in_main_thread(groups_service.generate_peers_list)
 
     return wrapped
 
 
-def group_peer_name(contacts_provider):
+def group_peer_exit(contacts_provider, groups_service):
+    def wrapped(tox, group_number, peer_id, message, length, user_data):
+        group = contacts_provider.get_group_by_number(group_number)
+        group.remove_peer(peer_id)
+        invoke_in_main_thread(groups_service.generate_peers_list)
+
+    return wrapped
+
+
+def group_peer_name(contacts_provider, groups_service):
     def wrapped(tox, group_number, peer_id, name, length, user_data):
         group = contacts_provider.get_group_by_number(group_number)
         peer = group.get_peer_by_id(peer_id)
         peer.name = str(name[:length])
+        invoke_in_main_thread(groups_service.generate_peers_list)
 
     return wrapped
 
 
-def group_peer_status(contacts_provider):
+def group_peer_status(contacts_provider, groups_service):
     def wrapped(tox, group_number, peer_id, peer_status, user_data):
         group = contacts_provider.get_group_by_number(group_number)
         peer = group.get_peer_by_id(peer_id)
         peer.status = peer_status
+        invoke_in_main_thread(groups_service.generate_peers_list)
 
     return wrapped
 
@@ -456,6 +468,8 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     :param main_window: MainWindow instance
     :param tray: tray (for notifications)
     :param messenger: Messenger instance
+    :param groups_service: GroupsService instance
+    :param contacts_provider: ContactsProvider instance
     """
     # self callbacks
     tox.callback_self_connection_status(self_connection_status(tox, profile), 0)
@@ -493,7 +507,8 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     tox.callback_group_message(group_message(main_window, tray, tox, messenger, settings, profile), 0)
     tox.callback_group_invite(group_invite(groups_service), 0)
     tox.callback_group_self_join(group_self_join(contacts_provider, groups_service), 0)
-    tox.callback_group_peer_join(group_peer_join(contacts_provider), 0)
-    tox.callback_group_peer_name(group_peer_name(contacts_provider), 0)
-    tox.callback_group_peer_status(group_peer_status(contacts_provider), 0)
+    tox.callback_group_peer_join(group_peer_join(contacts_provider, groups_service), 0)
+    tox.callback_group_peer_exit(group_peer_exit(contacts_provider, groups_service), 0)
+    tox.callback_group_peer_name(group_peer_name(contacts_provider, groups_service), 0)
+    tox.callback_group_peer_status(group_peer_status(contacts_provider, groups_service), 0)
     tox.callback_group_topic(group_topic(contacts_provider), 0)

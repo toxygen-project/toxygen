@@ -41,6 +41,10 @@ class GroupChat(contact.Contact, ToxSave):
                              is_current_user)
         self._peers.append(peer)
 
+    def remove_peer(self, peer_id):
+        peer = self.get_peer_by_id(peer_id)
+        self._peers.remove(peer)
+
     def get_peer_by_id(self, peer_id):
         peers = list(filter(lambda p: p.id == peer_id, self._peers))
 
