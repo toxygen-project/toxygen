@@ -279,7 +279,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.videocallButton.clicked.connect(lambda: self._calls_manager.call_click(True, True))
         self.groupMenuButton = QtWidgets.QPushButton(Form)
         self.groupMenuButton.setGeometry(QtCore.QRect(470, 10, 50, 50))
-        self.groupMenuButton.clicked.connect(self._show_gc_peers_list)
+        self.groupMenuButton.clicked.connect(self._toggle_gc_peers_list)
         self.groupMenuButton.setVisible(False)
         pixmap = QtGui.QPixmap(util.join_path(util.get_images_directory(), 'menu.png'))
         icon = QtGui.QIcon(pixmap)
@@ -324,6 +324,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.messages.verticalScrollBar().valueChanged.connect(load)
         self.messages.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
         self.messages.setSelectionMode(QtWidgets.QAbstractItemView.ExtendedSelection)
+
+        self.peers_list = QtWidgets.QListWidget(widget)
+        self.peers_list.setGeometry(0, 0, 0, 0)
+        self.peers_list.setObjectName("peersList")
+        self.peers_list.setSpacing(1)
+        self.peers_list.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAsNeeded)
+        self.peers_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
 
     def initUI(self):
         self.setMinimumSize(920, 500)
@@ -403,14 +410,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.close()
 
     def resizeEvent(self, *args, **kwargs):
+        width = self.width() - 270
         if not self._should_show_group_peers_list:
-            self.messages.setGeometry(0, 0, self.width() - 270, self.height() - 155)
+            self.messages.setGeometry(0, 0, width, self.height() - 155)
+            self.peers_list.setGeometry(0, 0, 0, 0)
         else:
-            self.messages.setGeometry(0, 0, self.width() - 450, self.height() - 155)
+            self.messages.setGeometry(0, 0, width * 3 // 4, self.height() - 155)
+            self.peers_list.setGeometry(width * 3 // 4, 0, width - width * 3 // 4, self.height() - 155)
         self.friends_list.setGeometry(0, 0, 270, self.height() - 125)
 
         self.videocallButton.setGeometry(QtCore.QRect(self.width() - 330, 10, 50, 50))
         self.callButton.setGeometry(QtCore.QRect(self.width() - 390, 10, 50, 50))
+        self.groupMenuButton.setGeometry(QtCore.QRect(self.width() - 450, 10, 50, 50))
         self.typing.setGeometry(QtCore.QRect(self.width() - 450, 20, 50, 30))
 
         self.messageEdit.setGeometry(QtCore.QRect(55, 0, self.width() - 395, 55))
@@ -678,6 +689,8 @@ class MainWindow(QtWidgets.QMainWindow):
         num = index.row()
         self._contacts_manager.set_active(num)
         self.groupMenuButton.setVisible(not self._contacts_manager.is_active_a_friend())
+        if self._should_show_group_peers_list:
+            self._toggle_gc_peers_list()
         self.resizeEvent()
 
     def mouseReleaseEvent(self, event):
@@ -704,6 +717,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.messages.setGeometry(x, self.messages.y(), self.messages.width(), self.messages.height() - 40)
         self.search_field.show()
 
-    def _show_gc_peers_list(self):
+    def _toggle_gc_peers_list(self):
         self._should_show_group_peers_list = not self._should_show_group_peers_list
+        if self._should_show_group_peers_list:
+            self._groups_service.generate_peers_list()
         self.resizeEvent()

@@ -31,18 +31,24 @@ class GroupChat(contact.Contact):
     def get_self_name(self):
         return self._peers[0].name
 
-    def add_peer(self, peer_id):
+    def add_peer(self, peer_id, is_current_user=False):
         peer = GroupChatPeer(peer_id,
                              self._tox.group_peer_get_name(self._number, peer_id),
                              self._tox.group_peer_get_status(self._number, peer_id),
                              self._tox.group_peer_get_role(self._number, peer_id),
-                             self._tox.group_peer_get_public_key(self._number, peer_id))
+                             self._tox.group_peer_get_public_key(self._number, peer_id),
+                             is_current_user)
         self._peers.append(peer)
 
     def get_peer_by_id(self, peer_id):
         peers = list(filter(lambda p: p.id == peer_id, self._peers))
 
         return peers[0]
+
+    def get_peers(self):
+        return self._peers[:]
+
+    peers = property(get_peers)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -54,4 +60,4 @@ class GroupChat(contact.Contact):
 
     def _add_self_to_gc(self):
         peer_id = self._tox.group_self_get_peer_id(self._number)
-        self.add_peer(peer_id)
+        self.add_peer(peer_id, True)

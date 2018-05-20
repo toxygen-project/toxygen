@@ -2,12 +2,13 @@
 
 class GroupChatPeer:
 
-    def __init__(self, peer_id, name, status, role, public_key):
+    def __init__(self, peer_id, name, status, role, public_key, is_current_user):
         self._peer_id = peer_id
         self._name = name
         self._status = status
         self._role = role
         self._public_key = public_key
+        self._is_current_user = is_current_user
 
     def get_id(self):
         return self._peer_id
@@ -42,3 +43,8 @@ class GroupChatPeer:
         return self._public_key
 
     public_key = property(get_public_key)
+
+    def get_is_current_user(self):
+        return self._is_current_user
+
+    is_current_user = property(get_is_current_user)

@@ -198,7 +198,7 @@ TOX_GROUP_PRIVACY_STATE = {
     # and peer ID's (but not Tox ID's) is visible to anyone with access to a node
     # storing a DHT entry for the given group.
     #
-    'TOX_GROUP_PRIVACY_STATE_PUBLIC': 0,
+    'PUBLIC': 0,
 
     #
     # The group is considered to be private. The only way to join the group is by having
@@ -208,7 +208,7 @@ TOX_GROUP_PRIVACY_STATE = {
     # the DHT is not used for any purpose at all. If a public group is set to private,
     # all DHT information related to the group will expire shortly.
     #
-    'TOX_GROUP_PRIVACY_STATE_PRIVATE': 1
+    'PRIVATE': 1
 }
 
 TOX_GROUP_ROLE = {
@@ -217,23 +217,23 @@ TOX_GROUP_ROLE = {
     # May kick and ban all other peers as well as set their role to anything (except founder).
     # Founders may also set the group password, toggle the privacy state, and set the peer limit.
     #
-    'TOX_GROUP_ROLE_FOUNDER': 0,
+    'FOUNDER': 0,
 
     #
     # May kick, ban and set the user and observer roles for peers below this role.
     # May also set the group topic.
     #
-    'TOX_GROUP_ROLE_MODERATOR': 1,
+    'MODERATOR': 1,
 
     #
     # May communicate with other peers normally.
     #
-    'TOX_GROUP_ROLE_USER': 2,
+    'USER': 2,
 
     #
     # May observe the group and ignore peers; may not communicate with other peers or with the group.
     #
-    'TOX_GROUP_ROLE_OBSERVER': 3
+    'OBSERVER': 3
 }
 
 TOX_ERR_GROUP_NEW = {
@@ -870,27 +870,27 @@ TOX_GROUP_MOD_EVENT = {
     #
     # A peer has been kicked from the group.
     #
-    'TOX_GROUP_MOD_EVENT_KICK': 0,
+    'KICK': 0,
 
     #
     # A peer has been banned from the group.
     #
-    'TOX_GROUP_MOD_EVENT_BAN': 1,
+    'BAN': 1,
 
     #
     # A peer as been given the observer role.
     #
-    'TOX_GROUP_MOD_EVENT_OBSERVER': 2,
+    'OBSERVER': 2,
 
     #
     # A peer has been given the user role.
     #
-    'TOX_GROUP_MOD_EVENT_USER': 3,
+    'USER': 3,
 
     #
     # A peer has been given the moderator role.
     #
-    'TOX_GROUP_MOD_EVENT_MODERATOR': 4,
+    'MODERATOR': 4,
 }
 
 TOX_ERR_GROUP_BAN_QUERY = {

@@ -1,13 +1,15 @@
 import common.tox_save as tox_save
 import utils.ui as util_ui
+from groups.peers_list import PeersListGenerator
 
 
 class GroupsService(tox_save.ToxSave):
 
-    def __init__(self, tox, contacts_manager, contacts_provider):
+    def __init__(self, tox, contacts_manager, contacts_provider, main_screen):
         super().__init__(tox)
         self._contacts_manager = contacts_manager
         self._contacts_provider = contacts_provider
+        self._peers_list_widget = main_screen.peers_list
 
     # -----------------------------------------------------------------------------------------------------------------
     # Groups creation
@@ -55,6 +57,17 @@ class GroupsService(tox_save.ToxSave):
     def update_group_info(self, group):
         group.name = self._tox.group_get_name(group.number)
         group.status_message = self._tox.group_get_topic(group.number)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Peers list
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def generate_peers_list(self):
+        group = self._contacts_manager.get_curr_contact()
+        PeersListGenerator().generate(group.peers, self, self._peers_list_widget, group.tox_id)
+
+    def peer_selected(self, chat_id, peer_id):
+        pass
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods

@@ -324,7 +324,7 @@ class App:
         self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider,
                                                            file_transfers_message_service, profile)
         messages_items_factory.set_file_transfers_handler(self._file_transfer_handler)
-        self._groups_service = GroupsService(self._tox, self._contacts_manager, self._contacts_provider)
+        self._groups_service = GroupsService(self._tox, self._contacts_manager, self._contacts_provider, self._ms)
         widgets_factory = WidgetsFactory(self._settings, profile, self._profile_manager, self._contacts_manager,
                                          self._file_transfer_handler, self._smiley_loader, self._plugin_loader,
                                          self._toxes, self._version, self._groups_service)
