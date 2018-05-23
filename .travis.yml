@@ -18,6 +18,7 @@ install:
   - pip install pyqt5
   - pip install pyaudio
   - pip install opencv-python
+  - pip install pydenticon
 before_script:
 # Opus
   - wget http://downloads.xiph.org/releases/opus/opus-1.0.3.tar.gz
@@ -37,7 +38,7 @@ before_script:
   - sudo ldconfig
   - cd ..
 # Toxcore
-  - git clone https://github.com/irungentoo/toxcore.git
+  - git clone https://github.com/ingvar1995/toxcore.git --branch=new_gc
   - cd toxcore
   - autoreconf -if
   - ./configure
