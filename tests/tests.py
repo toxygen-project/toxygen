@@ -1,4 +1,4 @@
-from middleware.tox_factory import *
+from toxygen.middleware.tox_factory import *
 
 
 # TODO: add new tests
