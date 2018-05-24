@@ -37,10 +37,9 @@ class GroupsService(tox_save.ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def leave_group(self, group_number):
-        group = self._get_group(group_number)
         self._tox.group_leave(group_number)
         self._contacts_manager.delete_group(group_number)
-        self._contacts_provider.remove_contact_from_cache(group.tox_id)
+        self._contacts_manager.update_groups_numbers()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Group invites

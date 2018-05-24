@@ -205,14 +205,17 @@ class ContactsManager(ToxSave):
         self.filtration_and_sorting(self._sorting, self._filter_string)
 
     # -----------------------------------------------------------------------------------------------------------------
-    # Friend getters
+    # Contact getters
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_friend_by_number(self, number):
-        return list(filter(lambda x: x.number == number and type(x) is Friend, self._contacts))[0]
+        return list(filter(lambda c: c.number == number and type(c) is Friend, self._contacts))[0]
 
     def get_group_by_number(self, number):
-        return list(filter(lambda x: x.number == number and type(x) is GroupChat, self._contacts))[0]
+        return list(filter(lambda c: c.number == number and type(c) is GroupChat, self._contacts))[0]
+
+    def get_contact_by_tox_id(self, tox_id):
+        return list(filter(lambda c: c.tox_id == tox_id, self._contacts))[0]
 
     def get_last_message(self):
         if self._active_contact + 1:
@@ -401,6 +404,14 @@ class ContactsManager(ToxSave):
             friend.number = self._tox.friend_by_public_key(friend.tox_id)
         self.update_filtration()
 
+    def update_groups_numbers(self):
+        groups = self._contact_provider.get_all_groups()
+        for i in range(len(groups)):
+            chat_id = self._tox.group_get_chat_id(i)
+            group = self.get_contact_by_tox_id(chat_id)
+            group.number = i
+        self.update_filtration()
+
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods
     # -----------------------------------------------------------------------------------------------------------------
@@ -410,7 +421,7 @@ class ContactsManager(ToxSave):
         self._load_groups()
         if len(self._contacts):
             self.set_active(0)
-        self.filtration_and_sorting(self._sorting)
+        self.update_filtration()
 
     def _load_friends(self):
         self._contacts.extend(self._contact_provider.get_all_friends())
@@ -475,6 +486,7 @@ class ContactsManager(ToxSave):
     def _delete_contact(self, num):
         if num == self._active_contact:  # active friend was deleted
             self.set_active(0 if len(self._contacts) - 1 else -1)
+        self._contact_provider.remove_contact_from_cache(self._contacts[num].tox_id)
         del self._contacts[num]
         self._screen.friends_list.takeItem(num)
         self._save_profile()
