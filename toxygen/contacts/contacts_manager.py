@@ -393,6 +393,15 @@ class ContactsManager(ToxSave):
         return self._settings['typing_notifications'] and self._active_contact + 1
 
     # -----------------------------------------------------------------------------------------------------------------
+    # Contacts numbers update
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def update_friends_numbers(self):
+        for friend in self._contact_provider.get_all_friends():
+            friend.number = self._tox.friend_by_public_key(friend.tox_id)
+        self.update_filtration()
+
+    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
     # -----------------------------------------------------------------------------------------------------------------
 

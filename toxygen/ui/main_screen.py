@@ -212,6 +212,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.search_label.setPixmap(pixmap)
 
         self.contact_name = LineEdit(Form)
+        self.contact_name.setObjectName('contact_name')
         self.contact_name.setGeometry(QtCore.QRect(0, 0, 150, 25))
         self.contact_name.textChanged.connect(self.filtering)
 

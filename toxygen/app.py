@@ -43,7 +43,7 @@ class App:
         self._tox = self._ms = self._init = self._main_loop = self._av_loop = None
         self._uri = self._toxes = self._tray = self._file_transfer_handler = self._contacts_provider = None
         self._friend_factory = self._calls_manager = self._contacts_manager = self._smiley_loader = self._tox_dns = None
-        self._group_factory = self._groups_service = None
+        self._group_factory = self._groups_service = self._profile = None
         if uri is not None and uri.startswith('tox:'):
             self._uri = uri[4:]
         self._path = path_to_profile
@@ -192,7 +192,7 @@ class App:
     # Threads
     # -----------------------------------------------------------------------------------------------------------------
 
-    def _start_threads(self):
+    def _start_threads(self, initial_start=True):
         # init thread
         self._init = threads.InitThread(self._tox, self._plugin_loader, self._settings)
         self._init.start()
@@ -203,15 +203,17 @@ class App:
         self._av_loop = threads.ToxAVIterateThread(self._tox.AV)
         self._av_loop.start()
 
-        threads.start_file_transfer_thread()
+        if initial_start:
+            threads.start_file_transfer_thread()
 
-    def _stop_threads(self):
+    def _stop_threads(self, is_app_closing=True):
         self._init.stop_thread()
 
         self._av_loop.stop_thread()
         self._main_loop.stop_thread()
 
-        threads.stop_file_transfer_thread()
+        if is_app_closing:
+            threads.stop_file_transfer_thread()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Profiles
@@ -304,21 +306,24 @@ class App:
         Create new tox instance (new network settings)
         :return: tox instance
         """
-        self._stop_threads()
+        self._stop_threads(False)
         data = self._tox.get_savedata()
         self._save_profile(data)
         del self._tox
         # create new tox instance
         self._tox = self._create_tox(data)
-        self._start_threads()
+        self._start_threads(False)
 
         tox_savers = [self._friend_factory, self._group_factory, self._plugin_loader, self._contacts_manager,
-                      self._contacts_provider, self._messenger, self._file_transfer_handler, self._groups_service]
+                      self._contacts_provider, self._messenger, self._file_transfer_handler, self._groups_service,
+                      self._profile]
         for tox_saver in tox_savers:
             tox_saver.set_tox(self._tox)
-        self._calls_manager.set_toxav(self._tox.AV)
 
-        return self._tox
+        self._calls_manager.set_toxav(self._tox.AV)
+        self._contacts_manager.update_friends_numbers()
+
+        self._init_callbacks()
 
     def _create_dependencies(self):
         self._smiley_loader = SmileyLoader(self._settings)
@@ -331,8 +336,8 @@ class App:
                                              self._tox, db, contact_items_factory)
         self._group_factory = GroupFactory(self._profile_manager, self._settings, self._tox, db, contact_items_factory)
         self._contacts_provider = ContactProvider(self._tox, self._friend_factory, self._group_factory)
-        profile = Profile(self._profile_manager, self._tox, self._ms, self._contacts_provider, self._reset)
-        self._plugin_loader = PluginLoader(self._tox, self._toxes, profile, self._settings)
+        self._profile = Profile(self._profile_manager, self._tox, self._ms, self._contacts_provider, self._reset)
+        self._plugin_loader = PluginLoader(self._tox, self._toxes, self._profile, self._settings)
         history = None
         messages_items_factory = MessagesItemsFactory(self._settings, self._plugin_loader, self._smiley_loader,
                                                       self._ms, lambda m: history.delete_message(m))
@@ -343,28 +348,25 @@ class App:
         history.set_contacts_manager(self._contacts_manager)
         self._calls_manager = CallsManager(self._tox.AV, self._settings, self._ms, self._contacts_manager)
         self._messenger = Messenger(self._tox, self._plugin_loader, self._ms, self._contacts_manager,
-                                    self._contacts_provider, messages_items_factory, profile, self._calls_manager)
+                                    self._contacts_provider, messages_items_factory, self._profile, self._calls_manager)
         file_transfers_message_service = FileTransfersMessagesService(self._contacts_manager, messages_items_factory,
-                                                                      profile, self._ms)
+                                                                      self._profile, self._ms)
         self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider,
-                                                           file_transfers_message_service, profile)
+                                                           file_transfers_message_service, self._profile)
         messages_items_factory.set_file_transfers_handler(self._file_transfer_handler)
         self._groups_service = GroupsService(self._tox, self._contacts_manager, self._contacts_provider, self._ms)
-        widgets_factory = WidgetsFactory(self._settings, profile, self._profile_manager, self._contacts_manager,
+        widgets_factory = WidgetsFactory(self._settings, self._profile, self._profile_manager, self._contacts_manager,
                                          self._file_transfer_handler, self._smiley_loader, self._plugin_loader,
                                          self._toxes, self._version, self._groups_service, history)
-        self._tray = tray.init_tray(profile, self._settings, self._ms, self._toxes)
-        self._ms.set_dependencies(widgets_factory, self._tray, self._contacts_manager, self._messenger, profile,
+        self._tray = tray.init_tray(self._profile, self._settings, self._ms, self._toxes)
+        self._ms.set_dependencies(widgets_factory, self._tray, self._contacts_manager, self._messenger, self._profile,
                                   self._plugin_loader, self._file_transfer_handler, history, self._calls_manager,
                                   self._groups_service)
 
         self._tray.show()
         self._ms.show()
 
-        # callbacks initialization
-        callbacks.init_callbacks(self._tox, profile, self._settings, self._plugin_loader, self._contacts_manager,
-                                 self._calls_manager, self._file_transfer_handler, self._ms, self._tray,
-                                 self._messenger, self._groups_service, self._contacts_provider)
+        self._init_callbacks()
 
     def _try_to_update(self):
         updating = updater.start_update_if_needed(self._version, self._settings)
@@ -376,3 +378,8 @@ class App:
 
     def _create_tox(self, data):
         return tox_factory(data, self._settings)
+
+    def _init_callbacks(self):
+        callbacks.init_callbacks(self._tox, self._profile, self._settings, self._plugin_loader, self._contacts_manager,
+                                 self._calls_manager, self._file_transfer_handler, self._ms, self._tray,
+                                 self._messenger, self._groups_service, self._contacts_provider)

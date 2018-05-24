@@ -1,9 +1,10 @@
 from contacts import basecontact
 import random
 import threading
+import common.tox_save as tox_save
 
 
-class Profile(basecontact.BaseContact):
+class Profile(basecontact.BaseContact, tox_save.ToxSave):
     """
     Profile of current toxygen user. Contains friends list, tox instance
     """
@@ -18,9 +19,9 @@ class Profile(basecontact.BaseContact):
                                          tox.self_get_status_message(),
                                          screen.user_info,
                                          tox.self_get_address())
+        tox_save.ToxSave.__init__(self, tox)
         self._screen = screen
         self._messages = screen.messages
-        self._tox = tox
         self._contacts_provider = contacts_provider
         self._reset_action = reset_action
         self._waiting_for_reconnection = False
@@ -71,14 +72,13 @@ class Profile(basecontact.BaseContact):
         """
         Recreate tox instance
         """
-        del self._tox
-        self._tox = self._reset_action()
         self.status = None
+        self._reset_action()
 
     def _reconnect(self):
         self._waiting_for_reconnection = False
-        contacts = self._contacts_provider.get_all()
-        if self.status is None or all(list(map(lambda x: x.status is None, contacts))) and len(contacts):
+        contacts = self._contacts_provider.get_all_friends()
+        if self.status is None or (all(list(map(lambda x: x.status is None, contacts))) and len(contacts)):
             self._waiting_for_reconnection = True
             self.restart()
             self._timer = threading.Timer(50, self._reconnect)
