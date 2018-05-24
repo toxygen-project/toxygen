@@ -361,7 +361,7 @@ class App:
         self._tray = tray.init_tray(self._profile, self._settings, self._ms, self._toxes)
         self._ms.set_dependencies(widgets_factory, self._tray, self._contacts_manager, self._messenger, self._profile,
                                   self._plugin_loader, self._file_transfer_handler, history, self._calls_manager,
-                                  self._groups_service)
+                                  self._groups_service, self._toxes)
 
         self._tray.show()
         self._ms.show()

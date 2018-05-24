@@ -38,7 +38,7 @@ class WidgetsFactory:
         return VideoSettings(self._settings)
 
     def create_update_settings_window(self):
-        return UpdateSettings(self._settings)
+        return UpdateSettings(self._settings, self._version)
 
     def create_plugins_settings_window(self):
         return PluginsSettings(self._plugin_loader)

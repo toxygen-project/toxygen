@@ -946,55 +946,44 @@ class UpdateSettings(CenteredWidget):
     Updates settings form
     """
 
-    def __init__(self, settings):
+    def __init__(self, settings, version):
         super().__init__()
         self._settings = settings
-        self.initUI()
+        self._version = version
+        uic.loadUi(get_views_path('update_settings_screen'), self)
+        self._update_ui()
         self.center()
 
-    def initUI(self):
-        self.setObjectName("updateSettingsForm")
-        self.resize(400, 150)
-        self.setMinimumSize(QtCore.QSize(400, 120))
-        self.setMaximumSize(QtCore.QSize(400, 120))
-        self.in_label = QtWidgets.QLabel(self)
-        self.in_label.setGeometry(QtCore.QRect(25, 5, 350, 20))
-        font = QtGui.QFont()
-        font.setPointSize(16)
-        font.setBold(True)
-        font.setFamily(self._settings['font'])
-        self.in_label.setFont(font)
-        self.autoupdate = QtWidgets.QComboBox(self)
-        self.autoupdate.setGeometry(QtCore.QRect(25, 30, 350, 30))
-        self.button = QtWidgets.QPushButton(self)
-        self.button.setGeometry(QtCore.QRect(25, 70, 350, 30))
-        self.button.setEnabled(self._settings['update'])
-        self.button.clicked.connect(self.update_client)
-
-        self.retranslateUi()
-        self.autoupdate.setCurrentIndex(self._settings['update'])
-        QtCore.QMetaObject.connectSlotsByName(self)
-
-    def retranslateUi(self):
-        self.setWindowTitle(util_ui.tr("Update settings"))
-        self.in_label.setText(util_ui.tr("Select update mode:"))
-        self.button.setText(util_ui.tr("Update Toxygen"))
-        self.autoupdate.addItem(util_ui.tr("Disabled"))
-        self.autoupdate.addItem(util_ui.tr("Manual"))
-        self.autoupdate.addItem(util_ui.tr("Auto"))
-
     def closeEvent(self, event):
-        self._settings['update'] = self.autoupdate.currentIndex()
+        self._settings['update'] = self.updateModeComboBox.currentIndex()
         self._settings.save()
 
-    def update_client(self):
+    def _update_ui(self):
+        self.updatePushButton.clicked.connect(self._update_client)
+        self.updateModeComboBox.currentIndexChanged.connect(self._update_mode_changed)
+        self._retranslate_ui()
+        self.updateModeComboBox.setCurrentIndex(self._settings['update'])
+
+    def _update_mode_changed(self):
+        index = self.updateModeComboBox.currentIndex()
+        self.updatePushButton.setEnabled(index > 0)
+
+    def _retranslate_ui(self):
+        self.setWindowTitle(util_ui.tr("Update settings"))
+        self.updateModeLabel.setText(util_ui.tr("Select update mode:"))
+        self.updatePushButton.setText(util_ui.tr("Update Toxygen"))
+        self.updateModeComboBox.addItem(util_ui.tr("Disabled"))
+        self.updateModeComboBox.addItem(util_ui.tr("Manual"))
+        self.updateModeComboBox.addItem(util_ui.tr("Auto"))
+
+    def _update_client(self):
         if not updater.connection_available():
             util_ui.message_box(util_ui.tr('Problems with internet connection'), util_ui.tr("Error"))
             return
         if not updater.updater_available():
             util_ui.message_box(util_ui.tr('Updater not found'), util_ui.tr("Error"))
             return
-        version = updater.check_for_updates()
+        version = updater.check_for_updates(self._version, self._settings)
         if version is not None:
             updater.download(version)
             util_ui.close_all_windows()
