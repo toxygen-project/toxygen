@@ -464,8 +464,8 @@ class ContactsManager(ToxSave):
         self._history.delete_history(contact)
 
     def _delete_contact(self, num):
+        if num == self._active_contact:  # active friend was deleted
+            self.set_active(0 if len(self._contacts) - 1 else -1)
         del self._contacts[num]
         self._screen.friends_list.takeItem(num)
-        if num == self._active_contact:  # active friend was deleted
-            self.set_active(0 if len(self._contacts) else -1)
         self._save_profile()
