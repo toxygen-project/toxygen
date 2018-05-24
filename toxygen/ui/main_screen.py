@@ -570,8 +570,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.menu.hide()
         if self._contacts_manager.get_curr_contact() is not None:
             self.smiley = self._widget_factory.create_smiley_window(self)
-            self.smiley.setGeometry(QtCore.QRect(self.x() if self._settings['mirror_mode'] else 270 + self.x(),
-                                                 self.y() + self.height() - 200,
+            self.smiley.setGeometry(QtCore.QRect(self.x() if self._settings['mirror_mode'] else 200 + self.x(),
+                                                 self.y() + self.height() - 400,
                                                  self.smiley.width(),
                                                  self.smiley.height()))
             self.smiley.show()

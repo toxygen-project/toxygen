@@ -22,9 +22,6 @@ class WidgetsFactory:
     def create_screenshot_window(self, *args):
         return ScreenShotWindow(self._file_transfer_handler, self._contacts_manager, *args)
 
-    def create_smiley_window(self, parent):
-        return SmileyWindow(parent, self._smiley_loader)
-
     def create_welcome_window(self):
         return WelcomeScreen(self._settings)
 
@@ -48,9 +45,6 @@ class WidgetsFactory:
 
     def create_add_contact_window(self, tox_id):
         return AddContact(self._settings, self._contacts_manager, tox_id)
-
-    def create_welcome_window(self):
-        return WelcomeScreen(self._settings)
 
     def create_privacy_settings_window(self):
         return PrivacySettings(self._contacts_manager, self._settings)

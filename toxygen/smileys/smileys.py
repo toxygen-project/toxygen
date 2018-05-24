@@ -34,7 +34,7 @@ class SmileyLoader:
                 print('Smiley pack {} loaded'.format(pack_name))
                 keys, values, self._list = [], [], []
                 for key, value in tmp.items():
-                    value = self.get_smileys_path() + value
+                    value = util.join_path(self.get_smileys_path(), value)
                     if value not in values:
                         keys.append(key)
                         values.append(value)
