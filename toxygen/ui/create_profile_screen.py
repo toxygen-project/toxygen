@@ -29,9 +29,9 @@ class CreateProfileScreen(CenteredWidget, DialogWithResult):
         uic.loadUi(util.get_views_path('create_profile_screen'), self)
         self.center()
         self.createProfile.clicked.connect(self._create_profile)
-        self.retranslateUi()
+        self._retranslate_ui()
 
-    def retranslateUi(self):
+    def _retranslate_ui(self):
         self.setWindowTitle(util_ui.tr('New profile settings'))
         self.defaultFolder.setText(util_ui.tr('Save in default folder'))
         self.programFolder.setText(util_ui.tr('Save in program folder'))

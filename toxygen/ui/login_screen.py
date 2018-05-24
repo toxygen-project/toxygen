@@ -41,15 +41,6 @@ class LoginScreen(CenteredWidget, DialogWithResult):
         self._profiles = []
         self._update_ui()
 
-    def retranslateUi(self):
-        self.setWindowTitle(util_ui.tr('Log in'))
-        self.profileNameLineEdit.setPlaceholderText(util_ui.tr('Profile name'))
-        self.createProfilePushButton.setText(util_ui.tr('Create'))
-        self.loadProfilePushButton.setText(util_ui.tr('Load profile'))
-        self.defaultProfileCheckBox.setText(util_ui.tr('Use as default'))
-        self.existingProfileGroupBox.setTitle(util_ui.tr('Load existing profile'))
-        self.newProfileGroupBox.setTitle(util_ui.tr('Create new profile'))
-
     def update_select(self, profiles):
         profiles = sorted(profiles, key=lambda p: p[1])
         self._profiles = list(profiles)
@@ -59,7 +50,7 @@ class LoginScreen(CenteredWidget, DialogWithResult):
     def _update_ui(self):
         self.profileNameLineEdit = LineEditWithEnterSupport(self._create_profile, self)
         self.profileNameLineEdit.setGeometry(QtCore.QRect(20, 100, 170, 30))
-        self.retranslateUi()
+        self._retranslate_ui()
         self.createProfilePushButton.clicked.connect(self._create_profile)
         self.loadProfilePushButton.clicked.connect(self._load_existing_profile)
 
@@ -75,3 +66,12 @@ class LoginScreen(CenteredWidget, DialogWithResult):
         path = util.join_path(self._profiles[index][0], self._profiles[index][1] + '.tox')
         result = LoginScreenResult(path, load_as_default)
         self.close_with_result(result)
+
+    def _retranslate_ui(self):
+        self.setWindowTitle(util_ui.tr('Log in'))
+        self.profileNameLineEdit.setPlaceholderText(util_ui.tr('Profile name'))
+        self.createProfilePushButton.setText(util_ui.tr('Create'))
+        self.loadProfilePushButton.setText(util_ui.tr('Load profile'))
+        self.defaultProfileCheckBox.setText(util_ui.tr('Use as default'))
+        self.existingProfileGroupBox.setTitle(util_ui.tr('Load existing profile'))
+        self.newProfileGroupBox.setTitle(util_ui.tr('Create new profile'))

@@ -1,4 +1,4 @@
-from PyQt5 import QtCore, QtGui, QtWidgets
+from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from user_data.settings import *
 from utils.util import *
 from ui.widgets import CenteredWidget, DataLabel, LineEdit, RubberBandWindow
@@ -493,49 +493,30 @@ class NotificationsSettings(CenteredWidget):
     def __init__(self, setttings):
         super().__init__()
         self._settings = setttings
-        self.initUI()
+        uic.loadUi(get_views_path('notifications_settings_screen'), self)
+        self._update_ui()
         self.center()
 
-    def initUI(self):
-        self.setObjectName("notificationsForm")
-        self.resize(350, 210)
-        self.setMinimumSize(QtCore.QSize(350, 210))
-        self.setMaximumSize(QtCore.QSize(350, 210))
-        self.enableNotifications = QtWidgets.QCheckBox(self)
-        self.enableNotifications.setGeometry(QtCore.QRect(10, 20, 340, 18))
-        self.callsSound = QtWidgets.QCheckBox(self)
-        self.callsSound.setGeometry(QtCore.QRect(10, 170, 340, 18))
-        self.soundNotifications = QtWidgets.QCheckBox(self)
-        self.soundNotifications.setGeometry(QtCore.QRect(10, 70, 340, 18))
-        self.groupNotifications = QtWidgets.QCheckBox(self)
-        self.groupNotifications.setGeometry(QtCore.QRect(10, 120, 340, 18))
-        font = QtGui.QFont()
-        font.setFamily(self._settings['font'])
-        font.setPointSize(12)
-        self.callsSound.setFont(font)
-        self.soundNotifications.setFont(font)
-        self.enableNotifications.setFont(font)
-        self.groupNotifications.setFont(font)
-        self.enableNotifications.setChecked(self._settings['notifications'])
-        self.soundNotifications.setChecked(self._settings['sound_notifications'])
-        self.groupNotifications.setChecked(self._settings['group_notifications'])
-        self.callsSound.setChecked(self._settings['calls_sound'])
-        self.retranslateUi()
-        QtCore.QMetaObject.connectSlotsByName(self)
-
-    def retranslateUi(self):
-        self.setWindowTitle(util_ui.tr("Notification settings"))
-        self.enableNotifications.setText(util_ui.tr("Enable notifications"))
-        self.groupNotifications.setText(util_ui.tr("Notify about all messages in groups"))
-        self.callsSound.setText(util_ui.tr("Enable call\'s sound"))
-        self.soundNotifications.setText(util_ui.tr("Enable sound notifications"))
-
     def closeEvent(self, *args, **kwargs):
-        self._settings['notifications'] = self.enableNotifications.isChecked()
-        self._settings['sound_notifications'] = self.soundNotifications.isChecked()
-        self._settings['group_notifications'] = self.groupNotifications.isChecked()
-        self._settings['calls_sound'] = self.callsSound.isChecked()
+        self._settings['notifications'] = self.notificationsCheckBox.isChecked()
+        self._settings['sound_notifications'] = self.soundNotificationsCheckBox.isChecked()
+        self._settings['group_notifications'] = self.groupNotificationsCheckBox.isChecked()
+        self._settings['calls_sound'] = self.callsSoundCheckBox.isChecked()
         self._settings.save()
+
+    def _update_ui(self):
+        self.notificationsCheckBox.setChecked(self._settings['notifications'])
+        self.soundNotificationsCheckBox.setChecked(self._settings['sound_notifications'])
+        self.groupNotificationsCheckBox.setChecked(self._settings['group_notifications'])
+        self.callsSoundCheckBox.setChecked(self._settings['calls_sound'])
+        self._retranslate_ui()
+
+    def _retranslate_ui(self):
+        self.setWindowTitle(util_ui.tr("Notifications settings"))
+        self.notificationsCheckBox.setText(util_ui.tr("Enable notifications"))
+        self.groupNotificationsCheckBox.setText(util_ui.tr("Notify about all messages in groups"))
+        self.callsSoundCheckBox.setText(util_ui.tr("Enable call\'s sound"))
+        self.soundNotificationsCheckBox.setText(util_ui.tr("Enable sound notifications"))
 
 
 class InterfaceSettings(CenteredWidget):
@@ -729,52 +710,35 @@ class AudioSettings(CenteredWidget):
     def __init__(self, settings):
         super().__init__()
         self._settings = settings
-        self.initUI()
-        self.retranslateUi()
+        self._in_indexes = self._out_indexes = None
+        uic.loadUi(get_views_path('audio_settings_screen'), self)
+        self._update_ui()
         self.center()
 
-    def initUI(self):
-        self.setObjectName("audioSettingsForm")
-        self.resize(400, 150)
-        self.setMinimumSize(QtCore.QSize(400, 150))
-        self.setMaximumSize(QtCore.QSize(400, 150))
-        self.in_label = QtWidgets.QLabel(self)
-        self.in_label.setGeometry(QtCore.QRect(25, 5, 350, 20))
-        self.out_label = QtWidgets.QLabel(self)
-        self.out_label.setGeometry(QtCore.QRect(25, 65, 350, 20))
-        font = QtGui.QFont()
-        font.setPointSize(16)
-        font.setBold(True)
-        font.setFamily(self._settings['font'])
-        self.in_label.setFont(font)
-        self.out_label.setFont(font)
-        self.input = QtWidgets.QComboBox(self)
-        self.input.setGeometry(QtCore.QRect(25, 30, 350, 30))
-        self.output = QtWidgets.QComboBox(self)
-        self.output.setGeometry(QtCore.QRect(25, 90, 350, 30))
+    def closeEvent(self, event):
+        self._settings.audio['input'] = self._in_indexes[self.inputDeviceComboBox.currentIndex()]
+        self._settings.audio['output'] = self._out_indexes[self.outputDeviceComboBox.currentIndex()]
+        self._settings.save()
+
+    def _update_ui(self):
         p = pyaudio.PyAudio()
-        self.in_indexes, self.out_indexes = [], []
+        self._in_indexes, self._out_indexes = [], []
         for i in range(p.get_device_count()):
             device = p.get_device_info_by_index(i)
             if device["maxInputChannels"]:
-                self.input.addItem(str(device["name"]))
-                self.in_indexes.append(i)
+                self.inputDeviceComboBox.addItem(str(device["name"]))
+                self._in_indexes.append(i)
             if device["maxOutputChannels"]:
-                self.output.addItem(str(device["name"]))
-                self.out_indexes.append(i)
-        self.input.setCurrentIndex(self.in_indexes.index(self._settings.audio['input']))
-        self.output.setCurrentIndex(self.out_indexes.index(self._settings.audio['output']))
-        QtCore.QMetaObject.connectSlotsByName(self)
+                self.outputDeviceComboBox.addItem(str(device["name"]))
+                self._out_indexes.append(i)
+        self.inputDeviceComboBox.setCurrentIndex(self._in_indexes.index(self._settings.audio['input']))
+        self.outputDeviceComboBox.setCurrentIndex(self._out_indexes.index(self._settings.audio['output']))
+        self._retranslate_ui()
 
-    def retranslateUi(self):
+    def _retranslate_ui(self):
         self.setWindowTitle(util_ui.tr("Audio settings"))
-        self.in_label.setText(util_ui.tr("Input device:"))
-        self.out_label.setText(util_ui.tr("Output device:"))
-
-    def closeEvent(self, event):
-        self._settings.audio['input'] = self.in_indexes[self.input.currentIndex()]
-        self._settings.audio['output'] = self.out_indexes[self.output.currentIndex()]
-        self._settings.save()
+        self.inputDeviceLabel.setText(util_ui.tr("Input device:"))
+        self.outputDeviceLabel.setText(util_ui.tr("Output device:"))
 
 
 class DesktopAreaSelectionWindow(RubberBandWindow):
