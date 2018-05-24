@@ -21,6 +21,7 @@ def tox_factory(data=None, settings=None):
     tox_options.contents.start_port = settings['start_port']
     tox_options.contents.end_port = settings['end_port']
     tox_options.contents.tcp_port = settings['tcp_port']
+    tox_options.contents.local_discovery_enabled = settings['lan_discovery']
     if data:  # load existing profile
         tox_options.contents.savedata_type = enums.TOX_SAVEDATA_TYPE['TOX_SAVE']
         tox_options.contents.savedata_data = ctypes.c_char_p(data)

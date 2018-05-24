@@ -147,7 +147,8 @@ class Settings(dict):
             'update': 1,
             'group_notifications': True,
             'download_nodes_list': False,
-            'notify_all_gc': False
+            'notify_all_gc': False,
+            'lan_discovery': True
         }
 
     @staticmethod

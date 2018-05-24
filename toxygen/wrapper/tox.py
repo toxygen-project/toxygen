@@ -10,15 +10,19 @@ class ToxOptions(Structure):
     _fields_ = [
         ('ipv6_enabled', c_bool),
         ('udp_enabled', c_bool),
+        ('local_discovery_enabled', c_bool),
         ('proxy_type', c_int),
         ('proxy_host', c_char_p),
         ('proxy_port', c_uint16),
         ('start_port', c_uint16),
         ('end_port', c_uint16),
         ('tcp_port', c_uint16),
+        ('hole_punching_enabled', c_bool),
         ('savedata_type', c_int),
         ('savedata_data', c_char_p),
-        ('savedata_length', c_size_t)
+        ('savedata_length', c_size_t),
+        ('log_callback', c_void_p),
+        ('log_user_data', c_void_p)
     ]
 
 
@@ -265,7 +269,7 @@ class Tox:
         """
         return Tox.libtoxcore.tox_self_get_connection_status(self._tox_pointer)
 
-    def callback_self_connection_status(self, callback, user_data):
+    def callback_self_connection_status(self, callback):
         """
         Set the callback for the `self_connection_status` event. Pass None to unset.
 
@@ -276,12 +280,11 @@ class Tox:
         :param callback: Python function. Should take pointer (c_void_p) to Tox object,
         TOX_CONNECTION (c_int),
         pointer (c_void_p) to user_data
-        :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_int, c_void_p)
         self.self_connection_status_cb = c_callback(callback)
         Tox.libtoxcore.tox_callback_self_connection_status(self._tox_pointer,
-                                                           self.self_connection_status_cb, user_data)
+                                                           self.self_connection_status_cb)
 
     def iteration_interval(self):
         """
@@ -290,11 +293,13 @@ class Tox:
         """
         return Tox.libtoxcore.tox_iteration_interval(self._tox_pointer)
 
-    def iterate(self):
+    def iterate(self, user_data=None):
         """
         The main loop that needs to be run in intervals of tox_iteration_interval() milliseconds.
         """
-        Tox.libtoxcore.tox_iterate(self._tox_pointer)
+        if user_data is not None:
+            user_data = c_char_p(user_data)
+        Tox.libtoxcore.tox_iterate(self._tox_pointer, user_data)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Internal client information (Tox address/id)
@@ -719,7 +724,7 @@ class Tox:
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
-    def callback_friend_name(self, callback, user_data):
+    def callback_friend_name(self, callback):
         """
         Set the callback for the `friend_name` event. Pass None to unset.
 
@@ -730,11 +735,10 @@ class Tox:
         A byte array (c_char_p) containing the same data as tox_friend_get_name would write to its `name` parameter,
         A value (c_size_t) equal to the return value of tox_friend_get_name_size,
         pointer (c_void_p) to user_data
-        :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_char_p, c_size_t, c_void_p)
         self.friend_name_cb = c_callback(callback)
-        Tox.libtoxcore.tox_callback_friend_name(self._tox_pointer, self.friend_name_cb, user_data)
+        Tox.libtoxcore.tox_callback_friend_name(self._tox_pointer, self.friend_name_cb)
 
     def friend_get_status_message_size(self, friend_number):
         """
@@ -783,7 +787,7 @@ class Tox:
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
-    def callback_friend_status_message(self, callback, user_data):
+    def callback_friend_status_message(self, callback):
         """
         Set the callback for the `friend_status_message` event. Pass NULL to unset.
 
@@ -795,12 +799,11 @@ class Tox:
         `status_message` parameter,
         A value (c_size_t) equal to the return value of tox_friend_get_status_message_size,
         pointer (c_void_p) to user_data
-        :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_char_p, c_size_t, c_void_p)
         self.friend_status_message_cb = c_callback(callback)
         Tox.libtoxcore.tox_callback_friend_status_message(self._tox_pointer,
-                                                          self.friend_status_message_cb, c_void_p(user_data))
+                                                          self.friend_status_message_cb)
 
     def friend_get_status(self, friend_number):
         """
@@ -824,7 +827,7 @@ class Tox:
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
-    def callback_friend_status(self, callback, user_data):
+    def callback_friend_status(self, callback):
         """
         Set the callback for the `friend_status` event. Pass None to unset.
 
@@ -838,7 +841,7 @@ class Tox:
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_void_p)
         self.friend_status_cb = c_callback(callback)
-        Tox.libtoxcore.tox_callback_friend_status(self._tox_pointer, self.friend_status_cb, c_void_p(user_data))
+        Tox.libtoxcore.tox_callback_friend_status(self._tox_pointer, self.friend_status_cb)
 
     def friend_get_connection_status(self, friend_number):
         """
@@ -863,7 +866,7 @@ class Tox:
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
-    def callback_friend_connection_status(self, callback, user_data):
+    def callback_friend_connection_status(self, callback):
         """
         Set the callback for the `friend_connection_status` event. Pass NULL to unset.
 
@@ -876,12 +879,11 @@ class Tox:
         The friend number (c_uint32) of the friend whose connection status changed,
         The result of calling tox_friend_get_connection_status (TOX_CONNECTION) on the passed friend_number,
         pointer (c_void_p) to user_data
-        :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_void_p)
         self.friend_connection_status_cb = c_callback(callback)
         Tox.libtoxcore.tox_callback_friend_connection_status(self._tox_pointer,
-                                                             self.friend_connection_status_cb, c_void_p(user_data))
+                                                             self.friend_connection_status_cb)
 
     def friend_get_typing(self, friend_number):
         """
@@ -903,7 +905,7 @@ class Tox:
         elif tox_err_friend_query == TOX_ERR_FRIEND_QUERY['FRIEND_NOT_FOUND']:
             raise ArgumentError('The friend_number did not designate a valid friend.')
 
-    def callback_friend_typing(self, callback, user_data):
+    def callback_friend_typing(self, callback):
         """
         Set the callback for the `friend_typing` event. Pass NULL to unset.
 
@@ -913,11 +915,10 @@ class Tox:
         The friend number (c_uint32) of the friend who started or stopped typing,
         The result of calling tox_friend_get_typing (c_bool) on the passed friend_number,
         pointer (c_void_p) to user_data
-        :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_bool, c_void_p)
         self.friend_typing_cb = c_callback(callback)
-        Tox.libtoxcore.tox_callback_friend_typing(self._tox_pointer, self.friend_typing_cb, c_void_p(user_data))
+        Tox.libtoxcore.tox_callback_friend_typing(self._tox_pointer, self.friend_typing_cb)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Sending private messages
@@ -982,7 +983,7 @@ class Tox:
         elif tox_err_friend_send_message == TOX_ERR_FRIEND_SEND_MESSAGE['EMPTY']:
             raise ArgumentError('Attempted to send a zero-length message.')
 
-    def callback_friend_read_receipt(self, callback, user_data):
+    def callback_friend_read_receipt(self, callback):
         """
         Set the callback for the `friend_read_receipt` event. Pass None to unset.
 
@@ -998,13 +999,13 @@ class Tox:
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_void_p)
         self.friend_read_receipt_cb = c_callback(callback)
         Tox.libtoxcore.tox_callback_friend_read_receipt(self._tox_pointer,
-                                                        self.friend_read_receipt_cb, c_void_p(user_data))
+                                                        self.friend_read_receipt_cb)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Receiving private messages and friend requests
     # -----------------------------------------------------------------------------------------------------------------
 
-    def callback_friend_request(self, callback, user_data):
+    def callback_friend_request(self, callback):
         """
         Set the callback for the `friend_request` event. Pass None to unset.
 
@@ -1019,9 +1020,9 @@ class Tox:
         """
         c_callback = CFUNCTYPE(None, c_void_p, POINTER(c_uint8), c_char_p, c_size_t, c_void_p)
         self.friend_request_cb = c_callback(callback)
-        Tox.libtoxcore.tox_callback_friend_request(self._tox_pointer, self.friend_request_cb, c_void_p(user_data))
+        Tox.libtoxcore.tox_callback_friend_request(self._tox_pointer, self.friend_request_cb)
 
-    def callback_friend_message(self, callback, user_data):
+    def callback_friend_message(self, callback):
         """
         Set the callback for the `friend_message` event. Pass None to unset.
 
@@ -1033,11 +1034,10 @@ class Tox:
         The message data (c_char_p) they sent,
         The size (c_size_t) of the message byte array.
         pointer (c_void_p) to user_data
-        :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_int, c_char_p, c_size_t, c_void_p)
         self.friend_message_cb = c_callback(callback)
-        Tox.libtoxcore.tox_callback_friend_message(self._tox_pointer, self.friend_message_cb, c_void_p(user_data))
+        Tox.libtoxcore.tox_callback_friend_message(self._tox_pointer, self.friend_message_cb)
 
     # -----------------------------------------------------------------------------------------------------------------
     # File transmission: common between sending and receiving
@@ -1095,7 +1095,7 @@ class Tox:
         elif tox_err_file_control == TOX_ERR_FILE_CONTROL['SENDQ']:
             raise RuntimeError('Packet queue is full.')
 
-    def callback_file_recv_control(self, callback, user_data):
+    def callback_file_recv_control(self, callback):
         """
         Set the callback for the `file_recv_control` event. Pass NULL to unset.
 
@@ -1110,12 +1110,11 @@ class Tox:
         The friend-specific file number (c_uint32) the data received is associated with.
         The file control (TOX_FILE_CONTROL) command received.
         pointer (c_void_p) to user_data
-        :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_int, c_void_p)
         self.file_recv_control_cb = c_callback(callback)
         Tox.libtoxcore.tox_callback_file_recv_control(self._tox_pointer,
-                                                      self.file_recv_control_cb, user_data)
+                                                      self.file_recv_control_cb)
 
     def file_seek(self, friend_number, file_number, position):
         """
@@ -1285,7 +1284,7 @@ class Tox:
         elif tox_err_file_send_chunk == TOX_ERR_FILE_SEND_CHUNK['WRONG_POSITION']:
             raise ArgumentError('Position parameter was wrong.')
 
-    def callback_file_chunk_request(self, callback, user_data):
+    def callback_file_chunk_request(self, callback):
         """
         Set the callback for the `file_chunk_request` event. Pass None to unset.
 
@@ -1311,17 +1310,16 @@ class Tox:
         The file or stream position (c_uint64) from which to continue reading.
         The number of bytes (c_size_t) requested for the current chunk.
         pointer (c_void_p) to user_data
-        :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_uint64, c_size_t, c_void_p)
         self.file_chunk_request_cb = c_callback(callback)
-        self.libtoxcore.tox_callback_file_chunk_request(self._tox_pointer, self.file_chunk_request_cb, user_data)
+        self.libtoxcore.tox_callback_file_chunk_request(self._tox_pointer, self.file_chunk_request_cb)
 
     # -----------------------------------------------------------------------------------------------------------------
     # File transmission: receiving
     # -----------------------------------------------------------------------------------------------------------------
 
-    def callback_file_recv(self, callback, user_data):
+    def callback_file_recv(self, callback):
         """
         Set the callback for the `file_recv` event. Pass None to unset.
 
@@ -1341,13 +1339,12 @@ class Tox:
         send request.
         Size in bytes (c_size_t) of the filename.
         pointer (c_void_p) to user_data
-        :param user_data: pointer (c_void_p) to user data
         """
-        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_uint32, c_uint64, c_char_p, c_size_t, c_void_p)
+        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_uint32, c_uint64, c_char_p, c_size_t)
         self.file_recv_cb = c_callback(callback)
-        self.libtoxcore.tox_callback_file_recv(self._tox_pointer, self.file_recv_cb, user_data)
+        self.libtoxcore.tox_callback_file_recv(self._tox_pointer, self.file_recv_cb)
 
-    def callback_file_recv_chunk(self, callback, user_data):
+    def callback_file_recv_chunk(self, callback):
         """
         Set the callback for the `file_recv_chunk` event. Pass NULL to unset.
 
@@ -1368,11 +1365,10 @@ class Tox:
         A byte array (c_char_p) containing the received chunk.
         The length (c_size_t) of the received chunk.
         pointer (c_void_p) to user_data
-        :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_uint64, POINTER(c_uint8), c_size_t, c_void_p)
         self.file_recv_chunk_cb = c_callback(callback)
-        self.libtoxcore.tox_callback_file_recv_chunk(self._tox_pointer, self.file_recv_chunk_cb, user_data)
+        self.libtoxcore.tox_callback_file_recv_chunk(self._tox_pointer, self.file_recv_chunk_cb)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Low-level custom packet sending and receiving
@@ -1453,7 +1449,7 @@ class Tox:
         elif tox_err_friend_custom_packet == TOX_ERR_FRIEND_CUSTOM_PACKET['SENDQ']:
             raise RuntimeError('Packet queue is full.')
 
-    def callback_friend_lossy_packet(self, callback, user_data):
+    def callback_friend_lossy_packet(self, callback):
         """
         Set the callback for the `friend_lossy_packet` event. Pass NULL to unset.
 
@@ -1463,13 +1459,12 @@ class Tox:
         A byte array (c_uint8 array) containing the received packet data,
         length (c_size_t) - The length of the packet data byte array,
         pointer (c_void_p) to user_data
-        :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, POINTER(c_uint8), c_size_t, c_void_p)
         self.friend_lossy_packet_cb = c_callback(callback)
-        self.libtoxcore.tox_callback_friend_lossy_packet(self._tox_pointer, self.friend_lossy_packet_cb, user_data)
+        self.libtoxcore.tox_callback_friend_lossy_packet(self._tox_pointer, self.friend_lossy_packet_cb)
 
-    def callback_friend_lossless_packet(self, callback, user_data):
+    def callback_friend_lossless_packet(self, callback):
         """
         Set the callback for the `friend_lossless_packet` event. Pass NULL to unset.
 
@@ -1479,12 +1474,10 @@ class Tox:
         A byte array (c_uint8 array) containing the received packet data,
         length (c_size_t) - The length of the packet data byte array,
         pointer (c_void_p) to user_data
-        :param user_data: pointer (c_void_p) to user data
         """
         c_callback = CFUNCTYPE(None, c_void_p, c_uint32, POINTER(c_uint8), c_size_t, c_void_p)
         self.friend_lossless_packet_cb = c_callback(callback)
-        self.libtoxcore.tox_callback_friend_lossless_packet(self._tox_pointer, self.friend_lossless_packet_cb,
-                                                            user_data)
+        self.libtoxcore.tox_callback_friend_lossless_packet(self._tox_pointer, self.friend_lossless_packet_cb)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Low-level network information

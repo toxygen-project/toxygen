@@ -28,13 +28,13 @@ class LibToxAV:
             # on Windows av api is in libtox.dll
             self._libtoxav = CDLL(util.curr_directory() + '/libs/libtox.dll')
         elif system() == 'Darwin':
-            self._libtoxav = CDLL('libtoxav.dylib')
+            self._libtoxav = CDLL('libtoxcore.dylib')
         else:
-            # /usr/lib/libtoxav.so must exists
+            # /usr/lib/libtoxcore.so must exists
             try:
-                self._libtoxav = CDLL('libtoxav.so')
+                self._libtoxav = CDLL('libtoxcore.so')
             except:
-                self._libtoxav = CDLL(util.curr_directory() + '/libs/libtoxav.so')
+                self._libtoxav = CDLL(util.curr_directory() + '/libs/libtoxcore.so')
 
     def __getattr__(self, item):
         return self._libtoxav.__getattr__(item)
@@ -47,13 +47,13 @@ class LibToxEncryptSave:
             # on Windows profile encryption api is in libtox.dll
             self._lib_tox_encrypt_save = CDLL(util.curr_directory() + '/libs/libtox.dll')
         elif system() == 'Darwin':
-            self._lib_tox_encrypt_save = CDLL('libtoxencryptsave.dylib')
+            self._lib_tox_encrypt_save = CDLL('libtoxcore.dylib')
         else:
-            # /usr/lib/libtoxencryptsave.so must exists
+            # /usr/lib/libtoxcore.so must exists
             try:
-                self._lib_tox_encrypt_save = CDLL('libtoxencryptsave.so')
+                self._lib_tox_encrypt_save = CDLL('libtoxcore.so')
             except:
-                self._lib_tox_encrypt_save = CDLL(util.curr_directory() + '/libs/libtoxencryptsave.so')
+                self._lib_tox_encrypt_save = CDLL(util.curr_directory() + '/libs/libtoxcore.so')
 
     def __getattr__(self, item):
         return self._lib_tox_encrypt_save.__getattr__(item)

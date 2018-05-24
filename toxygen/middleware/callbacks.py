@@ -1,6 +1,4 @@
 from PyQt5 import QtGui
-from user_data.settings import Settings
-from contacts.profile import Profile
 from wrapper.toxcore_enums_and_consts import *
 from wrapper.toxav_enums import *
 from wrapper.tox import bin_to_string
@@ -22,7 +20,7 @@ import threading
 
 def self_connection_status(tox, profile):
     """
-    Current user changed connection status (offline, UDP, TCP)
+    Current user changed connection status (offline, TCP, UDP)
     """
     def wrapped(tox_link, connection, user_data):
         print('Connection status: ', str(connection))
@@ -103,7 +101,7 @@ def friend_status_message(contacts_manager, messenger):
         """
         friend = contacts_manager.get_friend_by_number(friend_number)
         invoke_in_main_thread(friend.set_status_message, str(status_message, 'utf-8'))
-        print('User #{} has new status'.format(friend_number))
+        print('User #{} has new status message'.format(friend_number))
         invoke_in_main_thread(messenger.send_messages, friend_number)
 
     return wrapped
@@ -472,25 +470,25 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     :param contacts_provider: ContactsProvider instance
     """
     # self callbacks
-    tox.callback_self_connection_status(self_connection_status(tox, profile), 0)
+    tox.callback_self_connection_status(self_connection_status(tox, profile))
 
     # friend callbacks
-    tox.callback_friend_status(friend_status(contacts_manager, file_transfer_handler, profile, settings), 0)
-    tox.callback_friend_message(friend_message(messenger, contacts_manager, profile, settings, main_window, tray), 0)
+    tox.callback_friend_status(friend_status(contacts_manager, file_transfer_handler, profile, settings))
+    tox.callback_friend_message(friend_message(messenger, contacts_manager, profile, settings, main_window, tray))
     tox.callback_friend_connection_status(friend_connection_status(contacts_manager, profile, settings, plugin_loader,
-                                                                   file_transfer_handler, messenger, calls_manager), 0)
-    tox.callback_friend_name(friend_name(contacts_provider, messenger), 0)
-    tox.callback_friend_status_message(friend_status_message(contacts_manager, messenger), 0)
-    tox.callback_friend_request(friend_request(contacts_manager), 0)
-    tox.callback_friend_typing(friend_typing(messenger), 0)
-    tox.callback_friend_read_receipt(friend_read_receipt(messenger), 0)
+                                                                   file_transfer_handler, messenger, calls_manager))
+    tox.callback_friend_name(friend_name(contacts_provider, messenger))
+    tox.callback_friend_status_message(friend_status_message(contacts_manager, messenger))
+    tox.callback_friend_request(friend_request(contacts_manager))
+    tox.callback_friend_typing(friend_typing(messenger))
+    tox.callback_friend_read_receipt(friend_read_receipt(messenger))
 
     # file transfer
     tox.callback_file_recv(tox_file_recv(main_window, tray, profile, file_transfer_handler,
-                                         contacts_manager, settings), 0)
-    tox.callback_file_recv_chunk(file_recv_chunk(file_transfer_handler), 0)
-    tox.callback_file_chunk_request(file_chunk_request(file_transfer_handler), 0)
-    tox.callback_file_recv_control(file_recv_control(file_transfer_handler), 0)
+                                         contacts_manager, settings))
+    tox.callback_file_recv_chunk(file_recv_chunk(file_transfer_handler))
+    tox.callback_file_chunk_request(file_chunk_request(file_transfer_handler))
+    tox.callback_file_recv_control(file_recv_control(file_transfer_handler))
 
     # av
     toxav = tox.AV
@@ -500,8 +498,8 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     toxav.callback_video_receive_frame(video_receive_frame, 0)
 
     # custom packets
-    tox.callback_friend_lossless_packet(lossless_packet(plugin_loader), 0)
-    tox.callback_friend_lossy_packet(lossy_packet(plugin_loader), 0)
+    tox.callback_friend_lossless_packet(lossless_packet(plugin_loader))
+    tox.callback_friend_lossy_packet(lossy_packet(plugin_loader))
 
     # gc callbacks
     tox.callback_group_message(group_message(main_window, tray, tox, messenger, settings, profile), 0)
