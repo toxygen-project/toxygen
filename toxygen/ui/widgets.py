@@ -52,7 +52,7 @@ class DialogWithResult(QtWidgets.QWidget):
 class LineEdit(QtWidgets.QLineEdit):
 
     def __init__(self, parent=None):
-        super(LineEdit, self).__init__(parent)
+        super().__init__(parent)
 
     def contextMenuEvent(self, event):
         menu = create_menu(self.createStandardContextMenu())
@@ -181,3 +181,16 @@ class MultilineEdit(CenteredWidget):
     def button_click(self):
         self.save(self.edit.toPlainText())
         self.close()
+
+
+class LineEditWithEnterSupport(LineEdit):
+
+    def __init__(self, enter_action, parent=None):
+        super().__init__(parent)
+        self._action = enter_action
+
+    def keyPressEvent(self, event):
+        if event.key() == QtCore.Qt.Key_Return:
+            self._action()
+        else:
+            super().keyPressEvent(event)

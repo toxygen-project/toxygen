@@ -31,6 +31,7 @@ from network.tox_dns import ToxDns
 from history.history import History
 from file_transfers.file_transfers_messages_service import FileTransfersMessagesService
 from groups.groups_service import GroupsService
+from ui.create_profile_screen import CreateProfileScreen
 import styles.style  # TODO: dynamic loading
 
 
@@ -165,7 +166,8 @@ class App:
                 if result is None:
                     return False
                 if result.is_new_profile():  # create new profile
-                    self._create_new_profile(result.profile_path)
+                    if not self._create_new_profile(result.profile_path):
+                        return False
                 else:  # load existing profile
                     self._load_existing_profile(result.profile_path)
                 self._path = result.profile_path
@@ -233,16 +235,25 @@ class App:
             data = self._enter_pass(data)
         self._tox = self._create_tox(data)
 
-    def _create_new_profile(self, profile_path):
-        name = util.get_profile_name_from_path(profile_path) or 'toxygen_user'
+    def _create_new_profile(self, profile_name):
+        result = self._get_create_profile_screen_result()
+        if result is None:
+            return False
+        if result.save_into_default_folder:
+            profile_path = util.join_path(Settings.get_default_path(), profile_name + '.tox')
+        else:
+            profile_path = util.join_path(util.curr_directory(__file__), profile_name + '.tox')
         if os.path.isfile(profile_path):
             util_ui.message_box(util_ui.tr('Profile with this name already exists'),
                                 util_ui.tr('Error'))
-            return
+            return False
+        name = profile_name or 'toxygen_user'
         self._tox = tox_factory()
         self._tox.self_set_name(bytes(name, 'utf-8') if name else b'Toxygen User')
         self._tox.self_set_status_message(b'Toxing on Toxygen')
-        # TODO: set profile password
+        self._path = profile_path
+        if result.password:
+            self._toxes.set_password(result.password)
         self._settings = Settings(self._toxes, self._path.replace('.tox', '.json'))
         self._profile_manager = ProfileManager(self._settings, self._toxes, profile_path)
         try:
@@ -252,11 +263,21 @@ class App:
             util.log('Profile creation exception: ' + str(ex))
             text = util_ui.tr('Profile saving error! Does Toxygen have permission to write to this directory?')
             util_ui.message_box(text, util_ui.tr('Error'))
-            return
+
+            return False
         current_language, supported_languages = self._get_languages()
         if current_language in supported_languages:
             self._settings['language'] = current_language
         self._settings.save()
+
+        return True
+
+    def _get_create_profile_screen_result(self):
+        cps = CreateProfileScreen()
+        cps.show()
+        self._app.exec_()
+
+        return cps.result
 
     def _save_profile(self, data=None):
         data = data or self._tox.get_savedata()

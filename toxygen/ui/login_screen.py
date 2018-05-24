@@ -1,18 +1,8 @@
 from ui.widgets import *
+from PyQt5 import uic
+import utils.util as util
+import utils.ui as util_ui
 import os.path
-
-
-class NickEdit(LineEdit):
-
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.parent = parent
-
-    def keyPressEvent(self, event):
-        if event.key() == QtCore.Qt.Key_Return:
-            self.parent.create_profile()
-        else:
-            super(NickEdit, self).keyPressEvent(event)
 
 
 class LoginScreenResult:
@@ -46,75 +36,42 @@ class LoginScreen(CenteredWidget, DialogWithResult):
     def __init__(self):
         CenteredWidget.__init__(self)
         DialogWithResult.__init__(self)
-        self.initUI()
+        uic.loadUi(util.get_views_path('login_screen'), self)
         self.center()
         self._profiles = []
-
-    def initUI(self):
-        self.resize(400, 200)
-        self.setMinimumSize(QtCore.QSize(400, 200))
-        self.setMaximumSize(QtCore.QSize(400, 200))
-        self.new_profile = QtWidgets.QPushButton(self)
-        self.new_profile.setGeometry(QtCore.QRect(20, 150, 171, 27))
-        self.new_profile.clicked.connect(self.create_profile)
-        self.label = QtWidgets.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(20, 70, 101, 17))
-        self.new_name = NickEdit(self)
-        self.new_name.setGeometry(QtCore.QRect(20, 100, 171, 31))
-        self.load_profile = QtWidgets.QPushButton(self)
-        self.load_profile.setGeometry(QtCore.QRect(220, 150, 161, 27))
-        self.load_profile.clicked.connect(self.load_existing_profile)
-        self.default = QtWidgets.QCheckBox(self)
-        self.default.setGeometry(QtCore.QRect(220, 110, 131, 22))
-        self.groupBox = QtWidgets.QGroupBox(self)
-        self.groupBox.setGeometry(QtCore.QRect(210, 40, 181, 151))
-        self.comboBox = QtWidgets.QComboBox(self.groupBox)
-        self.comboBox.setGeometry(QtCore.QRect(10, 30, 161, 27))
-        self.groupBox_2 = QtWidgets.QGroupBox(self)
-        self.groupBox_2.setGeometry(QtCore.QRect(10, 40, 191, 151))
-        self.toxygen = QtWidgets.QLabel(self)
-        self.toxygen.setGeometry(QtCore.QRect(160, 8, 90, 25))
-        self.groupBox.raise_()
-        self.groupBox_2.raise_()
-        self.comboBox.raise_()
-        self.default.raise_()
-        self.load_profile.raise_()
-        self.new_name.raise_()
-        self.new_profile.raise_()
-        font = QtGui.QFont()
-        font.setFamily("Impact")
-        font.setPointSize(16)
-        self.toxygen.setFont(font)
-        self.toxygen.setObjectName("toxygen")
-        self.retranslateUi()
-        QtCore.QMetaObject.connectSlotsByName(self)
+        self._update_ui()
 
     def retranslateUi(self):
-        self.new_name.setPlaceholderText(QtWidgets.QApplication.translate("login", "Profile name"))
-        self.setWindowTitle(QtWidgets.QApplication.translate("login", "Log in"))
-        self.new_profile.setText(QtWidgets.QApplication.translate("login", "Create"))
-        self.label.setText(QtWidgets.QApplication.translate("login", "Profile name:"))
-        self.load_profile.setText(QtWidgets.QApplication.translate("login", "Load profile"))
-        self.default.setText(QtWidgets.QApplication.translate("login", "Use as default"))
-        self.groupBox.setTitle(QtWidgets.QApplication.translate("login", "Load existing profile"))
-        self.groupBox_2.setTitle(QtWidgets.QApplication.translate("login", "Create new profile"))
-        self.toxygen.setText(QtWidgets.QApplication.translate("login", "toxygen"))
-
-    def create_profile(self):
-        self.type = 1
-        self.name = self.new_name.text()
-        self.close()
-
-    def load_existing_profile(self):
-        index = self.comboBox.currentIndex()
-        load_as_default = self.default.isChecked()
-        path = os.path.join(self._profiles[index][0], self._profiles[index][1] + '.tox')
-        result = LoginScreenResult(path, load_as_default)
-        self.close_with_result(result)
+        self.setWindowTitle(util_ui.tr('Log in'))
+        self.profileNameLineEdit.setPlaceholderText(util_ui.tr('Profile name'))
+        self.createProfilePushButton.setText(util_ui.tr('Create'))
+        self.loadProfilePushButton.setText(util_ui.tr('Load profile'))
+        self.defaultProfileCheckBox.setText(util_ui.tr('Use as default'))
+        self.existingProfileGroupBox.setTitle(util_ui.tr('Load existing profile'))
+        self.newProfileGroupBox.setTitle(util_ui.tr('Create new profile'))
 
     def update_select(self, profiles):
         profiles = sorted(profiles, key=lambda p: p[1])
         self._profiles = list(profiles)
-        self.comboBox.addItems(list(map(lambda p: p[1], profiles)))
-        self.load_profile.setEnabled(len(profiles) > 0)
+        self.profilesComboBox.addItems(list(map(lambda p: p[1], profiles)))
+        self.loadProfilePushButton.setEnabled(len(profiles) > 0)
 
+    def _update_ui(self):
+        self.profileNameLineEdit = LineEditWithEnterSupport(self._create_profile, self)
+        self.profileNameLineEdit.setGeometry(QtCore.QRect(20, 100, 170, 30))
+        self.retranslateUi()
+        self.createProfilePushButton.clicked.connect(self._create_profile)
+        self.loadProfilePushButton.clicked.connect(self._load_existing_profile)
+
+    def _create_profile(self):
+        path = self.profileNameLineEdit.text()
+        load_as_default = self.defaultProfileCheckBox.isChecked()
+        result = LoginScreenResult(path, load_as_default)
+        self.close_with_result(result)
+
+    def _load_existing_profile(self):
+        index = self.profilesComboBox.currentIndex()
+        load_as_default = self.defaultProfileCheckBox.isChecked()
+        path = util.join_path(self._profiles[index][0], self._profiles[index][1] + '.tox')
+        result = LoginScreenResult(path, load_as_default)
+        self.close_with_result(result)

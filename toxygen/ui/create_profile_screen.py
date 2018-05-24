@@ -29,15 +29,24 @@ class CreateProfileScreen(CenteredWidget, DialogWithResult):
         uic.loadUi(util.get_views_path('create_profile_screen'), self)
         self.center()
         self.createProfile.clicked.connect(self._create_profile)
+        self.retranslateUi()
 
     def retranslateUi(self):
-        self.defaultFolder.setPlaceholderText(util_ui.tr('Save in default folder'))
-        self.programFolder.setPlaceholderText(util_ui.tr('Save in program folder'))
+        self.setWindowTitle(util_ui.tr('New profile settings'))
+        self.defaultFolder.setText(util_ui.tr('Save in default folder'))
+        self.programFolder.setText(util_ui.tr('Save in program folder'))
+        self.password.setPlaceholderText(util_ui.tr('Password'))
+        self.confirmPassword.setPlaceholderText(util_ui.tr('Confirm password'))
         self.createProfile.setText(util_ui.tr('Create profile'))
-        self.passwordLabel.setText(util_ui.tr('Password:'))
+        self.passwordLabel.setText(util_ui.tr('Password (at least 8 symbols):'))
 
     def _create_profile(self):
-        if self.password.text() != self.confirmPassword.text():
-            return  # TODO : error
-        result = CreateProfileScreenResult(self.defaultFolder.isChecked(), self.password.text())
+        password = self.password.text()
+        if password != self.confirmPassword.text():
+            self.errorLabel.setText(util_ui.tr('Passwords do not match'))
+            return
+        if 0 < len(password) < 8:
+            self.errorLabel.setText(util_ui.tr('Password must be at least 8 symbols'))
+            return
+        result = CreateProfileScreenResult(self.defaultFolder.isChecked(), password)
         self.close_with_result(result)

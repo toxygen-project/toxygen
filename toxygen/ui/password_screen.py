@@ -1,19 +1,20 @@
 from ui.widgets import CenteredWidget, LineEdit, DialogWithResult
 from PyQt5 import QtCore, QtWidgets
+import utils.ui as util_ui
 
 
 class PasswordArea(LineEdit):
 
     def __init__(self, parent):
-        super(PasswordArea, self).__init__(parent)
-        self.parent = parent
+        super().__init__(parent)
+        self._parent = parent
         self.setEchoMode(QtWidgets.QLineEdit.Password)
 
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Return:
-            self.parent.button_click()
+            self._parent.button_click()
         else:
-            super(PasswordArea, self).keyPressEvent(event)
+            super().keyPressEvent(event)
 
 
 class PasswordScreenBase(CenteredWidget, DialogWithResult):
@@ -37,7 +38,7 @@ class PasswordScreenBase(CenteredWidget, DialogWithResult):
 
         self.button = QtWidgets.QPushButton(self)
         self.button.setGeometry(QtCore.QRect(30, 90, 300, 30))
-        self.button.setText('OK')
+        self.button.setText(util_ui.tr('OK'))
         self.button.clicked.connect(self.button_click)
 
         self.warning = QtWidgets.QLabel(self)
@@ -59,15 +60,15 @@ class PasswordScreenBase(CenteredWidget, DialogWithResult):
             super(PasswordScreenBase, self).keyPressEvent(event)
 
     def retranslateUi(self):
-        self.setWindowTitle(QtWidgets.QApplication.translate("pass", "Enter password"))
-        self.enter_pass.setText(QtWidgets.QApplication.translate("pass", "Password:"))
-        self.warning.setText(QtWidgets.QApplication.translate("pass", "Incorrect password"))
+        self.setWindowTitle(util_ui.tr('Enter password'))
+        self.enter_pass.setText(util_ui.tr('Password:'))
+        self.warning.setText(util_ui.tr('Incorrect password'))
 
 
 class PasswordScreen(PasswordScreenBase):
 
     def __init__(self, encrypt, data):
-        super(PasswordScreen, self).__init__(encrypt)
+        super().__init__(encrypt)
         self._data = data
 
     def button_click(self):
@@ -129,16 +130,15 @@ class SetProfilePasswordScreen(CenteredWidget):
         self.warning.setStyleSheet('QLabel { color: #BC1C1C; }')
 
     def retranslateUi(self):
-        self.setWindowTitle(QtWidgets.QApplication.translate("PasswordScreen", "Profile password"))
+        self.setWindowTitle(util_ui.tr('Profile password'))
         self.password.setPlaceholderText(
-            QtWidgets.QApplication.translate("PasswordScreen", "Password (at least 8 symbols)"))
+            util_ui.tr('Password (at least 8 symbols)'))
         self.confirm_password.setPlaceholderText(
-            QtWidgets.QApplication.translate("PasswordScreen", "Confirm password"))
+            util_ui.tr('Confirm password'))
         self.set_password.setText(
-            QtWidgets.QApplication.translate("PasswordScreen", "Set password"))
-        self.not_match.setText(QtWidgets.QApplication.translate("PasswordScreen", "Passwords do not match"))
-        self.warning.setText(
-            QtWidgets.QApplication.translate("PasswordScreen", "There is no way to recover lost passwords"))
+            util_ui.tr('Set password'))
+        self.not_match.setText(util_ui.tr('Passwords do not match'))
+        self.warning.setText(util_ui.tr('There is no way to recover lost passwords'))
 
     def new_password(self):
         if self.password.text() == self.confirm_password.text():
@@ -146,9 +146,8 @@ class SetProfilePasswordScreen(CenteredWidget):
                 self._encrypt.set_password(self.password.text())
                 self.close()
             else:
-                self.not_match.setText(
-                    QtWidgets.QApplication.translate("PasswordScreen", "Password must be at least 8 symbols"))
+                self.not_match.setText(util_ui.tr('Password must be at least 8 symbols'))
             self.not_match.setVisible(True)
         else:
-            self.not_match.setText(QtWidgets.QApplication.translate("PasswordScreen", "Passwords do not match"))
+            self.not_match.setText(util_ui.tr('Passwords do not match'))
             self.not_match.setVisible(True)
