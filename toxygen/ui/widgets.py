@@ -24,6 +24,7 @@ class CenteredWidget(QtWidgets.QWidget):
 
     def __init__(self):
         super().__init__()
+        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
         self.center()
 
     def center(self):

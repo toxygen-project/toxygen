@@ -15,70 +15,41 @@ class AddContact(CenteredWidget):
         super().__init__()
         self._settings = settings
         self._contacts_manager = contacts_manager
-        self.initUI(tox_id)
+        uic.loadUi(get_views_path('add_contact_screen'), self)
+        self._update_ui(tox_id)
         self._adding = False
-        self.setAttribute(QtCore.Qt.WA_DeleteOnClose)
 
-    def initUI(self, tox_id):
-        self.setObjectName('AddContact')
-        self.resize(568, 306)
-        self.sendRequestButton = QtWidgets.QPushButton(self)
-        self.sendRequestButton.setGeometry(QtCore.QRect(50, 270, 471, 31))
-        self.sendRequestButton.setMinimumSize(QtCore.QSize(0, 0))
-        self.sendRequestButton.setBaseSize(QtCore.QSize(0, 0))
-        self.sendRequestButton.setObjectName("sendRequestButton")
-        self.sendRequestButton.clicked.connect(self.add_friend)
-        self.tox_id = LineEdit(self)
-        self.tox_id.setGeometry(QtCore.QRect(50, 40, 471, 27))
-        self.tox_id.setObjectName("lineEdit")
-        self.tox_id.setText(tox_id)
-        self.label = QtWidgets.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(50, 10, 80, 20))
-        self.error_label = DataLabel(self)
-        self.error_label.setGeometry(QtCore.QRect(120, 10, 420, 20))
-        font = QtGui.QFont()
-        font.setFamily(self._settings['font'])
-        font.setPointSize(10)
-        font.setWeight(30)
-        self.error_label.setFont(font)
-        self.error_label.setStyleSheet("QLabel { color: #BC1C1C; }")
-        self.label.setObjectName("label")
-        self.message_edit = QtWidgets.QTextEdit(self)
-        self.message_edit.setGeometry(QtCore.QRect(50, 110, 471, 151))
-        self.message_edit.setObjectName("textEdit")
-        self.message = QtWidgets.QLabel(self)
-        self.message.setGeometry(QtCore.QRect(50, 70, 101, 31))
-        self.message.setFont(font)
-        self.message.setObjectName("label_2")
-        self.retranslateUi()
-        self.message_edit.setText('Hello! Add me to your contact list please')
-        font.setPointSize(12)
-        font.setBold(True)
-        self.label.setFont(font)
-        self.message.setFont(font)
-        QtCore.QMetaObject.connectSlotsByName(self)
+    def _update_ui(self, tox_id):
+        self.toxIdLineEdit = LineEdit(self)
+        self.toxIdLineEdit.setGeometry(QtCore.QRect(50, 40, 460, 30))
+        self.toxIdLineEdit.setText(tox_id)
 
-    def add_friend(self):
+        self.messagePlainTextEdit.document().setPlainText(util_ui.tr('Hello! Please add me to your contact list.'))
+        self.addContactPushButton.clicked.connect(self._add_friend)
+        self._retranslate_ui()
+
+    def _add_friend(self):
         if self._adding:
             return
         self._adding = True
-        tox_id = self.tox_id.text().strip()
+        tox_id = self.toxIdLineEdit.text().strip()
         if tox_id.startswith('tox:'):
             tox_id = tox_id[4:]
-        send = self._contacts_manager.send_friend_request(tox_id, self.message_edit.toPlainText())
+        message = self.messagePlainTextEdit.toPlainText()
+        send = self._contacts_manager.send_friend_request(tox_id, message)
         self._adding = False
         if send is True:
             # request was successful
             self.close()
         else:  # print error data
-            self.error_label.setText(send)
+            self.errorLabel.setText(send)
 
-    def retranslateUi(self):
+    def _retranslate_ui(self):
         self.setWindowTitle(util_ui.tr('Add contact'))
-        self.sendRequestButton.setText(util_ui.tr('Send request'))
-        self.label.setText(util_ui.tr('TOX ID:'))
-        self.message.setText(util_ui.tr('Message:'))
-        self.tox_id.setPlaceholderText(util_ui.tr('TOX ID or public key of contact'))
+        self.addContactPushButton.setText(util_ui.tr('Send request'))
+        self.toxIdLabel.setText(util_ui.tr('TOX ID:'))
+        self.messageLabel.setText(util_ui.tr('Message:'))
+        self.toxIdLineEdit.setPlaceholderText(util_ui.tr('TOX ID or public key of contact'))
 
 
 class ProfileSettings(CenteredWidget):
