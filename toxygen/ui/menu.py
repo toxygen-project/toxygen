@@ -5,6 +5,7 @@ from ui.widgets import CenteredWidget, DataLabel, LineEdit, RubberBandWindow
 import pyaudio
 import updater.updater as updater
 import utils.ui as util_ui
+import cv2
 
 
 class AddContact(CenteredWidget):
@@ -761,70 +762,18 @@ class VideoSettings(CenteredWidget):
     def __init__(self, settings):
         super().__init__()
         self._settings = settings
-        self.initUI()
-        self.retranslateUi()
+        uic.loadUi(get_views_path('video_settings_screen'), self)
+        self._devices = self._frame_max_sizes = None
+        self._update_ui()
         self.center()
         self.desktopAreaSelection = None
 
-    def initUI(self):
-        self.setObjectName("videoSettingsForm")
-        self.resize(400, 120)
-        self.setMinimumSize(QtCore.QSize(400, 120))
-        self.setMaximumSize(QtCore.QSize(400, 120))
-        self.in_label = QtWidgets.QLabel(self)
-        self.in_label.setGeometry(QtCore.QRect(25, 5, 350, 20))
-        font = QtGui.QFont()
-        font.setPointSize(16)
-        font.setBold(True)
-        font.setFamily(self._settings['font'])
-        self.in_label.setFont(font)
-        self.video_size = QtWidgets.QComboBox(self)
-        self.video_size.setGeometry(QtCore.QRect(25, 70, 350, 30))
-        self.input = QtWidgets.QComboBox(self)
-        self.input.setGeometry(QtCore.QRect(25, 30, 350, 30))
-        self.input.currentIndexChanged.connect(self.selectionChanged)
-        self.button = QtWidgets.QPushButton(self)
-        self.button.clicked.connect(self.button_clicked)
-        self.button.setGeometry(QtCore.QRect(25, 70, 350, 30))
-        import cv2
-        self.devices = [-1]
-        screen = QtWidgets.QApplication.primaryScreen()
-        size = screen.size()
-        self.frame_max_sizes = [(size.width(), size.height())]
-        desktop = util_ui.tr("Desktop")
-        self.input.addItem(desktop)
-        for i in range(10):
-            v = cv2.VideoCapture(i)
-            if v.isOpened():
-                v.set(cv2.CAP_PROP_FRAME_WIDTH, 10000)
-                v.set(cv2.CAP_PROP_FRAME_HEIGHT, 10000)
-
-                width = int(v.get(cv2.CAP_PROP_FRAME_WIDTH))
-                height = int(v.get(cv2.CAP_PROP_FRAME_HEIGHT))
-                del v
-                self.devices.append(i)
-                self.frame_max_sizes.append((width, height))
-                self.input.addItem('Device #' + str(i))
-        try:
-            index = self.devices.index(self._settings.video['device'])
-            self.input.setCurrentIndex(index)
-        except:
-            print('Video devices error!')
-
-    def retranslateUi(self):
-        self.setWindowTitle(util_ui.tr("Video settings"))
-        self.in_label.setText(util_ui.tr("Device:"))
-        self.button.setText(util_ui.tr("Select region"))
-
-    def button_clicked(self):
-        self.desktopAreaSelection = DesktopAreaSelectionWindow(self)
-
     def closeEvent(self, event):
-        if self.input.currentIndex() == 0:
+        if self.deviceComboBox.currentIndex() == 0:
             return
         try:
             self._settings.video['device'] = self.devices[self.input.currentIndex()]
-            text = self.video_size.currentText()
+            text = self.resolutionComboBox.currentText()
             self._settings.video['width'] = int(text.split(' ')[0])
             self._settings.video['height'] = int(text.split(' ')[-1])
             self._settings.save()
@@ -840,15 +789,48 @@ class VideoSettings(CenteredWidget):
         self._settings.video['y'] = y
         self._settings.save()
 
-    def selectionChanged(self):
-        if self.input.currentIndex() == 0:
-            self.button.setVisible(True)
-            self.video_size.setVisible(False)
-        else:
-            self.button.setVisible(False)
-            self.video_size.setVisible(True)
-        width, height = self.frame_max_sizes[self.input.currentIndex()]
-        self.video_size.clear()
+    def _update_ui(self):
+        self.deviceComboBox.currentIndexChanged.connect(self._device_changed)
+        self.selectRegionPushButton.clicked.connect(self._button_clicked)
+        self._devices = [-1]
+        screen = QtWidgets.QApplication.primaryScreen()
+        size = screen.size()
+        self._frame_max_sizes = [(size.width(), size.height())]
+        desktop = util_ui.tr("Desktop")
+        self.deviceComboBox.addItem(desktop)
+        for i in range(10):
+            v = cv2.VideoCapture(i)
+            if v.isOpened():
+                v.set(cv2.CAP_PROP_FRAME_WIDTH, 10000)
+                v.set(cv2.CAP_PROP_FRAME_HEIGHT, 10000)
+
+                width = int(v.get(cv2.CAP_PROP_FRAME_WIDTH))
+                height = int(v.get(cv2.CAP_PROP_FRAME_HEIGHT))
+                del v
+                self._devices.append(i)
+                self._frame_max_sizes.append((width, height))
+                self.deviceComboBox.addItem(util_ui.tr('Device #') + str(i))
+        try:
+            index = self._devices.index(self._settings.video['device'])
+            self.deviceComboBox.setCurrentIndex(index)
+        except:
+            print('Video devices error!')
+        self._retranslate_ui()
+
+    def _retranslate_ui(self):
+        self.setWindowTitle(util_ui.tr("Video settings"))
+        self.deviceLabel.setText(util_ui.tr("Device:"))
+        self.selectRegionPushButton.setText(util_ui.tr("Select region"))
+
+    def _button_clicked(self):
+        self.desktopAreaSelection = DesktopAreaSelectionWindow(self)
+
+    def _device_changed(self):
+        index = self.deviceComboBox.currentIndex()
+        self.selectRegionPushButton.setVisible(index == 0)
+        self.resolutionComboBox.setVisible(index != 0)
+        width, height = self._frame_max_sizes[index]
+        self.resolutionComboBox.clear()
         dims = [
             (320, 240),
             (640, 360),
@@ -860,7 +842,7 @@ class VideoSettings(CenteredWidget):
         ]
         for w, h in dims:
             if w <= width and h <= height:
-                self.video_size.addItem(str(w) + ' * ' + str(h))
+                self.resolutionComboBox.addItem(str(w) + ' * ' + str(h))
 
 
 class PluginsSettings(CenteredWidget):
