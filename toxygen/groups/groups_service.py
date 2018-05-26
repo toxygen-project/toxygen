@@ -22,7 +22,8 @@ class GroupsService(tox_save.ToxSave):
 
     def create_new_gc(self, name, privacy_state):
         group_number = self._tox.group_new(privacy_state, name.encode('utf-8'))
-        self._add_new_group_by_number(group_number)
+        if group_number != -1:
+            self._add_new_group_by_number(group_number)
 
     def join_gc_by_id(self, chat_id, password):
         group_number = self._tox.group_join(chat_id, password)
