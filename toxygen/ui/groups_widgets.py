@@ -45,6 +45,7 @@ class JoinGroupScreen(CenteredWidget):
         self._groups_service = groups_service
         uic.loadUi(util.get_views_path('join_group_screen'), self)
         self.center()
+        self._update_ui()
 
     def _update_ui(self):
         self._retranslate_ui()
