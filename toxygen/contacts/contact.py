@@ -320,3 +320,11 @@ class Contact(basecontact.BaseContact):
 
     def get_context_menu_generator(self):
         return BaseContactMenuGenerator(self)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Filtration support
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def set_widget(self, widget):
+        self._widget = widget
+        self.init_widget()

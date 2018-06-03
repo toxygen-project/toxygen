@@ -154,7 +154,7 @@ class ContactsManager(ToxSave):
     def filtration_and_sorting(self, sorting=0, filter_str=''):
         """
         Filtration of friends list
-        :param sorting: 0 - no sort, 1 - online only, 2 - online first, 4 - by name
+        :param sorting: 0 - no sorting, 1 - online only, 2 - online first, 4 - by name
         :param filter_str: show contacts which name contains this substring
         """
         # TODO: simplify?
@@ -183,9 +183,10 @@ class ContactsManager(ToxSave):
                 part1 = sorted(part1, key=lambda x: x.number)
                 part2 = sorted(part2, key=lambda x: x.number)
                 self._contacts = part1 + part2
-            # self._screen.friends_list.clear()
-            # for contact in self._contacts:
-            #     contact.set_widget(self.create_friend_item())
+            for index, contact in enumerate(self._contacts):
+                list_item = self._screen.friends_list.item(index)
+                item_widget = self._screen.friends_list.itemWidget(list_item)
+                contact.set_widget(item_widget)
         for index, friend in enumerate(self._contacts):
             friend.visibility = (friend.status is not None or not (sorting & 1)) and (filter_str in friend.name.lower())
             friend.visibility = friend.visibility or friend.messages or friend.actions
