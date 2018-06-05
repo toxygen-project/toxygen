@@ -49,7 +49,7 @@ class LoginScreen(CenteredWidget, DialogWithResult):
 
     def _update_ui(self):
         self.profileNameLineEdit = LineEditWithEnterSupport(self._create_profile, self)
-        self.profileNameLineEdit.setGeometry(QtCore.QRect(20, 100, 170, 30))
+        self.profileNameLineEdit.setGeometry(QtCore.QRect(20, 100, 160, 30))
         self._retranslate_ui()
         self.createProfilePushButton.clicked.connect(self._create_profile)
         self.loadProfilePushButton.clicked.connect(self._load_existing_profile)

@@ -26,6 +26,7 @@ class CreateGroupScreen(CenteredWidget):
         self.addGroupButton.setText(util_ui.tr('Create group'))
         self.groupTypeComboBox.addItem(util_ui.tr('Public'))
         self.groupTypeComboBox.addItem(util_ui.tr('Private'))
+        self.groupTypeComboBox.setCurrentIndex(1)
 
     def _create_group(self):
         name = self.groupNameLineEdit.text()

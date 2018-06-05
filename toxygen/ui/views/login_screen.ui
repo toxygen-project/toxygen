@@ -67,9 +67,9 @@
    <widget class="QPushButton" name="createProfilePushButton">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>10</x>
       <y>110</y>
-      <width>150</width>
+      <width>160</width>
       <height>27</height>
      </rect>
     </property>
@@ -119,9 +119,9 @@
    <widget class="QPushButton" name="loadProfilePushButton">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>10</x>
       <y>110</y>
-      <width>150</width>
+      <width>160</width>
       <height>27</height>
      </rect>
     </property>
