@@ -382,9 +382,10 @@ def group_message(window, tray, tox, messenger, settings, profile):
 
 
 def group_invite(groups_service):
-    def wrapped(tox, friend_number, invite_data, length, user_data):
+    def wrapped(tox, friend_number, invite_data, length, group_name, group_name_length, user_data):
+        group_name = bytes(group_name[:group_name_length])
         invoke_in_main_thread(groups_service.process_group_invite,
-                              friend_number,
+                              friend_number, str(group_name, 'utf-8'),
                               bytes(invite_data[:length]))
 
     return wrapped

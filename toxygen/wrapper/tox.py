@@ -2199,7 +2199,8 @@ class Tox:
         user_data - user data
         """
 
-        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, POINTER(c_uint8), c_size_t, c_void_p)
+        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, POINTER(c_uint8), c_size_t,
+                               POINTER(c_uint8), c_size_t, c_void_p)
         self.group_invite_cb = c_callback(callback)
         Tox.libtoxcore.tox_callback_group_invite(self._tox_pointer, self.group_invite_cb, user_data)
 
