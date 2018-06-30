@@ -27,3 +27,8 @@ MessageEdit
 {
     background-color: transparent;
 }
+
+#warningLabel
+{
+    color: #BC1C1C;
+}

@@ -1322,3 +1322,8 @@ ClickableLabel:hover
 {
     background-color: #4A4949;
 }
+
+#warningLabel
+{
+    color: #BC1C1C;
+}

@@ -46,6 +46,7 @@ before_script:
   - sudo make install
   - echo '/usr/local/lib/' | sudo tee -a /etc/ld.so.conf.d/locallib.conf
   - sudo ldconfig
+  - cd ..
 script:
   - py.test tests/travis.py
   - py.test tests/tests.py

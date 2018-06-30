@@ -9,7 +9,7 @@ __version__ = '0.5.0'
 
 
 def clean():
-    """Removes all windows libs from libs folder"""
+    """Removes libs folder"""
     directory = util.get_libs_directory()
     util.remove(directory)
 
@@ -25,10 +25,10 @@ def print_toxygen_version():
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--version', action='store_true', help='Prints Toxygen version')
-    parser.add_argument('--clean', action='store_true', help='Deletes toxcore libs from libs folder')
-    parser.add_argument('--reset', action='store_true', help='Resets default profile')
-    parser.add_argument('--uri', help='Adds specified TOX ID to friends')
-    parser.add_argument('profile', nargs='?', default=None, help='Path to TOX profile')
+    parser.add_argument('--clean', action='store_true', help='Delete toxcore libs from libs folder')
+    parser.add_argument('--reset', action='store_true', help='Reset default profile')
+    parser.add_argument('--uri', help='Add specified Tox ID to friends')
+    parser.add_argument('profile', nargs='?', default=None, help='Path to Tox profile')
     args = parser.parse_args()
 
     if args.version:
