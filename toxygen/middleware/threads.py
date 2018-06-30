@@ -3,7 +3,12 @@ import threading
 import queue
 from utils import util
 import time
+from PyQt5 import QtCore
 
+
+# -----------------------------------------------------------------------------------------------------------------
+# Base threads
+# -----------------------------------------------------------------------------------------------------------------
 
 class BaseThread(threading.Thread):
 
@@ -15,6 +20,21 @@ class BaseThread(threading.Thread):
         self._stop_thread = True
         self.join()
 
+
+class BaseQThread(QtCore.QThread):
+
+    def __init__(self):
+        super().__init__()
+        self._stop_thread = False
+
+    def stop_thread(self):
+        self._stop_thread = True
+        self.wait()
+
+
+# -----------------------------------------------------------------------------------------------------------------
+# Toxcore threads
+# -----------------------------------------------------------------------------------------------------------------
 
 class InitThread(BaseThread):
 
@@ -53,7 +73,7 @@ class InitThread(BaseThread):
                 time.sleep(5)
 
 
-class ToxIterateThread(BaseThread):
+class ToxIterateThread(BaseQThread):
 
     def __init__(self, tox):
         super().__init__()
@@ -65,7 +85,7 @@ class ToxIterateThread(BaseThread):
             time.sleep(self._tox.iteration_interval() / 1000)
 
 
-class ToxAVIterateThread(BaseThread):
+class ToxAVIterateThread(BaseQThread):
 
     def __init__(self, toxav):
         super().__init__()
@@ -76,6 +96,10 @@ class ToxAVIterateThread(BaseThread):
             self._toxav.iterate()
             time.sleep(self._toxav.iteration_interval() / 1000)
 
+
+# -----------------------------------------------------------------------------------------------------------------
+# File transfers thread
+# -----------------------------------------------------------------------------------------------------------------
 
 class FileTransfersThread(BaseThread):
 
@@ -114,6 +138,10 @@ def stop_file_transfer_thread():
 def execute(func, *args, **kwargs):
     _thread.execute(func, *args, **kwargs)
 
+
+# -----------------------------------------------------------------------------------------------------------------
+# Invoking in main thread
+# -----------------------------------------------------------------------------------------------------------------
 
 class InvokeEvent(QtCore.QEvent):
     EVENT_TYPE = QtCore.QEvent.Type(QtCore.QEvent.registerEventType())
