@@ -306,6 +306,7 @@ class App:
         Create new tox instance (new network settings)
         :return: tox instance
         """
+        self._contacts_manager.reset_contacts_statuses()
         self._stop_threads(False)
         data = self._tox.get_savedata()
         self._save_profile(data)

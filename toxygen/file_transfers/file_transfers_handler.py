@@ -254,7 +254,7 @@ class FileTransfersHandler(ToxSave):
         if ra.state != FILE_TRANSFER_STATE['CANCELLED']:
             self._file_transfers[(friend_number, file_number)] = ra
             ra.set_transfer_finished_handler(self.transfer_finished)
-        else:
+        elif not size:
             friend.reset_avatar(self._settings['identicons'])
 
     def _send_avatar_to_contacts(self):
