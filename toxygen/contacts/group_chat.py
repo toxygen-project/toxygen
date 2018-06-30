@@ -8,8 +8,8 @@ from common.tox_save import ToxSave
 
 class GroupChat(contact.Contact, ToxSave):
 
-    def __init__(self, tox, profile_manager, message_getter, number, name, status_message, widget, tox_id):
-        super().__init__(profile_manager, message_getter, number, name, status_message, widget, tox_id)
+    def __init__(self, tox, message_getter, number, name, status_message, widget, tox_id):
+        super().__init__(message_getter, number, name, status_message, widget, tox_id)
         ToxSave.__init__(self, tox)
         self.set_status(constants.TOX_USER_STATUS['NONE'])
         self._peers = []
