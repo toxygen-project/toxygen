@@ -38,15 +38,14 @@ before_script:
   - sudo ldconfig
   - cd ..
 # Toxcore
-  - git clone https://github.com/ingvar1995/toxcore.git --branch=new_gc
+  - git clone https://github.com/ingvar1995/toxcore.git --branch=ngc_rebase
   - cd toxcore
-  - autoreconf -if
-  - ./configure
+  - mkdir _build && cd _build
+  - cmake ..
   - make -j$(nproc)
   - sudo make install
   - echo '/usr/local/lib/' | sudo tee -a /etc/ld.so.conf.d/locallib.conf
   - sudo ldconfig
-  - cd ..
 script:
   - py.test tests/travis.py
   - py.test tests/tests.py
