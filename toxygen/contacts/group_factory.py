@@ -4,8 +4,9 @@ from common.tox_save import ToxSave
 
 class GroupFactory(ToxSave):
 
-    def __init__(self, settings, tox, db, items_factory):
+    def __init__(self, profile_manager, settings, tox, db, items_factory):
         super().__init__(tox)
+        self._profile_manager = profile_manager
         self._settings = settings
         self._db = db
         self._items_factory = items_factory
@@ -26,7 +27,7 @@ class GroupFactory(ToxSave):
         name = alias or self._tox.group_get_name(group_number) or tox_id
         status_message = self._tox.group_get_topic(group_number)
         message_getter = self._db.messages_getter(tox_id)
-        group = GroupChat(self._tox, message_getter, group_number, name, status_message,
+        group = GroupChat(self._tox, self._profile_manager, message_getter, group_number, name, status_message,
                           item, tox_id)
         group.set_alias(alias)
 

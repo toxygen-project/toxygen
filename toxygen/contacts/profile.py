@@ -8,12 +8,13 @@ class Profile(basecontact.BaseContact, tox_save.ToxSave):
     """
     Profile of current toxygen user. Contains friends list, tox instance
     """
-    def __init__(self, tox, screen, contacts_provider, reset_action):
+    def __init__(self, profile_manager, tox, screen, contacts_provider, reset_action):
         """
         :param tox: tox instance
         :param screen: ref to main screen
         """
         basecontact.BaseContact.__init__(self,
+                                         profile_manager,
                                          tox.self_get_name(),
                                          tox.self_get_status_message(),
                                          screen.user_info,

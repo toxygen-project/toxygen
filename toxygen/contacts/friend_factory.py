@@ -4,8 +4,9 @@ from common.tox_save import ToxSave
 
 class FriendFactory(ToxSave):
 
-    def __init__(self, settings, tox, db, items_factory):
+    def __init__(self, profile_manager, settings, tox, db, items_factory):
         super().__init__(tox)
+        self._profile_manager = profile_manager
         self._settings = settings
         self._db = db
         self._items_factory = items_factory
@@ -26,7 +27,7 @@ class FriendFactory(ToxSave):
         name = alias or self._tox.friend_get_name(friend_number) or tox_id
         status_message = self._tox.friend_get_status_message(friend_number)
         message_getter = self._db.messages_getter(tox_id)
-        friend = Friend(message_getter, friend_number, name, status_message, item, tox_id)
+        friend = Friend(self._profile_manager, message_getter, friend_number, name, status_message, item, tox_id)
         friend.set_alias(alias)
 
         return friend

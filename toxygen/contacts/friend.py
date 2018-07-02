@@ -9,8 +9,8 @@ class Friend(contact.Contact):
     Friend in list of friends.
     """
 
-    def __init__(self, message_getter, number, name, status_message, widget, tox_id):
-        super().__init__(message_getter, number, name, status_message, widget, tox_id)
+    def __init__(self, profile_manager, message_getter, number, name, status_message, widget, tox_id):
+        super().__init__(profile_manager, message_getter, number, name, status_message, widget, tox_id)
         self._receipts = 0
         self._typing_notification_handler = common.FriendTypingNotificationHandler(number)
 

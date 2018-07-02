@@ -50,6 +50,9 @@ class FileTransfer:
         self._finished_event = Event()
         self._file_id = self._file = None
 
+    def set_tox(self, tox):
+        self._tox = tox
+
     def set_state_changed_handler(self, handler):
         self._state_changed_event += handler
 
@@ -341,10 +344,11 @@ class ReceiveAvatar(ReceiveTransfer):
             self.send_control(TOX_FILE_CONTROL['RESUME'])
 
     def write_chunk(self, position, data):
-        if data is None:
+        super().write_chunk(position, data)
+        if self.state:
             avatar_path = self._path[:-4]
             if exists(avatar_path):
                 chdir(dirname(avatar_path))
                 remove(avatar_path)
             rename(self._path, avatar_path)
-        super().write_chunk(position, data)
+            self._finished()

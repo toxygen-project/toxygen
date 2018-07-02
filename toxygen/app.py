@@ -333,11 +333,11 @@ class App:
         db = Database(self._path.replace('.tox', '.db'), self._toxes)
 
         contact_items_factory = ContactItemsFactory(self._settings, self._ms)
-        self._friend_factory = FriendFactory(self._settings,
+        self._friend_factory = FriendFactory(self._profile_manager, self._settings,
                                              self._tox, db, contact_items_factory)
-        self._group_factory = GroupFactory(self._settings, self._tox, db, contact_items_factory)
+        self._group_factory = GroupFactory(self._profile_manager, self._settings, self._tox, db, contact_items_factory)
         self._contacts_provider = ContactProvider(self._tox, self._friend_factory, self._group_factory)
-        self._profile = Profile(self._tox, self._ms, self._contacts_provider, self._reset)
+        self._profile = Profile(self._profile_manager, self._tox, self._ms, self._contacts_provider, self._reset)
         self._plugin_loader = PluginLoader(self._tox, self._toxes, self._profile, self._settings)
         history = None
         messages_items_factory = MessagesItemsFactory(self._settings, self._plugin_loader, self._smiley_loader,

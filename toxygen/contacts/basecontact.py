@@ -14,13 +14,14 @@ class BaseContact:
     Base class for all contacts.
     """
 
-    def __init__(self, name, status_message, widget, tox_id):
+    def __init__(self, profile_manager, name, status_message, widget, tox_id):
         """
         :param name: name, example: 'Toxygen user'
         :param status_message: status message, example: 'Toxing on Toxygen'
         :param widget: ContactItem instance
         :param tox_id: tox id of contact
         """
+        self._profile_manager = profile_manager
         self._name, self._status_message = name, status_message
         self._status, self._widget = None, widget
         self._tox_id = tox_id
@@ -143,7 +144,7 @@ class BaseContact:
         return avatar_path
 
     def get_contact_avatar_path(self):
-        directory = util.join_path(Settings.get_default_path(), 'avatars')
+        directory = util.join_path(self._profile_manager.get_dir(), 'avatars')
 
         return util.join_path(directory, '{}.png'.format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2]))
 
