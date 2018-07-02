@@ -24,3 +24,5 @@ html
 Toxygen.egg-info
 *.tox
 .cache
+*.db
+
