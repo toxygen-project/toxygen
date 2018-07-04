@@ -299,7 +299,7 @@ class App:
         self._app.exec_()
         if p.result is not None:
             return p.result
-        raise SystemExit()
+        self._force_exit()
 
     def _reset(self):
         """
@@ -379,6 +379,9 @@ class App:
 
     def _create_tox(self, data):
         return tox_factory(data, self._settings)
+
+    def _force_exit(self):
+        raise SystemExit()
 
     def _init_callbacks(self):
         callbacks.init_callbacks(self._tox, self._profile, self._settings, self._plugin_loader, self._contacts_manager,

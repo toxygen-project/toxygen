@@ -1,4 +1,5 @@
 from pydenticon import Generator
+import hashlib
 
 
 class BaseTypingNotificationHandler:
@@ -34,6 +35,7 @@ def generate_avatar(public_key):
                   'rgb(49,203,115)',
                   'rgb(141,69,170)']
     generator = Generator(5, 5, foreground=foreground, background='rgba(42,42,42,0)')
-    identicon = generator.generate(public_key, 220, 220, padding=(10, 10, 10, 10))
+    digest = hashlib.sha256(public_key.encode('utf-8')).hexdigest()
+    identicon = generator.generate(digest, 220, 220, padding=(10, 10, 10, 10))
 
     return identicon

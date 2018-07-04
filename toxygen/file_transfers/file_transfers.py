@@ -347,5 +347,4 @@ class ReceiveAvatar(ReceiveTransfer):
                 chdir(dirname(avatar_path))
                 remove(avatar_path)
             rename(self._path, avatar_path)
-            self._finished()
         super().write_chunk(position, data)
