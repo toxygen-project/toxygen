@@ -102,6 +102,10 @@ def join_path(a, b):
     return os.path.join(a, b)
 
 
+def file_exists(file_path):
+    return os.path.exists(file_path)
+
+
 def copy(src, dest):
     if not os.path.exists(dest):
         os.makedirs(dest)

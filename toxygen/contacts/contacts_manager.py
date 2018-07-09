@@ -296,11 +296,7 @@ class ContactsManager(ToxSave):
         Adds friend to list
         """
         self._tox.friend_add_norequest(tox_id)
-        self._history.add_friend_to_db(tox_id)
-        friend = self._contact_provider.get_friend_by_public_key(tox_id)
-        self._contacts.append(friend)
-        friend.reset_avatar(self._settings['identicons'])
-        self._save_profile()
+        self._add_friend(tox_id)
 
     def block_user(self, tox_id):
         """
@@ -375,8 +371,7 @@ class ContactsManager(ToxSave):
             else:
                 self._tox.friend_add(tox_id, message.encode('utf-8'))
                 tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
-                friend = self._contact_provider.get_friend_by_public_key(tox_id)
-                self._contacts.append(friend)
+                self._add_friend(tox_id)
             self.save_profile()
             return True
         except Exception as ex:  # wrong data
@@ -430,6 +425,8 @@ class ContactsManager(ToxSave):
         self._load_groups()
         if len(self._contacts):
             self.set_active(0)
+        for contact in filter(lambda c: not c.has_avatar(), self._contacts):
+            contact.reset_avatar(self._settings['identicons'])
         self.update_filtration()
 
     def _load_friends(self):
@@ -476,6 +473,14 @@ class ContactsManager(ToxSave):
         pixmap = QtGui.QPixmap(avatar_path)
         self._screen.account_avatar.setPixmap(pixmap.scaled(width, width,
                                                             QtCore.Qt.KeepAspectRatio, QtCore.Qt.SmoothTransformation))
+
+    def _add_friend(self, tox_id):
+        self._history.add_friend_to_db(tox_id)
+        friend = self._contact_provider.get_friend_by_public_key(tox_id)
+        self._contacts.append(friend)
+        if not friend.has_avatar():
+            friend.reset_avatar(self._settings['identicons'])
+        self._save_profile()
 
     def _save_profile(self):
         data = self._tox.get_savedata()

@@ -148,6 +148,11 @@ class BaseContact:
 
         return util.join_path(directory, '{}.png'.format(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2]))
 
+    def has_avatar(self):
+        path = self.get_contact_avatar_path()
+
+        return util.file_exists(path)
+
     def get_avatar_changed_event(self):
         return self._avatar_changed_event
 

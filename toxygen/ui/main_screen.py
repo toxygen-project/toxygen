@@ -17,7 +17,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._plugins_loader = None
         self.setAcceptDrops(True)
         self._saved = False
-        self._profile = self._toxes = None
+        self._profile = self._toxes = self._messenger = None
         self._file_transfer_handler = self._history_loader = self._groups_service = self._calls_manager = None
         self._should_show_group_peers_list = False
         self.initUI()
@@ -34,6 +34,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._calls_manager = calls_manager
         self._groups_service = groups_service
         self._toxes = toxes
+        self._messenger = messenger
         self._contacts_manager.active_contact_changed.add_callback(self._new_contact_selected)
         self.messageEdit.set_messenger(messenger)
 
