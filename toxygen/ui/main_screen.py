@@ -170,7 +170,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.online_contacts.addItem(util_ui.tr("Online and by name"))
         self.online_contacts.addItem(util_ui.tr("Online first and by name"))
         ind = self._settings['sorting']
-        d = {0: 0, 1: 1, 2: 2, 3: 4, 1 | 4: 4, 2 | 4: 5}
+        d = {0: 0, 1: 1, 2: 2, 3: 4, 4: 3, 1 | 4: 4, 2 | 4: 5}
         self.online_contacts.setCurrentIndex(d[ind])
         self.importPlugin.setText(util_ui.tr("Import plugin"))
         self.reloadPlugins.setText(util_ui.tr("Reload plugins"))

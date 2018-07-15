@@ -19,6 +19,13 @@ class Messenger(tox_save.ToxSave):
         calls_manager.call_started_event.add_callback(self._on_call_started)
         calls_manager.call_finished_event.add_callback(self._on_call_finished)
 
+    def get_last_message(self):
+        contact = self._contacts_manager.get_curr_contact()
+        if contact is None:
+            return str()
+
+        return contact.get_last_message_text()
+
     # -----------------------------------------------------------------------------------------------------------------
     # Messaging - friends
     # -----------------------------------------------------------------------------------------------------------------

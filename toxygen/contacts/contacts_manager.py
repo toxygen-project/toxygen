@@ -226,12 +226,6 @@ class ContactsManager(ToxSave):
     def get_contact_by_tox_id(self, tox_id):
         return list(filter(lambda c: c.tox_id == tox_id, self._contacts))[0]
 
-    def get_last_message(self):
-        if self._active_contact + 1:
-            return self.get_curr_contact().get_last_message_text()
-        else:
-            return ''
-
     def get_active_number(self):
         return self.get_curr_contact().number if self._active_contact + 1 else -1
 
