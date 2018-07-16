@@ -1,5 +1,7 @@
 import os
 from PyQt5 import QtCore, QtWidgets
+import utils.ui as util_ui
+import common.tox_save as tox_save
 
 
 MAX_SHORT_NAME_LENGTH = 5
@@ -26,25 +28,22 @@ def log(name, data):
         fl.write(str(data) + '\n')
 
 
-class PluginSuperClass:
+class PluginSuperClass(tox_save.ToxSave):
     """
     Superclass for all plugins. Plugin is Python3 module with at least one class derived from PluginSuperClass.
     """
     is_plugin = True
 
-    def __init__(self, name, short_name, tox=None, profile=None, settings=None, encrypt_save=None):
+    def __init__(self, name, short_name, app):
         """
-        Constructor. In plugin __init__ should take only 4 last arguments
+        Constructor. In plugin __init__ should take only 1 last argument
         :param name: plugin full name
         :param short_name: plugin unique short name (length of short name should not exceed MAX_SHORT_NAME_LENGTH)
-        :param tox: tox instance
-        :param profile: profile instance
-        :param settings: profile settings
-        :param encrypt_save: ToxES instance.
+        :param app: App instance
         """
-        self._settings = settings
-        self._profile = profile
-        self._tox = tox
+        tox = getattr(app, '_tox')
+        super().__init__(tox)
+        self._settings = getattr(app, '_settings')
         name = name.strip()
         short_name = short_name.strip()
         if not name or not short_name:
@@ -52,7 +51,6 @@ class PluginSuperClass:
         self._name = name
         self._short_name = short_name[:MAX_SHORT_NAME_LENGTH]
         self._translator = None  # translator for plugin's GUI
-        self._encrypt_save = encrypt_save
 
     # -----------------------------------------------------------------------------------------------------------------
     # Get methods
@@ -99,12 +97,6 @@ class PluginSuperClass:
         """
         return None
 
-    def set_tox(self, tox):
-        """
-        New tox instance
-        """
-        self._tox = tox
-
     # -----------------------------------------------------------------------------------------------------------------
     # Plugin was stopped, started or new command received
     # -----------------------------------------------------------------------------------------------------------------
@@ -133,11 +125,9 @@ class PluginSuperClass:
         :param command: string with command
         """
         if command == 'help':
-            msgbox = QtWidgets.QMessageBox()
-            title = QtWidgets.QApplication.translate("PluginWindow", "List of commands for plugin {}")
-            msgbox.setWindowTitle(title.format(self._name))
-            msgbox.setText(QtWidgets.QApplication.translate("PluginWindow", "No commands available"))
-            msgbox.exec_()
+            text = util_ui.tr('No commands available')
+            title = util_ui.tr('List of commands for plugin {}').format(self._name)
+            util_ui.message_box(text, title)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Translations support

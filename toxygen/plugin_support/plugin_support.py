@@ -4,31 +4,47 @@ import importlib
 import inspect
 import plugins.plugin_super_class as pl
 import sys
-from common.tox_save import ToxSave
 
 
-class PluginLoader(ToxSave):
+class Plugin:
 
-    def __init__(self, tox, toxes, profile, settings):
-        super().__init__(tox)
-        self._profile = profile
+    def __init__(self, plugin, is_active):
+        self._instance = plugin
+        self._is_active = is_active
+
+    def get_instance(self):
+        return self._instance
+
+    instance = property(get_instance)
+
+    def get_is_active(self):
+        return self._is_active
+
+    def set_is_active(self, is_active):
+        self._is_active = is_active
+
+    is_active = property(get_is_active, set_is_active)
+
+
+class PluginLoader:
+
+    def __init__(self, settings, app):
         self._settings = settings
-        self._plugins = {}  # dict. key - plugin unique short name, value - tuple (plugin instance, is active)
-        self._toxes = toxes
+        self._app = app
+        self._plugins = {}  # dict. key - plugin unique short name, value - Plugin instance
 
     def set_tox(self, tox):
         """
         New tox instance
         """
-        super().set_tox(tox)
-        for value in self._plugins.values():
-            value[0].set_tox(tox)
+        for plugin in self._plugins.values():
+            plugin.instance.set_tox(tox)
 
     def load(self):
         """
         Load all plugins in plugins folder
         """
-        path = util.curr_directory() + '/plugins/'
+        path = util.get_plugins_directory()
         if not os.path.exists(path):
             util.log('Plugin dir not found')
             return
@@ -50,18 +66,19 @@ class PluginLoader(ToxSave):
             for elem in dir(module):
                 obj = getattr(module, elem)
                 # looking for plugin class in module
-                if inspect.isclass(obj) and hasattr(obj, 'is_plugin') and obj.is_plugin:
-                    print('Plugin', elem)
-                    try:  # create instance of plugin class
-                        inst = obj(self._tox, self._profile, self._settings, self._toxes)
-                        autostart = inst.get_short_name() in self._settings['plugins']
-                        if autostart:
-                            inst.start()
-                    except Exception as ex:
-                        util.log('Exception in module ' + name + ' Exception: ' + str(ex))
-                        continue
-                    self._plugins[inst.get_short_name()] = [inst, autostart]  # (inst, is active)
-                    break
+                if not inspect.isclass(obj) or not hasattr(obj, 'is_plugin') or not obj.is_plugin:
+                    continue
+                print('Plugin', elem)
+                try:  # create instance of plugin class
+                    instance = obj(self._app)
+                    is_active = instance.get_short_name() in self._settings['plugins']
+                    if is_active:
+                        instance.start()
+                except Exception as ex:
+                    util.log('Exception in module ' + name + ' Exception: ' + str(ex))
+                    continue
+                self._plugins[instance.get_short_name()] = Plugin(instance, is_active)
+                break
 
     def callback_lossless(self, friend_number, data):
         """
@@ -69,8 +86,8 @@ class PluginLoader(ToxSave):
         """
         l = data[0] - pl.LOSSLESS_FIRST_BYTE
         name = ''.join(chr(x) for x in data[1:l + 1])
-        if name in self._plugins and self._plugins[name][1]:
-            self._plugins[name][0].lossless_packet(''.join(chr(x) for x in data[l + 1:]), friend_number)
+        if name in self._plugins and self._plugins[name].is_active:
+            self._plugins[name].instance.lossless_packet(''.join(chr(x) for x in data[l + 1:]), friend_number)
 
     def callback_lossy(self, friend_number, data):
         """
@@ -78,37 +95,38 @@ class PluginLoader(ToxSave):
         """
         l = data[0] - pl.LOSSY_FIRST_BYTE
         name = ''.join(chr(x) for x in data[1:l + 1])
-        if name in self._plugins and self._plugins[name][1]:
-            self._plugins[name][0].lossy_packet(''.join(chr(x) for x in data[l + 1:]), friend_number)
+        if name in self._plugins and self._plugins[name].is_active:
+            self._plugins[name].instance.lossy_packet(''.join(chr(x) for x in data[l + 1:]), friend_number)
 
     def friend_online(self, friend_number):
         """
         Friend with specified number is online
         """
-        for elem in self._plugins.values():
-            if elem[1]:
-                elem[0].friend_connected(friend_number)
+        for plugin in self._plugins.values():
+            if plugin.is_active:
+                plugin.instance.friend_connected(friend_number)
 
     def get_plugins_list(self):
         """
         Returns list of all plugins
         """
         result = []
-        for data in self._plugins.values():
+        for plugin in self._plugins.values():
             try:
-                result.append([data[0].get_name(),  # plugin full name
-                               data[1],  # is enabled
-                               data[0].get_description(),  # plugin description
-                               data[0].get_short_name()])  # key - short unique name
+                result.append([plugin.instance.get_name(),  # plugin full name
+                               plugin.is_active,  # is enabled
+                               plugin.instance.get_description(),  # plugin description
+                               plugin.instance.get_short_name()])  # key - short unique name
             except:
                 continue
+
         return result
 
     def plugin_window(self, key):
         """
         Return window or None for specified plugin
         """
-        return self._plugins[key][0].get_window()
+        return self._plugins[key].instance.get_window()
 
     def toggle_plugin(self, key):
         """
@@ -116,12 +134,12 @@ class PluginLoader(ToxSave):
         :param key: plugin short name
         """
         plugin = self._plugins[key]
-        if plugin[1]:
-            plugin[0].stop()
+        if plugin.is_active:
+            plugin.instance.stop()
         else:
-            plugin[0].start()
-        plugin[1] = not plugin[1]
-        if plugin[1]:
+            plugin.instance.start()
+        plugin.is_active = not plugin.is_active
+        if plugin.is_active:
             self._settings['plugins'].append(key)
         else:
             self._settings['plugins'].remove(key)
@@ -133,30 +151,32 @@ class PluginLoader(ToxSave):
         """
         text = text.strip()
         name = text.split()[0]
-        if name in self._plugins and self._plugins[name][1]:
-            self._plugins[name][0].command(text[len(name) + 1:])
+        if name in self._plugins and self._plugins[name].is_active:
+            self._plugins[name].instance.command(text[len(name) + 1:])
 
     def get_menu(self, num):
         """
         Return list of items for menu
         """
         result = []
-        for elem in self._plugins.values():
-            if elem[1]:
-                try:
-                    result.extend(elem[0].get_menu(num))
-                except:
-                    continue
+        for plugin in self._plugins.values():
+            if not plugin.is_active:
+                continue
+            try:
+                result.extend(plugin.instance.get_menu(num))
+            except:
+                continue
         return result
 
     def get_message_menu(self, menu, selected_text):
         result = []
-        for elem in self._plugins.values():
-            if elem[1]:
-                try:
-                    result.extend(elem[0].get_message_menu(menu, selected_text))
-                except:
-                    pass
+        for plugin in self._plugins.values():
+            if not plugin.is_active:
+                continue
+            try:
+                result.extend(plugin.instance.get_message_menu(menu, selected_text))
+            except:
+                pass
         return result
 
     def stop(self):
@@ -164,8 +184,8 @@ class PluginLoader(ToxSave):
         App is closing, stop all plugins
         """
         for key in list(self._plugins.keys()):
-            if self._plugins[key][1]:
-                self._plugins[key][0].close()
+            if self._plugins[key].is_active:
+                self._plugins[key].instance.close()
             del self._plugins[key]
 
     def reload(self):

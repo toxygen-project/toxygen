@@ -6,7 +6,7 @@ import common.tox_save as tox_save
 
 class Profile(basecontact.BaseContact, tox_save.ToxSave):
     """
-    Profile of current toxygen user. Contains friends list, tox instance
+    Profile of current toxygen user.
     """
     def __init__(self, profile_manager, tox, screen, contacts_provider, reset_action):
         """
