@@ -1565,7 +1565,7 @@ class Tox:
         :param chat_id: The Chat ID of the group you wish to join. This must be TOX_GROUP_CHAT_ID_SIZE bytes.
         :param password: The password required to join the group. Set to NULL if no password is required.
 
-        :return groupnumber on success, UINT32_MAX on failure.
+        :return group_number on success, UINT32_MAX on failure.
         """
 
         error = c_int()
@@ -1577,22 +1577,32 @@ class Tox:
                                                byref(error))
         return result
 
-    def group_reconnect(self, groupnumber):
+    def group_reconnect(self, group_number):
         """
         Reconnects to a group.
 
         This function disconnects from all peers in the group, then attempts to reconnect with the group.
         The caller's state is not changed (i.e. name, status, role, chat public key etc.)
 
-        :param groupnumber: The group number of the group we wish to reconnect to.
+        :param group_number: The group number of the group we wish to reconnect to.
         :return True on success.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_reconnect(self._tox_pointer, groupnumber, byref(error))
+        result = Tox.libtoxcore.tox_group_reconnect(self._tox_pointer, group_number, byref(error))
         return result
 
-    def group_leave(self, groupnumber, message=''):
+    def group_is_connected(self, group_number):
+        error = c_int()
+        result = Tox.libtoxcore.tox_group_is_connected(self._tox_pointer, group_number, byref(error))
+        return result
+
+    def group_disconnect(self, group_number):
+        error = c_int()
+        result = Tox.libtoxcore.tox_group_disconnect(self._tox_pointer, group_number, byref(error))
+        return result
+
+    def group_leave(self, group_number, message=''):
         """
         Leaves a group.
 
@@ -1600,7 +1610,7 @@ class Tox:
         peers in a group, and deletes the group from the chat array. All group state information is permanently
         lost, including keys and role credentials.
 
-        :param groupnumber: The group number of the group we wish to leave.
+        :param group_number: The group number of the group we wish to leave.
         :param message: The parting message to be sent to all the peers. Set to NULL if we do not wish to
         send a parting message.
 
@@ -1610,7 +1620,7 @@ class Tox:
         error = c_int()
         f = Tox.libtoxcore.tox_group_leave
         f.restype = c_bool
-        result = f(self._tox_pointer, groupnumber, message,
+        result = f(self._tox_pointer, group_number, message,
                    len(message) if message is not None else 0, byref(error))
         return result
 
@@ -1618,7 +1628,7 @@ class Tox:
     # Group user-visible client information (nickname/status/role/public key)
     # -----------------------------------------------------------------------------------------------------------------
 
-    def group_self_set_name(self, groupnumber, name):
+    def group_self_set_name(self, group_number, name):
         """
         Set the client's nickname for the group instance designated by the given group number.
 
@@ -1631,23 +1641,23 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_self_set_name(self._tox_pointer, groupnumber, name, len(name), byref(error))
+        result = Tox.libtoxcore.tox_group_self_set_name(self._tox_pointer, group_number, name, len(name), byref(error))
         return result
 
-    def group_self_get_name_size(self, groupnumber):
+    def group_self_get_name_size(self, group_number):
         """
         Return the length of the client's current nickname for the group instance designated
-        by groupnumber as passed to tox_group_self_set_name.
+        by group_number as passed to tox_group_self_set_name.
 
         If no nickname was set before calling this function, the name is empty,
         and this function returns 0.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_self_get_name_size(self._tox_pointer, groupnumber, byref(error))
+        result = Tox.libtoxcore.tox_group_self_get_name_size(self._tox_pointer, group_number, byref(error))
         return result
 
-    def group_self_get_name(self, groupnumber):
+    def group_self_get_name(self, group_number):
         """
         Write the nickname set by tox_group_self_set_name to a byte array.
 
@@ -1659,12 +1669,12 @@ class Tox:
         """
 
         error = c_int()
-        size = self.group_self_get_name_size(groupnumber)
+        size = self.group_self_get_name_size(group_number)
         name = create_string_buffer(size)
-        result = Tox.libtoxcore.tox_group_self_get_name(self._tox_pointer, groupnumber, name, byref(error))
+        result = Tox.libtoxcore.tox_group_self_get_name(self._tox_pointer, group_number, name, byref(error))
         return str(name[:size], 'utf-8')
 
-    def group_self_set_status(self, groupnumber, status):
+    def group_self_set_status(self, group_number, status):
 
         """
         Set the client's status for the group instance. Status must be a TOX_USER_STATUS.
@@ -1672,40 +1682,40 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_self_set_status(self._tox_pointer, groupnumber, status, byref(error))
+        result = Tox.libtoxcore.tox_group_self_set_status(self._tox_pointer, group_number, status, byref(error))
         return result
 
-    def group_self_get_status(self, groupnumber):
+    def group_self_get_status(self, group_number):
         """
         returns the client's status for the group instance on success.
         return value is unspecified on failure.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_self_get_status(self._tox_pointer, groupnumber, byref(error))
+        result = Tox.libtoxcore.tox_group_self_get_status(self._tox_pointer, group_number, byref(error))
         return result
 
-    def group_self_get_role(self, groupnumber):
+    def group_self_get_role(self, group_number):
         """
         returns the client's role for the group instance on success.
         return value is unspecified on failure.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_self_get_role(self._tox_pointer, groupnumber, byref(error))
+        result = Tox.libtoxcore.tox_group_self_get_role(self._tox_pointer, group_number, byref(error))
         return result
 
-    def group_self_get_peer_id(self, groupnumber):
+    def group_self_get_peer_id(self, group_number):
         """
         returns the client's peer id for the group instance on success.
         return value is unspecified on failure.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_self_get_peer_id(self._tox_pointer, groupnumber, byref(error))
+        result = Tox.libtoxcore.tox_group_self_get_peer_id(self._tox_pointer, group_number, byref(error))
         return result
 
-    def group_self_get_public_key(self, groupnumber):
+    def group_self_get_public_key(self, group_number):
         """
         Write the client's group public key designated by the given group number to a byte array.
 
@@ -1720,7 +1730,7 @@ class Tox:
 
         error = c_int()
         key = create_string_buffer(TOX_GROUP_PEER_PUBLIC_KEY_SIZE)
-        result = Tox.libtoxcore.tox_group_self_get_public_key(self._tox_pointer, groupnumber,
+        result = Tox.libtoxcore.tox_group_self_get_public_key(self._tox_pointer, group_number,
                                                               key, byref(error))
         return bin_to_string(key, TOX_GROUP_PEER_PUBLIC_KEY_SIZE)
 
@@ -1728,7 +1738,7 @@ class Tox:
     # Peer-specific group state queries.
     # -----------------------------------------------------------------------------------------------------------------
 
-    def group_peer_get_name_size(self, groupnumber, peer_id):
+    def group_peer_get_name_size(self, group_number, peer_id):
         """
         Return the length of the peer's name. If the group number or ID is invalid, the
         return value is unspecified.
@@ -1738,10 +1748,10 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_peer_get_name_size(self._tox_pointer, groupnumber, peer_id, byref(error))
+        result = Tox.libtoxcore.tox_group_peer_get_name_size(self._tox_pointer, group_number, peer_id, byref(error))
         return result
 
-    def group_peer_get_name(self, groupnumber, peer_id):
+    def group_peer_get_name(self, group_number, peer_id):
         """
         Write the name of the peer designated by the given ID to a byte
         array.
@@ -1751,18 +1761,18 @@ class Tox:
         The data written to `name` is equal to the data received by the last
         `group_peer_name` callback.
 
-        :param groupnumber: The group number of the group we wish to query.
+        :param group_number: The group number of the group we wish to query.
         :param peer_id: The ID of the peer whose name we want to retrieve.
 
         :return name.
         """
         error = c_int()
-        size = self.group_peer_get_name_size(groupnumber, peer_id)
+        size = self.group_peer_get_name_size(group_number, peer_id)
         name = create_string_buffer(size)
-        result = Tox.libtoxcore.tox_group_peer_get_name(self._tox_pointer, groupnumber, peer_id, name, byref(error))
+        result = Tox.libtoxcore.tox_group_peer_get_name(self._tox_pointer, group_number, peer_id, name, byref(error))
         return str(name[:], 'utf-8')
 
-    def group_peer_get_status(self, groupnumber, peer_id):
+    def group_peer_get_status(self, group_number, peer_id):
         """
         Return the peer's user status (away/busy/...). If the ID or group number is
         invalid, the return value is unspecified.
@@ -1772,10 +1782,10 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_peer_get_status(self._tox_pointer, groupnumber, peer_id, byref(error))
+        result = Tox.libtoxcore.tox_group_peer_get_status(self._tox_pointer, group_number, peer_id, byref(error))
         return result
 
-    def group_peer_get_role(self, groupnumber, peer_id):
+    def group_peer_get_role(self, group_number, peer_id):
         """
         Return the peer's role (user/moderator/founder...). If the ID or group number is
         invalid, the return value is unspecified.
@@ -1785,10 +1795,10 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_peer_get_role(self._tox_pointer, groupnumber, peer_id, byref(error))
+        result = Tox.libtoxcore.tox_group_peer_get_role(self._tox_pointer, group_number, peer_id, byref(error))
         return result
 
-    def group_peer_get_public_key(self, groupnumber, peer_id):
+    def group_peer_get_public_key(self, group_number, peer_id):
         """
         Write the group public key with the designated peer_id for the designated group number to public_key.
 
@@ -1802,7 +1812,7 @@ class Tox:
 
         error = c_int()
         key = create_string_buffer(TOX_GROUP_PEER_PUBLIC_KEY_SIZE)
-        result = Tox.libtoxcore.tox_group_peer_get_public_key(self._tox_pointer, groupnumber, peer_id,
+        result = Tox.libtoxcore.tox_group_peer_get_public_key(self._tox_pointer, group_number, peer_id,
                                                               key, byref(error))
         return bin_to_string(key, TOX_GROUP_PEER_PUBLIC_KEY_SIZE)
 
@@ -1830,7 +1840,7 @@ class Tox:
     # Group chat state queries and events.
     # -----------------------------------------------------------------------------------------------------------------
 
-    def group_set_topic(self, groupnumber, topic):
+    def group_set_topic(self, group_number, topic):
         """
         Set the group topic and broadcast it to the rest of the group.
 
@@ -1841,10 +1851,10 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_set_topic(self._tox_pointer, groupnumber, topic, len(topic), byref(error))
+        result = Tox.libtoxcore.tox_group_set_topic(self._tox_pointer, group_number, topic, len(topic), byref(error))
         return result
 
-    def group_get_topic_size(self, groupnumber):
+    def group_get_topic_size(self, group_number):
         """
         Return the length of the group topic. If the group number is invalid, the
         return value is unspecified.
@@ -1854,10 +1864,10 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_get_topic_size(self._tox_pointer, groupnumber, byref(error))
+        result = Tox.libtoxcore.tox_group_get_topic_size(self._tox_pointer, group_number, byref(error))
         return result
 
-    def group_get_topic(self, groupnumber):
+    def group_get_topic(self, group_number):
         """
         Write the topic designated by the given group number to a byte array.
         Call tox_group_get_topic_size to determine the allocation size for the `topic` parameter.
@@ -1868,21 +1878,21 @@ class Tox:
         """
 
         error = c_int()
-        size = self.group_get_topic_size(groupnumber)
+        size = self.group_get_topic_size(group_number)
         topic = create_string_buffer(size)
-        result = Tox.libtoxcore.tox_group_get_topic(self._tox_pointer, groupnumber, topic, byref(error))
+        result = Tox.libtoxcore.tox_group_get_topic(self._tox_pointer, group_number, topic, byref(error))
         return str(topic[:size], 'utf-8')
 
-    def group_get_name_size(self, groupnumber):
+    def group_get_name_size(self, group_number):
         """
         Return the length of the group name. If the group number is invalid, the
         return value is unspecified.
         """
         error = c_int()
-        result = Tox.libtoxcore.tox_group_get_name_size(self._tox_pointer, groupnumber, byref(error))
+        result = Tox.libtoxcore.tox_group_get_name_size(self._tox_pointer, group_number, byref(error))
         return int(result)
 
-    def group_get_name(self, groupnumber):
+    def group_get_name(self, group_number):
         """
         Write the name of the group designated by the given group number to a byte array.
         Call tox_group_get_name_size to determine the allocation size for the `name` parameter.
@@ -1890,13 +1900,13 @@ class Tox:
         """
 
         error = c_int()
-        size = self.group_get_name_size(groupnumber)
+        size = self.group_get_name_size(group_number)
         name = create_string_buffer(size)
-        result = Tox.libtoxcore.tox_group_get_name(self._tox_pointer, groupnumber,
+        result = Tox.libtoxcore.tox_group_get_name(self._tox_pointer, group_number,
                                                    name, byref(error))
         return str(name[:size], 'utf-8')
 
-    def group_get_chat_id(self, groupnumber):
+    def group_get_chat_id(self, group_number):
         """
         Write the Chat ID designated by the given group number to a byte array.
         `chat_id` should have room for at least TOX_GROUP_CHAT_ID_SIZE bytes.
@@ -1905,7 +1915,7 @@ class Tox:
 
         error = c_int()
         buff = create_string_buffer(TOX_GROUP_CHAT_ID_SIZE)
-        result = Tox.libtoxcore.tox_group_get_chat_id(self._tox_pointer, groupnumber,
+        result = Tox.libtoxcore.tox_group_get_chat_id(self._tox_pointer, group_number,
                                                       buff, byref(error))
         return bin_to_string(buff, TOX_GROUP_CHAT_ID_SIZE)
 
@@ -1917,7 +1927,7 @@ class Tox:
         result = Tox.libtoxcore.tox_group_get_number_groups(self._tox_pointer)
         return result
 
-    def group_get_privacy_state(self, groupnumber):
+    def group_get_privacy_state(self, group_number):
         """
         Return the privacy state of the group designated by the given group number. If group number
         is invalid, the return value is unspecified.
@@ -1929,10 +1939,10 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_get_privacy_state(self._tox_pointer, groupnumber, byref(error))
+        result = Tox.libtoxcore.tox_group_get_privacy_state(self._tox_pointer, group_number, byref(error))
         return result
 
-    def group_get_peer_limit(self, groupnumber):
+    def group_get_peer_limit(self, group_number):
         """
         Return the maximum number of peers allowed for the group designated by the given group number.
         If the group number is invalid, the return value is unspecified.
@@ -1944,20 +1954,20 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_get_peer_limit(self._tox_pointer, groupnumber, byref(error))
+        result = Tox.libtoxcore.tox_group_get_peer_limit(self._tox_pointer, group_number, byref(error))
         return result
 
-    def group_get_password_size(self, groupnumber):
+    def group_get_password_size(self, group_number):
         """
         Return the length of the group password. If the group number is invalid, the
         return value is unspecified.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_get_password_size(self._tox_pointer, groupnumber, byref(error))
+        result = Tox.libtoxcore.tox_group_get_password_size(self._tox_pointer, group_number, byref(error))
         return result
 
-    def group_get_password(self, groupnumber):
+    def group_get_password(self, group_number):
         """
         Write the password for the group designated by the given group number to a byte array.
 
@@ -1972,9 +1982,9 @@ class Tox:
         """
 
         error = c_int()
-        size = self.group_get_password_size(groupnumber)
+        size = self.group_get_password_size(group_number)
         password = create_string_buffer(size)
-        result = Tox.libtoxcore.tox_group_get_password(self._tox_pointer, groupnumber,
+        result = Tox.libtoxcore.tox_group_get_password(self._tox_pointer, group_number,
                                                        password, byref(error))
         return str(password[:size], 'utf-8')
 
@@ -2022,7 +2032,7 @@ class Tox:
     # Group message sending
     # -----------------------------------------------------------------------------------------------------------------
 
-    def group_send_custom_packet(self, groupnumber, lossless, data):
+    def group_send_custom_packet(self, group_number, lossless, data):
         """
         Send a custom packet to the group.
 
@@ -2036,18 +2046,18 @@ class Tox:
         Unless latency is an issue or message reliability is not important, it is recommended that you use
         lossless custom packets.
 
-        :param groupnumber: The group number of the group the message is intended for.
+        :param group_number: The group number of the group the message is intended for.
         :param lossless: True if the packet should be lossless.
         :param data A byte array containing the packet data.
         :return True on success.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_send_custom_packet(self._tox_pointer, groupnumber, lossless, data,
+        result = Tox.libtoxcore.tox_group_send_custom_packet(self._tox_pointer, group_number, lossless, data,
                                                              len(data), byref(error))
         return result
 
-    def group_send_private_message(self, groupnumber, peer_id, message):
+    def group_send_private_message(self, group_number, peer_id, message):
         """
         Send a text chat message to the specified peer in the specified group.
 
@@ -2058,7 +2068,7 @@ class Tox:
         must be split by the client and sent as separate messages. Other clients can
         then reassemble the fragments. Messages may not be empty.
 
-        :param groupnumber: The group number of the group the message is intended for.
+        :param group_number: The group number of the group the message is intended for.
         :param peer_id: The ID of the peer the message is intended for.
         :param message: A non-NULL pointer to the first element of a byte array containing the message text.
 
@@ -2066,11 +2076,11 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_send_private_message(self._tox_pointer, groupnumber, peer_id, message,
+        result = Tox.libtoxcore.tox_group_send_private_message(self._tox_pointer, group_number, peer_id, message,
                                                                len(message), byref(error))
         return result
 
-    def group_send_message(self, groupnumber, type, message):
+    def group_send_message(self, group_number, type, message):
         """
         Send a text chat message to the group.
 
@@ -2081,7 +2091,7 @@ class Tox:
         must be split by the client and sent as separate messages. Other clients can
         then reassemble the fragments. Messages may not be empty.
 
-        :param groupnumber: The group number of the group the message is intended for.
+        :param group_number: The group number of the group the message is intended for.
         :param type: Message type (normal, action, ...).
         :param message: A non-NULL pointer to the first element of a byte array containing the message text.
 
@@ -2089,7 +2099,7 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_send_message(self._tox_pointer, groupnumber, type, message, len(message),
+        result = Tox.libtoxcore.tox_group_send_message(self._tox_pointer, group_number, type, message, len(message),
                                                        byref(error))
         return result
 
@@ -2104,7 +2114,7 @@ class Tox:
 
         Callback: python function with params:
         tox Tox* instance
-        groupnumber The group number of the group the message is intended for.
+        group_number The group number of the group the message is intended for.
         peer_id The ID of the peer who sent the message.
         type The type of message (normal, action, ...).
         message The message data.
@@ -2141,20 +2151,20 @@ class Tox:
     # Group chat inviting and join/part events
     # -----------------------------------------------------------------------------------------------------------------
 
-    def group_invite_friend(self, groupnumber, friend_number):
+    def group_invite_friend(self, group_number, friend_number):
         """
         Invite a friend to a group.
 
         This function creates an invite request packet and pushes it to the send queue.
 
-        :param groupnumber: The group number of the group the message is intended for.
+        :param group_number: The group number of the group the message is intended for.
         :param friend_number: The friend number of the friend the invite is intended for.
 
         :return True on success.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_invite_friend(self._tox_pointer, groupnumber, friend_number, byref(error))
+        result = Tox.libtoxcore.tox_group_invite_friend(self._tox_pointer, group_number, friend_number, byref(error))
         return result
 
     def group_chat_self_peer_info_new(self):
@@ -2172,7 +2182,7 @@ class Tox:
 
         :param invite_data: The invite data received from the `group_invite` event.
         :param password: The password required to join the group. Set to NULL if no password is required.
-        :return the groupnumber on success, UINT32_MAX on failure.
+        :return the group_number on success, UINT32_MAX on failure.
         """
 
         error = c_int()
@@ -2262,25 +2272,25 @@ class Tox:
     # Group chat founder controls (these only work for the group founder)
     # -----------------------------------------------------------------------------------------------------------------
 
-    def group_founder_set_password(self, groupnumber, password):
+    def group_founder_set_password(self, group_number, password):
         """
         Set or unset the group password.
 
         This function sets the groups password, creates a new group shared state including the change,
         and distributes it to the rest of the group.
 
-        :param groupnumber: The group number of the group for which we wish to set the password.
+        :param group_number: The group number of the group for which we wish to set the password.
         :param password: The password we want to set. Set password to NULL to unset the password.
 
         :return True on success.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_founder_set_password(self._tox_pointer, groupnumber, password,
+        result = Tox.libtoxcore.tox_group_founder_set_password(self._tox_pointer, group_number, password,
                                                                len(password), byref(error))
         return result
 
-    def group_founder_set_privacy_state(self, groupnumber, privacy_state):
+    def group_founder_set_privacy_state(self, group_number, privacy_state):
         """
         Set the group privacy state.
 
@@ -2290,32 +2300,32 @@ class Tox:
         If an attempt is made to set the privacy state to the same state that the group is already
         in, the function call will be successful and no action will be taken.
 
-        :param groupnumber: The group number of the group for which we wish to change the privacy state.
+        :param group_number: The group number of the group for which we wish to change the privacy state.
         :param privacy_state: The privacy state we wish to set the group to.
 
         :return true on success.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_founder_set_privacy_state(self._tox_pointer, groupnumber, privacy_state,
+        result = Tox.libtoxcore.tox_group_founder_set_privacy_state(self._tox_pointer, group_number, privacy_state,
                                                                     byref(error))
         return result
 
-    def group_founder_set_peer_limit(self, groupnumber, max_peers):
+    def group_founder_set_peer_limit(self, group_number, max_peers):
         """
         Set the group peer limit.
 
         This function sets a limit for the number of peers who may be in the group, creates a new
         group shared state including the change, and distributes it to the rest of the group.
 
-        :param groupnumber: The group number of the group for which we wish to set the peer limit.
+        :param group_number: The group number of the group for which we wish to set the peer limit.
         :param max_peers: The maximum number of peers to allow in the group.
 
         :return True on success.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_founder_set_peer_limit(self._tox_pointer, groupnumber,
+        result = Tox.libtoxcore.tox_group_founder_set_peer_limit(self._tox_pointer, group_number,
                                                                  max_peers, byref(error))
         return result
 
@@ -2323,11 +2333,11 @@ class Tox:
     # Group chat moderation
     # -----------------------------------------------------------------------------------------------------------------
 
-    def group_toggle_ignore(self, groupnumber, peer_id, ignore):
+    def group_toggle_ignore(self, group_number, peer_id, ignore):
         """
         Ignore or unignore a peer.
 
-        :param groupnumber: The group number of the group the in which you wish to ignore a peer.
+        :param group_number: The group number of the group the in which you wish to ignore a peer.
         :param peer_id: The ID of the peer who shall be ignored or unignored.
         :param ignore: True to ignore the peer, false to unignore the peer.
 
@@ -2335,10 +2345,10 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_toggle_ignore(self._tox_pointer, groupnumber, peer_id, ignore, byref(error))
+        result = Tox.libtoxcore.tox_group_toggle_ignore(self._tox_pointer, group_number, peer_id, ignore, byref(error))
         return result
 
-    def group_mod_set_role(self, groupnumber, peer_id, role):
+    def group_mod_set_role(self, group_number, peer_id, role):
         """
         Set a peer's role.
 
@@ -2346,7 +2356,7 @@ class Tox:
         It will also send a packet to the rest of the group, requesting that they perform
         the role reassignment. Note: peers cannot be set to the founder role.
 
-        :param groupnumber: The group number of the group the in which you wish set the peer's role.
+        :param group_number: The group number of the group the in which you wish set the peer's role.
         :param peer_id: The ID of the peer whose role you wish to set.
         :param role: The role you wish to set the peer to.
 
@@ -2354,10 +2364,10 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_mod_set_role(self._tox_pointer, groupnumber, peer_id, role, byref(error))
+        result = Tox.libtoxcore.tox_group_mod_set_role(self._tox_pointer, group_number, peer_id, role, byref(error))
         return result
 
-    def group_mod_remove_peer(self, groupnumber, peer_id, set_ban):
+    def group_mod_remove_peer(self, group_number, peer_id, set_ban):
         """
         Kick/ban a peer.
 
@@ -2365,7 +2375,7 @@ class Tox:
         to the ban list. It will also send a packet to all group members requesting them
         to do the same.
 
-        :param groupnumber: The group number of the group the ban is intended for.
+        :param group_number: The group number of the group the ban is intended for.
         :param peer_id: The ID of the peer who will be kicked and/or added to the ban list.
         :param set_ban: Set to true if a ban shall be set on the peer's IP address.
 
@@ -2373,25 +2383,25 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_mod_remove_peer(self._tox_pointer, groupnumber, peer_id,
+        result = Tox.libtoxcore.tox_group_mod_remove_peer(self._tox_pointer, group_number, peer_id,
                                                           set_ban, byref(error))
         return result
 
-    def group_mod_remove_ban(self, groupnumber, ban_id):
+    def group_mod_remove_ban(self, group_number, ban_id):
         """
         Removes a ban.
 
         This function removes a ban entry from the ban list, and sends a packet to the rest of
         the group requesting that they do the same.
 
-        :param groupnumber: The group number of the group in which the ban is to be removed.
+        :param group_number: The group number of the group in which the ban is to be removed.
         :param ban_id: The ID of the ban entry that shall be removed.
 
         :return True on success
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_mod_remove_ban(self._tox_pointer, groupnumber, ban_id, byref(error))
+        result = Tox.libtoxcore.tox_group_mod_remove_ban(self._tox_pointer, group_number, ban_id, byref(error))
         return result
 
     def callback_group_moderation(self, callback, user_data):
@@ -2409,17 +2419,17 @@ class Tox:
     # Group chat ban list queries
     # -----------------------------------------------------------------------------------------------------------------
 
-    def group_ban_get_list_size(self, groupnumber):
+    def group_ban_get_list_size(self, group_number):
         """
         Return the number of entries in the ban list for the group designated by
         the given group number. If the group number is invalid, the return value is unspecified.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_ban_get_list_size(self._tox_pointer, groupnumber, byref(error))
+        result = Tox.libtoxcore.tox_group_ban_get_list_size(self._tox_pointer, group_number, byref(error))
         return result
 
-    def group_ban_get_list(self, groupnumber):
+    def group_ban_get_list(self, group_number):
         """
         Copy a list of valid ban list ID's into an array.
 
@@ -2428,22 +2438,22 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_ban_get_list(self._tox_pointer, groupnumber, POINTER(c_uint32)(
-            create_string_buffer(sizeof(c_uint32) * self.group_ban_get_list_size(groupnumber)), byref(error)))
+        result = Tox.libtoxcore.tox_group_ban_get_list(self._tox_pointer, group_number, POINTER(c_uint32)(
+            create_string_buffer(sizeof(c_uint32) * self.group_ban_get_list_size(group_number)), byref(error)))
         return result
 
-    def group_ban_get_name_size(self, groupnumber, ban_id):
+    def group_ban_get_name_size(self, group_number, ban_id):
         """
         Return the length of the name for the ban list entry designated by ban_id, in the
-        group designated by the given group number. If either groupnumber or ban_id is invalid,
+        group designated by the given group number. If either group_number or ban_id is invalid,
         the return value is unspecified.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_ban_get_name_size(self._tox_pointer, groupnumber, ban_id, byref(error))
+        result = Tox.libtoxcore.tox_group_ban_get_name_size(self._tox_pointer, group_number, ban_id, byref(error))
         return result
 
-    def group_ban_get_name(self, groupnumber, ban_id):
+    def group_ban_get_name(self, group_number, ban_id):
         """
         Write the name of the ban entry designated by ban_id in the group designated by the
         given group number to a byte array.
@@ -2454,20 +2464,20 @@ class Tox:
         """
 
         error = c_int()
-        size = self.group_ban_get_name_size(groupnumber, ban_id)
+        size = self.group_ban_get_name_size(group_number, ban_id)
         name = create_string_buffer()
 
-        result = Tox.libtoxcore.tox_group_ban_get_name(self._tox_pointer, groupnumber, ban_id,
+        result = Tox.libtoxcore.tox_group_ban_get_name(self._tox_pointer, group_number, ban_id,
                                                        name, byref(error))
         return str(name[:size], 'utf-8')
 
-    def group_ban_get_time_set(self, groupnumber, ban_id):
+    def group_ban_get_time_set(self, group_number, ban_id):
         """
         Return a time stamp indicating the time the ban was set, for the ban list entry
         designated by ban_id, in the group designated by the given group number.
-        If either groupnumber or ban_id is invalid, the return value is unspecified.
+        If either group_number or ban_id is invalid, the return value is unspecified.
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_ban_get_time_set(self._tox_pointer, groupnumber, ban_id, byref(error))
+        result = Tox.libtoxcore.tox_group_ban_get_time_set(self._tox_pointer, group_number, ban_id, byref(error))
         return result
