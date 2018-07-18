@@ -11,7 +11,8 @@ class GroupChat(contact.Contact, ToxSave):
     def __init__(self, tox, profile_manager, message_getter, number, name, status_message, widget, tox_id):
         super().__init__(profile_manager, message_getter, number, name, status_message, widget, tox_id)
         ToxSave.__init__(self, tox)
-        self.set_status(constants.TOX_USER_STATUS['NONE'])
+        status = self._tox.group_is_connected(number)
+        self.set_status(constants.TOX_USER_STATUS['NONE'] if status else None)
         self._peers = []
         self._add_self_to_gc()
 

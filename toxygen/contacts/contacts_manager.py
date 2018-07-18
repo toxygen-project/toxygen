@@ -490,10 +490,13 @@ class ContactsManager(ToxSave):
             del self._settings['notes'][contact.tox_id]
         self._settings.save()
         self._history.delete_history(contact)
+        if contact.has_avatar():
+            avatar_path = contact.get_contact_avatar_path()
+            remove(avatar_path)
 
     def _delete_contact(self, num):
         if num == self._active_contact:  # active friend was deleted
-            self.set_active(0 if len(self._contacts) - 1 else -1)
+            self.set_active(0 if len(self._contacts) > 1 else -1)
         self._contact_provider.remove_contact_from_cache(self._contacts[num].tox_id)
         del self._contacts[num]
         self._screen.friends_list.takeItem(num)

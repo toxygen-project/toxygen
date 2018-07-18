@@ -338,6 +338,7 @@ class App:
         self._group_factory = GroupFactory(self._profile_manager, self._settings, self._tox, db, contact_items_factory)
         self._contacts_provider = ContactProvider(self._tox, self._friend_factory, self._group_factory)
         self._profile = Profile(self._profile_manager, self._tox, self._ms, self._contacts_provider, self._reset)
+        self._init_profile()
         self._plugin_loader = PluginLoader(self._settings, self)
         history = None
         messages_items_factory = MessagesItemsFactory(self._settings, self._plugin_loader, self._smiley_loader,
@@ -349,7 +350,8 @@ class App:
         history.set_contacts_manager(self._contacts_manager)
         self._calls_manager = CallsManager(self._tox.AV, self._settings, self._ms, self._contacts_manager)
         self._messenger = Messenger(self._tox, self._plugin_loader, self._ms, self._contacts_manager,
-                                    self._contacts_provider, messages_items_factory, self._profile, self._calls_manager)
+                                    self._contacts_provider, messages_items_factory, self._profile,
+                                    self._calls_manager)
         file_transfers_message_service = FileTransfersMessagesService(self._contacts_manager, messages_items_factory,
                                                                       self._profile, self._ms)
         self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider,
@@ -387,3 +389,7 @@ class App:
         callbacks.init_callbacks(self._tox, self._profile, self._settings, self._plugin_loader, self._contacts_manager,
                                  self._calls_manager, self._file_transfer_handler, self._ms, self._tray,
                                  self._messenger, self._groups_service, self._contacts_provider)
+
+    def _init_profile(self):
+        if not self._profile.has_avatar():
+            self._profile.reset_avatar(self._settings['identicons'])

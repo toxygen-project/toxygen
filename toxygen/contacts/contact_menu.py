@@ -30,6 +30,12 @@ class ContactMenuBuilder:
 
         return self
 
+    def with_optional_action(self, text, handler, show_action):
+        if show_action:
+            self._add_action(text, handler)
+
+        return self
+
     def with_actions(self, actions):
         for action in actions:
             (text, handler) = action
@@ -175,6 +181,11 @@ class GroupMenuGenerator(BaseContactMenuGenerator):
         menu = (builder
                 .with_action(util_ui.tr('Set alias'), lambda: main_screen.set_alias(number))
                 .with_submenu(copy_menu_builder)
+                .with_action(util_ui.tr('Reconnect to group'),
+                             lambda: groups_service.reconnect_to_group(self._contact.number))
+                .with_optional_action(util_ui.tr('Disconnect from group'),
+                                      lambda: groups_service.disconnect_from_group(self._contact.number),
+                                      self._contact.status is not None)
                 .with_action(util_ui.tr('Leave group'), lambda: groups_service.leave_group(self._contact.number))
                 .with_action(util_ui.tr('Notes'), lambda: main_screen.show_note(self._contact))
                 ).build()

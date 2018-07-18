@@ -1,6 +1,7 @@
 import common.tox_save as tox_save
 import utils.ui as util_ui
 from groups.peers_list import PeersListGenerator
+import wrapper.toxcore_enums_and_consts as constants
 
 
 class GroupsService(tox_save.ToxSave):
@@ -41,6 +42,16 @@ class GroupsService(tox_save.ToxSave):
         self._tox.group_leave(group_number)
         self._contacts_manager.delete_group(group_number)
         self._contacts_manager.update_groups_numbers()
+
+    def disconnect_from_group(self, group_number):
+        self._tox.group_disconnect(group_number)
+        group = self._get_group(group_number)
+        group.status = None
+
+    def reconnect_to_group(self, group_number):
+        self._tox.group_reconnect(group_number)
+        group = self._get_group(group_number)
+        group.status = constants.TOX_USER_STATUS['NONE']
 
     # -----------------------------------------------------------------------------------------------------------------
     # Group invites
