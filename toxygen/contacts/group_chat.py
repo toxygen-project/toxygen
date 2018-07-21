@@ -51,6 +51,9 @@ class GroupChat(contact.Contact, ToxSave):
 
         return peers[0]
 
+    def remove_all_peers_except_self(self):
+        self._peers = self._peers[:1]
+
     def get_peers(self):
         return self._peers[:]
 

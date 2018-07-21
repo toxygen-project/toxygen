@@ -47,11 +47,13 @@ class GroupsService(tox_save.ToxSave):
         self._tox.group_disconnect(group_number)
         group = self._get_group(group_number)
         group.status = None
+        self._clear_peers_list(group)
 
     def reconnect_to_group(self, group_number):
         self._tox.group_reconnect(group_number)
         group = self._get_group(group_number)
         group.status = constants.TOX_USER_STATUS['NONE']
+        self._clear_peers_list(group)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Group invites
@@ -102,3 +104,7 @@ class GroupsService(tox_save.ToxSave):
 
     def _get_all_groups(self):
         return self._contacts_provider.get_all_groups()
+
+    def _clear_peers_list(self, group):
+        group.remove_all_peers_except_self()
+        self.generate_peers_list()
