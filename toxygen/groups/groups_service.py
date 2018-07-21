@@ -76,6 +76,17 @@ class GroupsService(tox_save.ToxSave):
         group.name = self._tox.group_get_name(group.number)
         group.status_message = self._tox.group_get_topic(group.number)
 
+    def set_group_topic(self, group):
+        if not group.is_moderator_or_founder():
+            return
+        text = util_ui.tr('New topic for group {}:'.format(group.name))
+        title = util_ui.tr('Set group topic')
+        topic, ok = util_ui.text_dialog(text, title, group.status_message)
+        if not ok or not topic:
+            return
+        self._tox.group_set_topic(group.number, topic)
+        group.status_message = topic
+
     # -----------------------------------------------------------------------------------------------------------------
     # Peers list
     # -----------------------------------------------------------------------------------------------------------------

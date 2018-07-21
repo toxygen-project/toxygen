@@ -1851,6 +1851,7 @@ class Tox:
         """
 
         error = c_int()
+        topic = bytes(topic, 'utf-8')
         result = Tox.libtoxcore.tox_group_set_topic(self._tox_pointer, group_number, topic, len(topic), byref(error))
         return result
 

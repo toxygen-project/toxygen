@@ -399,6 +399,7 @@ def group_peer_join(contacts_provider, groups_service):
         group = contacts_provider.get_group_by_number(group_number)
         group.add_peer(peer_id)
         invoke_in_main_thread(groups_service.generate_peers_list)
+        invoke_in_main_thread(groups_service.update_group_info, group)
 
     return wrapped
 

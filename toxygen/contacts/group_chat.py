@@ -33,6 +33,12 @@ class GroupChat(contact.Contact, ToxSave):
     def get_self_name(self):
         return self._peers[0].name
 
+    def get_self_role(self):
+        return self._peers[0].role
+
+    def is_moderator_or_founder(self):
+        return self.get_self_role() <= constants.TOX_GROUP_ROLE['MODERATOR']
+
     def add_peer(self, peer_id, is_current_user=False):
         peer = GroupChatPeer(peer_id,
                              self._tox.group_peer_get_name(self._number, peer_id),
