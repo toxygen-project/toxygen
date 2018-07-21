@@ -375,6 +375,7 @@ class Tox:
         :return: True on success.
         """
         tox_err_set_info = c_int()
+        name = bytes(name, 'utf-8')
         result = Tox.libtoxcore.tox_self_set_name(self._tox_pointer, c_char_p(name),
                                                   c_size_t(len(name)), byref(tox_err_set_info))
         tox_err_set_info = tox_err_set_info.value
@@ -423,6 +424,7 @@ class Tox:
         :return: True on success.
         """
         tox_err_set_info = c_int()
+        status_message = bytes(status_message, 'utf-8')
         result = Tox.libtoxcore.tox_self_set_status_message(self._tox_pointer, c_char_p(status_message),
                                                             c_size_t(len(status_message)), byref(tox_err_set_info))
         tox_err_set_info = tox_err_set_info.value

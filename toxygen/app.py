@@ -251,8 +251,8 @@ class App:
             return False
         name = profile_name or 'toxygen_user'
         self._tox = tox_factory()
-        self._tox.self_set_name(bytes(name, 'utf-8') if name else b'Toxygen User')
-        self._tox.self_set_status_message(b'Toxing on Toxygen')
+        self._tox.self_set_name(name if name else 'Toxygen User')
+        self._tox.self_set_status_message('Toxing on Toxygen')
         self._path = profile_path
         if result.password:
             self._toxes.set_password(result.password)

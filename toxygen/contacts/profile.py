@@ -51,11 +51,11 @@ class Profile(basecontact.BaseContact, tox_save.ToxSave):
         if self.name == value:
             return
         super().set_name(value)
-        self._tox.self_set_name(self._name.encode('utf-8'))
+        self._tox.self_set_name(self._name)
 
     def set_status_message(self, value):
         super().set_status_message(value)
-        self._tox.self_set_status_message(self._status_message.encode('utf-8'))
+        self._tox.self_set_status_message(self._status_message)
 
     def set_new_nospam(self):
         """Sets new nospam part of tox id"""
