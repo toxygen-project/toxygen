@@ -362,6 +362,12 @@ class ContactsManager(ToxSave):
         contact.reset_avatar(self._settings['identicons'])
         self._save_profile()
 
+    def remove_group_peer(self, group_peer_contact):
+        contact = self.get_contact_by_tox_id(group_peer_contact.tox_id)
+        self._cleanup_contact_data(contact)
+        num = self._contacts.index(contact)
+        self._delete_contact(num)
+
     # -----------------------------------------------------------------------------------------------------------------
     # Friend requests
     # -----------------------------------------------------------------------------------------------------------------

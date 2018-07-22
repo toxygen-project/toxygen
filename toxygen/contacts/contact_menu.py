@@ -194,3 +194,20 @@ class GroupMenuGenerator(BaseContactMenuGenerator):
                 ).build()
 
         return menu
+
+
+class GroupPeerMenuGenerator(BaseContactMenuGenerator):
+
+    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number, groups_service):
+        copy_menu_builder = self._generate_copy_menu_builder(main_screen)
+
+        builder = ContactMenuBuilder()
+        menu = (builder
+                .with_action(util_ui.tr('Set alias'), lambda: main_screen.set_alias(number))
+                .with_submenu(copy_menu_builder)
+                .with_action(util_ui.tr('Quit chat'),
+                             lambda: contacts_manager.remove_group_peer(self._contact))
+                .with_action(util_ui.tr('Notes'), lambda: main_screen.show_note(self._contact))
+                ).build()
+
+        return menu

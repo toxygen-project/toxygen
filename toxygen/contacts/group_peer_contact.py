@@ -1,4 +1,5 @@
 import contacts.contact
+from contacts.contact_menu import GroupPeerMenuGenerator
 
 
 class GroupPeerContact(contacts.contact.Contact):
@@ -16,4 +17,4 @@ class GroupPeerContact(contacts.contact.Contact):
         pass
 
     def get_context_menu_generator(self):
-        return None
+        return GroupPeerMenuGenerator(self)
