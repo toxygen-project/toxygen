@@ -489,7 +489,7 @@ def group_moderation(groups_service, contacts_provider, contacts_manager, messen
         elif event_type == TOX_GROUP_MOD_EVENT['MODERATOR']:
             update_peer_role(group, mod_peer_id, peer_id, TOX_GROUP_ROLE['MODERATOR'])
 
-        groups_service.generate_peers_list()
+        invoke_in_main_thread(groups_service.generate_peers_list)
 
     return wrapped
 

@@ -8,9 +8,10 @@ from common.tox_save import ToxSave
 
 class GroupChat(contact.Contact, ToxSave):
 
-    def __init__(self, tox, profile_manager, message_getter, number, name, status_message, widget, tox_id):
+    def __init__(self, tox, profile_manager, message_getter, number, name, status_message, widget, tox_id, is_private):
         super().__init__(profile_manager, message_getter, number, name, status_message, widget, tox_id)
         ToxSave.__init__(self, tox)
+        self._is_private = is_private
         self._peers = []
         self._add_self_to_gc()
 
@@ -23,6 +24,15 @@ class GroupChat(contact.Contact, ToxSave):
 
     def get_context_menu_generator(self):
         return GroupMenuGenerator(self)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Properties
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def get_is_private(self):
+        return self._is_private
+
+    is_private = property(get_is_private)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Peers methods
