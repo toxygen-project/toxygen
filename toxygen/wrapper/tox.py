@@ -2060,7 +2060,7 @@ class Tox:
                                                              len(data), byref(error))
         return result
 
-    def group_send_private_message(self, group_number, peer_id, message):
+    def group_send_private_message(self, group_number, peer_id, message_type, message):
         """
         Send a text chat message to the specified peer in the specified group.
 
@@ -2079,7 +2079,8 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_send_private_message(self._tox_pointer, group_number, peer_id, message,
+        result = Tox.libtoxcore.tox_group_send_private_message(self._tox_pointer, group_number, peer_id,
+                                                               message_type, message,
                                                                len(message), byref(error))
         return result
 
@@ -2135,7 +2136,7 @@ class Tox:
         This event is triggered when the client receives a private message.
         """
 
-        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_char_p, c_size_t, c_void_p)
+        c_callback = CFUNCTYPE(None, c_void_p, c_uint32, c_uint32, c_uint8, c_char_p, c_size_t, c_void_p)
         self.group_private_message_cb = c_callback(callback)
         Tox.libtoxcore.tox_callback_group_private_message(self._tox_pointer, self.group_private_message_cb, user_data)
 

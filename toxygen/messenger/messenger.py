@@ -170,14 +170,20 @@ class Messenger(tox_save.ToxSave):
         if not text or group_number < 0 or peer_id < 0:
             return
 
+        if text.startswith('/me '):
+            message_type = TOX_MESSAGE_TYPE['ACTION']
+            text = text[4:]
+        else:
+            message_type = TOX_MESSAGE_TYPE['NORMAL']
+
         group_peer_contact = self._contacts_manager.get_or_create_group_peer_contact(group_number, peer_id)
         group = self._get_group_by_number(group_number)
         messages = self._split_message(text.encode('utf-8'))
         t = util.get_unix_time()
         for message in messages:
-            self._tox.group_send_private_message(group_number, peer_id, message)
+            self._tox.group_send_private_message(group_number, peer_id, message_type, message)
             message_author = MessageAuthor(group.get_self_name(), MESSAGE_AUTHOR['GC_PEER'])
-            message = OutgoingTextMessage(text, message_author, t, MESSAGE_TYPE['TEXT'])
+            message = OutgoingTextMessage(text, message_author, t, message_type)
             group_peer_contact.append_message(message)
             if not self._contacts_manager.is_contact_active(group_peer_contact):
                 return
@@ -185,7 +191,7 @@ class Messenger(tox_save.ToxSave):
             self._screen.messageEdit.clear()
             self._screen.messages.scrollToBottom()
 
-    def new_group_private_message(self, group_number, message, peer_id):
+    def new_group_private_message(self, group_number, message_type, message, peer_id):
         """
         Current user gets new message
         :param message: text of message
@@ -194,7 +200,7 @@ class Messenger(tox_save.ToxSave):
         group = self._get_group_by_number(group_number)
         peer = group.get_peer_by_id(peer_id)
         text_message = TextMessage(message, MessageAuthor(peer.name, MESSAGE_AUTHOR['GC_PEER']),
-                                   t, MESSAGE_TYPE['TEXT'])
+                                   t, message_type)
         group_peer_contact = self._contacts_manager.get_or_create_group_peer_contact(group_number, peer_id)
         self._add_message(text_message, group_peer_contact)
 

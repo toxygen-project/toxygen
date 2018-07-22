@@ -379,9 +379,9 @@ def group_private_message(window, tray, tox, messenger, settings, profile):
     """
     New private message in group chat
     """
-    def wrapped(tox_link, group_number, peer_id, message, length, user_data):
+    def wrapped(tox_link, group_number, peer_id, message_type, message, length, user_data):
         message = str(message[:length], 'utf-8')
-        invoke_in_main_thread(messenger.new_group_private_message, group_number, message, peer_id)
+        invoke_in_main_thread(messenger.new_group_private_message, group_number, message_type, message, peer_id)
         if not window.isActiveWindow():
             bl = settings['notify_all_gc'] or profile.name in message
             name = tox.group_peer_get_name(group_number, peer_id)
