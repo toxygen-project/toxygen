@@ -375,6 +375,26 @@ def group_message(window, tray, tox, messenger, settings, profile):
     return wrapped
 
 
+def group_private_message(window, tray, tox, messenger, settings, profile):
+    """
+    New private message in group chat
+    """
+    def wrapped(tox_link, group_number, peer_id, message, length, user_data):
+        message = str(message[:length], 'utf-8')
+        invoke_in_main_thread(messenger.new_group_private_message, group_number, message, peer_id)
+        if not window.isActiveWindow():
+            bl = settings['notify_all_gc'] or profile.name in message
+            name = tox.group_peer_get_name(group_number, peer_id)
+            if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and (not settings.locked) and bl:
+                invoke_in_main_thread(tray_notification, name, message, tray, window)
+            if settings['sound_notifications'] and bl and profile.status != TOX_USER_STATUS['BUSY']:
+                sound_notification(SOUND_NOTIFICATION['MESSAGE'])
+            icon = os.path.join(util.get_images_directory(), 'icon_new_messages.png')
+            invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
+
+    return wrapped
+
+
 def group_invite(groups_service):
     def wrapped(tox, friend_number, invite_data, length, group_name, group_name_length, user_data):
         group_name = bytes(group_name[:group_name_length])
@@ -499,6 +519,7 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
 
     # gc callbacks
     tox.callback_group_message(group_message(main_window, tray, tox, messenger, settings, profile), 0)
+    tox.callback_group_private_message(group_private_message(main_window, tray, tox, messenger, settings, profile), 0)
     tox.callback_group_invite(group_invite(groups_service), 0)
     tox.callback_group_self_join(group_self_join(contacts_provider, groups_service), 0)
     tox.callback_group_peer_join(group_peer_join(contacts_provider, groups_service), 0)

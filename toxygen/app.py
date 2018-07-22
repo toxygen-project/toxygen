@@ -32,6 +32,8 @@ from history.history import History
 from file_transfers.file_transfers_messages_service import FileTransfersMessagesService
 from groups.groups_service import GroupsService
 from ui.create_profile_screen import CreateProfileScreen
+from common.provider import Provider
+from contacts.group_peer_factory import GroupPeerFactory
 import styles.style  # TODO: dynamic loading
 
 
@@ -42,7 +44,8 @@ class App:
         self._app = self._settings = self._profile_manager = self._plugin_loader = self._messenger = None
         self._tox = self._ms = self._init = self._main_loop = self._av_loop = None
         self._uri = self._toxes = self._tray = self._file_transfer_handler = self._contacts_provider = None
-        self._friend_factory = self._calls_manager = self._contacts_manager = self._smiley_loader = self._tox_dns = None
+        self._friend_factory = self._calls_manager = self._contacts_manager = self._smiley_loader = None
+        self._group_peer_factory = self._tox_dns = None
         self._group_factory = self._groups_service = self._profile = None
         if uri is not None and uri.startswith('tox:'):
             self._uri = uri[4:]
@@ -336,7 +339,9 @@ class App:
         self._friend_factory = FriendFactory(self._profile_manager, self._settings,
                                              self._tox, db, contact_items_factory)
         self._group_factory = GroupFactory(self._profile_manager, self._settings, self._tox, db, contact_items_factory)
-        self._contacts_provider = ContactProvider(self._tox, self._friend_factory, self._group_factory)
+        self._group_peer_factory = GroupPeerFactory(self._tox, self._profile_manager, db, contact_items_factory)
+        self._contacts_provider = ContactProvider(self._tox, self._friend_factory, self._group_factory,
+                                                  self._group_peer_factory)
         self._profile = Profile(self._profile_manager, self._tox, self._ms, self._contacts_provider, self._reset)
         self._init_profile()
         self._plugin_loader = PluginLoader(self._settings, self)
@@ -357,7 +362,10 @@ class App:
         self._file_transfer_handler = FileTransfersHandler(self._tox, self._settings, self._contacts_provider,
                                                            file_transfers_message_service, self._profile)
         messages_items_factory.set_file_transfers_handler(self._file_transfer_handler)
-        self._groups_service = GroupsService(self._tox, self._contacts_manager, self._contacts_provider, self._ms)
+        widgets_factory = None
+        widgets_factory_provider = Provider(lambda: widgets_factory)
+        self._groups_service = GroupsService(self._tox, self._contacts_manager, self._contacts_provider, self._ms,
+                                             widgets_factory_provider)
         widgets_factory = WidgetsFactory(self._settings, self._profile, self._profile_manager, self._contacts_manager,
                                          self._file_transfer_handler, self._smiley_loader, self._plugin_loader,
                                          self._toxes, self._version, self._groups_service, history)

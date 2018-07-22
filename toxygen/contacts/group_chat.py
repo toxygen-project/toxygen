@@ -11,8 +11,6 @@ class GroupChat(contact.Contact, ToxSave):
     def __init__(self, tox, profile_manager, message_getter, number, name, status_message, widget, tox_id):
         super().__init__(profile_manager, message_getter, number, name, status_message, widget, tox_id)
         ToxSave.__init__(self, tox)
-        status = self._tox.group_is_connected(number)
-        self.set_status(constants.TOX_USER_STATUS['NONE'] if status else None)
         self._peers = []
         self._add_self_to_gc()
 
@@ -54,6 +52,11 @@ class GroupChat(contact.Contact, ToxSave):
 
     def get_peer_by_id(self, peer_id):
         peers = list(filter(lambda p: p.id == peer_id, self._peers))
+
+        return peers[0]
+
+    def get_peer_by_public_key(self, public_key):
+        peers = list(filter(lambda p: p.public_key == public_key, self._peers))
 
         return peers[0]
 

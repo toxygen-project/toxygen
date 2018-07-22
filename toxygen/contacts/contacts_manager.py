@@ -2,6 +2,7 @@ from contacts.friend import Friend
 from contacts.group_chat import GroupChat
 from messenger.messages import *
 from common.tox_save import ToxSave
+from contacts.group_peer_contact import GroupPeerContact
 
 
 class ContactsManager(ToxSave):
@@ -223,6 +224,17 @@ class ContactsManager(ToxSave):
     def get_group_by_number(self, number):
         return list(filter(lambda c: c.number == number and type(c) is GroupChat, self._contacts))[0]
 
+    def get_or_create_group_peer_contact(self, group_number, peer_id):
+        group = self.get_group_by_number(group_number)
+        peer = group.get_peer_by_id(peer_id)
+        if not self.check_if_contact_exists(peer.public_key):
+            self.add_group_peer(group, peer)
+
+        return self.get_contact_by_tox_id(peer.public_key)
+
+    def check_if_contact_exists(self, tox_id):
+        return any(filter(lambda c: c.tox_id == tox_id, self._contacts))
+
     def get_contact_by_tox_id(self, tox_id):
         return list(filter(lambda c: c.tox_id == tox_id, self._contacts))[0]
 
@@ -339,6 +351,16 @@ class ContactsManager(ToxSave):
         self._cleanup_contact_data(group)
         num = self._contacts.index(group)
         self._delete_contact(num)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Groups private messaging
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def add_group_peer(self, group, peer):
+        contact = self._contact_provider.get_group_peer_by_id(group, peer.id)
+        self._contacts.append(contact)
+        contact.reset_avatar(self._settings['identicons'])
+        self._save_profile()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Friend requests

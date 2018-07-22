@@ -3,10 +3,11 @@ import common.tox_save as tox_save
 
 class ContactProvider(tox_save.ToxSave):
 
-    def __init__(self, tox, friend_factory, group_factory):
+    def __init__(self, tox, friend_factory, group_factory, group_peer_factory):
         super().__init__(tox)
         self._friend_factory = friend_factory
         self._group_factory = group_factory
+        self._group_peer_factory = group_peer_factory
         self._cache = {}  # key - contact's public key, value - contact instance
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -34,7 +35,7 @@ class ContactProvider(tox_save.ToxSave):
         return list(friends)
 
     # -----------------------------------------------------------------------------------------------------------------
-    # GC
+    # Groups
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_all_groups(self):
@@ -58,11 +59,28 @@ class ContactProvider(tox_save.ToxSave):
         return group
 
     # -----------------------------------------------------------------------------------------------------------------
+    # Group peers
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def get_all_group_peers(self):
+        return list()
+
+    def get_group_peer_by_id(self, group, peer_id):
+        peer = group.get_peer_by_id(peer_id)
+
+        return self._get_group_peer(group, peer)
+
+    def get_group_peer_by_public_key(self, group, public_key):
+        peer = group.get_peer_by_public_key(public_key)
+
+        return self._get_group_peer(group, peer)
+
+    # -----------------------------------------------------------------------------------------------------------------
     # All contacts
     # -----------------------------------------------------------------------------------------------------------------
 
     def get_all(self):
-        return self.get_all_friends() + self.get_all_groups()
+        return self.get_all_friends() + self.get_all_groups() + self.get_all_group_peers()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Caching
@@ -84,3 +102,6 @@ class ContactProvider(tox_save.ToxSave):
 
     def _add_to_cache(self, public_key, contact):
         self._cache[public_key] = contact
+
+    def _get_group_peer(self, group, peer):
+        return self._group_peer_factory.create_group_peer(group, peer)

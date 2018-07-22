@@ -6,11 +6,13 @@ import wrapper.toxcore_enums_and_consts as constants
 
 class GroupsService(tox_save.ToxSave):
 
-    def __init__(self, tox, contacts_manager, contacts_provider, main_screen):
+    def __init__(self, tox, contacts_manager, contacts_provider, main_screen, widgets_factory_provider):
         super().__init__(tox)
         self._contacts_manager = contacts_manager
         self._contacts_provider = contacts_provider
         self._peers_list_widget = main_screen.peers_list
+        self._widgets_factory_provider = widgets_factory_provider
+        self._peer_screen = None
 
     def set_tox(self, tox):
         super().set_tox(tox)
@@ -23,8 +25,12 @@ class GroupsService(tox_save.ToxSave):
 
     def create_new_gc(self, name, privacy_state):
         group_number = self._tox.group_new(privacy_state, name.encode('utf-8'))
-        if group_number != -1:
-            self._add_new_group_by_number(group_number)
+        if group_number == -1:
+            return
+
+        self._add_new_group_by_number(group_number)
+        group = self._get_group_by_number(group_number)
+        group.status = constants.TOX_USER_STATUS['NONE']
 
     def join_gc_by_id(self, chat_id, password):
         group_number = self._tox.group_join(chat_id, password)
@@ -45,13 +51,13 @@ class GroupsService(tox_save.ToxSave):
 
     def disconnect_from_group(self, group_number):
         self._tox.group_disconnect(group_number)
-        group = self._get_group(group_number)
+        group = self._get_group_by_number(group_number)
         group.status = None
         self._clear_peers_list(group)
 
     def reconnect_to_group(self, group_number):
         self._tox.group_reconnect(group_number)
-        group = self._get_group(group_number)
+        group = self._get_group_by_number(group_number)
         group.status = constants.TOX_USER_STATUS['NONE']
         self._clear_peers_list(group)
 
@@ -63,7 +69,7 @@ class GroupsService(tox_save.ToxSave):
         self._tox.group_invite_friend(group_number, friend_number)
 
     def process_group_invite(self, friend_number, group_name, invite_data):
-        friend = self._get_friend(friend_number)
+        friend = self._get_friend_by_number(friend_number)
         text = util_ui.tr('Friend {} invites you to group "{}". Accept?')
         if util_ui.question(text.format(friend.name, group_name), util_ui.tr('Group invite')):
             self.join_gc_via_invite(invite_data, friend_number, None)
@@ -98,7 +104,10 @@ class GroupsService(tox_save.ToxSave):
         PeersListGenerator().generate(group.peers, self, self._peers_list_widget, group.tox_id)
 
     def peer_selected(self, chat_id, peer_id):
-        pass
+        widgets_factory = self._widgets_factory_provider.get_item()
+        group = self._get_group_by_public_key(chat_id)
+        self._peer_screen = widgets_factory.create_peer_screen_window(group, peer_id)
+        self._peer_screen.show()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods
@@ -107,14 +116,17 @@ class GroupsService(tox_save.ToxSave):
     def _add_new_group_by_number(self, group_number):
         self._contacts_manager.add_group(group_number)
 
-    def _get_group(self, group_number):
+    def _get_group_by_number(self, group_number):
         return self._contacts_provider.get_group_by_number(group_number)
 
-    def _get_friend(self, friend_number):
-        return self._contacts_provider.get_friend_by_number(friend_number)
+    def _get_group_by_public_key(self, public_key):
+        return self._contacts_provider.get_group_by_public_key(public_key)
 
     def _get_all_groups(self):
         return self._contacts_provider.get_all_groups()
+
+    def _get_friend_by_number(self, friend_number):
+        return self._contacts_provider.get_friend_by_number(friend_number)
 
     def _clear_peers_list(self, group):
         group.remove_all_peers_except_self()

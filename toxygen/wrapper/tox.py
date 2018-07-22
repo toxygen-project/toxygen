@@ -1804,7 +1804,7 @@ class Tox:
         """
         Write the group public key with the designated peer_id for the designated group number to public_key.
 
-        This key will be parmanently tied to a particular peer until they explicitly leave the group or
+        This key will be permanently tied to a particular peer until they explicitly leave the group or
         get kicked/banned, and is the only way to reliably identify the same peer across client restarts.
 
         `public_key` should have room for at least TOX_GROUP_PEER_PUBLIC_KEY_SIZE bytes.

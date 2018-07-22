@@ -1,6 +1,7 @@
 from ui.main_screen_widgets import *
 from ui.menu import *
 from ui.groups_widgets import *
+from ui.peer_screen import *
 
 
 class WidgetsFactory:
@@ -69,3 +70,6 @@ class WidgetsFactory:
 
     def create_search_screen(self, messages):
         return SearchScreen(self._contacts_manager, self._history, messages, messages.parent())
+
+    def create_peer_screen_window(self, group, peer_id):
+        return PeerScreen(self._contacts_manager, self._groups_service, group, peer_id)
