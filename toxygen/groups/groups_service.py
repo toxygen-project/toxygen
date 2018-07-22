@@ -110,6 +110,19 @@ class GroupsService(tox_save.ToxSave):
         self._peer_screen.show()
 
     # -----------------------------------------------------------------------------------------------------------------
+    # Peers actions
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def set_new_peer_role(self, group, peer, role):
+        self._tox.group_mod_set_role(group.number, peer.id, role)
+        peer.role = role
+        self.generate_peers_list()
+
+    def toggle_ignore_peer(self, group, peer, ignore):
+        self._tox.group_toggle_ignore(group.number, peer.id, ignore)
+        peer.is_muted = ignore
+
+    # -----------------------------------------------------------------------------------------------------------------
     # Private methods
     # -----------------------------------------------------------------------------------------------------------------
 

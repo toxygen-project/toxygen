@@ -260,25 +260,26 @@ class ContactsManager(ToxSave):
         text = util_ui.tr("Enter new alias for friend {} or leave empty to use friend's name:").format(name)
         title = util_ui.tr('Set alias')
         text, ok = util_ui.text_dialog(text, title, name)
-        if ok:
-            aliases = self._settings['friends_aliases']
-            if text:
-                friend.name = text
-                try:
-                    index = list(map(lambda x: x[0], aliases)).index(friend.tox_id)
-                    aliases[index] = (friend.tox_id, text)
-                except:
-                    aliases.append((friend.tox_id, text))
-                friend.set_alias(text)
-            else:  # use default name
-                friend.name = self._tox.friend_get_name(friend.number)
-                friend.set_alias('')
-                try:
-                    index = list(map(lambda x: x[0], aliases)).index(friend.tox_id)
-                    del aliases[index]
-                except:
-                    pass
-            self._settings.save()
+        if not ok:
+            return
+        aliases = self._settings['friends_aliases']
+        if text:
+            friend.name = text
+            try:
+                index = list(map(lambda x: x[0], aliases)).index(friend.tox_id)
+                aliases[index] = (friend.tox_id, text)
+            except:
+                aliases.append((friend.tox_id, text))
+            friend.set_alias(text)
+        else:  # use default name
+            friend.name = self._tox.friend_get_name(friend.number)
+            friend.set_alias('')
+            try:
+                index = list(map(lambda x: x[0], aliases)).index(friend.tox_id)
+                del aliases[index]
+            except:
+                pass
+        self._settings.save()
 
     def friend_public_key(self, num):
         return self._contacts[num].tox_id
@@ -362,6 +363,13 @@ class ContactsManager(ToxSave):
         contact.reset_avatar(self._settings['identicons'])
         self._save_profile()
 
+    def remove_group_peer_by_id(self, group, peer_id):
+        peer = group.get_peer_by_id(peer_id)
+        if not self.check_if_contact_exists(peer.public_key):
+            return
+        contact = self.get_contact_by_tox_id(peer.public_key)
+        self.remove_group_peer(contact)
+
     def remove_group_peer(self, group_peer_contact):
         contact = self.get_contact_by_tox_id(group_peer_contact.tox_id)
         self._cleanup_contact_data(contact)
@@ -437,6 +445,11 @@ class ContactsManager(ToxSave):
             group = self.get_contact_by_tox_id(chat_id)
             group.number = i
         self.update_filtration()
+
+    def update_groups_lists(self):
+        groups = self._contact_provider.get_all_groups()
+        for group in groups:
+            group.remove_all_peers_except_self()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods

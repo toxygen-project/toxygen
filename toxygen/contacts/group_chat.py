@@ -28,6 +28,9 @@ class GroupChat(contact.Contact, ToxSave):
     # Peers methods
     # -----------------------------------------------------------------------------------------------------------------
 
+    def get_self_peer(self):
+        return self._peers[0]
+
     def get_self_name(self):
         return self._peers[0].name
 

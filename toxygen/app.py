@@ -237,7 +237,7 @@ class App:
         self._profile_manager = ProfileManager(self._settings, self._toxes, profile_path)
         data = self._profile_manager.open_profile()
         if self._toxes.is_data_encrypted(data):
-            data = self._enter_pass(data)
+            data = self._enter_password(data)
         self._tox = self._create_tox(data)
 
     def _create_new_profile(self, profile_name):
@@ -292,7 +292,7 @@ class App:
     # Other private methods
     # -----------------------------------------------------------------------------------------------------------------
 
-    def _enter_pass(self, data):
+    def _enter_password(self, data):
         """
         Show password screen
         """
@@ -326,6 +326,7 @@ class App:
 
         self._calls_manager.set_toxav(self._tox.AV)
         self._contacts_manager.update_friends_numbers()
+        self._contacts_manager.update_groups_lists()
 
         self._init_callbacks()
 

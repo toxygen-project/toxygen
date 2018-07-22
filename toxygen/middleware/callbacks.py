@@ -424,9 +424,10 @@ def group_peer_join(contacts_provider, groups_service):
     return wrapped
 
 
-def group_peer_exit(contacts_provider, groups_service):
+def group_peer_exit(contacts_provider, groups_service, contacts_manager):
     def wrapped(tox, group_number, peer_id, message, length, user_data):
         group = contacts_provider.get_group_by_number(group_number)
+        contacts_manager.remove_group_peer_by_id(group, peer_id)
         group.remove_peer(peer_id)
         invoke_in_main_thread(groups_service.generate_peers_list)
 
@@ -458,6 +459,37 @@ def group_topic(contacts_provider):
         group = contacts_provider.get_group_by_number(group_number)
         topic = str(topic[:length], 'utf-8')
         invoke_in_main_thread(group.set_status_message, topic)
+
+    return wrapped
+
+
+def group_moderation(groups_service, contacts_provider, contacts_manager, messenger):
+
+    def update_peer_role(group, mod_peer_id, peer_id, new_role):
+        peer = group.get_peer_by_id(peer_id)
+        peer.role = new_role
+        # TODO: add info message
+
+    def remove_peer(group, mod_peer_id, peer_id, is_ban):
+        contacts_manager.remove_group_peer_by_id(group, peer_id)
+        group.remove_peer(peer_id)
+        # TODO: add info message
+
+    def wrapped(tox, group_number, mod_peer_id, peer_id, event_type, user_data):
+        group = contacts_provider.get_group_by_number(group_number)
+
+        if event_type == TOX_GROUP_MOD_EVENT['KICK']:
+            remove_peer(group, mod_peer_id, peer_id, False)
+        elif event_type == TOX_GROUP_MOD_EVENT['BAN']:
+            remove_peer(group, mod_peer_id, peer_id, True)
+        elif event_type == TOX_GROUP_MOD_EVENT['OBSERVER']:
+            update_peer_role(group, mod_peer_id, peer_id, TOX_GROUP_ROLE['OBSERVER'])
+        elif event_type == TOX_GROUP_MOD_EVENT['USER']:
+            update_peer_role(group, mod_peer_id, peer_id, TOX_GROUP_ROLE['USER'])
+        elif event_type == TOX_GROUP_MOD_EVENT['MODERATOR']:
+            update_peer_role(group, mod_peer_id, peer_id, TOX_GROUP_ROLE['MODERATOR'])
+
+        groups_service.generate_peers_list()
 
     return wrapped
 
@@ -523,7 +555,8 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     tox.callback_group_invite(group_invite(groups_service), 0)
     tox.callback_group_self_join(group_self_join(contacts_provider, groups_service), 0)
     tox.callback_group_peer_join(group_peer_join(contacts_provider, groups_service), 0)
-    tox.callback_group_peer_exit(group_peer_exit(contacts_provider, groups_service), 0)
+    tox.callback_group_peer_exit(group_peer_exit(contacts_provider, groups_service, contacts_manager), 0)
     tox.callback_group_peer_name(group_peer_name(contacts_provider, groups_service), 0)
     tox.callback_group_peer_status(group_peer_status(contacts_provider, groups_service), 0)
     tox.callback_group_topic(group_topic(contacts_provider), 0)
+    tox.callback_group_moderation(group_moderation(groups_service, contacts_provider, contacts_manager, messenger), 0)
