@@ -106,7 +106,11 @@ class GroupsService(tox_save.ToxSave):
     def peer_selected(self, chat_id, peer_id):
         widgets_factory = self._widgets_factory_provider.get_item()
         group = self._get_group_by_public_key(chat_id)
-        self._peer_screen = widgets_factory.create_peer_screen_window(group, peer_id)
+        self_peer = group.get_self_peer()
+        if self_peer.id != peer_id:
+            self._peer_screen = widgets_factory.create_peer_screen_window(group, peer_id)
+        else:
+            self._peer_screen = widgets_factory.create_self_peer_screen_window(group)
         self._peer_screen.show()
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -121,6 +125,13 @@ class GroupsService(tox_save.ToxSave):
     def toggle_ignore_peer(self, group, peer, ignore):
         self._tox.group_toggle_ignore(group.number, peer.id, ignore)
         peer.is_muted = ignore
+
+    def set_self_info(self, group, name, status):
+        self._tox.group_self_set_name(group.number, name)
+        self._tox.group_self_set_status(group.number, status)
+        self_peer = group.get_self_peer()
+        self_peer.name = name
+        self_peer.status = status
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods

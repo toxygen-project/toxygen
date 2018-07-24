@@ -28,7 +28,7 @@ class GroupFactory(ToxSave):
         name = alias or self._tox.group_get_name(group_number) or tox_id
         status_message = self._tox.group_get_topic(group_number)
         message_getter = self._db.messages_getter(tox_id)
-        is_private = self._tox.group_get_privacy_state() == constants.TOX_GROUP_PRIVACY_STATE['PRIVATE']
+        is_private = self._tox.group_get_privacy_state(group_number) == constants.TOX_GROUP_PRIVACY_STATE['PRIVATE']
         group = GroupChat(self._tox, self._profile_manager, message_getter, group_number, name, status_message,
                           item, tox_id, is_private)
         group.set_alias(alias)
