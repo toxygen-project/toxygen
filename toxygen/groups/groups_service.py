@@ -6,12 +6,13 @@ import wrapper.toxcore_enums_and_consts as constants
 
 class GroupsService(tox_save.ToxSave):
 
-    def __init__(self, tox, contacts_manager, contacts_provider, main_screen, widgets_factory_provider):
+    def __init__(self, tox, contacts_manager, contacts_provider, main_screen, widgets_factory_provider, profile):
         super().__init__(tox)
         self._contacts_manager = contacts_manager
         self._contacts_provider = contacts_provider
         self._peers_list_widget = main_screen.peers_list
         self._widgets_factory_provider = widgets_factory_provider
+        self._profile = profile
         self._peer_screen = None
 
     def set_tox(self, tox):
@@ -23,8 +24,8 @@ class GroupsService(tox_save.ToxSave):
     # Groups creation
     # -----------------------------------------------------------------------------------------------------------------
 
-    def create_new_gc(self, name, privacy_state):
-        group_number = self._tox.group_new(privacy_state, name.encode('utf-8'))
+    def create_new_gc(self, name, privacy_state, nick, status):
+        group_number = self._tox.group_new(privacy_state, name, nick, status)
         if group_number == -1:
             return
 
@@ -32,12 +33,12 @@ class GroupsService(tox_save.ToxSave):
         group = self._get_group_by_number(group_number)
         group.status = constants.TOX_USER_STATUS['NONE']
 
-    def join_gc_by_id(self, chat_id, password):
-        group_number = self._tox.group_join(chat_id, password)
+    def join_gc_by_id(self, chat_id, password, nick, status):
+        group_number = self._tox.group_join(chat_id, password, nick, status)
         self._add_new_group_by_number(group_number)
 
-    def join_gc_via_invite(self, invite_data, friend_number, password):
-        group_number = self._tox.group_invite_accept(invite_data, friend_number, password)
+    def join_gc_via_invite(self, invite_data, friend_number, nick, status, password):
+        group_number = self._tox.group_invite_accept(invite_data, friend_number, nick, status, password)
         self._add_new_group_by_number(group_number)
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -72,7 +73,7 @@ class GroupsService(tox_save.ToxSave):
         friend = self._get_friend_by_number(friend_number)
         text = util_ui.tr('Friend {} invites you to group "{}". Accept?')
         if util_ui.question(text.format(friend.name, group_name), util_ui.tr('Group invite')):
-            self.join_gc_via_invite(invite_data, friend_number, None)
+            self.join_gc_via_invite(invite_data, friend_number, self._profile.name, self._profile.status or 0, None)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Group info methods

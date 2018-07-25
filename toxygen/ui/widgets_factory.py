@@ -64,10 +64,10 @@ class WidgetsFactory:
         return StickerWindow(self._file_transfer_handler, self._contacts_manager)
 
     def create_group_screen_window(self):
-        return CreateGroupScreen(self._groups_service)
+        return CreateGroupScreen(self._groups_service, self._profile)
 
     def create_join_group_screen_window(self):
-        return JoinGroupScreen(self._groups_service)
+        return JoinGroupScreen(self._groups_service, self._profile)
 
     def create_search_screen(self, messages):
         return SearchScreen(self._contacts_manager, self._history, messages, messages.parent())

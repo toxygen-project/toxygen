@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>639</width>
-    <height>199</height>
+    <width>640</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,9 +19,9 @@
    </property>
    <property name="geometry">
     <rect>
-     <x>180</x>
-     <y>150</y>
-     <width>271</width>
+     <x>20</x>
+     <y>250</y>
+     <width>601</width>
      <height>41</height>
     </rect>
    </property>
@@ -32,28 +32,28 @@
   <widget class="QLineEdit" name="groupNameLineEdit">
    <property name="geometry">
     <rect>
-     <x>140</x>
-     <y>40</y>
-     <width>471</width>
-     <height>31</height>
+     <x>150</x>
+     <y>20</y>
+     <width>470</width>
+     <height>35</height>
     </rect>
    </property>
   </widget>
   <widget class="QComboBox" name="groupTypeComboBox">
    <property name="geometry">
     <rect>
-     <x>140</x>
-     <y>100</y>
-     <width>471</width>
-     <height>41</height>
+     <x>150</x>
+     <y>80</y>
+     <width>470</width>
+     <height>35</height>
     </rect>
    </property>
   </widget>
   <widget class="QLabel" name="groupNameLabel">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>40</y>
+     <x>20</x>
+     <y>20</y>
      <width>121</width>
      <height>31</height>
     </rect>
@@ -65,14 +65,60 @@
   <widget class="QLabel" name="groupTypeLabel">
    <property name="geometry">
     <rect>
-     <x>10</x>
-     <y>100</y>
+     <x>20</x>
+     <y>80</y>
      <width>121</width>
      <height>31</height>
     </rect>
    </property>
    <property name="text">
     <string>TextLabel</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="statusLabel">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>200</y>
+     <width>111</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="nickLabel">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>150</y>
+     <width>111</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>TextLabel</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="nickLineEdit">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>140</y>
+     <width>470</width>
+     <height>35</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QComboBox" name="statusComboBox">
+   <property name="geometry">
+    <rect>
+     <x>150</x>
+     <y>190</y>
+     <width>470</width>
+     <height>35</height>
+    </rect>
    </property>
   </widget>
  </widget>

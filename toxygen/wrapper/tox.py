@@ -29,7 +29,7 @@ class ToxOptions(Structure):
 class GroupChatSelfPeerInfo(Structure):
     _fields_ = [
         ('nick', c_char_p),
-        ('nick_length', c_uint16),
+        ('nick_length', c_uint8),
         ('user_status', c_int)
     ]
 
@@ -1533,7 +1533,7 @@ class Tox:
     # Group chat instance management
     # -----------------------------------------------------------------------------------------------------------------
 
-    def group_new(self, privacy_state, group_name):
+    def group_new(self, privacy_state, group_name, nick, status):
         """
         Creates a new group chat.
 
@@ -1551,12 +1551,16 @@ class Tox:
         """
 
         error = c_int()
-        peer_info = self.group_chat_self_peer_info_new()
-        result = Tox.libtoxcore.tox_group_new(self._tox_pointer, privacy_state, group_name,
+        peer_info = self.group_self_peer_info_new()
+        nick = bytes(nick, 'utf-8')
+        peer_info.contents.nick = c_char_p(nick)
+        peer_info.contents.nick_length = len(nick)
+        peer_info.contents.user_status = status
+        result = Tox.libtoxcore.tox_group_new(self._tox_pointer, privacy_state, group_name.encode('utf-8'),
                                               len(group_name), peer_info, byref(error))
         return result
 
-    def group_join(self, chat_id, password):
+    def group_join(self, chat_id, password, nick, status):
         """
         Joins a group chat with specified Chat ID.
 
@@ -1571,7 +1575,11 @@ class Tox:
         """
 
         error = c_int()
-        peer_info = self.group_chat_self_peer_info_new()
+        peer_info = self.group_self_peer_info_new()
+        nick = bytes(nick, 'utf-8')
+        peer_info.contents.nick = c_char_p(nick)
+        peer_info.contents.nick_length = len(nick)
+        peer_info.contents.user_status = status
         result = Tox.libtoxcore.tox_group_join(self._tox_pointer, string_to_bin(chat_id),
                                                password,
                                                len(password) if password is not None else 0,
@@ -2171,15 +2179,15 @@ class Tox:
         result = Tox.libtoxcore.tox_group_invite_friend(self._tox_pointer, group_number, friend_number, byref(error))
         return result
 
-    def group_chat_self_peer_info_new(self):
+    def group_self_peer_info_new(self):
         error = c_int()
-        f = Tox.libtoxcore.group_chat_self_peer_info_new
+        f = Tox.libtoxcore.tox_group_self_peer_info_new
         f.restype = POINTER(GroupChatSelfPeerInfo)
         result = f(self._tox_pointer, byref(error))
 
         return result
 
-    def group_invite_accept(self, invite_data, friend_number, password=None):
+    def group_invite_accept(self, invite_data, friend_number, nick, status, password=None):
         """
         Accept an invite to a group chat that the client previously received from a friend. The invite
         is only valid while the inviter is present in the group.
@@ -2192,7 +2200,11 @@ class Tox:
         error = c_int()
         f = Tox.libtoxcore.tox_group_invite_accept
         f.restype = c_uint32
-        peer_info = self.group_chat_self_peer_info_new()
+        peer_info = self.group_self_peer_info_new()
+        nick = bytes(nick, 'utf-8')
+        peer_info.contents.nick = c_char_p(nick)
+        peer_info.contents.nick_length = len(nick)
+        peer_info.contents.user_status = status
         result = f(self._tox_pointer, friend_number, invite_data, len(invite_data), password,
                    len(password) if password is not None else 0, peer_info, byref(error))
         print('Invite accept. Result:', result, 'Error:', error.value)
