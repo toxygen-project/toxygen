@@ -3,15 +3,27 @@ import utils.util as util
 from ui.widgets import *
 from wrapper.toxcore_enums_and_consts import *
 
-# TODO: move common logic to separate class
 
-
-class CreateGroupScreen(CenteredWidget):
+class BaseGroupScreen(CenteredWidget):
 
     def __init__(self, groups_service, profile):
         super().__init__()
         self._groups_service = groups_service
         self._profile = profile
+
+    def _retranslate_ui(self):
+        self.nickLineEdit.setPlaceholderText(util_ui.tr('Your nick in chat'))
+        self.nickLabel.setText(util_ui.tr('Nickname:'))
+        self.statusLabel.setText(util_ui.tr('Status:'))
+        self.statusComboBox.addItem(util_ui.tr('Online'))
+        self.statusComboBox.addItem(util_ui.tr('Away'))
+        self.statusComboBox.addItem(util_ui.tr('Busy'))
+
+
+class CreateGroupScreen(BaseGroupScreen):
+
+    def __init__(self, groups_service, profile):
+        super().__init__(groups_service, profile)
         uic.loadUi(util.get_views_path('create_group_screen'), self)
         self.center()
         self._update_ui()
@@ -27,20 +39,15 @@ class CreateGroupScreen(CenteredWidget):
         self.nickLineEdit.textChanged.connect(self._nick_changed)
 
     def _retranslate_ui(self):
+        super()._retranslate_ui()
         self.setWindowTitle(util_ui.tr('Create new group chat'))
         self.groupNameLabel.setText(util_ui.tr('Group name:'))
         self.groupTypeLabel.setText(util_ui.tr('Group type:'))
-        self.nickLabel.setText(util_ui.tr('Nickname:'))
-        self.statusLabel.setText(util_ui.tr('Status:'))
-        self.nickLineEdit.setPlaceholderText(util_ui.tr('Your nick in chat'))
         self.groupNameLineEdit.setPlaceholderText(util_ui.tr('Group\'s persistent name'))
         self.addGroupButton.setText(util_ui.tr('Create group'))
         self.groupTypeComboBox.addItem(util_ui.tr('Public'))
         self.groupTypeComboBox.addItem(util_ui.tr('Private'))
         self.groupTypeComboBox.setCurrentIndex(1)
-        self.statusComboBox.addItem(util_ui.tr('Online'))
-        self.statusComboBox.addItem(util_ui.tr('Away'))
-        self.statusComboBox.addItem(util_ui.tr('Busy'))
 
     def _create_group(self):
         group_name = self.groupNameLineEdit.text()
@@ -62,12 +69,10 @@ class CreateGroupScreen(CenteredWidget):
         self.addGroupButton.setEnabled(is_nick_set and is_group_name_set)
 
 
-class JoinGroupScreen(CenteredWidget):
+class JoinGroupScreen(BaseGroupScreen):
 
     def __init__(self, groups_service, profile):
-        super().__init__()
-        self._groups_service = groups_service
-        self._profile = profile
+        super().__init__(groups_service, profile)
         uic.loadUi(util.get_views_path('join_group_screen'), self)
         self.center()
         self._update_ui()
@@ -83,18 +88,13 @@ class JoinGroupScreen(CenteredWidget):
         self.nickLineEdit.textChanged.connect(self._nick_changed)
 
     def _retranslate_ui(self):
+        super()._retranslate_ui()
         self.setWindowTitle(util_ui.tr('Join public group chat'))
         self.chatIdLabel.setText(util_ui.tr('Group ID:'))
         self.passwordLabel.setText(util_ui.tr('Password:'))
-        self.nickLabel.setText(util_ui.tr('Nickname:'))
-        self.statusLabel.setText(util_ui.tr('Status:'))
         self.chatIdLineEdit.setPlaceholderText(util_ui.tr('Group\'s chat ID'))
-        self.nickLineEdit.setPlaceholderText(util_ui.tr('Your nick in chat'))
         self.joinGroupButton.setText(util_ui.tr('Join group'))
         self.passwordLineEdit.setPlaceholderText(util_ui.tr('Optional password'))
-        self.statusComboBox.addItem(util_ui.tr('Online'))
-        self.statusComboBox.addItem(util_ui.tr('Away'))
-        self.statusComboBox.addItem(util_ui.tr('Busy'))
 
     def _chat_id_changed(self):
         self._update_button_state()
