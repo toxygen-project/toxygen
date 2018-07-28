@@ -366,10 +366,11 @@ class App:
         widgets_factory = None
         widgets_factory_provider = Provider(lambda: widgets_factory)
         self._groups_service = GroupsService(self._tox, self._contacts_manager, self._contacts_provider, self._ms,
-                                             widgets_factory_provider, self._profile)
+                                             widgets_factory_provider)
         widgets_factory = WidgetsFactory(self._settings, self._profile, self._profile_manager, self._contacts_manager,
                                          self._file_transfer_handler, self._smiley_loader, self._plugin_loader,
-                                         self._toxes, self._version, self._groups_service, history)
+                                         self._toxes, self._version, self._groups_service, history,
+                                         self._contacts_provider)
         self._tray = tray.init_tray(self._profile, self._settings, self._ms, self._toxes)
         self._ms.set_dependencies(widgets_factory, self._tray, self._contacts_manager, self._messenger, self._profile,
                                   self._plugin_loader, self._file_transfer_handler, history, self._calls_manager,

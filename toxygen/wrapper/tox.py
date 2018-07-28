@@ -1651,6 +1651,7 @@ class Tox:
         """
 
         error = c_int()
+        name = bytes(name, 'utf-8')
         result = Tox.libtoxcore.tox_group_self_set_name(self._tox_pointer, group_number, name, len(name), byref(error))
         return result
 

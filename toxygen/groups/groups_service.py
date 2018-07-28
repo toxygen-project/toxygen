@@ -1,18 +1,19 @@
 import common.tox_save as tox_save
 import utils.ui as util_ui
 from groups.peers_list import PeersListGenerator
+from groups.group_invite import GroupInvite
 import wrapper.toxcore_enums_and_consts as constants
 
 
 class GroupsService(tox_save.ToxSave):
 
-    def __init__(self, tox, contacts_manager, contacts_provider, main_screen, widgets_factory_provider, profile):
+    def __init__(self, tox, contacts_manager, contacts_provider, main_screen, widgets_factory_provider):
         super().__init__(tox)
         self._contacts_manager = contacts_manager
         self._contacts_provider = contacts_provider
         self._peers_list_widget = main_screen.peers_list
         self._widgets_factory_provider = widgets_factory_provider
-        self._profile = profile
+        self._group_invites = []
         self._peer_screen = None
 
     def set_tox(self, tox):
@@ -35,10 +36,6 @@ class GroupsService(tox_save.ToxSave):
 
     def join_gc_by_id(self, chat_id, password, nick, status):
         group_number = self._tox.group_join(chat_id, password, nick, status)
-        self._add_new_group_by_number(group_number)
-
-    def join_gc_via_invite(self, invite_data, friend_number, nick, status, password):
-        group_number = self._tox.group_invite_accept(invite_data, friend_number, nick, status, password)
         self._add_new_group_by_number(group_number)
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -71,9 +68,23 @@ class GroupsService(tox_save.ToxSave):
 
     def process_group_invite(self, friend_number, group_name, invite_data):
         friend = self._get_friend_by_number(friend_number)
-        text = util_ui.tr('Friend {} invites you to group "{}". Accept?')
-        if util_ui.question(text.format(friend.name, group_name), util_ui.tr('Group invite')):
-            self.join_gc_via_invite(invite_data, friend_number, self._profile.name, self._profile.status or 0, None)
+        invite = GroupInvite(friend.tox_id, group_name, invite_data)
+        self._group_invites.append(invite)
+        # TODO: notification on main screen
+
+    def accept_group_invite(self, invite, name, status, password):
+        pk = invite.friend_public_key
+        friend = self._get_friend_by_public_key(pk)
+        self._join_gc_via_invite(invite.invite_data, friend.number, name, status, password)
+        self._delete_group_invite(invite)
+
+    def decline_group_invite(self, invite):
+        self._delete_group_invite(invite)
+
+    def get_group_invites(self):
+        return self._group_invites[:]
+
+    group_invites = property(get_group_invites)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Group info methods
@@ -153,6 +164,17 @@ class GroupsService(tox_save.ToxSave):
     def _get_friend_by_number(self, friend_number):
         return self._contacts_provider.get_friend_by_number(friend_number)
 
+    def _get_friend_by_public_key(self, public_key):
+        return self._contacts_provider.get_friend_by_public_key(public_key)
+
     def _clear_peers_list(self, group):
         group.remove_all_peers_except_self()
         self.generate_peers_list()
+
+    def _delete_group_invite(self, invite):
+        if invite in self._group_invites:
+            self._group_invites.remove(invite)
+
+    def _join_gc_via_invite(self, invite_data, friend_number, nick, status, password):
+        group_number = self._tox.group_invite_accept(invite_data, friend_number, nick, status, password)
+        self._add_new_group_by_number(group_number)

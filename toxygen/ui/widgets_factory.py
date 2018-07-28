@@ -3,12 +3,13 @@ from ui.menu import *
 from ui.groups_widgets import *
 from ui.peer_screen import *
 from ui.self_peer_screen import *
+from ui.group_invites_widgets import *
 
 
 class WidgetsFactory:
 
     def __init__(self, settings, profile, profile_manager, contacts_manager, file_transfer_handler, smiley_loader,
-                 plugin_loader, toxes, version, groups_service, history):
+                 plugin_loader, toxes, version, groups_service, history, contacts_provider):
         self._settings = settings
         self._profile = profile
         self._profile_manager = profile_manager
@@ -20,6 +21,7 @@ class WidgetsFactory:
         self._version = version
         self._groups_service = groups_service
         self._history = history
+        self._contacts_provider = contacts_provider
 
     def create_screenshot_window(self, *args):
         return ScreenShotWindow(self._file_transfer_handler, self._contacts_manager, *args)
@@ -77,3 +79,6 @@ class WidgetsFactory:
 
     def create_self_peer_screen_window(self, group):
         return SelfPeerScreen(self._contacts_manager, self._groups_service, group)
+
+    def create_group_invites_window(self):
+        return GroupInvitesScreen(self._groups_service, self._profile, self._contacts_provider)

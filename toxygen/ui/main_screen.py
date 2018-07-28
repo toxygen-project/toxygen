@@ -88,12 +88,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lockApp = QtWidgets.QAction(window)
         self.createGC = QtWidgets.QAction(window)
         self.joinGC = QtWidgets.QAction(window)
+        self.gc_invites = QtWidgets.QAction(window)
 
         self.menuProfile.addAction(self.actionAdd_friend)
         self.menuProfile.addAction(self.actionSettings)
         self.menuProfile.addAction(self.lockApp)
         self.menuGC.addAction(self.createGC)
         self.menuGC.addAction(self.joinGC)
+        self.menuGC.addAction(self.gc_invites)
         self.menuSettings.addAction(self.actionPrivacy_settings)
         self.menuSettings.addAction(self.actionInterface_settings)
         self.menuSettings.addAction(self.actionNotifications)
@@ -128,6 +130,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.lockApp.triggered.connect(self.lock_app)
         self.importPlugin.triggered.connect(self.import_plugin)
         self.reloadPlugins.triggered.connect(self.reload_plugins)
+        self.gc_invites.triggered.connect(self._open_gc_invites_list)
 
     def languageChange(self, *args, **kwargs):
         self.retranslateUi()
@@ -149,6 +152,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.actionAdd_friend.setText(util_ui.tr("Add contact"))
         self.createGC.setText(util_ui.tr("Create group chat"))
         self.joinGC.setText(util_ui.tr("Join group chat"))
+        self.gc_invites.setText(util_ui.tr("Group invites"))
         self.actionprofilesettings.setText(util_ui.tr("Profile"))
         self.actionPrivacy_settings.setText(util_ui.tr("Privacy"))
         self.actionInterface_settings.setText(util_ui.tr("Interface"))
@@ -733,3 +737,7 @@ class MainWindow(QtWidgets.QMainWindow):
         if self._should_show_group_peers_list:
             self._toggle_gc_peers_list()
         self.resizeEvent()
+
+    def _open_gc_invites_list(self):
+        self._modal_window = self._widget_factory.create_group_invites_window()
+        self._modal_window.show()

@@ -438,7 +438,7 @@ def group_peer_name(contacts_provider, groups_service):
     def wrapped(tox, group_number, peer_id, name, length, user_data):
         group = contacts_provider.get_group_by_number(group_number)
         peer = group.get_peer_by_id(peer_id)
-        peer.name = str(name[:length])
+        peer.name = str(name[:length], 'utf-8')
         invoke_in_main_thread(groups_service.generate_peers_list)
 
     return wrapped
