@@ -17,7 +17,7 @@ class Profile(basecontact.BaseContact, tox_save.ToxSave):
                                          profile_manager,
                                          tox.self_get_name(),
                                          tox.self_get_status_message(),
-                                         screen.user_info,
+                                         screen,
                                          tox.self_get_address())
         tox_save.ToxSave.__init__(self, tox)
         self._screen = screen

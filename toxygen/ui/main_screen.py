@@ -3,6 +3,7 @@ from ui.widgets import MultilineEdit, ComboBox
 from ui.main_screen_widgets import *
 import utils.util as util
 import utils.ui as util_ui
+from PyQt5 import uic
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -37,6 +38,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self._messenger = messenger
         self._contacts_manager.active_contact_changed.add_callback(self._new_contact_selected)
         self.messageEdit.set_messenger(messenger)
+
+        self.update_gc_invites_button_state()
 
     def show(self):
         super().show()
@@ -163,19 +166,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.audioSettings.setText(util_ui.tr("Audio"))
         self.videoSettings.setText(util_ui.tr("Video"))
         self.updateSettings.setText(util_ui.tr("Updates"))
-        self.contact_name.setPlaceholderText(util_ui.tr("Search"))
+
+        self.searchLineEdit.setPlaceholderText(util_ui.tr("Search"))
         self.sendMessageButton.setToolTip(util_ui.tr("Send message"))
         self.callButton.setToolTip(util_ui.tr("Start audio call with friend"))
-        self.online_contacts.clear()
-        self.online_contacts.addItem(util_ui.tr("All"))
-        self.online_contacts.addItem(util_ui.tr("Online"))
-        self.online_contacts.addItem(util_ui.tr("Online first"))
-        self.online_contacts.addItem(util_ui.tr("Name"))
-        self.online_contacts.addItem(util_ui.tr("Online and by name"))
-        self.online_contacts.addItem(util_ui.tr("Online first and by name"))
+        self.contactsFilterComboBox.clear()
+        self.contactsFilterComboBox.addItem(util_ui.tr("All"))
+        self.contactsFilterComboBox.addItem(util_ui.tr("Online"))
+        self.contactsFilterComboBox.addItem(util_ui.tr("Online first"))
+        self.contactsFilterComboBox.addItem(util_ui.tr("Name"))
+        self.contactsFilterComboBox.addItem(util_ui.tr("Online and by name"))
+        self.contactsFilterComboBox.addItem(util_ui.tr("Online first and by name"))
+
         ind = self._settings['sorting']
         d = {0: 0, 1: 1, 2: 2, 3: 4, 4: 3, 1 | 4: 4, 2 | 4: 5}
-        self.online_contacts.setCurrentIndex(d[ind])
+        self.contactsFilterComboBox.setCurrentIndex(d[ind])
         self.importPlugin.setText(util_ui.tr("Import plugin"))
         self.reloadPlugins.setText(util_ui.tr("Reload plugins"))
 
@@ -208,54 +213,48 @@ class MainWindow(QtWidgets.QMainWindow):
 
         QtCore.QMetaObject.connectSlotsByName(Form)
 
-    def setup_left_center_menu(self, Form):
-        Form.resize(270, 25)
-        self.search_label = QtWidgets.QLabel(Form)
-        self.search_label.setGeometry(QtCore.QRect(3, 2, 20, 20))
+    def setup_left_column(self, left_column):
+        uic.loadUi(util.get_views_path('ms_left_column'), left_column)
+
         pixmap = QtGui.QPixmap()
         pixmap.load(util.join_path(util.get_images_directory(), 'search.png'))
-        self.search_label.setScaledContents(False)
-        self.search_label.setPixmap(pixmap)
+        left_column.searchLabel.setPixmap(pixmap)
 
-        self.contact_name = LineEdit(Form)
-        self.contact_name.setObjectName('contact_name')
-        self.contact_name.setGeometry(QtCore.QRect(0, 0, 150, 25))
-        self.contact_name.textChanged.connect(self.filtering)
-
-        self.online_contacts = ComboBox(Form)
-        self.online_contacts.setGeometry(QtCore.QRect(150, 0, 120, 25))
-        self.online_contacts.activated[int].connect(lambda x: self.filtering())
-        self.search_label.raise_()
-
-        QtCore.QMetaObject.connectSlotsByName(Form)
-
-    def setup_left_top(self, Form):
-        Form.setCursor(QtCore.Qt.PointingHandCursor)
-        Form.setMinimumSize(QtCore.QSize(270, 75))
-        Form.setMaximumSize(QtCore.QSize(270, 75))
-        Form.setBaseSize(QtCore.QSize(270, 75))
-        self.avatar_label = Form.avatar_label = QtWidgets.QLabel(Form)
-        self.avatar_label.setGeometry(QtCore.QRect(5, 5, 64, 64))
-        self.avatar_label.setScaledContents(False)
-        self.avatar_label.setAlignment(QtCore.Qt.AlignCenter)
-        self.name = Form.name = DataLabel(Form)
-        Form.name.setGeometry(QtCore.QRect(75, 15, 150, 25))
+        self.name = DataLabel(left_column)
+        self.name.setGeometry(QtCore.QRect(75, 15, 150, 25))
         font = QtGui.QFont()
         font.setFamily(self._settings['font'])
         font.setPointSize(14)
         font.setBold(True)
-        Form.name.setFont(font)
-        self.status_message = Form.status_message = DataLabel(Form)
-        Form.status_message.setGeometry(QtCore.QRect(75, 35, 170, 25))
-        font.setPointSize(12)
-        font.setBold(False)
-        Form.status_message.setFont(font)
-        self.connection_status = Form.connection_status = StatusCircle(Form)
-        Form.connection_status.setGeometry(QtCore.QRect(230, 10, 32, 32))
+        self.name.setFont(font)
+
+        self.status_message = DataLabel(left_column)
+        self.status_message.setGeometry(QtCore.QRect(75, 35, 170, 25))
+
+        self.connection_status = StatusCircle(left_column)
+        self.connection_status.setGeometry(QtCore.QRect(230, 10, 32, 32))
+
+        left_column.contactsFilterComboBox.activated[int].connect(lambda x: self._filtering())
+
+        self.avatar_label = left_column.avatarLabel
+        self.searchLineEdit = left_column.searchLineEdit
+        self.contactsFilterComboBox = left_column.contactsFilterComboBox
+
+        self.groupInvitesPushButton = left_column.groupInvitesPushButton
+
+        self.groupInvitesPushButton.clicked.connect(self._open_gc_invites_list)
         self.avatar_label.mouseReleaseEvent = self.profile_settings
         self.status_message.mouseReleaseEvent = self.profile_settings
         self.name.mouseReleaseEvent = self.profile_settings
-        self.connection_status.raise_()
+
+        self.friends_list = left_column.friendsListWidget
+        self.friends_list.clicked.connect(self._friend_click)
+        self.friends_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
+        self.friends_list.customContextMenuRequested.connect(self._friend_right_click)
+        self.friends_list.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
+        self.friends_list.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
+        self.friends_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+        self.friends_list.verticalScrollBar().setContextMenuPolicy(QtCore.Qt.NoContextMenu)
 
     def setup_right_top(self, Form):
         Form.resize(650, 75)
@@ -303,18 +302,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.typing.setVisible(False)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
-    def setup_left_center(self, widget):
-        self.friends_list = QtWidgets.QListWidget(widget)
-        self.friends_list.setObjectName("friends_list")
-        self.friends_list.setGeometry(0, 0, 270, 310)
-        self.friends_list.clicked.connect(self.friend_click)
-        self.friends_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
-        self.friends_list.customContextMenuRequested.connect(self.friend_right_click)
-        self.friends_list.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
-        self.friends_list.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOn)
-        self.friends_list.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
-        self.friends_list.verticalScrollBar().setContextMenuPolicy(QtCore.Qt.NoContextMenu)
-
     def setup_right_center(self, widget):
         self.messages = QtWidgets.QListWidget(widget)
         self.messages.setGeometry(0, 0, 620, 310)
@@ -351,35 +338,27 @@ class MainWindow(QtWidgets.QMainWindow):
         menu = QtWidgets.QWidget()
         main = QtWidgets.QWidget()
         grid = QtWidgets.QGridLayout()
-        search = QtWidgets.QWidget()
-        name = QtWidgets.QWidget()
         info = QtWidgets.QWidget()
-        main_list = QtWidgets.QWidget()
+        left_column = QtWidgets.QWidget()
         messages = QtWidgets.QWidget()
         message_buttons = QtWidgets.QWidget()
-        self.setup_left_center_menu(search)
-        self.setup_left_top(name)
         self.setup_right_center(messages)
         self.setup_right_top(info)
         self.setup_right_bottom(message_buttons)
-        self.setup_left_center(main_list)
+        self.setup_left_column(left_column)
         self.setup_menu(menu)
         if not s['mirror_mode']:
-            grid.addWidget(search, 2, 0)
-            grid.addWidget(name, 1, 0)
+            grid.addWidget(left_column, 1, 0, 4, 1)
             grid.addWidget(messages, 2, 1, 2, 1)
             grid.addWidget(info, 1, 1)
             grid.addWidget(message_buttons, 4, 1)
-            grid.addWidget(main_list, 3, 0, 2, 1)
             grid.setColumnMinimumWidth(1, 500)
             grid.setColumnMinimumWidth(0, 270)
         else:
-            grid.addWidget(search, 2, 1)
-            grid.addWidget(name, 1, 1)
+            grid.addWidget(left_column, 1, 1, 4, 1)
             grid.addWidget(messages, 2, 0, 2, 1)
             grid.addWidget(info, 1, 0)
             grid.addWidget(message_buttons, 4, 0)
-            grid.addWidget(main_list, 3, 1, 2, 1)
             grid.setColumnMinimumWidth(0, 500)
             grid.setColumnMinimumWidth(1, 270)
 
@@ -396,7 +375,6 @@ class MainWindow(QtWidgets.QMainWindow):
         main.setLayout(grid)
         self.setCentralWidget(main)
         self.messageEdit.setFocus()
-        self.user_info = name
         self.friend_info = info
         self.retranslateUi()
 
@@ -428,7 +406,10 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.messages.setGeometry(0, 0, width * 3 // 4, self.height() - 155)
             self.peers_list.setGeometry(width * 3 // 4, 0, width - width * 3 // 4, self.height() - 155)
-        self.friends_list.setGeometry(0, 0, 270, self.height() - 125)
+
+        invites_button_visible = self.groupInvitesPushButton.isVisible()
+        self.friends_list.setGeometry(0, 125 if invites_button_visible else 100,
+                                      270, self.height() - 150 if invites_button_visible else self.height() - 125)
 
         self.videocallButton.setGeometry(QtCore.QRect(self.width() - 330, 10, 50, 50))
         self.callButton.setGeometry(QtCore.QRect(self.width() - 390, 10, 50, 50))
@@ -617,7 +598,7 @@ class MainWindow(QtWidgets.QMainWindow):
     # Functions which called when user open context menu in friends list
     # -----------------------------------------------------------------------------------------------------------------
 
-    def friend_right_click(self, pos):
+    def _friend_right_click(self, pos):
         item = self.friends_list.itemAt(pos)
         number = self.friends_list.indexFromItem(item).row()
         contact = self._contacts_manager.get_contact(number)
@@ -696,23 +677,23 @@ class MainWindow(QtWidgets.QMainWindow):
     # Functions which called when user click somewhere else
     # -----------------------------------------------------------------------------------------------------------------
 
-    def friend_click(self, index):
+    def _friend_click(self, index):
         num = index.row()
         self._contacts_manager.active_contact = num
         self.groupMenuButton.setVisible(not self._contacts_manager.is_active_a_friend())
 
     def mouseReleaseEvent(self, event):
         pos = self.connection_status.pos()
-        x, y = pos.x() + self.user_info.pos().x(), pos.y() + self.user_info.pos().y()
+        x, y = pos.x(), pos.y() + 25
         if (x < event.x() < x + 32) and (y < event.y() < y + 32):
             self._profile.change_status()
         else:
             super().mouseReleaseEvent(event)
 
-    def filtering(self):
-        ind = self.online_contacts.currentIndex()
+    def _filtering(self):
+        ind = self.contactsFilterComboBox.currentIndex()
         d = {0: 0, 1: 1, 2: 2, 3: 4, 4: 1 | 4, 5: 2 | 4}
-        self._contacts_manager.filtration_and_sorting(d[ind], self.contact_name.text())
+        self._contacts_manager.filtration_and_sorting(d[ind], self.searchLineEdit.text())
 
     def show_search_field(self):
         if hasattr(self, 'search_field') and self.search_field.isVisible():
@@ -741,3 +722,10 @@ class MainWindow(QtWidgets.QMainWindow):
     def _open_gc_invites_list(self):
         self._modal_window = self._widget_factory.create_group_invites_window()
         self._modal_window.show()
+
+    def update_gc_invites_button_state(self):
+        invites_count = self._groups_service.group_invites_count
+        self.groupInvitesPushButton.setVisible(invites_count > 0)
+        text = util_ui.tr('{} new invites to group chats').format(invites_count)
+        self.groupInvitesPushButton.setText(text)
+        self.resizeEvent()

@@ -11,6 +11,7 @@ class GroupsService(tox_save.ToxSave):
         super().__init__(tox)
         self._contacts_manager = contacts_manager
         self._contacts_provider = contacts_provider
+        self._main_screen = main_screen
         self._peers_list_widget = main_screen.peers_list
         self._widgets_factory_provider = widgets_factory_provider
         self._group_invites = []
@@ -70,21 +71,28 @@ class GroupsService(tox_save.ToxSave):
         friend = self._get_friend_by_number(friend_number)
         invite = GroupInvite(friend.tox_id, group_name, invite_data)
         self._group_invites.append(invite)
-        # TODO: notification on main screen
+        self._main_screen.update_gc_invites_button_state()
 
     def accept_group_invite(self, invite, name, status, password):
         pk = invite.friend_public_key
         friend = self._get_friend_by_public_key(pk)
         self._join_gc_via_invite(invite.invite_data, friend.number, name, status, password)
         self._delete_group_invite(invite)
+        self._main_screen.update_gc_invites_button_state()
 
     def decline_group_invite(self, invite):
         self._delete_group_invite(invite)
+        self._main_screen.update_gc_invites_button_state()
 
     def get_group_invites(self):
         return self._group_invites[:]
 
     group_invites = property(get_group_invites)
+
+    def get_group_invites_count(self):
+        return len(self._group_invites)
+
+    group_invites_count = property(get_group_invites_count)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Group info methods

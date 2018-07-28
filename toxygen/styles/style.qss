@@ -1,4 +1,4 @@
-#contact_name
+#searchLineEdit
 {
     padding-left: 22px;
 }
@@ -32,3 +32,9 @@ MessageEdit
 {
     color: #BC1C1C;
 }
+
+#groupInvitesPushButton
+{
+    background-color: #009c00;
+}
+

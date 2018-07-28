@@ -25,7 +25,7 @@ class ContactsManager(ToxSave):
         self._sorting = settings['sorting']
         self._filter_string = ''
         self._friend_item_height = 40 if settings['compact_mode'] else 70
-        screen.online_contacts.setCurrentIndex(int(self._sorting))
+        #screen.online_contacts.setCurrentIndex(int(self._sorting))
         self._history = history
         self._load_contacts()
 

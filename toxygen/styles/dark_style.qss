@@ -1253,7 +1253,7 @@ MessageBrowser
     background-color: #1E90FF;
 }
 
-#friends_list:item:selected
+#friendsListWidget:item:selected
 {
     background-color: #333333;
 }
@@ -1277,7 +1277,7 @@ QListWidget > QLabel
     color: #A9A9A9;
 }
 
-#contact_name
+#searchLineEdit
 {
     padding-left: 22px;
 }
@@ -1327,3 +1327,9 @@ ClickableLabel:hover
 {
     color: #BC1C1C;
 }
+
+#groupInvitesPushButton
+{
+    background-color: #009c00;
+}
+
