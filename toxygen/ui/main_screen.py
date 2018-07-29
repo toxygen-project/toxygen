@@ -244,7 +244,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.name.mouseReleaseEvent = self.profile_settings
 
         self.friends_list = left_column.friendsListWidget
-        self.friends_list.clicked.connect(self._friend_click)
+        self.friends_list.itemSelectionChanged.connect(self._selected_contact_changed)
         self.friends_list.setContextMenuPolicy(QtCore.Qt.CustomContextMenu)
         self.friends_list.customContextMenuRequested.connect(self._friend_right_click)
         self.friends_list.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
@@ -669,12 +669,15 @@ class MainWindow(QtWidgets.QMainWindow):
     def invite_friend_to_gc(self, friend_number, group_number):
         self._contacts_manager.invite_friend(friend_number, group_number)
 
+    def select_contact_row(self, row_index):
+        self.friends_list.setCurrentRow(row_index)
+
     # -----------------------------------------------------------------------------------------------------------------
     # Functions which called when user click somewhere else
     # -----------------------------------------------------------------------------------------------------------------
 
-    def _friend_click(self, index):
-        num = index.row()
+    def _selected_contact_changed(self):
+        num = self.friends_list.currentRow()
         self._contacts_manager.active_contact = num
         self.groupMenuButton.setVisible(not self._contacts_manager.is_active_a_friend())
 

@@ -139,13 +139,6 @@ class ContactsManager(ToxSave):
 
     active_contact_changed = property(get_active_contact_changed)
 
-    def set_active_by_number_and_type(self, number, is_friend):  # TODO: by id
-        for i in range(len(self._contacts)):
-            c = self._contacts[i]
-            if c.number == number and (type(c) is Friend == is_friend):
-                self._active_contact = i
-                break
-
     def update(self):
         if self._active_contact + 1:
             self.set_active(self._active_contact)
@@ -309,6 +302,7 @@ class ContactsManager(ToxSave):
         """
         self._tox.friend_add_norequest(tox_id)
         self._add_friend(tox_id)
+        self.update_filtration()
 
     def block_user(self, tox_id):
         """
@@ -351,6 +345,7 @@ class ContactsManager(ToxSave):
         self._contacts.append(group)
         group.reset_avatar(self._settings['identicons'])
         self._save_profile()
+        self.update_filtration()
 
     def delete_group(self, group_number):
         group = self.get_group_by_number(group_number)
@@ -464,7 +459,7 @@ class ContactsManager(ToxSave):
         self._load_friends()
         self._load_groups()
         if len(self._contacts):
-            self.set_active(0)
+            self._screen.select_contact_row(0)
         for contact in filter(lambda c: not c.has_avatar(), self._contacts):
             contact.reset_avatar(self._settings['identicons'])
         self.update_filtration()
@@ -542,7 +537,10 @@ class ContactsManager(ToxSave):
 
     def _delete_contact(self, num):
         if num == self._active_contact:  # active friend was deleted
-            self.set_active(0 if len(self._contacts) > 1 else -1)
+            if len(self._contacts) == 0:
+                self.set_active(-1)
+            else:
+                self._screen.select_contact_row(0)
         self._contact_provider.remove_contact_from_cache(self._contacts[num].tox_id)
         del self._contacts[num]
         self._screen.friends_list.takeItem(num)

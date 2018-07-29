@@ -43,18 +43,22 @@ class Contact(basecontact.BaseContact):
         """
         :param first_time: friend became active, load first part of messages
         """
-        if (first_time and self._history_loaded) or (not hasattr(self, '_message_getter')):
-            return
-        if self._message_getter is None:
-            return
-        data = list(self._message_getter.get(PAGE_SIZE))
-        if data is not None and len(data):
-            data.reverse()
-        else:
-            return
-        data = list(map(lambda p: self._get_text_message(p), data))
-        self._corr = data + self._corr
-        self._history_loaded = True
+        try:
+            if (first_time and self._history_loaded) or (not hasattr(self, '_message_getter')):
+                return
+            if self._message_getter is None:
+                return
+            data = list(self._message_getter.get(PAGE_SIZE))
+            if data is not None and len(data):
+                data.reverse()
+            else:
+                return
+            data = list(map(lambda p: self._get_text_message(p), data))
+            self._corr = data + self._corr
+        except:
+            pass
+        finally:
+            self._history_loaded = True
 
     def load_all_corr(self):
         """

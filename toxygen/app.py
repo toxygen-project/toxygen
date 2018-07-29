@@ -327,6 +327,7 @@ class App:
         self._calls_manager.set_toxav(self._tox.AV)
         self._contacts_manager.update_friends_numbers()
         self._contacts_manager.update_groups_lists()
+        self._contacts_manager.update_groups_numbers()
 
         self._init_callbacks()
 

@@ -46,7 +46,6 @@ class GroupsService(tox_save.ToxSave):
     def leave_group(self, group_number):
         self._tox.group_leave(group_number)
         self._contacts_manager.delete_group(group_number)
-        self._contacts_manager.update_groups_numbers()
 
     def disconnect_from_group(self, group_number):
         self._tox.group_disconnect(group_number)

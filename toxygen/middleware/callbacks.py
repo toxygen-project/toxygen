@@ -417,11 +417,12 @@ def group_invite(window, settings, tray, profile, groups_service, contacts_provi
     return wrapped
 
 
-def group_self_join(contacts_provider, groups_service):
+def group_self_join(contacts_provider, contacts_manager, groups_service):
     def wrapped(tox, group_number, user_data):
         group = contacts_provider.get_group_by_number(group_number)
         invoke_in_main_thread(group.set_status, TOX_USER_STATUS['NONE'])
         invoke_in_main_thread(groups_service.update_group_info, group)
+        invoke_in_main_thread(contacts_manager.update_filtration)
 
     return wrapped
 
@@ -565,7 +566,7 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     tox.callback_group_message(group_message(main_window, tray, tox, messenger, settings, profile), 0)
     tox.callback_group_private_message(group_private_message(main_window, tray, tox, messenger, settings, profile), 0)
     tox.callback_group_invite(group_invite(main_window, settings, tray, profile, groups_service, contacts_provider), 0)
-    tox.callback_group_self_join(group_self_join(contacts_provider, groups_service), 0)
+    tox.callback_group_self_join(group_self_join(contacts_provider, contacts_manager, groups_service), 0)
     tox.callback_group_peer_join(group_peer_join(contacts_provider, groups_service), 0)
     tox.callback_group_peer_exit(group_peer_exit(contacts_provider, groups_service, contacts_manager), 0)
     tox.callback_group_peer_name(group_peer_name(contacts_provider, groups_service), 0)
