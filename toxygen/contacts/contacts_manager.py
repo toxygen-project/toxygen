@@ -25,7 +25,7 @@ class ContactsManager(ToxSave):
         self._sorting = settings['sorting']
         self._filter_string = ''
         self._friend_item_height = 40 if settings['compact_mode'] else 70
-        #screen.online_contacts.setCurrentIndex(int(self._sorting))
+        screen.contacts_filter.setCurrentIndex(int(self._sorting))
         self._history = history
         self._load_contacts()
 
@@ -163,50 +163,55 @@ class ContactsManager(ToxSave):
     def filtration_and_sorting(self, sorting=0, filter_str=''):
         """
         Filtration of friends list
-        :param sorting: 0 - no sorting, 1 - online only, 2 - online first, 4 - by name
+        :param sorting: 0 - no sorting, 1 - online only, 2 - online first, 3 - by name,
+        4 - online and by name, 5 - online first and by name
         :param filter_str: show contacts which name contains this substring
         """
-        # TODO: simplify?
         filter_str = filter_str.lower()
-        number = self.get_active_number()
-        is_friend = self.is_active_a_friend()
-        if sorting > 1:
-            if sorting & 2:
-                self._contacts = sorted(self._contacts, key=lambda x: int(x.status is not None), reverse=True)
-            if sorting & 4:
-                if not sorting & 2:
-                    self._contacts = sorted(self._contacts, key=lambda x: x.name.lower())
-                else:  # save results of prev sorting
-                    online_friends = filter(lambda x: x.status is not None, self._contacts)
-                    count = len(list(online_friends))
-                    part1 = self._contacts[:count]
-                    part2 = self._contacts[count:]
-                    part1 = sorted(part1, key=lambda x: x.name.lower())
-                    part2 = sorted(part2, key=lambda x: x.name.lower())
-                    self._contacts = part1 + part2
-            else:  # sort by number
-                online_friends = filter(lambda x: x.status is not None, self._contacts)
-                count = len(list(online_friends))
-                part1 = self._contacts[:count]
-                part2 = self._contacts[count:]
-                part1 = sorted(part1, key=lambda x: x.number)
-                part2 = sorted(part2, key=lambda x: x.number)
-                self._contacts = part1 + part2
-            for index, contact in enumerate(self._contacts):
-                list_item = self._screen.friends_list.item(index)
-                item_widget = self._screen.friends_list.itemWidget(list_item)
-                contact.set_widget(item_widget)
+        contact = self.get_curr_contact()
+
+        if sorting > 5 or sorting < 0:
+            sorting = 0
+
+        if sorting in (1, 2, 4, 5):  # online first
+            self._contacts = sorted(self._contacts, key=lambda x: int(x.status is not None), reverse=True)
+            sort_by_name = sorting in (4, 5)
+            # save results of previous sorting
+            online_friends = filter(lambda x: x.status is not None, self._contacts)
+            online_friends_count = len(list(online_friends))
+            part1 = self._contacts[:online_friends_count]
+            part2 = self._contacts[online_friends_count:]
+            key_lambda = lambda x: x.name.lower() if sort_by_name else x.number
+            part1 = sorted(part1, key=key_lambda)
+            part2 = sorted(part2, key=key_lambda)
+            self._contacts = part1 + part2
+        elif sorting == 0:
+            self._contacts = sorted(self._contacts, key=lambda x: x.number)
+        else:
+            self._contacts = sorted(self._contacts, key=lambda x: x.name.lower())
+
+            # change item widgets
+        for index, contact in enumerate(self._contacts):
+            list_item = self._screen.friends_list.item(index)
+            item_widget = self._screen.friends_list.itemWidget(list_item)
+            contact.set_widget(item_widget)
+
         for index, friend in enumerate(self._contacts):
-            friend.visibility = (friend.status is not None or not (sorting & 1)) and (filter_str in friend.name.lower())
+            filtered_by_name = filter_str in friend.name.lower()
+            friend.visibility = (friend.status is not None or sorting not in (1, 4)) and filtered_by_name
+            # show friend even if it's hidden when there any unread messages/actions
             friend.visibility = friend.visibility or friend.messages or friend.actions
             if friend.visibility:
                 self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, self._friend_item_height))
             else:
                 self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 0))
+        # save soring results
         self._sorting, self._filter_string = sorting, filter_str
         self._settings['sorting'] = self._sorting
         self._settings.save()
-        self.set_active_by_number_and_type(number, is_friend)
+        # update active contact
+        index = self._contacts.index(contact)
+        self.set_active(index)
 
     def update_filtration(self):
         """

@@ -166,6 +166,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.audioSettings.setText(util_ui.tr("Audio"))
         self.videoSettings.setText(util_ui.tr("Video"))
         self.updateSettings.setText(util_ui.tr("Updates"))
+        self.importPlugin.setText(util_ui.tr("Import plugin"))
+        self.reloadPlugins.setText(util_ui.tr("Reload plugins"))
 
         self.searchLineEdit.setPlaceholderText(util_ui.tr("Search"))
         self.sendMessageButton.setToolTip(util_ui.tr("Send message"))
@@ -177,12 +179,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.contactsFilterComboBox.addItem(util_ui.tr("Name"))
         self.contactsFilterComboBox.addItem(util_ui.tr("Online and by name"))
         self.contactsFilterComboBox.addItem(util_ui.tr("Online first and by name"))
-
-        ind = self._settings['sorting']
-        d = {0: 0, 1: 1, 2: 2, 3: 4, 4: 3, 1 | 4: 4, 2 | 4: 5}
-        self.contactsFilterComboBox.setCurrentIndex(d[ind])
-        self.importPlugin.setText(util_ui.tr("Import plugin"))
-        self.reloadPlugins.setText(util_ui.tr("Reload plugins"))
 
     def setup_right_bottom(self, Form):
         Form.resize(650, 60)
@@ -238,7 +234,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.avatar_label = left_column.avatarLabel
         self.searchLineEdit = left_column.searchLineEdit
-        self.contactsFilterComboBox = left_column.contactsFilterComboBox
+        self.contacts_filter = self.contactsFilterComboBox = left_column.contactsFilterComboBox
 
         self.groupInvitesPushButton = left_column.groupInvitesPushButton
 
@@ -691,9 +687,9 @@ class MainWindow(QtWidgets.QMainWindow):
             super().mouseReleaseEvent(event)
 
     def _filtering(self):
-        ind = self.contactsFilterComboBox.currentIndex()
-        d = {0: 0, 1: 1, 2: 2, 3: 4, 4: 1 | 4, 5: 2 | 4}
-        self._contacts_manager.filtration_and_sorting(d[ind], self.searchLineEdit.text())
+        index = self.contactsFilterComboBox.currentIndex()
+        search_text = self.searchLineEdit.text()
+        self._contacts_manager.filtration_and_sorting(index, search_text)
 
     def show_search_field(self):
         if hasattr(self, 'search_field') and self.search_field.isVisible():
