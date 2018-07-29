@@ -45,6 +45,7 @@ class GroupInvitesScreen(CenteredWidget):
         self.declinePushButton.clicked.connect(self._decline_invites)
 
         self.invitesListWidget.setSelectionMode(QtWidgets.QAbstractItemView.NoSelection)
+        self.invitesListWidget.setVerticalScrollMode(QtWidgets.QAbstractItemView.ScrollPerPixel)
 
         self._update_buttons_state()
 
@@ -72,6 +73,7 @@ class GroupInvitesScreen(CenteredWidget):
             self._groups_service.accept_group_invite(invite, nick, status, password)
 
         self._refresh_invites_list()
+        self._close_window_if_needed()
 
     def _decline_invites(self):
         selected_invites = self._get_selected_invites()
@@ -79,6 +81,7 @@ class GroupInvitesScreen(CenteredWidget):
             self._groups_service.decline_group_invite(invite)
 
         self._refresh_invites_list()
+        self._close_window_if_needed()
 
     def _get_selected_invites(self):
         all_invites = self._groups_service.get_group_invites()
@@ -118,3 +121,7 @@ class GroupInvitesScreen(CenteredWidget):
         selected_items = self._get_selected_invites()
         self.acceptPushButton.setEnabled(bool(nick) and len(selected_items))
         self.declinePushButton.setEnabled(len(selected_items) > 0)
+
+    def _close_window_if_needed(self):
+        if self._groups_service.group_invites_count == 0:
+            self.close()
