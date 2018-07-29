@@ -342,9 +342,11 @@ class ContactsManager(ToxSave):
 
     def add_group(self, group_number):
         group = self._contact_provider.get_group_by_number(group_number)
+        index = len(self._contacts)
         self._contacts.append(group)
         group.reset_avatar(self._settings['identicons'])
         self._save_profile()
+        self.set_active(index)
         self.update_filtration()
 
     def delete_group(self, group_number):
@@ -402,6 +404,7 @@ class ContactsManager(ToxSave):
                 self._tox.friend_add(tox_id, message.encode('utf-8'))
                 tox_id = tox_id[:TOX_PUBLIC_KEY_SIZE * 2]
                 self._add_friend(tox_id)
+                self.update_filtration()
             self.save_profile()
             return True
         except Exception as ex:  # wrong data
@@ -459,7 +462,7 @@ class ContactsManager(ToxSave):
         self._load_friends()
         self._load_groups()
         if len(self._contacts):
-            self._screen.select_contact_row(0)
+            self.set_active(0)
         for contact in filter(lambda c: not c.has_avatar(), self._contacts):
             contact.reset_avatar(self._settings['identicons'])
         self.update_filtration()
@@ -512,10 +515,12 @@ class ContactsManager(ToxSave):
     def _add_friend(self, tox_id):
         self._history.add_friend_to_db(tox_id)
         friend = self._contact_provider.get_friend_by_public_key(tox_id)
+        index = len(self._contacts)
         self._contacts.append(friend)
         if not friend.has_avatar():
             friend.reset_avatar(self._settings['identicons'])
         self._save_profile()
+        self.set_active(index)
 
     def _save_profile(self):
         data = self._tox.get_savedata()
@@ -536,12 +541,14 @@ class ContactsManager(ToxSave):
             remove(avatar_path)
 
     def _delete_contact(self, num):
-        if num == self._active_contact:  # active friend was deleted
-            if len(self._contacts) == 0:
-                self.set_active(-1)
-            else:
-                self._screen.select_contact_row(0)
+        if len(self._contacts) == 1:
+            self.set_active(-1)
+        else:
+            self.set_active(0)
+
         self._contact_provider.remove_contact_from_cache(self._contacts[num].tox_id)
         del self._contacts[num]
         self._screen.friends_list.takeItem(num)
         self._save_profile()
+
+        self.update_filtration()

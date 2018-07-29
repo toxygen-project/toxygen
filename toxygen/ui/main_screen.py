@@ -713,9 +713,12 @@ class MainWindow(QtWidgets.QMainWindow):
         if self._should_show_group_peers_list:
             self._groups_service.generate_peers_list()
 
-    def _new_contact_selected(self, contact):
+    def _new_contact_selected(self, _):
         if self._should_show_group_peers_list:
             self._toggle_gc_peers_list()
+        index = self.friends_list.currentRow()
+        if self._contacts_manager.active_contact != index:
+            self.friends_list.setCurrentRow(self._contacts_manager.active_contact)
         self.resizeEvent()
 
     def _open_gc_invites_list(self):
