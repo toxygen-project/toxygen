@@ -409,7 +409,7 @@ def group_invite(window, settings, tray, profile, groups_service, contacts_provi
         if settings['notifications'] and profile.status != TOX_USER_STATUS['BUSY'] and not settings.locked:
             friend = contacts_provider.get_friend_by_number(friend_number)
             title = util_ui.tr('New invite to group chat')
-            text = util_ui.tr('{} invites you to group {}').format(friend.name, group_name)
+            text = util_ui.tr('{} invites you to group "{}"').format(friend.name, group_name)
             invoke_in_main_thread(tray_notification, title, text, tray, window)
         icon = os.path.join(util.get_images_directory(), 'icon_new_messages.png')
         invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))

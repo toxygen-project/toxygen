@@ -678,8 +678,9 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _selected_contact_changed(self):
         num = self.friends_list.currentRow()
-        self._contacts_manager.active_contact = num
-        self.groupMenuButton.setVisible(not self._contacts_manager.is_active_a_friend())
+        if self._contacts_manager.active_contact != num:
+            self._contacts_manager.active_contact = num
+        self.groupMenuButton.setVisible(self._contacts_manager.is_active_a_group())
 
     def mouseReleaseEvent(self, event):
         pos = self.connection_status.pos()

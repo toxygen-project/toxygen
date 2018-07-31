@@ -1553,10 +1553,11 @@ class Tox:
         error = c_int()
         peer_info = self.group_self_peer_info_new()
         nick = bytes(nick, 'utf-8')
+        group_name = group_name.encode('utf-8')
         peer_info.contents.nick = c_char_p(nick)
         peer_info.contents.nick_length = len(nick)
         peer_info.contents.user_status = status
-        result = Tox.libtoxcore.tox_group_new(self._tox_pointer, privacy_state, group_name.encode('utf-8'),
+        result = Tox.libtoxcore.tox_group_new(self._tox_pointer, privacy_state, group_name,
                                               len(group_name), peer_info, byref(error))
         return result
 
@@ -2180,11 +2181,12 @@ class Tox:
         result = Tox.libtoxcore.tox_group_invite_friend(self._tox_pointer, group_number, friend_number, byref(error))
         return result
 
-    def group_self_peer_info_new(self):
+    @staticmethod
+    def group_self_peer_info_new():
         error = c_int()
         f = Tox.libtoxcore.tox_group_self_peer_info_new
         f.restype = POINTER(GroupChatSelfPeerInfo)
-        result = f(self._tox_pointer, byref(error))
+        result = f(byref(error))
 
         return result
 

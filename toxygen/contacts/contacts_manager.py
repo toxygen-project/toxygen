@@ -203,8 +203,9 @@ class ContactsManager(ToxSave):
         self._settings['sorting'] = self._sorting
         self._settings.save()
         # update active contact
-        index = self._contacts.index(contact)
-        self.set_active(index)
+        if contact is not None:
+            index = self._contacts.index(contact)
+            self.set_active(index)
 
     def update_filtration(self):
         """
