@@ -24,7 +24,6 @@ class ContactsManager(ToxSave):
         self._active_contact_changed = Event()
         self._sorting = settings['sorting']
         self._filter_string = ''
-        self._friend_item_height = 40 if settings['compact_mode'] else 70
         screen.contacts_filter.setCurrentIndex(int(self._sorting))
         self._history = history
         self._load_contacts()
@@ -149,6 +148,9 @@ class ContactsManager(ToxSave):
     def is_active_a_group(self):
         return type(self.get_curr_contact()) is GroupChat
 
+    def is_active_a_group_chat_peer(self):
+        return type(self.get_curr_contact()) is GroupPeerContact
+
     # -----------------------------------------------------------------------------------------------------------------
     # Filtration
     # -----------------------------------------------------------------------------------------------------------------
@@ -198,11 +200,9 @@ class ContactsManager(ToxSave):
             friend.visibility = (friend.status is not None or sorting not in (1, 4)) and filtered_by_name
             # show friend even if it's hidden when there any unread messages/actions
             friend.visibility = friend.visibility or friend.messages or friend.actions
-            # TODO: calculate height
-            if friend.visibility:
-                self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, self._friend_item_height))
-            else:
-                self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, 0))
+            item = self._screen.friends_list.item(index)
+            item_widget = self._screen.friends_list.itemWidget(item)
+            item.setSizeHint(QtCore.QSize(250, item_widget.height() if friend.visibility else 0))
         # save soring results
         self._sorting, self._filter_string = sorting, filter_str
         self._settings['sorting'] = self._sorting
@@ -436,7 +436,7 @@ class ContactsManager(ToxSave):
             util.log('Accept friend request failed! ' + str(ex))
 
     def can_send_typing_notification(self):
-        return self._settings['typing_notifications'] and self._active_contact + 1
+        return self._settings['typing_notifications'] and not self.is_active_a_group_chat_peer()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Contacts numbers update

@@ -589,22 +589,24 @@ class InterfaceSettings(CenteredWidget):
 
     def import_sm(self):
         directory = util_ui.directory_dialog(util_ui.tr('Choose folder with smiley pack'))
-        if directory:
-            src = directory + '/'
-            dest = curr_directory() + '/smileys/' + os.path.basename(directory) + '/'
-            copy(src, dest)
+        if not directory:
+            return
+        src = directory + '/'
+        dest = get_smileys_directory() + os.path.basename(directory) + '/'
+        copy(src, dest)
 
     def new_font(self):
         font, ok = QtWidgets.QFontDialog.getFont(QtGui.QFont(self._settings['font'], 10), self)
-        if ok:
-            self._settings['font'] = font.family()
-            self._settings.save()
-            util_ui.question()
-            msgBox = QtWidgets.QMessageBox()
-            text = util_ui.tr('Restart app to apply settings')
-            msgBox.setWindowTitle(util_ui.tr('Restart required'))
-            msgBox.setText(text)
-            msgBox.exec_()
+        if not ok:
+            return
+        self._settings['font'] = font.family()
+        self._settings.save()
+        util_ui.question()
+        msgBox = QtWidgets.QMessageBox()
+        text = util_ui.tr('Restart app to apply settings')
+        msgBox.setWindowTitle(util_ui.tr('Restart required'))
+        msgBox.setText(text)
+        msgBox.exec_()
 
     def select_color(self):
         col = QtWidgets.QColorDialog.getColor(QtGui.QColor(self._settings['unread_color']))
@@ -616,10 +618,10 @@ class InterfaceSettings(CenteredWidget):
 
     def closeEvent(self, event):
         self._settings['theme'] = str(self.themeSelect.currentText())
+        app = QtWidgets.QApplication.instance()
         try:
             theme = self._settings['theme']
-            app = QtWidgets.QApplication.instance()
-            with open(curr_directory() + self._settings.built_in_themes()[theme]) as fl:
+            with open(get_styles_directory() + self._settings.built_in_themes()[theme]) as fl:
                 style = fl.read()
             app.setStyleSheet(style)
         except IsADirectoryError:
@@ -637,7 +639,7 @@ class InterfaceSettings(CenteredWidget):
             restart = True
         self._settings['smiley_pack'] = self.smiley_pack.currentText()
         self._settings['close_to_tray'] = self.close_to_tray.isChecked()
-        smileys.SmileyLoader.get_instance().load_pack()
+        self._smiley_loader.load_pack()
         language = self.lang_choose.currentText()
         if self._settings['language'] != language:
             self._settings['language'] = language

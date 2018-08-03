@@ -44,14 +44,28 @@ class Messenger(tox_save.ToxSave):
 
     def send_message(self):
         text = self._screen.messageEdit.toPlainText()
-        if self._contacts_manager.is_active_a_friend():
-            self.send_message_to_friend(text)
-        elif self._contacts_manager.is_active_a_group():
-            self.send_message_to_group(text)
-        else:
-            self.send_message_to_group_peer(text)
 
-    def send_message_to_friend(self, text, friend_number=None):
+        plugin_command_prefix = '/plugin '
+        if text.startswith(plugin_command_prefix):
+            self._plugin_loader.command(text[len(plugin_command_prefix):])
+            self._screen.messageEdit.clear()
+            return
+
+        action_message_prefix = '/me '
+        if text.startswith(action_message_prefix):
+            message_type = TOX_MESSAGE_TYPE['ACTION']
+            text = text[len(action_message_prefix):]
+        else:
+            message_type = TOX_MESSAGE_TYPE['NORMAL']
+
+        if self._contacts_manager.is_active_a_friend():
+            self.send_message_to_friend(text, message_type)
+        elif self._contacts_manager.is_active_a_group():
+            self.send_message_to_group(text, message_type)
+        elif self._contacts_manager.is_active_a_group_chat_peer():
+            self.send_message_to_group_peer(text, message_type)
+
+    def send_message_to_friend(self, text, message_type, friend_number=None):
         """
         Send message
         :param text: message text
@@ -60,19 +74,9 @@ class Messenger(tox_save.ToxSave):
         if friend_number is None:
             friend_number = self._contacts_manager.get_active_number()
 
-        if text.startswith('/plugin '):
-            self._plugin_loader.command(text[8:])
-            self._screen.messageEdit.clear()
-            return
-
         if not text or friend_number < 0:
             return
 
-        if text.startswith('/me '):
-            message_type = TOX_MESSAGE_TYPE['ACTION']
-            text = text[4:]
-        else:
-            message_type = TOX_MESSAGE_TYPE['NORMAL']
         friend = self._get_friend_by_number(friend_number)
         messages = self._split_message(text.encode('utf-8'))
         t = util.get_unix_time()
@@ -108,23 +112,13 @@ class Messenger(tox_save.ToxSave):
     # Messaging - groups
     # -----------------------------------------------------------------------------------------------------------------
 
-    def send_message_to_group(self, text, group_number=None):
+    def send_message_to_group(self, text, message_type, group_number=None):
         if group_number is None:
             group_number = self._contacts_manager.get_active_number()
-
-        if text.startswith('/plugin '):
-            self._plugin_loader.command(text[8:])
-            self._screen.messageEdit.clear()
-            return
 
         if not text or group_number < 0:
             return
 
-        if text.startswith('/me '):
-            message_type = TOX_MESSAGE_TYPE['ACTION']
-            text = text[4:]
-        else:
-            message_type = TOX_MESSAGE_TYPE['NORMAL']
         group = self._get_group_by_number(group_number)
         messages = self._split_message(text.encode('utf-8'))
         t = util.get_unix_time()
@@ -155,26 +149,15 @@ class Messenger(tox_save.ToxSave):
     # Messaging - group peers
     # -----------------------------------------------------------------------------------------------------------------
 
-    def send_message_to_group_peer(self, text, group_number=None, peer_id=None):
+    def send_message_to_group_peer(self, text, message_type, group_number=None, peer_id=None):
         if group_number is None or peer_id is None:
             group_peer_contact = self._contacts_manager.get_curr_contact()
             peer_id = group_peer_contact.number
             group = self._get_group_by_public_key(group_peer_contact.group_pk)
             group_number = group.number
 
-        if text.startswith('/plugin '):
-            self._plugin_loader.command(text[8:])
-            self._screen.messageEdit.clear()
-            return
-
         if not text or group_number < 0 or peer_id < 0:
             return
-
-        if text.startswith('/me '):
-            message_type = TOX_MESSAGE_TYPE['ACTION']
-            text = text[4:]
-        else:
-            message_type = TOX_MESSAGE_TYPE['NORMAL']
 
         group_peer_contact = self._contacts_manager.get_or_create_group_peer_contact(group_number, peer_id)
         group = self._get_group_by_number(group_number)
@@ -220,12 +203,10 @@ class Messenger(tox_save.ToxSave):
         """
         Send typing notification to a friend
         """
-        if self._contacts_manager.can_send_typing_notification():
-            try:
-                contact = self._contacts_manager.get_curr_contact()
-                contact.typing_notification_handler.send(self._tox, typing)
-            except:
-                pass
+        if not self._contacts_manager.can_send_typing_notification():
+            return
+        contact = self._contacts_manager.get_curr_contact()
+        contact.typing_notification_handler.send(self._tox, typing)
 
     def friend_typing(self, friend_number, typing):
         """
