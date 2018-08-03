@@ -1940,6 +1940,13 @@ class Tox:
         result = Tox.libtoxcore.tox_group_get_number_groups(self._tox_pointer)
         return result
 
+    def groups_get_list(self):
+        groups_list_size = self.group_get_number_groups()
+        groups_list = create_string_buffer(sizeof(c_uint32) * groups_list_size)
+        groups_list = POINTER(c_uint32)(groups_list)
+        Tox.libtoxcore.tox_groups_get_list(self._tox_pointer, groups_list)
+        return groups_list[0:groups_list_size]
+
     def group_get_privacy_state(self, group_number):
         """
         Return the privacy state of the group designated by the given group number. If group number
@@ -2461,7 +2468,7 @@ class Tox:
             create_string_buffer(sizeof(c_uint32) * self.group_ban_get_list_size(group_number)), byref(error)))
         return result
 
-    def group_ban_get_name_size(self, group_number, ban_id):
+    def group_ban_get_target_size(self, group_number, ban_id):
         """
         Return the length of the name for the ban list entry designated by ban_id, in the
         group designated by the given group number. If either group_number or ban_id is invalid,
@@ -2469,10 +2476,10 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_ban_get_name_size(self._tox_pointer, group_number, ban_id, byref(error))
+        result = Tox.libtoxcore.tox_group_ban_get_target_size(self._tox_pointer, group_number, ban_id, byref(error))
         return result
 
-    def group_ban_get_name(self, group_number, ban_id):
+    def group_ban_get_target(self, group_number, ban_id):
         """
         Write the name of the ban entry designated by ban_id in the group designated by the
         given group number to a byte array.
@@ -2483,12 +2490,12 @@ class Tox:
         """
 
         error = c_int()
-        size = self.group_ban_get_name_size(group_number, ban_id)
-        name = create_string_buffer()
+        size = self.group_ban_get_target_size(group_number, ban_id)
+        target = create_string_buffer(size)
 
-        result = Tox.libtoxcore.tox_group_ban_get_name(self._tox_pointer, group_number, ban_id,
-                                                       name, byref(error))
-        return str(name[:size], 'utf-8')
+        result = Tox.libtoxcore.tox_group_ban_get_target(self._tox_pointer, group_number, ban_id,
+                                                         target, byref(error))
+        return str(target[:size], 'utf-8')
 
     def group_ban_get_time_set(self, group_number, ban_id):
         """

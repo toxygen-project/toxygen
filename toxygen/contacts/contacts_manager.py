@@ -179,7 +179,11 @@ class ContactsManager(ToxSave):
             part2 = sorted(part2, key=key_lambda)
             self._contacts = part1 + part2
         elif sorting == 0:
-            self._contacts = sorted(self._contacts, key=lambda x: x.number)
+            contacts = sorted(self._contacts, key=lambda c: c.number)
+            friends = filter(lambda c: type(c) is Friend, contacts)
+            groups = filter(lambda c: type(c) is GroupChat, contacts)
+            group_peers = filter(lambda c: type(c) is GroupPeerContact, contacts)
+            self._contacts = list(friends) + list(groups) + list(group_peers)
         else:
             self._contacts = sorted(self._contacts, key=lambda x: x.name.lower())
 
@@ -194,6 +198,7 @@ class ContactsManager(ToxSave):
             friend.visibility = (friend.status is not None or sorting not in (1, 4)) and filtered_by_name
             # show friend even if it's hidden when there any unread messages/actions
             friend.visibility = friend.visibility or friend.messages or friend.actions
+            # TODO: calculate height
             if friend.visibility:
                 self._screen.friends_list.item(index).setSizeHint(QtCore.QSize(250, self._friend_item_height))
             else:
@@ -542,10 +547,7 @@ class ContactsManager(ToxSave):
             remove(avatar_path)
 
     def _delete_contact(self, num):
-        if len(self._contacts) == 1:
-            self.set_active(-1)
-        else:
-            self.set_active(0)
+        self.set_active(-1 if len(self._contacts) == 1 else 0)
 
         self._contact_provider.remove_contact_from_cache(self._contacts[num].tox_id)
         del self._contacts[num]
