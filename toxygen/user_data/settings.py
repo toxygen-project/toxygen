@@ -142,7 +142,7 @@ class Settings(dict):
             'compact_mode': False,
             'identicons': True,
             'show_welcome_screen': True,
-            'close_to_tray': False,
+            'close_app': 0,
             'font': 'Times New Roman',
             'update': 1,
             'group_notifications': True,
@@ -163,8 +163,8 @@ class Settings(dict):
     @staticmethod
     def built_in_themes():
         return {
-            'dark': '/styles/dark_style.qss',
-            'default': '/styles/style.qss'
+            'dark': 'dark_style.qss',
+            'default': 'style.qss'
         }
 
     def upgrade(self):

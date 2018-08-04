@@ -375,7 +375,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.retranslateUi()
 
     def closeEvent(self, event):
-        if not self._settings['close_to_tray'] or self._settings.closing:
+        close_setting = self._settings['close_app']
+        if close_setting == 0 or self._settings.closing:
             if self._saved:
                 return
             self._saved = True
@@ -386,9 +387,12 @@ class MainWindow(QtWidgets.QMainWindow):
             self._settings.save()
             util_ui.close_all_windows()
             event.accept()
-        elif QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
+        elif close_setting == 2 and QtWidgets.QSystemTrayIcon.isSystemTrayAvailable():
             event.ignore()
             self.hide()
+        else:
+            event.ignore()
+            self.showMinimized()
 
     def close_window(self):
         self._settings.closing = True

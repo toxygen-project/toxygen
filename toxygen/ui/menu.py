@@ -222,16 +222,17 @@ class ProfileSettings(CenteredWidget):
     def set_avatar(self):
         choose = util_ui.tr("Choose avatar")
         name = util_ui.file_dialog(choose, 'Images (*.png)')
-        if name[0]:
-            bitmap = QtGui.QPixmap(name[0])
-            bitmap.scaled(QtCore.QSize(128, 128), aspectRatioMode=QtCore.Qt.KeepAspectRatio,
-                          transformMode=QtCore.Qt.SmoothTransformation)
+        if not name[0]:
+            return
+        bitmap = QtGui.QPixmap(name[0])
+        bitmap.scaled(QtCore.QSize(128, 128), aspectRatioMode=QtCore.Qt.KeepAspectRatio,
+                      transformMode=QtCore.Qt.SmoothTransformation)
 
-            byte_array = QtCore.QByteArray()
-            buffer = QtCore.QBuffer(byte_array)
-            buffer.open(QtCore.QIODevice.WriteOnly)
-            bitmap.save(buffer, 'PNG')
-            self._profile.set_avatar(bytes(byte_array.data()))
+        byte_array = QtCore.QByteArray()
+        buffer = QtCore.QBuffer(byte_array)
+        buffer.open(QtCore.QIODevice.WriteOnly)
+        bitmap.save(buffer, 'PNG')
+        self._profile.set_avatar(bytes(byte_array.data()))
 
     def export_profile(self):
         directory = util_ui.directory_dialog() + '/'
@@ -260,8 +261,10 @@ class NetworkSettings(CenteredWidget):
     def _update_ui(self):
         self.ipLineEdit = LineEdit(self)
         self.ipLineEdit.setGeometry(100, 280, 270, 30)
+
         self.portLineEdit = LineEdit(self)
         self.portLineEdit.setGeometry(100, 325, 270, 30)
+
         self.restartCorePushButton.clicked.connect(self._restart_core)
         self.ipv6CheckBox.setChecked(self._settings['ipv6_enabled'])
         self.udpCheckBox.setChecked(self._settings['udp_enabled'])
@@ -472,185 +475,134 @@ class NotificationsSettings(CenteredWidget):
 
 class InterfaceSettings(CenteredWidget):
     """Interface settings form"""
+
     def __init__(self, settings, smiley_loader):
         super().__init__()
         self._settings = settings
         self._smiley_loader = smiley_loader
-        self.initUI()
+
+        uic.loadUi(get_views_path('interface_settings_screen'), self)
+        self._update_ui()
         self.center()
 
-    def initUI(self):
-        self.setObjectName("interfaceForm")
-        self.setMinimumSize(QtCore.QSize(400, 650))
-        self.setMaximumSize(QtCore.QSize(400, 650))
-        self.label = QtWidgets.QLabel(self)
-        self.label.setGeometry(QtCore.QRect(30, 10, 370, 20))
-        font = QtGui.QFont()
-        font.setPointSize(14)
-        font.setBold(True)
-        font.setFamily(self._settings['font'])
-        self.label.setFont(font)
-        self.themeSelect = QtWidgets.QComboBox(self)
-        self.themeSelect.setGeometry(QtCore.QRect(30, 40, 120, 30))
-        self.themeSelect.addItems(list(self._settings.built_in_themes().keys()))
+    def _update_ui(self):
+        themes = list(self._settings.built_in_themes().keys())
+        self.themeComboBox.addItems(themes)
         theme = self._settings['theme']
         if theme in self._settings.built_in_themes().keys():
-            index = list(self._settings.built_in_themes().keys()).index(theme)
+            index = themes.index(theme)
         else:
             index = 0
-        self.themeSelect.setCurrentIndex(index)
-        self.lang_choose = QtWidgets.QComboBox(self)
-        self.lang_choose.setGeometry(QtCore.QRect(30, 110, 120, 30))
-        supported = sorted(Settings.supported_languages().keys(), reverse=True)
-        for key in supported:
-            self.lang_choose.insertItem(0, key)
+        self.themeComboBox.setCurrentIndex(index)
+
+        supported_languages = sorted(Settings.supported_languages().keys(), reverse=True)
+        for key in supported_languages:
+            self.languageComboBox.insertItem(0, key)
             if self._settings['language'] == key:
-                self.lang_choose.setCurrentIndex(0)
-        self.lang = QtWidgets.QLabel(self)
-        self.lang.setGeometry(QtCore.QRect(30, 80, 370, 20))
-        self.lang.setFont(font)
-        self.mirror_mode = QtWidgets.QCheckBox(self)
-        self.mirror_mode.setGeometry(QtCore.QRect(30, 160, 370, 20))
-        self.mirror_mode.setChecked(self._settings['mirror_mode'])
-        self.smileys = QtWidgets.QCheckBox(self)
-        self.smileys.setGeometry(QtCore.QRect(30, 190, 120, 20))
-        self.smileys.setChecked(self._settings['smileys'])
-        self.smiley_pack_label = QtWidgets.QLabel(self)
-        self.smiley_pack_label.setGeometry(QtCore.QRect(30, 230, 370, 20))
-        self.smiley_pack_label.setFont(font)
-        self.smiley_pack = QtWidgets.QComboBox(self)
-        self.smiley_pack.setGeometry(QtCore.QRect(30, 260, 160, 30))
-        self.smiley_pack.addItems(self._smiley_loader.get_packs_list())
+                self.languageComboBox.setCurrentIndex(0)
+
+        smiley_packs = self._smiley_loader.get_packs_list()
+        self.smileysPackComboBox.addItems(smiley_packs)
         try:
-            ind = self._smiley_loader.get_packs_list().index(self._settings['smiley_pack'])
+            index = smiley_packs.index(self._settings['smiley_pack'])
         except:
-            ind = self._smiley_loader.get_packs_list().index('default')
-        self.smiley_pack.setCurrentIndex(ind)
-        self.messages_font_size_label = QtWidgets.QLabel(self)
-        self.messages_font_size_label.setGeometry(QtCore.QRect(30, 300, 370, 20))
-        self.messages_font_size_label.setFont(font)
-        self.messages_font_size = QtWidgets.QComboBox(self)
-        self.messages_font_size.setGeometry(QtCore.QRect(30, 330, 160, 30))
-        self.messages_font_size.addItems([str(x) for x in range(10, 25)])
-        self.messages_font_size.setCurrentIndex(self._settings['message_font_size'] - 10)
+            index = smiley_packs.index('default')
+        self.smileysPackComboBox.setCurrentIndex(index)
 
-        self.unread = QtWidgets.QPushButton(self)
-        self.unread.setGeometry(QtCore.QRect(30, 470, 340, 30))
-        self.unread.clicked.connect(self.select_color)
+        app_closing_setting = self._settings['close_app']
+        self.closeRadioButton.setChecked(app_closing_setting == 0)
+        self.hideRadioButton.setChecked(app_closing_setting == 1)
+        self.closeToTrayRadioButton.setChecked(app_closing_setting == 2)
 
-        self.compact_mode = QtWidgets.QCheckBox(self)
-        self.compact_mode.setGeometry(QtCore.QRect(30, 380, 370, 20))
-        self.compact_mode.setChecked(self._settings['compact_mode'])
+        self.compactModeCheckBox.setChecked(self._settings['compact_mode'])
+        self.showAvatarsCheckBox.setChecked(self._settings['show_avatars'])
+        self.smileysCheckBox.setChecked(self._settings['smileys'])
 
-        self.close_to_tray = QtWidgets.QCheckBox(self)
-        self.close_to_tray.setGeometry(QtCore.QRect(30, 410, 370, 20))
-        self.close_to_tray.setChecked(self._settings['close_to_tray'])
+        self.importSmileysPushButton.clicked.connect(self._import_smileys)
+        self.importStickersPushButton.clicked.connect(self._import_stickers)
 
-        self.show_avatars = QtWidgets.QCheckBox(self)
-        self.show_avatars.setGeometry(QtCore.QRect(30, 440, 370, 20))
-        self.show_avatars.setChecked(self._settings['show_avatars'])
+        self._retranslate_ui()
 
-        self.choose_font = QtWidgets.QPushButton(self)
-        self.choose_font.setGeometry(QtCore.QRect(30, 510, 340, 30))
-        self.choose_font.clicked.connect(self.new_font)
-
-        self.import_smileys = QtWidgets.QPushButton(self)
-        self.import_smileys.setGeometry(QtCore.QRect(30, 550, 340, 30))
-        self.import_smileys.clicked.connect(self.import_sm)
-
-        self.import_stickers = QtWidgets.QPushButton(self)
-        self.import_stickers.setGeometry(QtCore.QRect(30, 590, 340, 30))
-        self.import_stickers.clicked.connect(self.import_st)
-
-        self.retranslateUi()
-        QtCore.QMetaObject.connectSlotsByName(self)
-
-    def retranslateUi(self):
-        self.show_avatars.setText(util_ui.tr("Show avatars in chat"))
+    def _retranslate_ui(self):
         self.setWindowTitle(util_ui.tr("Interface settings"))
-        self.label.setText(util_ui.tr("Theme:"))
-        self.lang.setText(util_ui.tr("Language:"))
-        self.smileys.setText(util_ui.tr("Smileys"))
-        self.smiley_pack_label.setText(util_ui.tr("Smiley pack:"))
-        self.mirror_mode.setText(util_ui.tr("Mirror mode"))
-        self.messages_font_size_label.setText(util_ui.tr("Messages font size:"))
-        self.unread.setText(util_ui.tr("Select unread messages notification color"))
-        self.compact_mode.setText(util_ui.tr("Compact contact list"))
-        self.import_smileys.setText(util_ui.tr("Import smiley pack"))
-        self.import_stickers.setText(util_ui.tr("Import sticker pack"))
-        self.close_to_tray.setText(util_ui.tr("Close to tray"))
-        self.choose_font.setText(util_ui.tr("Select font"))
+        self.showAvatarsCheckBox.setText(util_ui.tr("Show avatars in chat"))
+        self.themeLabel.setText(util_ui.tr("Theme:"))
+        self.languageLabel.setText(util_ui.tr("Language:"))
+        self.smileysGroupBox.setTitle(util_ui.tr("Smileys settings"))
+        self.smileysPackLabel.setText(util_ui.tr("Smiley pack:"))
+        self.smileysCheckBox.setText(util_ui.tr("Smileys"))
+        self.closeRadioButton.setText(util_ui.tr("Close app"))
+        self.hideRadioButton.setText(util_ui.tr("Hide app"))
+        self.closeToTrayRadioButton.setText(util_ui.tr("Close to tray"))
+        self.mirrorModeCheckBox.setText(util_ui.tr("Mirror mode"))
+        self.compactModeCheckBox.setText(util_ui.tr("Compact contact list"))
+        self.importSmileysPushButton.setText(util_ui.tr("Import smiley pack"))
+        self.importStickersPushButton.setText(util_ui.tr("Import sticker pack"))
+        self.appClosingGroupBox.setTitle(util_ui.tr("App closing settings"))
 
-    def import_st(self):
+    @staticmethod
+    def _import_stickers():
         directory = util_ui.directory_dialog(util_ui.tr('Choose folder with sticker pack'))
         if directory:
             dest = join_path(get_stickers_directory(), os.path.basename(directory))
             copy(directory, dest)
 
-    def import_sm(self):
+    @staticmethod
+    def _import_smileys():
         directory = util_ui.directory_dialog(util_ui.tr('Choose folder with smiley pack'))
         if not directory:
             return
         src = directory + '/'
-        dest = get_smileys_directory() + os.path.basename(directory) + '/'
+        dest = join_path(get_smileys_directory(), os.path.basename(directory))
         copy(src, dest)
 
-    def new_font(self):
-        font, ok = QtWidgets.QFontDialog.getFont(QtGui.QFont(self._settings['font'], 10), self)
-        if not ok:
-            return
-        self._settings['font'] = font.family()
-        self._settings.save()
-        util_ui.question()
-        msgBox = QtWidgets.QMessageBox()
-        text = util_ui.tr('Restart app to apply settings')
-        msgBox.setWindowTitle(util_ui.tr('Restart required'))
-        msgBox.setText(text)
-        msgBox.exec_()
-
-    def select_color(self):
-        col = QtWidgets.QColorDialog.getColor(QtGui.QColor(self._settings['unread_color']))
-
-        if col.isValid():
-            name = col.name()
-            self._settings['unread_color'] = name
-            self._settings.save()
-
     def closeEvent(self, event):
-        self._settings['theme'] = str(self.themeSelect.currentText())
         app = QtWidgets.QApplication.instance()
+
+        self._settings['theme'] = str(self.themeComboBox.currentText())
         try:
             theme = self._settings['theme']
-            with open(get_styles_directory() + self._settings.built_in_themes()[theme]) as fl:
+            styles_path = join_path(get_styles_directory(), self._settings.built_in_themes()[theme])
+            with open(styles_path) as fl:
                 style = fl.read()
             app.setStyleSheet(style)
         except IsADirectoryError:
-            app.setStyleSheet('') # for default style
-            self._settings['smileys'] = self.smileys.isChecked()
+            pass
+
+        self._settings['smileys'] = self.smileysCheckBox.isChecked()
+
         restart = False
-        if self._settings['mirror_mode'] != self.mirror_mode.isChecked():
-            self._settings['mirror_mode'] = self.mirror_mode.isChecked()
+        if self._settings['mirror_mode'] != self.mirrorModeCheckBox.isChecked():
+            self._settings['mirror_mode'] = self.mirrorModeCheckBox.isChecked()
             restart = True
-        if self._settings['compact_mode'] != self.compact_mode.isChecked():
-            self._settings['compact_mode'] = self.compact_mode.isChecked()
+
+        if self._settings['compact_mode'] != self.compactModeCheckBox.isChecked():
+            self._settings['compact_mode'] = self.compactModeCheckBox.isChecked()
             restart = True
-        if self._settings['show_avatars'] != self.show_avatars.isChecked():
-            self._settings['show_avatars'] = self.show_avatars.isChecked()
+
+        if self._settings['show_avatars'] != self.showAvatarsCheckBox.isChecked():
+            self._settings['show_avatars'] = self.showAvatarsCheckBox.isChecked()
             restart = True
-        self._settings['smiley_pack'] = self.smiley_pack.currentText()
-        self._settings['close_to_tray'] = self.close_to_tray.isChecked()
+
+        self._settings['smiley_pack'] = self.smileysPackComboBox.currentText()
         self._smiley_loader.load_pack()
-        language = self.lang_choose.currentText()
+
+        language = self.languageComboBox.currentText()
         if self._settings['language'] != language:
             self._settings['language'] = language
-            text = self.lang_choose.currentText()
-            path = Settings.supported_languages()[text]
-            app = QtWidgets.QApplication.instance()
+            path = Settings.supported_languages()[language]
             app.removeTranslator(app.translator)
-            app.translator.load(curr_directory() + '/translations/' + path)
+            app.translator.load(join_path(get_translations_directory(), path))
             app.installTranslator(app.translator)
-        self._settings['message_font_size'] = self.messages_font_size.currentIndex() + 10
         self._settings.save()
+
+        app_closing_setting = 0
+        if self.hideRadioButton.isChecked():
+            app_closing_setting = 1
+        elif self.closeToTrayRadioButton.isChecked():
+            app_closing_setting = 2
+        self._settings['close_app'] = app_closing_setting
+
         if restart:
             util_ui.message_box(util_ui.tr('Restart app to apply settings'), util_ui.tr('Restart required'))
 
