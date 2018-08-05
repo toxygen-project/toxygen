@@ -15,7 +15,7 @@ class GroupsService(tox_save.ToxSave):
         self._peers_list_widget = main_screen.peers_list
         self._widgets_factory_provider = widgets_factory_provider
         self._group_invites = []
-        self._peer_screen = None
+        self._peer_screen = self._management_screen = None
 
     def set_tox(self, tox):
         super().set_tox(tox)
@@ -70,14 +70,14 @@ class GroupsService(tox_save.ToxSave):
         friend = self._get_friend_by_number(friend_number)
         invite = GroupInvite(friend.tox_id, group_name, invite_data)
         self._group_invites.append(invite)
-        self._main_screen.update_gc_invites_button_state()
+        self._update_invites_button_state()
 
     def accept_group_invite(self, invite, name, status, password):
         pk = invite.friend_public_key
         friend = self._get_friend_by_public_key(pk)
         self._join_gc_via_invite(invite.invite_data, friend.number, name, status, password)
         self._delete_group_invite(invite)
-        self._main_screen.update_gc_invites_button_state()
+        self._update_invites_button_state()
 
     def decline_group_invite(self, invite):
         self._delete_group_invite(invite)
@@ -102,7 +102,7 @@ class GroupsService(tox_save.ToxSave):
         group.status_message = self._tox.group_get_topic(group.number)
 
     def set_group_topic(self, group):
-        if not group.is_moderator_or_founder():
+        if not group.is_self_moderator_or_founder():
             return
         text = util_ui.tr('New topic for group "{}":'.format(group.name))
         title = util_ui.tr('Set group topic')
@@ -111,6 +111,30 @@ class GroupsService(tox_save.ToxSave):
             return
         self._tox.group_set_topic(group.number, topic)
         group.status_message = topic
+
+    def show_group_management_screen(self, group):
+        widgets_factory = self._get_widgets_factory()
+        self._management_screen = widgets_factory.create_group_management_screen(group)
+        self._management_screen.show()
+
+    def set_group_password(self, group, password):
+        if group.password == password:
+            return
+        self._tox.group_founder_set_password(group.number, password)
+        group.password = password
+
+    def set_group_peers_limit(self, group, peers_limit):
+        if group.peers_limit == peers_limit:
+            return
+        self._tox.group_founder_set_peer_limit(group.number, peers_limit)
+        group.peers_limit = peers_limit
+
+    def set_group_privacy_state(self, group, privacy_state):
+        is_private = privacy_state == constants.TOX_GROUP_PRIVACY_STATE['PRIVATE']
+        if group.is_private == is_private:
+            return
+        self._tox.group_founder_set_privacy_state(group.number, privacy_state)
+        group.is_private = is_private
 
     # -----------------------------------------------------------------------------------------------------------------
     # Peers list
@@ -123,7 +147,7 @@ class GroupsService(tox_save.ToxSave):
         PeersListGenerator().generate(group.peers, self, self._peers_list_widget, group.tox_id)
 
     def peer_selected(self, chat_id, peer_id):
-        widgets_factory = self._widgets_factory_provider.get_item()
+        widgets_factory = self._get_widgets_factory()
         group = self._get_group_by_public_key(chat_id)
         self_peer = group.get_self_peer()
         if self_peer.id != peer_id:
@@ -186,3 +210,9 @@ class GroupsService(tox_save.ToxSave):
     def _join_gc_via_invite(self, invite_data, friend_number, nick, status, password):
         group_number = self._tox.group_invite_accept(invite_data, friend_number, nick, status, password)
         self._add_new_group_by_number(group_number)
+
+    def _update_invites_button_state(self):
+        self._main_screen.update_gc_invites_button_state()
+
+    def _get_widgets_factory(self):
+        return self._widgets_factory_provider.get_item()

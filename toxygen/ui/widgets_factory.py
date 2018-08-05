@@ -4,6 +4,7 @@ from ui.groups_widgets import *
 from ui.peer_screen import *
 from ui.self_peer_screen import *
 from ui.group_invites_widgets import *
+from ui.group_management_screen import *
 
 
 class WidgetsFactory:
@@ -82,3 +83,6 @@ class WidgetsFactory:
 
     def create_group_invites_window(self):
         return GroupInvitesScreen(self._groups_service, self._profile, self._contacts_provider)
+
+    def create_group_management_screen(self, group):
+        return GroupManagementScreen(self._groups_service, group)

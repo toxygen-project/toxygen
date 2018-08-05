@@ -12,6 +12,8 @@ class GroupChat(contact.Contact, ToxSave):
         super().__init__(profile_manager, message_getter, number, name, status_message, widget, tox_id)
         ToxSave.__init__(self, tox)
         self._is_private = is_private
+        self._password = None
+        self._peers_limit = 512
         self._peers = []
         self._add_self_to_gc()
 
@@ -32,7 +34,26 @@ class GroupChat(contact.Contact, ToxSave):
     def get_is_private(self):
         return self._is_private
 
-    is_private = property(get_is_private)
+    def set_is_private(self, is_private):
+        self._is_private = is_private
+
+    is_private = property(get_is_private, set_is_private)
+
+    def get_password(self):
+        return self._password
+
+    def set_password(self, password):
+        self._password = password
+
+    password = property(get_password, set_password)
+
+    def get_peers_limit(self):
+        return self._peers_limit
+
+    def set_peers_limit(self, peers_limit):
+        self._peers_limit = peers_limit
+
+    peers_limit = property(get_peers_limit, set_peers_limit)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Peers methods
@@ -47,8 +68,11 @@ class GroupChat(contact.Contact, ToxSave):
     def get_self_role(self):
         return self._peers[0].role
 
-    def is_moderator_or_founder(self):
+    def is_self_moderator_or_founder(self):
         return self.get_self_role() <= constants.TOX_GROUP_ROLE['MODERATOR']
+
+    def is_self_founder(self):
+        return self.get_self_role() == constants.TOX_GROUP_ROLE['FOUNDER']
 
     def add_peer(self, peer_id, is_current_user=False):
         peer = GroupChatPeer(peer_id,

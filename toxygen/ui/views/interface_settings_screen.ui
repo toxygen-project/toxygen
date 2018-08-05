@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Form</class>
+ <widget class="QWidget" name="Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>552</width>
+    <height>847</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayout_2">
+   <item>
+    <widget class="QScrollArea" name="scrollArea">
+     <property name="verticalScrollBarPolicy">
+      <enum>Qt::ScrollBarAsNeeded</enum>
+     </property>
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents_3">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>532</width>
+        <height>827</height>
+       </rect>
+      </property>
+      <widget class="QLabel" name="themeLabel">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>140</y>
+         <width>67</width>
+         <height>17</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="themeComboBox">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>180</y>
+         <width>471</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QComboBox" name="languageComboBox">
+       <property name="geometry">
+        <rect>
+         <x>20</x>
+         <y>60</y>
+         <width>471</width>
+         <height>31</height>
+        </rect>
+       </property>
+      </widget>
+      <widget class="QLabel" name="languageLabel">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>20</y>
+         <width>67</width>
+         <height>17</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>TextLabel</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="mirrorModeCheckBox">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>220</y>
+         <width>461</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>CheckBox</string>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="smileysGroupBox">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>280</y>
+         <width>461</width>
+         <height>221</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>GroupBox</string>
+       </property>
+       <widget class="QCheckBox" name="smileysCheckBox">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>40</y>
+          <width>92</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>CheckBox</string>
+        </property>
+       </widget>
+       <widget class="QLabel" name="smileysPackLabel">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>80</y>
+          <width>411</width>
+          <height>17</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>TextLabel</string>
+        </property>
+       </widget>
+       <widget class="QComboBox" name="smileysPackComboBox">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>120</y>
+          <width>411</width>
+          <height>31</height>
+         </rect>
+        </property>
+       </widget>
+      </widget>
+      <widget class="QCheckBox" name="compactModeCheckBox">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>250</y>
+         <width>461</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>CheckBox</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="importStickersPushButton">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>750</y>
+         <width>471</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+      <widget class="QPushButton" name="importSmileysPushButton">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>690</y>
+         <width>471</width>
+         <height>40</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>PushButton</string>
+       </property>
+      </widget>
+      <widget class="QCheckBox" name="showAvatarsCheckBox">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>520</y>
+         <width>461</width>
+         <height>23</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>CheckBox</string>
+       </property>
+      </widget>
+      <widget class="QGroupBox" name="appClosingGroupBox">
+       <property name="geometry">
+        <rect>
+         <x>30</x>
+         <y>550</y>
+         <width>471</width>
+         <height>131</height>
+        </rect>
+       </property>
+       <property name="title">
+        <string>GroupBox</string>
+       </property>
+       <widget class="QRadioButton" name="closeRadioButton">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>30</y>
+          <width>421</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>RadioButton</string>
+        </property>
+       </widget>
+       <widget class="QRadioButton" name="hideRadioButton">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>60</y>
+          <width>431</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>RadioButton</string>
+        </property>
+       </widget>
+       <widget class="QRadioButton" name="closeToTrayRadioButton">
+        <property name="geometry">
+         <rect>
+          <x>30</x>
+          <y>90</y>
+          <width>421</width>
+          <height>23</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>RadioButton</string>
+        </property>
+       </widget>
+      </widget>
+     </widget>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

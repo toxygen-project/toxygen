@@ -181,9 +181,12 @@ class GroupMenuGenerator(BaseContactMenuGenerator):
         menu = (builder
                 .with_action(util_ui.tr('Set alias'), lambda: main_screen.set_alias(number))
                 .with_submenu(copy_menu_builder)
+                .with_optional_action(util_ui.tr('Manage group'),
+                                      lambda: groups_service.show_group_management_screen(self._contact),
+                                      self._contact.is_self_founder())
                 .with_optional_action(util_ui.tr('Set topic'),
                                       lambda: groups_service.set_group_topic(self._contact),
-                                      self._contact.is_moderator_or_founder())
+                                      self._contact.is_self_moderator_or_founder())
                 .with_action(util_ui.tr('Reconnect to group'),
                              lambda: groups_service.reconnect_to_group(self._contact.number))
                 .with_optional_action(util_ui.tr('Disconnect from group'),

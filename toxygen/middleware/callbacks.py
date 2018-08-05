@@ -506,6 +506,34 @@ def group_moderation(groups_service, contacts_provider, contacts_manager, messen
 
     return wrapped
 
+
+def group_password(contacts_provider):
+
+    def wrapped(tox_link, group_number, password, length, user_data):
+        password = str(password[:length], 'utf-8')
+        group = contacts_provider.get_group_by_number(group_number)
+        group.password = password
+
+    return wrapped
+
+
+def group_peer_limit(contacts_provider):
+
+    def wrapped(tox_link, group_number, peer_limit, user_data):
+        group = contacts_provider.get_group_by_number(group_number)
+        group.peer_limit = peer_limit
+
+    return wrapped
+
+
+def group_privacy_state(contacts_provider):
+
+    def wrapped(tox_link, group_number, privacy_state, user_data):
+        group = contacts_provider.get_group_by_number(group_number)
+        group.is_private = privacy_state == TOX_GROUP_PRIVACY_STATE['PRIVATE']
+
+    return wrapped
+
 # -----------------------------------------------------------------------------------------------------------------
 # Callbacks - initialization
 # -----------------------------------------------------------------------------------------------------------------
@@ -573,3 +601,6 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     tox.callback_group_peer_status(group_peer_status(contacts_provider, groups_service), 0)
     tox.callback_group_topic(group_topic(contacts_provider), 0)
     tox.callback_group_moderation(group_moderation(groups_service, contacts_provider, contacts_manager, messenger), 0)
+    tox.callback_group_password(group_password(contacts_provider), 0)
+    tox.callback_group_peer_limit(group_peer_limit(contacts_provider), 0)
+    tox.callback_group_privacy_state(group_privacy_state(contacts_provider), 0)
