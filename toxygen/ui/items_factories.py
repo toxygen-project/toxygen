@@ -11,7 +11,7 @@ class ContactItemsFactory:
     def create_contact_item(self):
         item = ContactItem(self._settings)
         elem = QtWidgets.QListWidgetItem(self._friends_list)
-        elem.setSizeHint(QtCore.QSize(250, item.height()))
+        elem.setSizeHint(QtCore.QSize(250, 40 if self._settings['compact_mode'] else 70))
         self._friends_list.addItem(elem)
         self._friends_list.setItemWidget(elem, item)
 
