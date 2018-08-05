@@ -49,7 +49,7 @@ class ProfileManager:
         if use_new_path:
             self._path = new_path + os.path.basename(self._path)
             self._directory = new_path
-            self._settings.update_path()
+            self._settings.update_path(new_path)
 
     @staticmethod
     def find_profiles():
@@ -72,4 +72,3 @@ class ProfileManager:
                 name = fl[:-4]
                 result.append((path + '/', name))
         return result
-

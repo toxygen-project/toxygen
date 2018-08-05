@@ -1,7 +1,6 @@
 import json
 from utils.util import *
 import pyaudio
-import smileys.smileys as smileys
 
 
 class Settings(dict):
@@ -24,11 +23,10 @@ class Settings(dict):
                 info = Settings.get_default_settings()
                 log('Parsing settings error: ' + str(ex))
             super().__init__(info)
-            self.upgrade()
+            self._upgrade()
         else:
             super().__init__(Settings.get_default_settings())
-            self.save()
-        smileys.SmileyLoader(self)
+        self.save()
         self.locked = False
         self.closing = False
         self.unlockScreen = False
@@ -45,24 +43,64 @@ class Settings(dict):
                       'enabled': input_devices and output_devices}
         self.video = {'device': -1, 'width': 640, 'height': 480, 'x': 0, 'y': 0}
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # Public methods
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def save(self):
+        text = json.dumps(self)
+        if self._toxes.has_password():
+            text = bytes(self._toxes.pass_encrypt(bytes(text, 'utf-8')))
+        else:
+            text = bytes(text, 'utf-8')
+        with open(self._path, 'wb') as fl:
+            fl.write(text)
+
+    def close(self):
+        path = self._profile_path + '.lock'
+        if os.path.isfile(path):
+            os.remove(path)
+
+    def set_active_profile(self):
+        """
+        Mark current profile as active
+        """
+        path = self._profile_path + '.lock'
+        with open(path, 'w') as fl:
+            fl.write('active')
+
+    def export(self, path):
+        text = json.dumps(self)
+        name = os.path.basename(self._path)
+        with open(join_path(path, str(name)), 'w') as fl:
+            fl.write(text)
+
+    def update_path(self, new_path):
+        self._path = new_path
+        self.save()
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Static methods
+    # -----------------------------------------------------------------------------------------------------------------
+
     @staticmethod
     def get_auto_profile():
         p = Settings.get_global_settings_path()
-        if os.path.isfile(p):
-            with open(p) as fl:
-                data = fl.read()
-            try:
-                auto = json.loads(data)
-            except Exception as ex:
-                log(str(ex))
-                auto = {}
-            if 'profile_path' in auto:
-                path = str(auto['profile_path'])
-                if not os.path.isabs(path):
-                    path = join_path(path, curr_directory(__file__))
-                if os.path.isfile(path):
-                    return path
-        return None
+        if not os.path.isfile(p):
+            return None
+        with open(p) as fl:
+            data = fl.read()
+        try:
+            auto = json.loads(data)
+        except Exception as ex:
+            log(str(ex))
+            auto = {}
+        if 'profile_path' in auto:
+            path = str(auto['profile_path'])
+            if not os.path.isabs(path):
+                path = join_path(path, curr_directory(__file__))
+            if os.path.isfile(path):
+                return path
 
     @staticmethod
     def set_auto_profile(path):
@@ -167,44 +205,6 @@ class Settings(dict):
             'default': 'style.qss'
         }
 
-    def upgrade(self):
-        default = Settings.get_default_settings()
-        for key in default:
-            if key not in self:
-                print(key)
-                self[key] = default[key]
-        self.save()
-
-    def save(self):
-        text = json.dumps(self)
-        if self._toxes.has_password():
-            text = bytes(self._toxes.pass_encrypt(bytes(text, 'utf-8')))
-        else:
-            text = bytes(text, 'utf-8')
-        with open(self._path, 'wb') as fl:
-            fl.write(text)
-
-    def close(self):
-        path = self._profile_path + '.lock'
-        if os.path.isfile(path):
-            os.remove(path)
-
-    def set_active_profile(self):
-        """
-        Mark current profile as active
-        """
-        path = self._profile_path + '.lock'
-        with open(path, 'w') as fl:
-            fl.write('active')
-
-    def export(self, path):
-        text = json.dumps(self)
-        with open(path + str(self.name) + '.json', 'w') as fl:
-            fl.write(text)
-
-    def update_path(self):
-        self.path = ProfileManager.get_path() + self.name + '.json'
-
     @staticmethod
     def get_global_settings_path():
         return os.path.join(get_base_directory(), 'toxygen.json')
@@ -219,3 +219,13 @@ class Settings(dict):
         else:
             return os.getenv('HOME') + '/.config/tox/'
 
+    # -----------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def _upgrade(self):
+        default = Settings.get_default_settings()
+        for key in default:
+            if key not in self:
+                print(key)
+                self[key] = default[key]
