@@ -7,5 +7,7 @@ cd toxcore && mkdir _build && cd _build && \
 cmake .. && make && make install
 
 RUN apt-get install portaudio19-dev python3-pyqt5 python3-pyaudio python3-pip -y && \
-pip3 install --upgrade pip && \
 pip3 install numpy pydenticon opencv-python pyinstaller
+
+RUN useradd -ms /bin/bash toxygen
+USER toxygen
