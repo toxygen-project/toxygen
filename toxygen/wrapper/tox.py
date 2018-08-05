@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from ctypes import c_char_p, Structure, c_bool, byref, c_int, c_size_t, POINTER, c_uint16, c_void_p, c_uint64
-from ctypes import create_string_buffer, ArgumentError, CFUNCTYPE, c_uint32, sizeof, c_uint8
+from ctypes import *
 from wrapper.toxcore_enums_and_consts import *
 from wrapper.toxav import ToxAV
 from wrapper.libtox import LibToxCore
@@ -108,7 +107,6 @@ class Tox:
             self.group_self_join_cb = None
             self.group_invite_cb = None
             self.group_custom_packet_cb = None
-            self.group_private_message_cb = None
             self.group_private_message_cb = None
             self.group_message_cb = None
             self.group_password_cb = None
@@ -2393,7 +2391,7 @@ class Tox:
         result = Tox.libtoxcore.tox_group_mod_set_role(self._tox_pointer, group_number, peer_id, role, byref(error))
         return result
 
-    def group_mod_remove_peer(self, group_number, peer_id, set_ban):
+    def group_mod_remove_peer(self, group_number, peer_id):
         """
         Kick/ban a peer.
 
@@ -2403,14 +2401,20 @@ class Tox:
 
         :param group_number: The group number of the group the ban is intended for.
         :param peer_id: The ID of the peer who will be kicked and/or added to the ban list.
-        :param set_ban: Set to true if a ban shall be set on the peer's IP address.
 
         :return True on success.
         """
 
         error = c_int()
         result = Tox.libtoxcore.tox_group_mod_remove_peer(self._tox_pointer, group_number, peer_id,
-                                                          set_ban, byref(error))
+                                                          byref(error))
+        return result
+
+    def group_mod_ban_peer(self, group_number, peer_id, ban_type):
+
+        error = c_int()
+        result = Tox.libtoxcore.tox_group_mod_ban_peer(self._tox_pointer, group_number, peer_id,
+                                                       ban_type, byref(error))
         return result
 
     def group_mod_remove_ban(self, group_number, ban_id):

@@ -11,15 +11,12 @@ class GroupChat(contact.Contact, ToxSave):
     def __init__(self, tox, profile_manager, message_getter, number, name, status_message, widget, tox_id, is_private):
         super().__init__(profile_manager, message_getter, number, name, status_message, widget, tox_id)
         ToxSave.__init__(self, tox)
+
         self._is_private = is_private
-        self._password = None
+        self._password = str()
         self._peers_limit = 512
         self._peers = []
         self._add_self_to_gc()
-
-    def set_topic(self, topic):
-        self._tox.group_set_topic(self._number, topic.encode('utf-8'))
-        super().set_status_message(topic)
 
     def remove_invalid_unsent_files(self):
         pass
