@@ -4,6 +4,7 @@ import shutil
 import sys
 import re
 import platform
+import datetime
 
 
 def cached(func):
@@ -21,10 +22,10 @@ def cached(func):
 
 def log(data):
     try:
-        with open(curr_directory() + '/logs.log', 'a') as fl:
+        with open(join_path(curr_directory(), 'logs.log'), 'a') as fl:
             fl.write(str(data) + '\n')
-    except:
-        pass
+    except Exception as ex:
+        print(ex)
 
 
 def curr_directory(current_file=None):
@@ -142,6 +143,12 @@ def time_offset():
     d, h = divmod(h, 24)
     result = hours * 60 + minutes - h * 60 - m
     return result
+
+
+def unix_time_to_long_str(unix_time):
+    date_time = datetime.datetime.utcfromtimestamp(unix_time)
+
+    return date_time.strftime('%Y-%m-%d %H:%M:%S')
 
 
 @cached

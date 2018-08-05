@@ -2468,9 +2468,11 @@ class Tox:
         """
 
         error = c_int()
-        result = Tox.libtoxcore.tox_group_ban_get_list(self._tox_pointer, group_number, POINTER(c_uint32)(
-            create_string_buffer(sizeof(c_uint32) * self.group_ban_get_list_size(group_number)), byref(error)))
-        return result
+        bans_list_size = self.group_ban_get_list_size(group_number)
+        bans_list = create_string_buffer(sizeof(c_uint32) * bans_list_size)
+        bans_list = POINTER(c_uint32)(bans_list)
+        result = Tox.libtoxcore.tox_group_ban_get_list(self._tox_pointer, group_number, bans_list, byref(error))
+        return bans_list[:bans_list_size]
 
     def group_ban_get_target_size(self, group_number, ban_id):
         """

@@ -5,6 +5,7 @@ from ui.peer_screen import *
 from ui.self_peer_screen import *
 from ui.group_invites_widgets import *
 from ui.group_management_screen import *
+from ui.group_bans_widgets import *
 
 
 class WidgetsFactory:
@@ -86,3 +87,6 @@ class WidgetsFactory:
 
     def create_group_management_screen(self, group):
         return GroupManagementScreen(self._groups_service, group)
+
+    def create_groups_bans_screen(self, group):
+        return GroupBansScreen(self._groups_service, group)

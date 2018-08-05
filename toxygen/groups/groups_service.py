@@ -15,7 +15,7 @@ class GroupsService(tox_save.ToxSave):
         self._peers_list_widget = main_screen.peers_list
         self._widgets_factory_provider = widgets_factory_provider
         self._group_invites = []
-        self._peer_screen = self._management_screen = None
+        self._screen = None
 
     def set_tox(self, tox):
         super().set_tox(tox)
@@ -114,8 +114,8 @@ class GroupsService(tox_save.ToxSave):
 
     def show_group_management_screen(self, group):
         widgets_factory = self._get_widgets_factory()
-        self._management_screen = widgets_factory.create_group_management_screen(group)
-        self._management_screen.show()
+        self._screen = widgets_factory.create_group_management_screen(group)
+        self._screen.show()
 
     def set_group_password(self, group, password):
         if group.password == password:
@@ -151,10 +151,10 @@ class GroupsService(tox_save.ToxSave):
         group = self._get_group_by_public_key(chat_id)
         self_peer = group.get_self_peer()
         if self_peer.id != peer_id:
-            self._peer_screen = widgets_factory.create_peer_screen_window(group, peer_id)
+            self._screen = widgets_factory.create_peer_screen_window(group, peer_id)
         else:
-            self._peer_screen = widgets_factory.create_self_peer_screen_window(group)
-        self._peer_screen.show()
+            self._screen = widgets_factory.create_self_peer_screen_window(group)
+        self._screen.show()
 
     # -----------------------------------------------------------------------------------------------------------------
     # Peers actions
@@ -176,6 +176,26 @@ class GroupsService(tox_save.ToxSave):
         self_peer.name = name
         self_peer.status = status
         self.generate_peers_list()
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Bans support
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def show_bans_list(self, group):
+        widgets_factory = self._get_widgets_factory()
+        self._screen = widgets_factory.create_groups_bans_screen(group)
+        self._screen.show()
+
+    def ban_peer(self, group, peer_id, ban_type):
+        self._tox.group_mod_ban_peer(group.number, peer_id, ban_type)
+        group.remove_peer(peer_id)
+
+    def kick_peer(self, group, peer_id):
+        self._tox.group_mod_remove_peer(group.number, peer_id)
+        group.remove_peer(peer_id)
+
+    def cancel_ban(self, group_number, ban_id):
+        self._tox.group_mod_remove_ban(group_number, ban_id)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods

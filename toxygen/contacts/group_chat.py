@@ -4,6 +4,7 @@ import utils.util as util
 from groups.group_peer import GroupChatPeer
 from wrapper import toxcore_enums_and_consts as constants
 from common.tox_save import ToxSave
+from groups.group_ban import GroupBan
 
 
 class GroupChat(contact.Contact, ToxSave):
@@ -101,6 +102,19 @@ class GroupChat(contact.Contact, ToxSave):
         return self._peers[:]
 
     peers = property(get_peers)
+
+    def get_bans(self):
+        ban_ids = self._tox.group_ban_get_list(self._number)
+        bans = []
+        for ban_id in ban_ids:
+            ban = GroupBan(ban_id,
+                           self._tox.group_ban_get_target(self._number, ban_id),
+                           self._tox.group_ban_get_time_set(self._number, ban_id))
+            bans.append(ban)
+
+        return bans
+
+    bans = property(get_bans)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods

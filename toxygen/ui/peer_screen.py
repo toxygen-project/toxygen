@@ -1,8 +1,9 @@
 from ui.widgets import CenteredWidget
-from PyQt5 import QtCore, QtWidgets, uic
+from PyQt5 import uic
 import utils.util as util
 import utils.ui as util_ui
 from ui.contact_items import *
+import wrapper.toxcore_enums_and_consts as consts
 
 
 class PeerScreen(CenteredWidget):
@@ -35,9 +36,12 @@ class PeerScreen(CenteredWidget):
         self.sendPrivateMessagePushButton.clicked.connect(self._send_private_message)
         self.copyPublicKeyPushButton.clicked.connect(self._copy_public_key)
         self.roleNameLabel.setText(self._get_role_name())
-        can_change_role = self._can_change_role()
-        self.rolesComboBox.setVisible(can_change_role)
-        self.roleNameLabel.setVisible(not can_change_role)
+        can_change_role_or_ban = self._can_change_role_or_ban()
+        self.rolesComboBox.setVisible(can_change_role_or_ban)
+        self.roleNameLabel.setVisible(not can_change_role_or_ban)
+        self.banGroupBox.setEnabled(can_change_role_or_ban)
+        self.banPushButton.clicked.connect(self._ban_peer)
+        self.kickPushButton.clicked.connect(self._kick_peer)
 
         self._retranslate_ui()
 
@@ -49,7 +53,12 @@ class PeerScreen(CenteredWidget):
         self.roleLabel.setText(util_ui.tr('Role:'))
         self.copyPublicKeyPushButton.setText(util_ui.tr('Copy public key'))
         self.sendPrivateMessagePushButton.setText(util_ui.tr('Send private message'))
-        self.banGroupBox.setTitle(util_ui.tr('Moderation'))
+        self.banPushButton.setText(util_ui.tr('Ban peer'))
+        self.kickPushButton.setText(util_ui.tr('Kick peer'))
+        self.banGroupBox.setTitle(util_ui.tr('Ban peer'))
+        self.ipBanRadioButton.setText(util_ui.tr('IP'))
+        self.nickBanRadioButton.setText(util_ui.tr('Nickname'))
+        self.pkBanRadioButton.setText(util_ui.tr('Public key'))
 
         self.rolesComboBox.clear()
         index = self._group.get_self_peer().role
@@ -58,7 +67,7 @@ class PeerScreen(CenteredWidget):
             self.rolesComboBox.addItem(role)
         self.rolesComboBox.setCurrentIndex(self._peer.role - index - 1)
 
-    def _can_change_role(self):
+    def _can_change_role_or_ban(self):
         self_peer = self._group.get_self_peer()
         if self_peer.role > TOX_GROUP_ROLE['MODERATOR']:
             return False
@@ -85,3 +94,17 @@ class PeerScreen(CenteredWidget):
     def _copy_public_key(self):
         clipboard = QtWidgets.QApplication.clipboard()
         clipboard.setText(self._peer.public_key)
+
+    def _ban_peer(self):
+        ban_type = self._get_ban_type()
+        self._groups_service.ban_peer(self._group, self._peer.id, ban_type)
+
+    def _kick_peer(self):
+        self._groups_service.kick_peer(self._group, self._peer.id)
+
+    def _get_ban_type(self):
+        if self.ipBanRadioButton.isChecked():
+            return consts.TOX_GROUP_BAN_TYPE['IP_PORT']
+        elif self.nickRadioButton.isCHecked():
+            return consts.TOX_GROUP_BAN_TYPE['NICK']
+        return consts.TOX_GROUP_BAN_TYPE['PUBLIC_KEY']
