@@ -105,6 +105,6 @@ class PeerScreen(CenteredWidget):
     def _get_ban_type(self):
         if self.ipBanRadioButton.isChecked():
             return consts.TOX_GROUP_BAN_TYPE['IP_PORT']
-        elif self.nickRadioButton.isCHecked():
+        elif self.nickBanRadioButton.isChecked():
             return consts.TOX_GROUP_BAN_TYPE['NICK']
         return consts.TOX_GROUP_BAN_TYPE['PUBLIC_KEY']

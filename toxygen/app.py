@@ -123,10 +123,14 @@ class App:
         if self._settings['theme'] == 'dark':
             return
         for theme in self._settings.built_in_themes().keys():
-            if self._settings['theme'] == theme:
-                with open(util.curr_directory(__file__) + self._settings.built_in_themes()[theme]) as fl:
-                    style = fl.read()
-                self._app.setStyleSheet(style)
+            if self._settings['theme'] != theme:
+                continue
+            theme_path = self._settings.built_in_themes()[theme]
+            file_path = util.join_path(util.get_styles_directory(), theme_path)
+            with open(file_path) as fl:
+                style = fl.read()
+            self._app.setStyleSheet(style)
+            break
 
     def _load_login_screen_translations(self):
         current_language, supported_languages = self._get_languages()

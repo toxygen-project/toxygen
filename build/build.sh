@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+cd ~
 git clone https://github.com/toxygen-project/toxygen.git --branch=next_gen
 cd toxygen/toxygen
 

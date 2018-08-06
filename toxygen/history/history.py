@@ -68,7 +68,7 @@ class History:
         messages.reverse()
         messages = messages[self._messages.count():self._messages.count() + PAGE_SIZE]
         for message in messages:
-            if message.get_type() in (MESSAGE_TYPE['NORMAL'], MESSAGE_TYPE['ACTION']):  # text message
+            if message.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']):  # text message
                 self._create_message_item(message)
             elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:  # file transfer
                 if message.get_status() is None:
