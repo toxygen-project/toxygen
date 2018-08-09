@@ -645,7 +645,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._contacts_manager.delete_friend(num)
 
     def block_friend(self, num):
-        friend = self._contacts_managere.get_contact(num)
+        friend = self._contacts_manager.get_contact(num)
         self._contacts_manager.block_user(friend.tox_id)
 
     @staticmethod
@@ -655,12 +655,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def clear_history(self, num):
         self._contacts_manager.clear_history(num)
-
-    def leave_gc(self, num):
-        self.profile.leave_gc(num)
-
-    def set_title(self, num):
-        self.profile.set_title(num)
 
     def auto_accept(self, num, value):
         tox_id = self._contacts_manager.friend_public_key(num)

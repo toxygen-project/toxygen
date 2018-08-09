@@ -165,5 +165,6 @@ def is_re_valid(regex):
         return True
 
 
+@cached
 def get_platform():
     return platform.system()

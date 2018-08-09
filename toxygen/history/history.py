@@ -48,7 +48,7 @@ class History:
 
     def delete_message(self, message):
         contact = self._contacts_manager.get_curr_contact()
-        if message.type in (MESSAGE_TYPE['NORMAL'], MESSAGE_TYPE['ACTION']):
+        if message.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']):
             if message.is_saved():
                 self._db.delete_message(contact.tox_id, message.id)
         contact.delete_message(message.message_id)

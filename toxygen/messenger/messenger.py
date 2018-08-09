@@ -224,7 +224,8 @@ class Messenger(tox_save.ToxSave):
             return
         message = util_ui.tr('User {} is now known as {}')
         message = message.format(old_name, new_name)
-        friend.actions = True
+        if self._contacts_manager.is_friend_active(friend.number):
+            friend.actions = True
         self._add_info_message(friend.number, message)
 
     # -----------------------------------------------------------------------------------------------------------------

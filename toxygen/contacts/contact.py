@@ -135,7 +135,7 @@ class Contact(basecontact.BaseContact):
 
     def mark_as_sent(self, tox_message_id):
         try:
-            message = list(filter(lambda m: m.author.type == MESSAGE_AUTHOR['NOT_SENT']
+            message = list(filter(lambda m: m.author is not None and m.author.type == MESSAGE_AUTHOR['NOT_SENT']
                                             and m.tox_message_id == tox_message_id, self._corr))[0]
             message.mark_as_sent()
         except Exception as ex:
