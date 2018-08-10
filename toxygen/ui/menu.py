@@ -241,7 +241,7 @@ class ProfileSettings(CenteredWidget):
                                      util_ui.tr('Use new path'))
             self._settings.export(directory)
             self._profile.export_db(directory)
-            self._profile_manager.export_profile(directory, reply)
+            self._profile_manager.export_profile(self._settings, directory, reply)
 
     def closeEvent(self, event):
         self._profile.set_name(self.nick.text())

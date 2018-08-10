@@ -28,7 +28,10 @@ class MessageAuthor:
     def get_type(self):
         return self._type
 
-    type = property(get_type)
+    def set_type(self, value):
+        self._type = value
+
+    type = property(get_type, set_type)
 
 
 class Message:
@@ -74,7 +77,7 @@ class Message:
         self._widget = None
 
     def mark_as_sent(self):
-        self._author.author_type = MESSAGE_AUTHOR['ME']
+        self._author.type = MESSAGE_AUTHOR['ME']
         if self._widget is not None:
             self._widget.mark_as_sent()
 

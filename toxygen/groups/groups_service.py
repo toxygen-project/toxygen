@@ -34,6 +34,7 @@ class GroupsService(tox_save.ToxSave):
         self._add_new_group_by_number(group_number)
         group = self._get_group_by_number(group_number)
         group.status = constants.TOX_USER_STATUS['NONE']
+        self._contacts_manager.update_filtration()
 
     def join_gc_by_id(self, chat_id, password, nick, status):
         group_number = self._tox.group_join(chat_id, password, nick, status)

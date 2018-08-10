@@ -134,12 +134,13 @@ class App:
 
     def _load_login_screen_translations(self):
         current_language, supported_languages = self._get_languages()
-        if current_language in supported_languages:
-            lang_path = supported_languages[current_language]
-            translator = QtCore.QTranslator()
-            translator.load(util.get_translations_directory() + lang_path)
-            self._app.installTranslator(translator)
-            self._app.translator = translator
+        if current_language not in supported_languages:
+            return
+        lang_path = supported_languages[current_language]
+        translator = QtCore.QTranslator()
+        translator.load(util.get_translations_directory() + lang_path)
+        self._app.installTranslator(translator)
+        self._app.translator = translator
 
     def _load_icon(self):
         icon_file = os.path.join(util.get_images_directory(), 'icon.png')
@@ -237,11 +238,11 @@ class App:
         return ls.result
 
     def _load_existing_profile(self, profile_path):
-        self._settings = Settings(self._toxes, profile_path.replace('.tox', '.json'))
-        self._profile_manager = ProfileManager(self._settings, self._toxes, profile_path)
+        self._profile_manager = ProfileManager(self._toxes, profile_path)
         data = self._profile_manager.open_profile()
         if self._toxes.is_data_encrypted(data):
             data = self._enter_password(data)
+        self._settings = Settings(self._toxes, profile_path.replace('.tox', '.json'))
         self._tox = self._create_tox(data)
 
     def _create_new_profile(self, profile_name):
@@ -264,7 +265,7 @@ class App:
         if result.password:
             self._toxes.set_password(result.password)
         self._settings = Settings(self._toxes, self._path.replace('.tox', '.json'))
-        self._profile_manager = ProfileManager(self._settings, self._toxes, profile_path)
+        self._profile_manager = ProfileManager(self._toxes, profile_path)
         try:
             self._save_profile()
         except Exception as ex:

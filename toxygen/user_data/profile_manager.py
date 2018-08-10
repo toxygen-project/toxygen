@@ -7,8 +7,7 @@ class ProfileManager:
     """
     Class with methods for search, load and save profiles
     """
-    def __init__(self, settings, toxes, path):
-        self._settings = settings
+    def __init__(self, toxes, path):
         self._toxes = toxes
         self._path = path
         self._directory = os.path.dirname(path)
@@ -38,7 +37,7 @@ class ProfileManager:
             fl.write(data)
         print('Profile saved successfully')
 
-    def export_profile(self, new_path, use_new_path):
+    def export_profile(self, settings, new_path, use_new_path):
         path = new_path + os.path.basename(self._path)
         with open(self._path, 'rb') as fin:
             data = fin.read()
@@ -49,7 +48,7 @@ class ProfileManager:
         if use_new_path:
             self._path = new_path + os.path.basename(self._path)
             self._directory = new_path
-            self._settings.update_path(new_path)
+            settings.update_path(new_path)
 
     @staticmethod
     def find_profiles():

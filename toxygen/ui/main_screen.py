@@ -654,7 +654,7 @@ class MainWindow(QtWidgets.QMainWindow):
         clipboard.setText(text)
 
     def clear_history(self, num):
-        self._contacts_manager.clear_history(num)
+        self._history_loader.clear_history(num)
 
     def auto_accept(self, num, value):
         tox_id = self._contacts_manager.friend_public_key(num)

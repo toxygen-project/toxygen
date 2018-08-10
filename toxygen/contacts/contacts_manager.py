@@ -163,7 +163,7 @@ class ContactsManager(ToxSave):
         :param filter_str: show contacts which name contains this substring
         """
         filter_str = filter_str.lower()
-        contact = self.get_curr_contact()
+        current_contact = self.get_curr_contact()
 
         if sorting > 5 or sorting < 0:
             sorting = 0
@@ -189,7 +189,7 @@ class ContactsManager(ToxSave):
         else:
             self._contacts = sorted(self._contacts, key=lambda x: x.name.lower())
 
-            # change item widgets
+        # change item widgets
         for index, contact in enumerate(self._contacts):
             list_item = self._screen.friends_list.item(index)
             item_widget = self._screen.friends_list.itemWidget(list_item)
@@ -203,13 +203,15 @@ class ContactsManager(ToxSave):
             item = self._screen.friends_list.item(index)
             item_widget = self._screen.friends_list.itemWidget(item)
             item.setSizeHint(QtCore.QSize(250, item_widget.height() if friend.visibility else 0))
+
         # save soring results
         self._sorting, self._filter_string = sorting, filter_str
         self._settings['sorting'] = self._sorting
         self._settings.save()
+
         # update active contact
-        if contact is not None:
-            index = self._contacts.index(contact)
+        if current_contact is not None:
+            index = self._contacts.index(current_contact)
             self.set_active(index)
 
     def update_filtration(self):
