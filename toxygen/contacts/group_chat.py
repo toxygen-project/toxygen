@@ -98,6 +98,11 @@ class GroupChat(contact.Contact, ToxSave):
     def remove_all_peers_except_self(self):
         self._peers = self._peers[:1]
 
+    def get_peers_names(self):
+        peers_names = map(lambda p: p.name, self._peers)
+
+        return list(peers_names)
+
     def get_peers(self):
         return self._peers[:]
 

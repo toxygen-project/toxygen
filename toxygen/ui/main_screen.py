@@ -1,5 +1,5 @@
 from ui.contact_items import *
-from ui.widgets import MultilineEdit, ComboBox
+from ui.widgets import MultilineEdit
 from ui.main_screen_widgets import *
 import utils.util as util
 import utils.ui as util_ui
@@ -37,7 +37,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._toxes = toxes
         self._messenger = messenger
         self._contacts_manager.active_contact_changed.add_callback(self._new_contact_selected)
-        self.messageEdit.set_messenger(messenger)
+        self.messageEdit.set_dependencies(messenger, contacts_manager)
 
         self.update_gc_invites_button_state()
 

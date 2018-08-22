@@ -386,6 +386,22 @@ class ContactsManager(ToxSave):
         num = self._contacts.index(contact)
         self._delete_contact(num)
 
+    def get_gc_peer_name(self, name):
+        group = self.get_curr_contact()
+
+        names = sorted(group.get_peers_names())
+        if name in names:  # return next nick
+            index = names.index(name)
+            index = (index + 1) % len(names)
+
+            return names[index]
+
+        suggested_names = list(filter(lambda x: x.startswith(name), names))
+        if not len(suggested_names):
+            return '\t'
+
+        return suggested_names[0]
+
     # -----------------------------------------------------------------------------------------------------------------
     # Friend requests
     # -----------------------------------------------------------------------------------------------------------------

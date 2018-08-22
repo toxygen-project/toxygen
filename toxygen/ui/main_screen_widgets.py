@@ -1,6 +1,7 @@
 from PyQt5 import QtCore, QtGui, QtWidgets
 from ui.widgets import RubberBandWindow, create_menu, QRightClickButton, CenteredWidget, LineEdit
 import urllib
+import re
 import utils.util as util
 import utils.ui as util_ui
 from stickers.stickers import load_stickers
@@ -11,14 +12,15 @@ class MessageArea(QtWidgets.QPlainTextEdit):
 
     def __init__(self, parent, form):
         super().__init__(parent)
-        self._messenger = None
+        self._messenger = self._contacts_manager = None
         self.parent = form
         self.setAcceptDrops(True)
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(lambda: self._messenger.send_typing(False))
 
-    def set_messenger(self, messenger):
+    def set_dependencies(self, messenger, contacts_manager):
         self._messenger = messenger
+        self._contacts_manager = contacts_manager
 
     def keyPressEvent(self, event):
         if event.matches(QtGui.QKeySequence.Paste):
@@ -39,10 +41,17 @@ class MessageArea(QtWidgets.QPlainTextEdit):
                 self._messenger.send_message()
         elif event.key() == QtCore.Qt.Key_Up and not self.toPlainText():
             self.appendPlainText(self._messenger.get_last_message())
-        elif event.key() == QtCore.Qt.Key_Tab and not self._messenger.is_active_a_friend():
+        elif event.key() == QtCore.Qt.Key_Tab and self._contacts_manager.is_active_a_group():
             text = self.toPlainText()
-            pos = self.textCursor().position()
-            self.insertPlainText(self._messenger.get_gc_peer_name(text[:pos]))
+            text_cursor = self.textCursor()
+            pos = text_cursor.position()
+            current_word = re.split("\s+", text[:pos])[-1]
+            start_index = text.rindex(current_word, 0, pos)
+            peer_name = self._contacts_manager.get_gc_peer_name(current_word)
+            self.setPlainText(text[:start_index] + peer_name + text[pos:])
+            new_pos = start_index + len(peer_name)
+            text_cursor.setPosition(new_pos, QtGui.QTextCursor.MoveAnchor)
+            self.setTextCursor(text_cursor)
         else:
             self._messenger.send_typing(True)
             if self._timer.isActive():
