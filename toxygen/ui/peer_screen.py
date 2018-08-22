@@ -92,8 +92,7 @@ class PeerScreen(CenteredWidget):
         self.close()
 
     def _copy_public_key(self):
-        clipboard = QtWidgets.QApplication.clipboard()
-        clipboard.setText(self._peer.public_key)
+        util_ui.copy_to_clipboard(self._peer.public_key)
 
     def _ban_peer(self):
         ban_type = self._get_ban_type()

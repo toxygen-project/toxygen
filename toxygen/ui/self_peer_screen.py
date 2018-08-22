@@ -1,5 +1,5 @@
 from ui.widgets import CenteredWidget, LineEdit
-from PyQt5 import QtCore, QtWidgets, uic
+from PyQt5 import uic
 import utils.util as util
 import utils.ui as util_ui
 from ui.contact_items import *
@@ -63,5 +63,4 @@ class SelfPeerScreen(CenteredWidget):
         self.close()
 
     def _copy_public_key(self):
-        clipboard = QtWidgets.QApplication.clipboard()
-        clipboard.setText(self._peer.public_key)
+        util_ui.copy_to_clipboard(self._peer.public_key)

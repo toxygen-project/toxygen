@@ -46,4 +46,9 @@ def close_all_windows():
     QtWidgets.QApplication.closeAllWindows()
 
 
+def copy_to_clipboard(text):
+    clipboard = QtWidgets.QApplication.clipboard()
+    clipboard.setText(text)
+
+
 # TODO: all dialogs

@@ -118,6 +118,11 @@ class GroupsService(tox_save.ToxSave):
         self._screen = widgets_factory.create_group_management_screen(group)
         self._screen.show()
 
+    def show_group_settings_screen(self, group):
+        widgets_factory = self._get_widgets_factory()
+        self._screen = widgets_factory.create_group_settings_screen(group)
+        self._screen.show()
+
     def set_group_password(self, group, password):
         if group.password == password:
             return

@@ -184,6 +184,9 @@ class GroupMenuGenerator(BaseContactMenuGenerator):
                 .with_optional_action(util_ui.tr('Manage group'),
                                       lambda: groups_service.show_group_management_screen(self._contact),
                                       self._contact.is_self_founder())
+                .with_optional_action(util_ui.tr('Group settings'),
+                                      lambda: groups_service.show_group_settings_screen(self._contact),
+                                      not self._contact.is_self_founder())
                 .with_optional_action(util_ui.tr('Set topic'),
                                       lambda: groups_service.set_group_topic(self._contact),
                                       self._contact.is_self_moderator_or_founder())

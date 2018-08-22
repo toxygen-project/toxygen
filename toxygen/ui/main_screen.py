@@ -650,8 +650,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @staticmethod
     def copy_text(text):
-        clipboard = QtWidgets.QApplication.clipboard()
-        clipboard.setText(text)
+        util_ui.copy_to_clipboard(text)
 
     def clear_history(self, num):
         self._history_loader.clear_history(num)
