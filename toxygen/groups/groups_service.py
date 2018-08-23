@@ -194,11 +194,9 @@ class GroupsService(tox_save.ToxSave):
 
     def ban_peer(self, group, peer_id, ban_type):
         self._tox.group_mod_ban_peer(group.number, peer_id, ban_type)
-        group.remove_peer(peer_id)
 
     def kick_peer(self, group, peer_id):
         self._tox.group_mod_remove_peer(group.number, peer_id)
-        group.remove_peer(peer_id)
 
     def cancel_ban(self, group_number, ban_id):
         self._tox.group_mod_remove_ban(group_number, ban_id)

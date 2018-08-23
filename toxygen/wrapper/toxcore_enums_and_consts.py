@@ -919,7 +919,6 @@ TOX_GROUP_BAN_TYPE = {
     'PUBLIC_KEY': 1,
 
     'NICK': 2
-
 }
 
 TOX_PUBLIC_KEY_SIZE = 32

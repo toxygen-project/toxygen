@@ -97,9 +97,11 @@ class PeerScreen(CenteredWidget):
     def _ban_peer(self):
         ban_type = self._get_ban_type()
         self._groups_service.ban_peer(self._group, self._peer.id, ban_type)
+        self.close()
 
     def _kick_peer(self):
         self._groups_service.kick_peer(self._group, self._peer.id)
+        self.close()
 
     def _get_ban_type(self):
         if self.ipBanRadioButton.isChecked():

@@ -82,8 +82,11 @@ class GroupChat(contact.Contact, ToxSave):
         self._peers.append(peer)
 
     def remove_peer(self, peer_id):
-        peer = self.get_peer_by_id(peer_id)
-        self._peers.remove(peer)
+        if peer_id == self.get_self_peer().id:  # we were kicked or banned
+            self.remove_all_peers_except_self()
+        else:
+            peer = self.get_peer_by_id(peer_id)
+            self._peers.remove(peer)
 
     def get_peer_by_id(self, peer_id):
         peers = list(filter(lambda p: p.id == peer_id, self._peers))

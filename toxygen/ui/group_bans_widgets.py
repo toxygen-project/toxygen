@@ -6,19 +6,24 @@ import utils.ui as util_ui
 
 class GroupBanItem(QtWidgets.QWidget):
 
-    def __init__(self, ban, cancel_ban, parent=None):
+    def __init__(self, ban, cancel_ban, can_cancel_ban, parent=None):
         super().__init__(parent)
         self._ban = ban
         self._cancel_ban = cancel_ban
+        self._can_cancel_ban = can_cancel_ban
+
+        uic.loadUi(util.get_views_path('gc_ban_item'), self)
+        self._update_ui()
 
     def _update_ui(self):
         self._retranslate_ui()
 
-        self.banTargetLabel.setText(self._ban.target)
+        self.banTargetLabel.setText(self._ban.ban_target)
         ban_time = self._ban.ban_time
         self.banTimeLabel.setText(util.unix_time_to_long_str(ban_time))
 
         self.cancelPushButton.clicked.connect(self._cancel_ban)
+        self.cancelPushButton.setEnabled(self._can_cancel_ban)
 
     def _retranslate_ui(self):
         self.cancelPushButton.setText(util_ui.tr('Cancel ban'))
@@ -47,11 +52,12 @@ class GroupBansScreen(CenteredWidget):
 
     def _refresh_bans_list(self):
         self.bansListWidget.clear()
+        can_cancel_ban = self._group.is_self_moderator_or_founder()
         for ban in self._group.bans:
-            self._create_ban_item(ban)
+            self._create_ban_item(ban, can_cancel_ban)
 
-    def _create_ban_item(self, ban):
-        item = GroupBanItem(ban, self._on_ban_cancelled, self.bansListWidget)
+    def _create_ban_item(self, ban, can_cancel_ban):
+        item = GroupBanItem(ban, self._on_ban_cancelled, can_cancel_ban, self.bansListWidget)
         elem = QtWidgets.QListWidgetItem()
         elem.setSizeHint(QtCore.QSize(item.width(), item.height()))
         self.bansListWidget.addItem(elem)

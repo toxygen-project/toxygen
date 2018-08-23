@@ -190,9 +190,8 @@ class GroupMenuGenerator(BaseContactMenuGenerator):
                 .with_optional_action(util_ui.tr('Set topic'),
                                       lambda: groups_service.set_group_topic(self._contact),
                                       self._contact.is_self_moderator_or_founder())
-                .with_optional_action(util_ui.tr('Bans list'),
-                                      lambda: groups_service.show_bans_list(self._contact),
-                                      self._contact.is_self_moderator_or_founder())
+                .with_action(util_ui.tr('Bans list'),
+                             lambda: groups_service.show_bans_list(self._contact))
                 .with_action(util_ui.tr('Reconnect to group'),
                              lambda: groups_service.reconnect_to_group(self._contact.number))
                 .with_optional_action(util_ui.tr('Disconnect from group'),

@@ -16,7 +16,7 @@
   <widget class="QPushButton" name="cancelPushButton">
    <property name="geometry">
     <rect>
-     <x>320</x>
+     <x>330</x>
      <y>30</y>
      <width>161</width>
      <height>41</height>
@@ -29,9 +29,9 @@
   <widget class="QLabel" name="banTargetLabel">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>15</x>
      <y>20</y>
-     <width>200</width>
+     <width>305</width>
      <height>20</height>
     </rect>
    </property>
@@ -42,9 +42,9 @@
   <widget class="QLabel" name="banTimeLabel">
    <property name="geometry">
     <rect>
-     <x>20</x>
+     <x>15</x>
      <y>50</y>
-     <width>200</width>
+     <width>305</width>
      <height>20</height>
     </rect>
    </property>

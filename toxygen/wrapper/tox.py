@@ -2474,6 +2474,17 @@ class Tox:
         result = Tox.libtoxcore.tox_group_ban_get_list(self._tox_pointer, group_number, bans_list, byref(error))
         return bans_list[:bans_list_size]
 
+    def group_ban_get_type(self, group_number, ban_id):
+        """
+        Return the type for the ban list entry designated by ban_id, in the
+        group designated by the given group number. If either group_number or ban_id is invalid,
+        the return value is unspecified.
+        """
+
+        error = c_int()
+        result = Tox.libtoxcore.tox_group_ban_get_type(self._tox_pointer, group_number, ban_id, byref(error))
+        return result
+
     def group_ban_get_target_size(self, group_number, ban_id):
         """
         Return the length of the name for the ban list entry designated by ban_id, in the
@@ -2498,9 +2509,12 @@ class Tox:
         error = c_int()
         size = self.group_ban_get_target_size(group_number, ban_id)
         target = create_string_buffer(size)
+        target_type = self.group_ban_get_type(group_number, ban_id)
 
         result = Tox.libtoxcore.tox_group_ban_get_target(self._tox_pointer, group_number, ban_id,
                                                          target, byref(error))
+        if target_type == TOX_GROUP_BAN_TYPE['PUBLIC_KEY']:
+            return bin_to_string(target, size)
         return str(target[:size], 'utf-8')
 
     def group_ban_get_time_set(self, group_number, ban_id):
