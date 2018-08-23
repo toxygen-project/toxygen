@@ -20,11 +20,7 @@ class Node:
     priority = property(get_priority)
 
     def get_data(self):
-        return bytes(self._ip, 'utf-8'), self._port, self._tox_key
-
-
-def _get_nodes_path():
-    return join_path(curr_directory(__file__), 'nodes.json')
+        return self._ip, self._port, self._tox_key
 
 
 def generate_nodes(nodes_count=DEFAULT_NODES_COUNT):
@@ -39,14 +35,6 @@ def generate_nodes(nodes_count=DEFAULT_NODES_COUNT):
         yield node.get_data()
 
 
-def save_nodes(nodes):
-    if not nodes:
-        return
-    print('Saving nodes...')
-    with open(_get_nodes_path(), 'wb') as fl:
-        fl.write(nodes)
-
-
 def download_nodes_list(settings):
     url = 'https://nodes.tox.chat/json'
     if not settings['download_nodes_list']:
@@ -58,7 +46,7 @@ def download_nodes_list(settings):
             req.add_header('Content-Type', 'application/json')
             response = urllib.request.urlopen(req)
             result = response.read()
-            save_nodes(result)
+            _save_nodes(result)
         except Exception as ex:
             log('TOX nodes loading error: ' + str(ex))
     else:  # proxy
@@ -78,6 +66,18 @@ def download_nodes_list(settings):
                 QtCore.QThread.msleep(1)
                 QtCore.QCoreApplication.processEvents()
             data = bytes(reply.readAll().data())
-            save_nodes(data)
+            _save_nodes(data)
         except Exception as ex:
             log('TOX nodes loading error: ' + str(ex))
+
+
+def _get_nodes_path():
+    return join_path(curr_directory(__file__), 'nodes.json')
+
+
+def _save_nodes(nodes):
+    if not nodes:
+        return
+    print('Saving nodes...')
+    with open(_get_nodes_path(), 'wb') as fl:
+        fl.write(nodes)

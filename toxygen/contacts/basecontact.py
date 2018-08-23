@@ -39,11 +39,12 @@ class BaseContact:
         return self._name
 
     def set_name(self, value):
-        if self._name != value:
-            self._name = value
-            self._widget.name.setText(self._name)
-            self._widget.name.repaint()
-            self._name_changed_event(self._name)
+        if self._name == value:
+            return
+        self._name = value
+        self._widget.name.setText(self._name)
+        self._widget.name.repaint()
+        self._name_changed_event(self._name)
 
     name = property(get_name, set_name)
 
@@ -60,11 +61,12 @@ class BaseContact:
         return self._status_message
 
     def set_status_message(self, value):
-        if self._status_message != value:
-            self._status_message = value
-            self._widget.status_message.setText(self._status_message)
-            self._widget.status_message.repaint()
-            self._status_message_changed_event(self._status_message)
+        if self._status_message == value:
+            return
+        self._status_message = value
+        self._widget.status_message.setText(self._status_message)
+        self._widget.status_message.repaint()
+        self._status_message_changed_event(self._status_message)
 
     status_message = property(get_status_message, set_status_message)
 
@@ -81,10 +83,11 @@ class BaseContact:
         return self._status
 
     def set_status(self, value):
-        if self._status != value:
-            self._status = value
-            self._widget.connection_status.update(value)
-            self._status_changed_event(self._status)
+        if self._status == value:
+            return
+        self._status = value
+        self._widget.connection_status.update(value)
+        self._status_changed_event(self._status)
 
     status = property(get_status, set_status)
 

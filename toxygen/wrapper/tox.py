@@ -218,6 +218,7 @@ class Tox:
         :param public_key: The long term public key of the bootstrap node (TOX_PUBLIC_KEY_SIZE bytes).
         :return: True on success.
         """
+        address = bytes(address, 'utf-8')
         tox_err_bootstrap = c_int()
         result = Tox.libtoxcore.tox_bootstrap(self._tox_pointer, c_char_p(address), c_uint16(port),
                                               string_to_bin(public_key), byref(tox_err_bootstrap))
@@ -244,6 +245,7 @@ class Tox:
         :param public_key: The long term public key of the TCP relay (TOX_PUBLIC_KEY_SIZE bytes).
         :return: True on success.
         """
+        address = bytes(address, 'utf-8')
         tox_err_bootstrap = c_int()
         result = Tox.libtoxcore.tox_add_tcp_relay(self._tox_pointer, c_char_p(address), c_uint16(port),
                                                   string_to_bin(public_key), byref(tox_err_bootstrap))
