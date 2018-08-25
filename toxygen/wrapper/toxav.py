@@ -40,7 +40,7 @@ class ToxAV:
         self.video_receive_frame_cb = None
         self.call_cb = None
 
-    def __del__(self):
+    def kill(self):
         """
         Releases all resources associated with the A/V session.
 

@@ -107,7 +107,7 @@ class App:
         self._tray.hide()
         self._save_profile()
         self._settings.close()
-        self._calls_manager.set_toxav(None)
+        self._kill_toxav()
         del self._tox
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -319,7 +319,7 @@ class App:
         self._stop_threads(False)
         data = self._tox.get_savedata()
         self._save_profile(data)
-        self._calls_manager.set_toxav(None)
+        self._kill_toxav()
         del self._tox
         # create new tox instance
         self._tox = self._create_tox(data)
@@ -411,3 +411,7 @@ class App:
     def _init_profile(self):
         if not self._profile.has_avatar():
             self._profile.reset_avatar(self._settings['identicons'])
+
+    def _kill_toxav(self):
+        self._calls_manager.set_toxav(None)
+        self._tox.AV.kill()

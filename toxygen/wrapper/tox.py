@@ -121,7 +121,6 @@ class Tox:
             self.AV = ToxAV(self._tox_pointer)
 
     def __del__(self):
-        del self.AV
         Tox.libtoxcore.tox_kill(self._tox_pointer)
 
     # -----------------------------------------------------------------------------------------------------------------
