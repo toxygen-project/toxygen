@@ -87,8 +87,12 @@ class BaseContactMenuGenerator:
     def __init__(self, contact):
         self._contact = contact
 
-    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number, groups_service):
+    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number, groups_service, history_loader):
         return ContactMenuBuilder().build()
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Private methods
+    # -----------------------------------------------------------------------------------------------------------------
 
     def _generate_copy_menu_builder(self, main_screen):
         copy_menu_builder = ContactMenuBuilder()
@@ -101,11 +105,23 @@ class BaseContactMenuGenerator:
 
         return copy_menu_builder
 
+    def _generate_history_menu_builder(self, history_loader, main_screen):
+        history_menu_builder = ContactMenuBuilder()
+        (history_menu_builder
+         .with_name(util_ui.tr('Chat history'))
+         .with_action(util_ui.tr('Clear history'), lambda: history_loader.clear_history(self._contact)
+                                                           and main_screen.messages.clear())
+         .with_action(util_ui.tr('Export as text'), lambda: history_loader.export_history(self._contact))
+         .with_action(util_ui.tr('Export as HTML'), lambda: history_loader.export_history(self._contact, False))
+         )
+
+        return history_menu_builder
+
 
 class FriendMenuGenerator(BaseContactMenuGenerator):
 
-    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number, groups_service):
-        history_menu_builder = self._generate_history_menu_builder(main_screen, number)
+    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number, groups_service, history_loader):
+        history_menu_builder = self._generate_history_menu_builder(history_loader, main_screen)
         copy_menu_builder = self._generate_copy_menu_builder(main_screen)
         plugins_menu_builder = self._generate_plugins_menu_builder(plugin_loader, number)
         groups_menu_builder = self._generate_groups_menu(contacts_manager, groups_service)
@@ -131,18 +147,6 @@ class FriendMenuGenerator(BaseContactMenuGenerator):
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods
     # -----------------------------------------------------------------------------------------------------------------
-
-    @staticmethod
-    def _generate_history_menu_builder(main_screen, number):
-        history_menu_builder = ContactMenuBuilder()
-        (history_menu_builder
-         .with_name(util_ui.tr('Chat history'))
-         .with_action(util_ui.tr('Clear history'), lambda: main_screen.clear_history(number))
-         .with_action(util_ui.tr('Export as text'), lambda: main_screen.export_history(number))
-         .with_action(util_ui.tr('Export as HTML'), lambda: main_screen.export_history(number, False))
-         )
-
-        return history_menu_builder
 
     @staticmethod
     def _generate_plugins_menu_builder(plugin_loader, number):
@@ -174,13 +178,15 @@ class FriendMenuGenerator(BaseContactMenuGenerator):
 
 class GroupMenuGenerator(BaseContactMenuGenerator):
 
-    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number, groups_service):
+    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number, groups_service, history_loader):
         copy_menu_builder = self._generate_copy_menu_builder(main_screen)
+        history_menu_builder = self._generate_history_menu_builder(history_loader, main_screen)
 
         builder = ContactMenuBuilder()
         menu = (builder
                 .with_action(util_ui.tr('Set alias'), lambda: main_screen.set_alias(number))
                 .with_submenu(copy_menu_builder)
+                .with_submenu(history_menu_builder)
                 .with_optional_action(util_ui.tr('Manage group'),
                                       lambda: groups_service.show_group_management_screen(self._contact),
                                       self._contact.is_self_founder())
@@ -206,13 +212,15 @@ class GroupMenuGenerator(BaseContactMenuGenerator):
 
 class GroupPeerMenuGenerator(BaseContactMenuGenerator):
 
-    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number, groups_service):
+    def generate(self, plugin_loader, contacts_manager, main_screen, settings, number, groups_service, history_loader):
         copy_menu_builder = self._generate_copy_menu_builder(main_screen)
+        history_menu_builder = self._generate_history_menu_builder(history_loader, main_screen)
 
         builder = ContactMenuBuilder()
         menu = (builder
                 .with_action(util_ui.tr('Set alias'), lambda: main_screen.set_alias(number))
                 .with_submenu(copy_menu_builder)
+                .with_submenu(history_menu_builder)
                 .with_action(util_ui.tr('Quit chat'),
                              lambda: contacts_manager.remove_group_peer(self._contact))
                 .with_action(util_ui.tr('Notes'), lambda: main_screen.show_note(self._contact))

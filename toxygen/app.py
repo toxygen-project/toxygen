@@ -319,6 +319,7 @@ class App:
         self._stop_threads(False)
         data = self._tox.get_savedata()
         self._save_profile(data)
+        self._calls_manager.set_toxav(None)
         del self._tox
         # create new tox instance
         self._tox = self._create_tox(data)

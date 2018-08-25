@@ -606,7 +606,7 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         generator = contact.get_context_menu_generator()
         self.listMenu = generator.generate(self._plugins_loader, self._contacts_manager, self, self._settings, number,
-                                           self._groups_service)
+                                           self._groups_service, self._history_loader)
         parent_position = self.friends_list.mapToGlobal(QtCore.QPoint(0, 0))
         self.listMenu.move(parent_position + pos)
         self.listMenu.show()
@@ -625,19 +625,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.note = MultilineEdit(user, note, save_note)
         self.note.show()
 
-    def export_history(self, num, as_text=True):
-        s = self._contacts_manager.export_history(num, as_text)
-        extension = 'txt' if as_text else 'html'
-        file_name, _ = util_ui.save_file_dialog(util_ui.tr('Choose file name'), extension)
-
-        if not file_name:
-            return
-
-        if not file_name.endswith('.' + extension):
-            file_name += '.' + extension
-        with open(file_name, 'wt') as fl:
-            fl.write(s)
-
     def set_alias(self, num):
         self._contacts_manager.set_alias(num)
 
@@ -651,9 +638,6 @@ class MainWindow(QtWidgets.QMainWindow):
     @staticmethod
     def copy_text(text):
         util_ui.copy_to_clipboard(text)
-
-    def clear_history(self, num):
-        self._history_loader.clear_history(num)
 
     def auto_accept(self, num, value):
         tox_id = self._contacts_manager.friend_public_key(num)

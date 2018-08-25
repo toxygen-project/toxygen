@@ -290,10 +290,6 @@ class ContactsManager(ToxSave):
     def friend_public_key(self, num):
         return self._contacts[num].tox_id
 
-    def export_history(self, num, as_text):
-        contact = self._contacts[num]
-        return self._history.export_history(contact, as_text)
-
     def delete_friend(self, num):
         """
         Removes friend from contact list

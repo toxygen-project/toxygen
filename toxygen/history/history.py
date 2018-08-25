@@ -46,6 +46,20 @@ class History:
         friend.clear_corr(save_unsent)
         self._db.delete_friend_from_db(friend.tox_id)
 
+    def export_history(self, contact, as_text=True):
+        extension = 'txt' if as_text else 'html'
+        file_name, _ = util_ui.save_file_dialog(util_ui.tr('Choose file name'), extension)
+
+        if not file_name:
+            return
+
+        if not file_name.endswith('.' + extension):
+            file_name += '.' + extension
+
+        history = self.generate_history(contact, as_text)
+        with open(file_name, 'wt') as fl:
+            fl.write(history)
+
     def delete_message(self, message):
         contact = self._contacts_manager.get_curr_contact()
         if message.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']):
@@ -93,7 +107,7 @@ class History:
         self._db.add_friend_to_db(tox_id)
 
     @staticmethod
-    def export_history(contact, as_text=True, _range=None):
+    def generate_history(contact, as_text=True, _range=None):
         if _range is None:
             contact.load_all_corr()
             corr = contact.get_corr()
