@@ -8,8 +8,8 @@ import common.event as event
 
 class CallsManager:
 
-    def __init__(self, toxAV, settings, screen, contacts_manager):
-        self._call = av.calls.AV(toxAV, settings)  # object with data about calls
+    def __init__(self, toxav, settings, screen, contacts_manager):
+        self._call = av.calls.AV(toxav, settings)  # object with data about calls
         self._call_widgets = {}  # dict of incoming call widgets
         self._incoming_calls = set()
         self._settings = settings

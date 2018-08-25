@@ -7,12 +7,13 @@ import itertools
 import numpy as np
 from av import screen_sharing
 from av.call import Call
+import common.tox_save
 
 
-class AV:
+class AV(common.tox_save.ToxAvSave):
 
     def __init__(self, toxav, settings):
-        self._toxav = toxav
+        super().__init__(toxav)
         self._settings = settings
         self._running = True
 
@@ -35,9 +36,6 @@ class AV:
 
         self._video_width = 640
         self._video_height = 480
-
-    def set_toxav(self, toxav):
-        self._toxav = toxav
 
     def stop(self):
         self._running = False

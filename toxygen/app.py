@@ -107,6 +107,7 @@ class App:
         self._tray.hide()
         self._save_profile()
         self._settings.close()
+        self._calls_manager.set_toxav(None)
         del self._tox
 
     # -----------------------------------------------------------------------------------------------------------------
@@ -202,7 +203,7 @@ class App:
 
     def _start_threads(self, initial_start=True):
         # init thread
-        self._init = threads.InitThread(self._tox, self._plugin_loader, self._settings)
+        self._init = threads.InitThread(self._tox, self._plugin_loader, self._settings, initial_start)
         self._init.start()
 
         # starting threads for tox iterate and toxav iterate

@@ -38,15 +38,18 @@ class BaseQThread(QtCore.QThread):
 
 class InitThread(BaseThread):
 
-    def __init__(self, tox, plugin_loader, settings):
+    def __init__(self, tox, plugin_loader, settings, is_first_start):
         super().__init__()
         self._tox, self._plugin_loader, self._settings = tox, plugin_loader, settings
+        self._is_first_start = is_first_start
 
     def run(self):
-        # download list of nodes if needed
-        download_nodes_list(self._settings)
-        # start plugins
-        self._plugin_loader.load()
+        if self._is_first_start:
+            # download list of nodes if needed
+            download_nodes_list(self._settings)
+            # start plugins
+            self._plugin_loader.load()
+
         # bootstrap
         try:
             for data in generate_nodes():
@@ -56,10 +59,12 @@ class InitThread(BaseThread):
                 self._tox.add_tcp_relay(*data)
         except:
             pass
+
         for _ in range(10):
             if self._stop_thread:
                 return
             time.sleep(1)
+
         while not self._tox.self_get_connection_status():
             try:
                 for data in generate_nodes(None):
