@@ -604,3 +604,50 @@ def init_callbacks(tox, profile, settings, plugin_loader, contacts_manager,
     tox.callback_group_password(group_password(contacts_provider), 0)
     tox.callback_group_peer_limit(group_peer_limit(contacts_provider), 0)
     tox.callback_group_privacy_state(group_privacy_state(contacts_provider), 0)
+
+
+def unset_callbacks(tox):
+    # self callbacks
+    tox.callback_self_connection_status(0)
+
+    # friend callbacks
+    tox.callback_friend_status(0)
+    tox.callback_friend_message(0)
+    tox.callback_friend_connection_status(0)
+    tox.callback_friend_name(0)
+    tox.callback_friend_status_message(0)
+    tox.callback_friend_request(0)
+    tox.callback_friend_typing(0)
+    tox.callback_friend_read_receipt(0)
+
+    # file transfer
+    tox.callback_file_recv(0)
+    tox.callback_file_recv_chunk(0)
+    tox.callback_file_chunk_request(0)
+    tox.callback_file_recv_control(0)
+
+    # av
+    toxav = tox.AV
+    toxav.callback_call_state(0, 0)
+    toxav.callback_call(0, 0)
+    toxav.callback_audio_receive_frame(0, 0)
+    toxav.callback_video_receive_frame(0, 0)
+
+    # custom packets
+    tox.callback_friend_lossless_packet(0)
+    tox.callback_friend_lossy_packet(0)
+
+    # gc callbacks
+    tox.callback_group_message(0, 0)
+    tox.callback_group_private_message(0, 0)
+    tox.callback_group_invite(0, 0)
+    tox.callback_group_self_join(0, 0)
+    tox.callback_group_peer_join(0, 0)
+    tox.callback_group_peer_exit(0, 0)
+    tox.callback_group_peer_name(0, 0)
+    tox.callback_group_peer_status(0, 0)
+    tox.callback_group_topic(0, 0)
+    tox.callback_group_moderation(0, 0)
+    tox.callback_group_password(0, 0)
+    tox.callback_group_peer_limit(0, 0)
+    tox.callback_group_privacy_state(0, 0)

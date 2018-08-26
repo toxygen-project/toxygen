@@ -107,6 +107,7 @@ class App:
         self._tray.hide()
         self._save_profile()
         self._settings.close()
+        self._unset_callbacks()
         self._kill_toxav()
         del self._tox
 
@@ -319,6 +320,7 @@ class App:
         self._stop_threads(False)
         data = self._tox.get_savedata()
         self._save_profile(data)
+        self._unset_callbacks()
         self._kill_toxav()
         del self._tox
         # create new tox instance
@@ -407,6 +409,9 @@ class App:
         callbacks.init_callbacks(self._tox, self._profile, self._settings, self._plugin_loader, self._contacts_manager,
                                  self._calls_manager, self._file_transfer_handler, self._ms, self._tray,
                                  self._messenger, self._groups_service, self._contacts_provider)
+
+    def _unset_callbacks(self):
+        callbacks.unset_callbacks(self._tox)
 
     def _init_profile(self):
         if not self._profile.has_avatar():

@@ -110,7 +110,7 @@ class BaseContactMenuGenerator:
         (history_menu_builder
          .with_name(util_ui.tr('Chat history'))
          .with_action(util_ui.tr('Clear history'), lambda: history_loader.clear_history(self._contact)
-                                                           and main_screen.messages.clear())
+                                                           or main_screen.messages.clear())
          .with_action(util_ui.tr('Export as text'), lambda: history_loader.export_history(self._contact))
          .with_action(util_ui.tr('Export as HTML'), lambda: history_loader.export_history(self._contact, False))
          )

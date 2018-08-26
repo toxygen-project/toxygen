@@ -146,8 +146,7 @@ class Contact(basecontact.BaseContact):
     # -----------------------------------------------------------------------------------------------------------------
 
     def delete_message(self, message_id):
-        elem = list(filter(lambda m: type(m) in (TextMessage, GroupChatMessage) and m.message_id == message_id,
-                           self._corr))[0]
+        elem = list(filter(lambda m: m.message_id == message_id, self._corr))[0]
         tmp = list(filter(lambda m: m.type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']), self._corr))
         if elem in tmp[-self._unsaved_messages:] and self._unsaved_messages:
             self._unsaved_messages -= 1

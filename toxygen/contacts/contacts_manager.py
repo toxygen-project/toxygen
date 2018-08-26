@@ -90,6 +90,7 @@ class ContactsManager(ToxSave):
             self._screen.typing.setVisible(False)
             current_contact = self.get_curr_contact()
             if current_contact is not None:
+                # TODO: send when needed
                 current_contact.typing_notification_handler.send(self._tox, False)
                 current_contact.remove_messages_widgets()  # TODO: if required
                 self._unsubscribe_from_events(current_contact)
@@ -118,6 +119,7 @@ class ContactsManager(ToxSave):
                     self._messages_items_factory.create_inline_item(message.data)
                 else:
                     self._messages_items_factory.create_message_item(message)
+            self._messages.scrollToBottom()
             # if value in self._call:
             #     self._screen.active_call()
             # elif value in self._incoming_calls:
@@ -365,6 +367,8 @@ class ContactsManager(ToxSave):
 
     def add_group_peer(self, group, peer):
         contact = self._contact_provider.get_group_peer_by_id(group, peer.id)
+        if self.check_if_contact_exists(contact.tox_id):
+            return
         self._contacts.append(contact)
         contact.reset_avatar(self._settings['identicons'])
         self._save_profile()

@@ -594,7 +594,6 @@ class InterfaceSettings(CenteredWidget):
             app.removeTranslator(app.translator)
             app.translator.load(join_path(get_translations_directory(), path))
             app.installTranslator(app.translator)
-        self._settings.save()
 
         app_closing_setting = 0
         if self.hideRadioButton.isChecked():
@@ -602,6 +601,7 @@ class InterfaceSettings(CenteredWidget):
         elif self.closeToTrayRadioButton.isChecked():
             app_closing_setting = 2
         self._settings['close_app'] = app_closing_setting
+        self._settings.save()
 
         if restart:
             util_ui.message_box(util_ui.tr('Restart app to apply settings'), util_ui.tr('Restart required'))
