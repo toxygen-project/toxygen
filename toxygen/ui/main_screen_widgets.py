@@ -12,15 +12,16 @@ class MessageArea(QtWidgets.QPlainTextEdit):
 
     def __init__(self, parent, form):
         super().__init__(parent)
-        self._messenger = self._contacts_manager = None
+        self._messenger = self._contacts_manager = self._file_transfer_handler = None
         self.parent = form
         self.setAcceptDrops(True)
         self._timer = QtCore.QTimer(self)
         self._timer.timeout.connect(lambda: self._messenger.send_typing(False))
 
-    def set_dependencies(self, messenger, contacts_manager):
+    def set_dependencies(self, messenger, contacts_manager, file_transfer_handler):
         self._messenger = messenger
         self._contacts_manager = contacts_manager
+        self._file_transfer_handler = file_transfer_handler
 
     def keyPressEvent(self, event):
         if event.matches(QtGui.QKeySequence.Paste):
@@ -84,16 +85,20 @@ class MessageArea(QtWidgets.QPlainTextEdit):
     def pasteEvent(self, text=None):
         text = text or QtWidgets.QApplication.clipboard().text()
         if text.startswith('file://'):
-            file_name = self.parse_file_name(text)
-            self.parent.profile.send_file(file_name)
+            if not self._contacts_manager.is_active_a_friend():
+                return
+            friend_number = self._contacts_manager.get_active_number()
+            file_path = self._parse_file_path(text)
+            self._file_transfer_handler.send_file(file_path, friend_number)
         else:
             self.insertPlainText(text)
 
     @staticmethod
-    def parse_file_name(file_name):
+    def _parse_file_path(file_name):
         if file_name.endswith('\r\n'):
             file_name = file_name[:-2]
         file_name = urllib.parse.unquote(file_name)
+
         return file_name[8 if util.get_platform() == 'Windows' else 7:]
 
 

@@ -37,7 +37,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._toxes = toxes
         self._messenger = messenger
         self._contacts_manager.active_contact_changed.add_callback(self._new_contact_selected)
-        self.messageEdit.set_dependencies(messenger, contacts_manager)
+        self.messageEdit.set_dependencies(messenger, contacts_manager, file_transfer_handler)
 
         self.update_gc_invites_button_state()
 

@@ -66,8 +66,7 @@ class Message:
     message_id = property(get_message_id)
 
     def get_widget(self, *args):
-        if self._widget is None:
-            self._widget = self._create_widget(*args)
+        self._widget = self._create_widget(*args)
 
         return self._widget
 
