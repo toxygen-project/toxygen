@@ -1316,6 +1316,8 @@ class Profile(basecontact.BaseContact, Singleton):
         return list(groups)[0]
 
     def add_gc(self, number):
+        if number == -1:
+            return
         widget = self.create_friend_item()
         gc = GroupChat('Group chat #' + str(number), '', widget, self._tox, number)
         self._contacts.append(gc)

@@ -618,7 +618,7 @@ class MainWindow(QtWidgets.QMainWindow, Singleton):
                     for i in range(len(chats)):
                         name, number = chats[i]
                         item = invite_menu.addAction(name)
-                        item.triggered.connect(lambda: self.invite_friend_to_gc(num, number))
+                        item.triggered.connect(lambda number=number: self.invite_friend_to_gc(num, number))
 
                 plugins_loader = plugin_support.PluginLoader.get_instance()
                 if plugins_loader is not None:
