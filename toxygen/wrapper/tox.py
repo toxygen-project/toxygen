@@ -59,8 +59,9 @@ class Tox:
             self._tox_pointer = tox_pointer
         else:
             tox_err_new = c_int()
-            Tox.libtoxcore.tox_new.restype = POINTER(c_void_p)
-            self._tox_pointer = Tox.libtoxcore.tox_new(tox_options, byref(tox_err_new))
+            f = Tox.libtoxcore.tox_new
+            f.restype = POINTER(c_void_p)
+            self._tox_pointer = f(tox_options, byref(tox_err_new))
             tox_err_new = tox_err_new.value
             if tox_err_new == TOX_ERR_NEW['NULL']:
                 raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
@@ -120,7 +121,7 @@ class Tox:
 
             self.AV = ToxAV(self._tox_pointer)
 
-    def __del__(self):
+    def kill(self):
         del self.AV
         Tox.libtoxcore.tox_kill(self._tox_pointer)
 

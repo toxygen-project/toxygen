@@ -29,7 +29,7 @@ SHOW_PROGRESS_BAR = (0, 1, 4)
 def is_inline(file_name):
     allowed_inlines = ('toxygen_inline.png', 'utox-inline.png', 'sticker.png')
 
-    return file_name in allowed_inlines or file_name.startswith('qTox_Screenshot_')
+    return file_name in allowed_inlines or file_name.startswith('qTox_Image_')
 
 
 class FileTransfer:

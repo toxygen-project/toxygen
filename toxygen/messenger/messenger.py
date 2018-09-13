@@ -224,7 +224,7 @@ class Messenger(tox_save.ToxSave):
             return
         message = util_ui.tr('User {} is now known as {}')
         message = message.format(old_name, new_name)
-        if self._contacts_manager.is_friend_active(friend.number):
+        if not self._contacts_manager.is_friend_active(friend.number):
             friend.actions = True
         self._add_info_message(friend.number, message)
 
@@ -236,14 +236,14 @@ class Messenger(tox_save.ToxSave):
     def _split_message(message):
         messages = []
         while len(message) > TOX_MAX_MESSAGE_LENGTH:
-            size = TOX_MAX_MESSAGE_LENGTH * 4 / 5
+            size = TOX_MAX_MESSAGE_LENGTH * 4 // 5
             last_part = message[size:TOX_MAX_MESSAGE_LENGTH]
-            if ' ' in last_part:
-                index = last_part.index(' ')
-            elif ',' in last_part:
-                index = last_part.index(',')
-            elif '.' in last_part:
-                index = last_part.index('.')
+            if b' ' in last_part:
+                index = last_part.index(b' ')
+            elif b',' in last_part:
+                index = last_part.index(b',')
+            elif b'.' in last_part:
+                index = last_part.index(b'.')
             else:
                 index = TOX_MAX_MESSAGE_LENGTH - size - 1
             index += size + 1

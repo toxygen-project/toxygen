@@ -257,7 +257,7 @@ class FileTransfersHandler(ToxSave):
         elif not size:
             friend.reset_avatar(self._settings['identicons'])
 
-    def _send_avatar_to_contacts(self):
+    def _send_avatar_to_contacts(self, _):
         friends = self._get_all_friends()
         for friend in friends:
             self.send_avatar(friend.number)
@@ -286,13 +286,13 @@ class FileTransfersHandler(ToxSave):
         path, file_name = os.path.split(path)
         new_file_name, i = file_name, 1
         if not from_position:
-            while os.path.isfile(path + '/' + new_file_name):  # file with same name already exists
+            while os.path.isfile(join_path(path, new_file_name)):  # file with same name already exists
                 if '.' in file_name:  # has extension
                     d = file_name.rindex('.')
                 else:  # no extension
                     d = len(file_name)
                 new_file_name = file_name[:d] + ' ({})'.format(i) + file_name[d:]
                 i += 1
-        path = os.path.join(path, new_file_name)
+        path = join_path(path, new_file_name)
 
         return path

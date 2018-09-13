@@ -24,8 +24,9 @@ class ToxAV:
         """
         self.libtoxav = LibToxAV()
         toxav_err_new = c_int()
-        self.libtoxav.toxav_new.restype = POINTER(c_void_p)
-        self._toxav_pointer = self.libtoxav.toxav_new(tox_pointer, byref(toxav_err_new))
+        f = self.libtoxav.toxav_new
+        f.restype = POINTER(c_void_p)
+        self._toxav_pointer = f(tox_pointer, byref(toxav_err_new))
         toxav_err_new = toxav_err_new.value
         if toxav_err_new == TOXAV_ERR_NEW['NULL']:
             raise ArgumentError('One of the arguments to the function was NULL when it was not expected.')
