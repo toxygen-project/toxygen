@@ -6,6 +6,7 @@ from ui.self_peer_screen import *
 from ui.group_invites_widgets import *
 from ui.group_settings_widgets import *
 from ui.group_bans_widgets import *
+from ui.profile_settings_screen import ProfileSettings
 
 
 class WidgetsFactory:

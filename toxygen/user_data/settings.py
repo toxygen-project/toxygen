@@ -137,9 +137,8 @@ class Settings(dict):
             data = json.loads(data)
         else:
             data = {}
-        if 'path' in data:
-            del data['path']
-            del data['name']
+        if 'profile_path' in data:
+            del data['profile_path']
         with open(p, 'w') as fl:
             fl.write(json.dumps(data))
 
