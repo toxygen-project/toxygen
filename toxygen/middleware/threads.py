@@ -106,7 +106,7 @@ class ToxAVIterateThread(BaseQThread):
 # File transfers thread
 # -----------------------------------------------------------------------------------------------------------------
 
-class FileTransfersThread(BaseThread):
+class FileTransfersThread(BaseQThread):
 
     def __init__(self):
         super().__init__()

@@ -141,55 +141,60 @@ class SmileyWindow(QtWidgets.QWidget):
     def __init__(self, parent, smiley_loader):
         super().__init__(parent)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        self.data = smiley_loader.get_smileys()
-        count = len(self.data)
+        self._parent = parent
+        self._data = smiley_loader.get_smileys()
+
+        count = len(self._data)
         if not count:
             self.close()
-        self.page_size = int(pow(count / 8, 0.5) + 1) * 8  # smileys per page
-        if count % self.page_size == 0:
-            self.page_count = count // self.page_size
+
+        self._page_size = int(pow(count / 8, 0.5) + 1) * 8  # smileys per page
+        if count % self._page_size == 0:
+            self._page_count = count // self._page_size
         else:
-            self.page_count = round(count / self.page_size + 0.5)
-        self.page = -1
-        self.radio = []
-        self.parent = parent
-        for i in range(self.page_count):  # buttons with smileys
+            self._page_count = round(count / self._page_size + 0.5)
+        self._page = -1
+        self._radio = []
+
+        for i in range(self._page_count):  # pages - radio buttons
             elem = QtWidgets.QRadioButton(self)
-            elem.setGeometry(QtCore.QRect(i * 20 + 5, 180, 20, 20))
-            elem.clicked.connect(lambda c, t=i: self.checked(t))
-            self.radio.append(elem)
-        width = max(self.page_count * 20 + 30, (self.page_size + 5) * 8 // 10)
+            elem.setGeometry(QtCore.QRect(i * 20 + 5, 160, 20, 20))
+            elem.clicked.connect(lambda c, t=i: self._checked(t))
+            self._radio.append(elem)
+
+        width = max(self._page_count * 20 + 30, (self._page_size + 5) * 8 // 10)
         self.setMaximumSize(width, 200)
         self.setMinimumSize(width, 200)
-        self.buttons = []
-        for i in range(self.page_size):  # pages - radio buttons
+        self._buttons = []
+
+        for i in range(self._page_size):  # buttons with smileys
             b = QtWidgets.QPushButton(self)
             b.setGeometry(QtCore.QRect((i // 8) * 20 + 5, (i % 8) * 20, 20, 20))
-            b.clicked.connect(lambda c, t=i: self.clicked(t))
-            self.buttons.append(b)
-        self.checked(0)
-
-    def checked(self, pos):  # new page opened
-        self.radio[self.page].setChecked(False)
-        self.radio[pos].setChecked(True)
-        self.page = pos
-        start = self.page * self.page_size
-        for i in range(self.page_size):
-            try:
-                self.buttons[i].setVisible(True)
-                pixmap = QtGui.QPixmap(self.data[start + i][1])
-                icon = QtGui.QIcon(pixmap)
-                self.buttons[i].setIcon(icon)
-            except:
-                self.buttons[i].setVisible(False)
-
-    def clicked(self, pos):  # smiley selected
-        pos += self.page * self.page_size
-        smiley = self.data[pos][0]
-        self.parent.messageEdit.insertPlainText(smiley)
-        self.close()
+            b.clicked.connect(lambda c, t=i: self._clicked(t))
+            self._buttons.append(b)
+        self._checked(0)
 
     def leaveEvent(self, event):
+        self.close()
+
+    def _checked(self, pos):  # new page opened
+        self._radio[self._page].setChecked(False)
+        self._radio[pos].setChecked(True)
+        self._page = pos
+        start = self._page * self._page_size
+        for i in range(self._page_size):
+            try:
+                self._buttons[i].setVisible(True)
+                pixmap = QtGui.QPixmap(self._data[start + i][1])
+                icon = QtGui.QIcon(pixmap)
+                self._buttons[i].setIcon(icon)
+            except:
+                self._buttons[i].setVisible(False)
+
+    def _clicked(self, pos):  # smiley selected
+        pos += self._page * self._page_size
+        smiley = self._data[pos][0]
+        self._parent.messageEdit.insertPlainText(smiley)
         self.close()
 
 

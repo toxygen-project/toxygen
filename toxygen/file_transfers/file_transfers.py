@@ -4,6 +4,7 @@ from os import remove, rename, chdir
 from time import time
 from wrapper.tox import Tox
 from common.event import Event
+from middleware.threads import invoke_in_main_thread
 
 
 FILE_TRANSFER_STATE = {
@@ -120,10 +121,10 @@ class FileTransfer:
             t = -1
         else:
             t = ((time() - self._creation_time) / percentage) * (1 - percentage)
-        self._state_changed_event(self.state, percentage, int(t))
+        invoke_in_main_thread(self._state_changed_event, self.state, percentage, int(t))
 
     def _finished(self):
-        self._finished_event(self._friend_number, self._file_number)
+        invoke_in_main_thread(self._finished_event, self._friend_number, self._file_number)
 
 # -----------------------------------------------------------------------------------------------------------------
 # Send file

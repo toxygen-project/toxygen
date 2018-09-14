@@ -40,10 +40,11 @@ class FileTransfersMessagesService:
         return tm
 
     def add_inline_message(self, transfer, index):
-        if self._is_friend_active(transfer.friend_number):
-            count = self._messages.count()
-            if count + index + 1 >= 0:
-                self._create_inline_item(transfer.data, count + index + 1)
+        if not self._is_friend_active(transfer.friend_number):
+            return
+        count = self._messages.count()
+        if count + index + 1 >= 0:
+            self._create_inline_item(transfer.data, count + index + 1)
 
     def add_unsent_file_message(self, friend, file_path, data):
         author = MessageAuthor(self._profile.name, MESSAGE_AUTHOR['ME'])

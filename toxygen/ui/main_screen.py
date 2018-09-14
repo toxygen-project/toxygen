@@ -18,6 +18,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self._plugins_loader = None
         self.setAcceptDrops(True)
         self._saved = False
+        self._smiley_window = None
         self._profile = self._toxes = self._messenger = None
         self._file_transfer_handler = self._history_loader = self._groups_service = self._calls_manager = None
         self._should_show_group_peers_list = False
@@ -556,13 +557,15 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def send_smiley(self):
         self.menu.hide()
-        if self._contacts_manager.get_curr_contact() is not None:
-            self.smiley = self._widget_factory.create_smiley_window(self)
-            self.smiley.setGeometry(QtCore.QRect(self.x() if self._settings['mirror_mode'] else 200 + self.x(),
-                                                 self.y() + self.height() - 400,
-                                                 self.smiley.width(),
-                                                 self.smiley.height()))
-            self.smiley.show()
+        if self._contacts_manager.get_curr_contact() is None:
+            return
+        self._smiley_window = self._widget_factory.create_smiley_window(self)
+        rect = QtCore.QRect(self.menu.x(),
+                            self.menu.y() - self.menu.height(),
+                            self._smiley_window.width(),
+                            self._smiley_window.height())
+        self._smiley_window.setGeometry(rect)
+        self._smiley_window.show()
 
     def send_sticker(self):
         self.menu.hide()
