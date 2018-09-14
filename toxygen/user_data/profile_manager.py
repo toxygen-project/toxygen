@@ -1,6 +1,7 @@
 import utils.util as util
 import os
 from user_data.settings import Settings
+from common.event import Event
 
 
 class ProfileManager:
@@ -11,10 +12,24 @@ class ProfileManager:
         self._toxes = toxes
         self._path = path
         self._directory = os.path.dirname(path)
+        self._profile_saved_event = Event()
         # create /avatars if not exists:
         avatars_directory = util.join_path(self._directory, 'avatars')
         if not os.path.exists(avatars_directory):
             os.makedirs(avatars_directory)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Properties
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def get_profile_saved_event(self):
+        return self._profile_saved_event
+
+    profile_saved_event = property(get_profile_saved_event)
+
+    # -----------------------------------------------------------------------------------------------------------------
+    # Public methods
+    # -----------------------------------------------------------------------------------------------------------------
 
     def open_profile(self):
         with open(self._path, 'rb') as fl:
@@ -36,6 +51,8 @@ class ProfileManager:
         with open(self._path, 'wb') as fl:
             fl.write(data)
         print('Profile saved successfully')
+
+        self._profile_saved_event(data)
 
     def export_profile(self, settings, new_path, use_new_path):
         path = new_path + os.path.basename(self._path)

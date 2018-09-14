@@ -34,6 +34,7 @@ from groups.groups_service import GroupsService
 from ui.create_profile_screen import CreateProfileScreen
 from common.provider import Provider
 from contacts.group_peer_factory import GroupPeerFactory
+from user_data.backup_service import BackupService
 import styles.style  # TODO: dynamic loading
 
 
@@ -45,7 +46,7 @@ class App:
         self._tox = self._ms = self._init = self._main_loop = self._av_loop = None
         self._uri = self._toxes = self._tray = self._file_transfer_handler = self._contacts_provider = None
         self._friend_factory = self._calls_manager = self._contacts_manager = self._smiley_loader = None
-        self._group_peer_factory = self._tox_dns = None
+        self._group_peer_factory = self._tox_dns = self._backup_service = None
         self._group_factory = self._groups_service = self._profile = None
         if uri is not None and uri.startswith('tox:'):
             self._uri = uri[4:]
@@ -341,6 +342,7 @@ class App:
         self._init_callbacks()
 
     def _create_dependencies(self):
+        self._backup_service = BackupService(self._settings, self._profile_manager)
         self._smiley_loader = SmileyLoader(self._settings)
         self._tox_dns = ToxDns(self._settings)
         self._ms = MainWindow(self._settings, self._tray)

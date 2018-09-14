@@ -1,6 +1,7 @@
 import json
 from utils.util import *
 import pyaudio
+from common.event import Event
 
 
 class Settings(dict):
@@ -12,6 +13,7 @@ class Settings(dict):
         self._path = path
         self._profile_path = path.replace('.json', '.tox')
         self._toxes = toxes
+        self._settings_saved_event = Event()
         if os.path.isfile(path):
             with open(path, 'rb') as fl:
                 data = fl.read()
@@ -44,6 +46,15 @@ class Settings(dict):
         self.video = {'device': -1, 'width': 640, 'height': 480, 'x': 0, 'y': 0}
 
     # -----------------------------------------------------------------------------------------------------------------
+    # Properties
+    # -----------------------------------------------------------------------------------------------------------------
+
+    def get_settings_saved_event(self):
+        return self._settings_saved_event
+
+    settings_saved_event = property(get_settings_saved_event)
+
+    # -----------------------------------------------------------------------------------------------------------------
     # Public methods
     # -----------------------------------------------------------------------------------------------------------------
 
@@ -55,6 +66,8 @@ class Settings(dict):
             text = bytes(text, 'utf-8')
         with open(self._path, 'wb') as fl:
             fl.write(text)
+
+        self._settings_saved_event(text)
 
     def close(self):
         path = self._profile_path + '.lock'
@@ -186,7 +199,8 @@ class Settings(dict):
             'group_notifications': True,
             'download_nodes_list': False,
             'notify_all_gc': False,
-            'lan_discovery': True
+            'lan_discovery': True,
+            'backup_directory': None
         }
 
     @staticmethod
