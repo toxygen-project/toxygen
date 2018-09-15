@@ -567,7 +567,7 @@ class Profile(basecontact.BaseContact, Singleton):
         data.reverse()
         data = data[self._messages.count():self._messages.count() + PAGE_SIZE]
         for message in data:
-            if message.get_type() <= 1 or message.get_type() >= 5:  # text message
+            if message.get_type() <= 1:  # text message
                 data = message.get_data()
                 self.create_message_item(data[0],
                                          data[2],
@@ -588,13 +588,16 @@ class Profile(basecontact.BaseContact, Singleton):
                         print('Incoming not started transfer - no info found')
             elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline image
                 self.create_inline_item(message.get_data(), False)
-            else:  # info message
+            elif message.get_type() < 5:  # info message
                 data = message.get_data()
                 self.create_message_item(data[0],
                                          data[2],
                                          '',
                                          data[3],
                                          False)
+            else:
+                data = message.get_data()
+                self.create_gc_message_item(data[0], data[2], data[1], data[4], data[3])
         self._load_history = True
 
     def export_db(self, directory):
