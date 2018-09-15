@@ -29,7 +29,7 @@ ALLOWED_FILES = ('toxygen_inline.png', 'utox-inline.png', 'sticker.png')
 
 
 def is_inline(file_name):
-    return file_name in ALLOWED_FILES or file_name.startswith('qTox_Screenshot_')
+    return file_name in ALLOWED_FILES or file_name.startswith('qTox_Screenshot_') or file_name.startswith('qTox_Image_')
 
 
 class StateSignal(QtCore.QObject):

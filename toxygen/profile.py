@@ -567,7 +567,7 @@ class Profile(basecontact.BaseContact, Singleton):
         data.reverse()
         data = data[self._messages.count():self._messages.count() + PAGE_SIZE]
         for message in data:
-            if message.get_type() <= 1:  # text message
+            if message.get_type() <= 1 or message.get_type() >= 5:  # text message
                 data = message.get_data()
                 self.create_message_item(data[0],
                                          data[2],
