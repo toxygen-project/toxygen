@@ -126,7 +126,7 @@ class BaseContact:
         if os.path.isfile(avatar_path) and not avatar_path == self._get_default_avatar_path():
             os.remove(avatar_path)
         if generate_new:
-            self.set_avatar(common.generate_avatar(self.tox_id))
+            self.set_avatar(common.generate_avatar(self._tox_id[:TOX_PUBLIC_KEY_SIZE * 2]))
         else:
             self.load_avatar()
 

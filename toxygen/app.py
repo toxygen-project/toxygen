@@ -105,12 +105,12 @@ class App:
     def _stop_app(self):
         self._plugin_loader.stop()
         self._stop_threads()
+        self._file_transfer_handler.stop()
         self._tray.hide()
         self._save_profile()
         self._settings.close()
         self._kill_toxav()
         self._kill_tox()
-        del self._tox
 
     # -----------------------------------------------------------------------------------------------------------------
     # App loading
@@ -323,7 +323,6 @@ class App:
         self._save_profile(data)
         self._kill_toxav()
         self._kill_tox()
-        del self._tox
         # create new tox instance
         self._tox = self._create_tox(data)
         self._start_threads(False)
@@ -398,7 +397,8 @@ class App:
         if updating:
             self._save_profile()
             self._settings.close()
-            del self._tox
+            self._kill_toxav()
+            self._kill_tox()
         return updating
 
     def _create_tox(self, data):

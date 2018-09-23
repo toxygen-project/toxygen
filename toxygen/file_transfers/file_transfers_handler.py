@@ -20,7 +20,7 @@ class FileTransfersHandler(ToxSave):
 
         profile.avatar_changed_event.add_callback(self._send_avatar_to_contacts)
         
-    def __del__(self):
+    def stop(self):
         self._settings['paused_file_transfers'] = self._paused_file_transfers if self._settings['resend_files'] else {}
         self._settings.save()
 
@@ -259,12 +259,15 @@ class FileTransfersHandler(ToxSave):
 
     def _send_avatar_to_contacts(self, _):
         friends = self._get_all_friends()
-        for friend in friends:
+        for friend in filter(self._is_friend_online, friends):
             self.send_avatar(friend.number)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Private methods
     # -----------------------------------------------------------------------------------------------------------------
+
+    def _is_friend_online(self, friend_number):
+        return self._get_friend_by_number(friend_number).status is not None
 
     def _get_friend_by_number(self, friend_number):
         return self._contact_provider.get_friend_by_number(friend_number)

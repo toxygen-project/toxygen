@@ -181,7 +181,7 @@ def tox_file_recv(window, tray, profile, file_transfer_handler, contacts_manager
                     invoke_in_main_thread(tray_notification, file_from + ' ' + friend.name, file_name, tray, window)
                 if settings['sound_notifications'] and profile.status != TOX_USER_STATUS['BUSY']:
                     sound_notification(SOUND_NOTIFICATION['FILE_TRANSFER'])
-                icon = os.path.join(util.get_images_directory(), 'icon_new_messages.png')
+                icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
                 invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
         else:  # AVATAR
             print('Avatar')
@@ -371,7 +371,7 @@ def group_message(window, tray, tox, messenger, settings, profile):
             invoke_in_main_thread(tray_notification, name, message, tray, window)
         if settings['sound_notifications'] and bl and profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['MESSAGE'])
-        icon = os.path.join(util.get_images_directory(), 'icon_new_messages.png')
+        icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
         invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
 
     return wrapped
@@ -392,7 +392,7 @@ def group_private_message(window, tray, tox, messenger, settings, profile):
             invoke_in_main_thread(tray_notification, name, message, tray, window)
         if settings['sound_notifications'] and bl and profile.status != TOX_USER_STATUS['BUSY']:
             sound_notification(SOUND_NOTIFICATION['MESSAGE'])
-        icon = os.path.join(util.get_images_directory(), 'icon_new_messages.png')
+        icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
         invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
 
     return wrapped
@@ -411,7 +411,7 @@ def group_invite(window, settings, tray, profile, groups_service, contacts_provi
             title = util_ui.tr('New invite to group chat')
             text = util_ui.tr('{} invites you to group "{}"').format(friend.name, group_name)
             invoke_in_main_thread(tray_notification, title, text, tray, window)
-        icon = os.path.join(util.get_images_directory(), 'icon_new_messages.png')
+        icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
         invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
 
     return wrapped
