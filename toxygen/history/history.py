@@ -82,14 +82,15 @@ class History:
         messages.reverse()
         messages = messages[self._messages.count():self._messages.count() + PAGE_SIZE]
         for message in messages:
-            if message.get_type() in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']):  # text message
+            message_type = message.get_type()
+            if message_type in (MESSAGE_TYPE['TEXT'], MESSAGE_TYPE['ACTION']):  # text message
                 self._create_message_item(message)
-            elif message.get_type() == MESSAGE_TYPE['FILE_TRANSFER']:  # file transfer
-                if message.get_status() is None:
+            elif message_type == MESSAGE_TYPE['FILE_TRANSFER']:  # file transfer
+                if message.state == FILE_TRANSFER_STATE['UNSENT']:
                     self._create_unsent_file_item(message)
-                    continue
-                self._create_file_transfer_item(message)
-            elif message.get_type() == MESSAGE_TYPE['INLINE']:  # inline image
+                else:
+                    self._create_file_transfer_item(message)
+            elif message_type == MESSAGE_TYPE['INLINE']:  # inline image
                 self._create_inline_item(message)
             else:  # info message
                 self._create_message_item(message)

@@ -116,7 +116,7 @@ class ContactsManager(ToxSave):
                 if message.type == MESSAGE_TYPE['FILE_TRANSFER']:
                     self._messages_items_factory.create_file_transfer_item(message)
                 elif message.type == MESSAGE_TYPE['INLINE']:
-                    self._messages_items_factory.create_inline_item(message.data)
+                    self._messages_items_factory.create_inline_item(message)
                 else:
                     self._messages_items_factory.create_message_item(message)
             self._messages.scrollToBottom()

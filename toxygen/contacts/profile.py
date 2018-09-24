@@ -2,6 +2,7 @@ from contacts import basecontact
 import random
 import threading
 import common.tox_save as tox_save
+from middleware.threads import invoke_in_main_thread
 
 
 class Profile(basecontact.BaseContact, tox_save.ToxSave):
@@ -73,12 +74,13 @@ class Profile(basecontact.BaseContact, tox_save.ToxSave):
         Recreate tox instance
         """
         self.status = None
-        self._reset_action()
+        invoke_in_main_thread(self._reset_action)
 
     def _reconnect(self):
         self._waiting_for_reconnection = False
         contacts = self._contacts_provider.get_all_friends()
-        if self.status is None or (all(list(map(lambda x: x.status is None, contacts))) and len(contacts)):
+        all_friends_offline = all(list(map(lambda x: x.status is None, contacts)))
+        if self.status is None or (all_friends_offline and len(contacts)):
             self._waiting_for_reconnection = True
             self.restart()
             self._timer = threading.Timer(50, self._reconnect)

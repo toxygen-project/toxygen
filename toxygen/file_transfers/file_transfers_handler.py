@@ -167,7 +167,7 @@ class FileTransfersHandler(ToxSave):
             return
         elif friend.status is None and is_resend:
             print('Error in sending')
-            raise RuntimeError()
+            return
         st = SendTransfer(path, self._tox, friend_number, TOX_FILE_KIND['DATA'], file_id)
         file_name = os.path.basename(path)
         self._send_file_add_set_handlers(st, friend, file_name)
@@ -210,7 +210,7 @@ class FileTransfersHandler(ToxSave):
                 else:
                     self.send_file(path, friend_number, True)
             friend.clear_unsent_files()
-            for key in list(self._paused_file_transfers.keys()):
+            for key in self._paused_file_transfers.keys():
                 (path, ft_friend_number, is_incoming, start_position) = self._paused_file_transfers[key]
                 if not os.path.exists(path):
                     del self._paused_file_transfers[key]
@@ -221,14 +221,15 @@ class FileTransfersHandler(ToxSave):
             print('Exception in file sending: ' + str(ex))
 
     def friend_exit(self, friend_number):
-        for friend_num, file_num in list(self._file_transfers.keys()):
-            if friend_num == friend_number:
-                ft = self._file_transfers[(friend_num, file_num)]
-                if type(ft) is SendTransfer:
-                    self._paused_file_transfers[ft.file_id] = [ft.path, friend_num, False, -1]
-                elif type(ft) is ReceiveTransfer and ft.state != FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']:
-                    self._paused_file_transfers[ft.file_id] = [ft.path, friend_num, True, ft.total_size()]
-                self.cancel_transfer(friend_num, file_num, True)
+        for friend_num, file_num in self._file_transfers.keys():
+            if friend_num != friend_number:
+                continue
+            ft = self._file_transfers[(friend_num, file_num)]
+            if type(ft) is SendTransfer:
+                self._paused_file_transfers[ft.file_id] = [ft.path, friend_num, False, -1]
+            elif type(ft) is ReceiveTransfer and ft.state != FILE_TRANSFER_STATE['INCOMING_NOT_STARTED']:
+                self._paused_file_transfers[ft.file_id] = [ft.path, friend_num, True, ft.total_size()]
+            self.cancel_transfer(friend_num, file_num, True)
 
     # -----------------------------------------------------------------------------------------------------------------
     # Avatars support
@@ -267,7 +268,9 @@ class FileTransfersHandler(ToxSave):
     # -----------------------------------------------------------------------------------------------------------------
 
     def _is_friend_online(self, friend_number):
-        return self._get_friend_by_number(friend_number).status is not None
+        friend = self._get_friend_by_number(friend_number)
+
+        return friend.status is not None
 
     def _get_friend_by_number(self, friend_number):
         return self._contact_provider.get_friend_by_number(friend_number)

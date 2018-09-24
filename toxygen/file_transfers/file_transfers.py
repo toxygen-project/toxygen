@@ -52,10 +52,10 @@ class FileTransfer:
         self._file_id = self._file = None
 
     def set_state_changed_handler(self, handler):
-        self._state_changed_event += handler
+        self._state_changed_event += lambda *args: invoke_in_main_thread(handler, *args)
 
     def set_transfer_finished_handler(self, handler):
-        self._finished_event += handler
+        self._finished_event += lambda *args: invoke_in_main_thread(handler, *args)
 
     def get_file_number(self):
         return self._file_number
@@ -100,17 +100,17 @@ class FileTransfer:
     def cancelled(self):
         if self._file is not None:
             self._file.close()
-        self.state = FILE_TRANSFER_STATE['CANCELLED']
+        self.set_state(FILE_TRANSFER_STATE['CANCELLED'])
 
     def pause(self, by_friend):
         if not by_friend:
             self.send_control(TOX_FILE_CONTROL['PAUSE'])
         else:
-            self.state = FILE_TRANSFER_STATE['PAUSED_BY_FRIEND']
+            self.set_state(FILE_TRANSFER_STATE['PAUSED_BY_FRIEND'])
 
     def send_control(self, control):
         if self._tox.file_control(self._friend_number, self._file_number, control):
-            self.state = control
+            self.set_state(control)
 
     def get_file_id(self):
         return self._tox.file_get_file_id(self._friend_number, self._file_number)
@@ -121,10 +121,10 @@ class FileTransfer:
             t = -1
         else:
             t = ((time() - self._creation_time) / percentage) * (1 - percentage)
-        invoke_in_main_thread(self._state_changed_event, self.state, percentage, int(t))
+        self._state_changed_event(self.state, percentage, int(t))
 
     def _finished(self):
-        invoke_in_main_thread(self._finished_event, self._friend_number, self._file_number)
+        self._finished_event(self._friend_number, self._file_number)
 
 # -----------------------------------------------------------------------------------------------------------------
 # Send file

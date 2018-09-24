@@ -183,7 +183,7 @@ def tox_file_recv(window, tray, profile, file_transfer_handler, contacts_manager
                     sound_notification(SOUND_NOTIFICATION['FILE_TRANSFER'])
                 icon = util.join_path(util.get_images_directory(), 'icon_new_messages.png')
                 invoke_in_main_thread(tray.setIcon, QtGui.QIcon(icon))
-        else:  # AVATAR
+        else:  # avatar
             print('Avatar')
             invoke_in_main_thread(file_transfer_handler.incoming_avatar,
                                   friend_number,
@@ -208,7 +208,7 @@ def file_chunk_request(file_transfer_handler):
     Outgoing chunk
     """
     def wrapped(tox, friend_number, file_number, position, size, user_data):
-        invoke_in_main_thread(file_transfer_handler.outgoing_chunk, friend_number, file_number, position, size)
+        execute(file_transfer_handler.outgoing_chunk, friend_number, file_number, position, size)
 
     return wrapped
 
@@ -440,7 +440,6 @@ def group_peer_join(contacts_provider, groups_service):
 def group_peer_exit(contacts_provider, groups_service, contacts_manager):
     def wrapped(tox, group_number, peer_id, message, length, user_data):
         group = contacts_provider.get_group_by_number(group_number)
-        contacts_manager.remove_group_peer_by_id(group, peer_id)
         group.remove_peer(peer_id)
         invoke_in_main_thread(groups_service.generate_peers_list)
 
