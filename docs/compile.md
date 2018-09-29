@@ -2,10 +2,18 @@
 
 You can compile Toxygen using [PyInstaller](http://www.pyinstaller.org/)
 
-Install PyInstaller: 
-``pip3 install pyinstaller``
+Use Dockerfile and build script from `build` directory:
 
-Compile Toxygen:
-``pyinstaller --windowed --icon images/icon.ico main.py``
+1. Build image:
+```
+docker build -t toxygen .
+```
 
-Don't forget to copy /images/, /sounds/, /translations/, /styles/, /smileys/, /stickers/, /plugins/ (and /libs/libtox.dll, /libs/libsodium.a on Windows) to /dist/main/
+2. Run container:
+```
+docker run -it toxygen bash
+```
+
+3. Execute `build.sh` script:
+
+```./build.sh```

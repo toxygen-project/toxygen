@@ -7,6 +7,7 @@ cd toxygen/toxygen
 pyinstaller --windowed --icon=images/icon.ico main.py
 
 cp -r styles dist/main/
+find . -type f ! -name '*.qss' -delete
 cp -r plugins dist/main/
 mkdir -p dist/main/ui/views
 cp -r ui/views dist/main/ui/
@@ -14,8 +15,10 @@ cp -r sounds dist/main/
 cp -r smileys dist/main/
 cp -r stickers dist/main/
 cp -r bootstrap dist/main/
+find . -type f ! -name '*.json' -delete
 cp -r images dist/main/
 cp -r translations dist/main/
+find . -name "*.ts" -type f -delete
 
 cd dist
 mv main toxygen
