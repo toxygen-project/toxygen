@@ -73,8 +73,16 @@ class MessageArea(QtWidgets.QPlainTextEdit):
         if text.startswith('file://'):
             file_name = self.parse_file_name(text)
             self.parent.profile.send_file(file_name)
-        else:
+        elif text:
             self.insertPlainText(text)
+        else:
+            image = QtWidgets.QApplication.clipboard().image()
+            if image is not None:
+                byte_array = QtCore.QByteArray()
+                buffer = QtCore.QBuffer(byte_array)
+                buffer.open(QtCore.QIODevice.WriteOnly)
+                image.save(buffer, 'PNG')
+                self.parent.profile.send_screenshot(bytes(byte_array.data()))
 
     def parse_file_name(self, file_name):
         import urllib
