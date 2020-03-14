@@ -1099,10 +1099,11 @@ class Profile(basecontact.BaseContact, Singleton):
                              file_name,
                              friend.number,
                              st.get_file_number())
-        item = self.create_file_transfer_item(tm)
         friend.append_message(tm)
-        st.set_state_changed_handler(item.update_transfer_state)
-        self._messages.scrollToBottom()
+        if friend_number == self.get_active_number():
+            item = self.create_file_transfer_item(tm)
+            st.set_state_changed_handler(item.update_transfer_state)
+            self._messages.scrollToBottom()
 
     def send_file(self, path, number=None, is_resend=False, file_id=None):
         """
