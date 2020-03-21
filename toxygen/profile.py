@@ -597,7 +597,7 @@ class Profile(basecontact.BaseContact, Singleton):
                                          False)
             else:
                 data = message.get_data()
-                self.create_gc_message_item(data[0], data[2], data[1], data[4], data[3])
+                self.create_gc_message_item(data[0], data[2], data[1], data[4], data[3], False)
         self._load_history = True
 
     def export_db(self, directory):
