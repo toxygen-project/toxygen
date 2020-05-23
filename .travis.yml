@@ -12,12 +12,13 @@ before_install:
   - sudo apt-get install -y checkinstall build-essential
   - sudo apt-get install portaudio19-dev
   - sudo apt-get install libsecret-1-dev
+
   - sudo apt-get install libconfig-dev libvpx-dev check -qq
 install:
-  - pip install sip
-  - pip install pyqt5
-  - pip install pyaudio
-  - pip install opencv-python
+  - pip3 install sip
+  - pip3 install pyaudio
+  - pip3 install pyqt5==5.14
+  - pip3 install opencv-python
 before_script:
 # Opus
   - wget http://downloads.xiph.org/releases/opus/opus-1.0.3.tar.gz

@@ -36,21 +36,6 @@ class TestProfileHelper:
         assert os.path.exists(path + 'avatars/')
 
 
-class TestDNS:
-
-    def test_dns(self):
-        Settings._instance = Settings.get_default_settings()
-        bot_id = '56A1ADE4B65B86BCD51CC73E2CD4E542179F47959FE3E0E21B4B0ACDADE51855D34D34D37CB5'
-        tox_id = tox_dns('groupbot@toxme.io')
-        assert tox_id == bot_id
-
-    def test_dns2(self):
-        Settings._instance = Settings.get_default_settings()
-        bot_id = '76518406F6A9F2217E8DC487CC783C25CC16A15EB36FF32E335A235342C48A39218F515C39A6'
-        tox_id = tox_dns('echobot@toxme.io')
-        assert tox_id == bot_id
-
-
 class TestEncryption:
 
     def test_encr_decr(self):
