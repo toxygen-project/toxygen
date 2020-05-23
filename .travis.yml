@@ -12,12 +12,12 @@ before_install:
   - sudo apt-get install -y checkinstall build-essential
   - sudo apt-get install portaudio19-dev
   - sudo apt-get install libsecret-1-dev
-  - sudo apt install python3-pyqt5
+
   - sudo apt-get install libconfig-dev libvpx-dev check -qq
 install:
   - pip3 install sip
   - pip3 install pyaudio
-  - pip3 install pyqt5
+  - pip3 install pyqt5==5.14
   - pip3 install opencv-python
 before_script:
 # Opus
