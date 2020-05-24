@@ -951,7 +951,9 @@ class Profile(basecontact.BaseContact, Singleton):
                                  file_number)
 
         elif auto:
-            path = settings['auto_accept_path'] or curr_directory()
+            path = settings['auto_accept_path']
+            if not path or not os.path.exists(path):
+                path = curr_directory()
             self.accept_transfer(None, path + '/' + file_name, friend_number, file_number, size)
             tm = TransferMessage(MESSAGE_OWNER['FRIEND'],
                                  time.time(),
